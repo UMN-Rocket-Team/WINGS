@@ -1,7 +1,7 @@
 {
-  "name": "WebGS",
+  "name": "webgs",
   "version": "0.0.0",
-  "description": "",
+  "description": "The Ground Station of the University of Minnesota Twin Cities Rocket Team",
   "scripts": {
     "start": "vite",
     "dev": "vite",
@@ -9,7 +9,7 @@
     "serve": "vite preview",
     "tauri": "tauri"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "@types/node": "^18.7.10",
     "typescript": "^4.7.4",

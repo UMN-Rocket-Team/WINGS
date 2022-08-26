@@ -11,11 +11,11 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "all": false
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "Utility",
       "copyright": "",
       "deb": {
         "depends": []
@@ -28,7 +28,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "edu.umn.aem.rkt",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -38,7 +38,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "The Ground Station of the University of Minnesota Twin Cities Rocket Team",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
@@ -47,7 +47,7 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'"
     },
     "updater": {
       "active": false
