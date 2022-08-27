@@ -1,8 +1,18 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
+import Unocss from 'unocss/vite';
 
 export default defineConfig({
-  plugins: [solidPlugin()],
+  plugins: [
+    solidPlugin(),
+    Unocss({ 
+      shortcuts: [
+        {
+          "form-element": "border border-transparent border-rd-2 px-4.8 py-2.4 text-4 font-medium duration-250 outline-none"
+        }
+      ]
+    }),
+  ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent vite from obscuring rust errors

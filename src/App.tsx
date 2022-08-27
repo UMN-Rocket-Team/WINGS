@@ -10,17 +10,17 @@ function App() {
   }
 
   return (
-    <div class="container">
-      <h1>Welcome to Tauri!</h1>
+    <div class="flex flex-col justify-center text-center m-0 pt-10vh">
+      <h1 class="text-center">Welcome to Tauri!</h1>
 
-      <div class="row">
+      <div class="flex justify-center">
         <div>
           <input
-            id="greet-input"
+            class="form-element mr-1.25"
             onChange={(e) => setName(e.currentTarget.value)}
             placeholder="Enter a name..."
           />
-          <button type="button" onClick={() => greet()}>
+          <button type="button" onClick={() => greet()} class="form-element cursor-pointer hover:border-#396cd8">
             Greet
           </button>
         </div>
