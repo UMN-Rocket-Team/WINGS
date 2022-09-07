@@ -44,7 +44,7 @@ jobs:
           run_install: true # Run `pnpm install`
 
       - name: Install App Dependencies and Build It
-        run: pnpm && pnpm build
+        run: pnpm build
         
       - uses: tauri-apps/tauri-action@v0
         env:

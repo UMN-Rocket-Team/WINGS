@@ -1,5 +1,6 @@
-import { createSignal } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 function App() {
   const [greetMsg, setGreetMsg] = createSignal("");
@@ -8,6 +9,16 @@ function App() {
   async function greet() {
     setGreetMsg(await invoke("greet", { name: name() }));
   }
+
+  let unlisten: UnlistenFn | null;
+
+  onMount(async () => {
+    unlisten = await listen("data-received", ({ payload }) => {
+        console.log(`Data received: "${payload}"`);
+    });
+  });
+
+  onCleanup(() => unlisten && unlisten());
 
   return (
     <div class="flex flex-col justify-center text-center m-0 pt-10vh">
