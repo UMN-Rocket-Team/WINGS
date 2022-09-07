@@ -1,0 +1,51 @@
+# Inspired by https://github.com/tauri-apps/tauri-action
+
+name: test-on-pr
+
+# Run this workflow on pull requests
+on:
+  pull_request:
+  # Allows this workflow to be run manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Attempt to build an app for all platforms independently
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.4.1
+        
+      - name: rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: stable
+      
+      # Install the native dependencies required to build the app
+      - name: Install Native Dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.2
+        with:
+          version: latest
+          run_install: true # Run `pnpm install`
+
+      - name: Install App Dependencies and Build It
+        run: pnpm && pnpm build
+        
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
