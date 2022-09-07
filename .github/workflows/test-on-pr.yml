@@ -42,10 +42,9 @@ jobs:
         with:
           version: latest
           run_install: true # Run `pnpm install`
-
-      - name: Install App Dependencies and Build It
-        run: pnpm build
         
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tauriScript: pnpm tauri
