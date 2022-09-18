@@ -1,40 +1,16 @@
-/* A portion of these styles are translatable to UnoCSS classes, but it is more readable to keep them in one place here */
+:root, body, #root {
+    height: 100%;
+}
+
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+    font-family: ui-sans-serif, sans-serif, system-ui;
 }
 
-.form-element {
-  /* No inline classes may be used for colors if the media query below is to override the colors based on the preferred
-     color scheme */
-  color: #0f0f0f;
-  background-color: #ffffff;
-  /* UnoCSS has transition-colors, but that is too general */
-  transition: border-color;
-  /* UnoCSS does not have customizable box-shadows  */
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+body {
+    margin: 0px;
 }
 
-/* UnoCSS's dark variant uses classes instead of media queries */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  .form-element {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
+#root {
+    display: flex;
+    flex-direction: column;
 }
