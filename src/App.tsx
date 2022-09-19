@@ -1,12 +1,16 @@
-import { createSignal, Match, onCleanup, onMount, Switch } from "solid-js";
+import { createSignal, For, Match, onCleanup, onMount, Switch } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { ThemeContextValue, useTheme } from "./components/ThemeProvider";
 import Modal from "./components/Modal";
 import Credits from "./components/Credits";
+import SerialPort from "./core/serial_port";
 
 function App() {
     const { theme, setTheme }: ThemeContextValue = useTheme();
+
+    const [selectedPort, setSelectedPort] = createSignal<string>();
+    const [availablePorts, setAvailablePorts] = createSignal<SerialPort[]>([]);
 
     const [greetMsg, setGreetMsg] = createSignal("");
     const [name, setName] = createSignal("");
@@ -17,15 +21,29 @@ function App() {
         setGreetMsg(await invoke("greet", { name: name() }));
     }
 
-    let unlisten: UnlistenFn | null;
+    async function readFromPort(portName: string) {
+        await invoke("read_from_port", { portName: portName })
+    }
+
+    let unlisten_functions: UnlistenFn[];
 
     onMount(async () => {
-        unlisten = await listen("data-received", ({ payload }) => {
-            console.log(`Data received: "${payload}"`);
-        });
+        unlisten_functions = [
+            await listen("data-received", ({ payload }) => {
+                console.log(`Data received: "${payload}"`);
+            }),
+            await listen("ports-changed", ({ payload }) => {
+                console.log("New ports: ", payload);
+                setAvailablePorts(payload as SerialPort[]);
+            })
+        ];
     });
 
-    onCleanup(() => unlisten && unlisten());
+    onCleanup(() => {
+        for (const unlisten_function of unlisten_functions) {
+            unlisten_function();
+        }
+    });
 
     return (
         <div class="flex flex-col p-4 gap-4 dark:bg-dark-700 h-full">
@@ -65,6 +83,16 @@ function App() {
             </div>
 
             <p>{greetMsg}</p>
+
+            <div class="flex">
+                <input type="text" name="Serial Port" list="serialPorts" onInput={event => setSelectedPort((event.target as HTMLInputElement).value)} />
+                <datalist id="serialPorts">
+                    <For each={availablePorts()}>
+                        {(serialPort) => <option value={serialPort.name} /> }
+                    </For>
+                </datalist>
+                <button onClick={() => readFromPort(selectedPort()!)} disabled={selectedPort() === undefined}>Connect</button>
+            </div>
 
             <div class="flex justify-center items-center gap-2">
                 <div class="flex items-center">
