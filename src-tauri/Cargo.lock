@@ -3111,6 +3111,7 @@ checksum = "6598dd0bd3c7d51095ff6531a5b23e02acdc81804e30d8f07afb77b7215a140a"
 name = "webgs"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "readonly",
  "serde",

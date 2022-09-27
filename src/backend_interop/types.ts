@@ -1,0 +1,109 @@
+export type RustRefreshAndReadResult = {
+    new_available_port_names: SerialPortNames[] | null,
+    parsed_packets: RustPacket[] | null,
+};
+
+export type RefreshAndReadResult = {
+    new_available_port_names: SerialPortNames[] | null,
+    parsed_packets: Packet[] | null,
+}
+
+export type SerialPortNames = {
+    /**
+     * The name of the serial port. On Windows, can be `COM[0-9]+`. On Unix, can be a file path like `/dev/ttyUSB[0-9]+`.
+     * 
+     * Used to identify a serial port to the backend.
+     */
+    name: string,
+    manufacturer_name: string | null,
+    product_name: string | null,
+};
+
+export type RustPacket = {
+    structure_id: number,
+    field_data: PacketFieldValue[],
+    timestamp: number,
+};
+
+export type Packet = {
+    structure_id: number,
+    field_data: number[],
+    timestamp: number,
+};
+
+export type PacketFieldValue = UnsignedByte | SignedByte | UnsignedShort | SignedShort | UnsignedInteger | SignedInteger | UnsignedLong | SignedLong | Float | Double;
+
+type UnsignedByte = {
+    unsignedByte: number,
+};
+type SignedByte = { 
+    signedByte: number,
+};
+type UnsignedShort = {
+    unsignedShort: number,
+};
+type SignedShort = {
+    signedShort: number,
+};
+type UnsignedInteger = {
+    unsignedInteger: number,
+};
+type SignedInteger = {
+    signedInteger: number,
+};
+type UnsignedLong = {
+    unsignedLong: number,
+};
+type SignedLong = {
+    signedLong: number,
+};
+type Float = {
+    float: number,
+};
+type Double = {
+    double: number,
+};
+
+export type PacketStructure = {
+    id: number,
+    name: string,
+    fields: PacketField[],
+    delimiters: PacketDelimiter[],
+};
+
+// export type PacketComponent = PacketField | PacketDelimiter | PacketGap;
+
+export type PacketField = {
+    name: string,
+    type: PacketFieldType,
+    offsetInPacket: number,
+    metadataType: PacketMetadataType
+};
+
+export enum PacketFieldType {
+    UnsignedByte,
+    SignedByte,
+    UnsignedShort,
+    SignedShort,
+    UnsignedInteger,
+    SignedInteger,
+    UnsignedLong,
+    SignedLong,
+    Float,
+    Double
+};
+
+export enum PacketMetadataType {
+    None,
+    Timestamp,
+}
+
+export type PacketDelimiter = {
+    name: string,
+    identifier: Uint8Array,
+    offsetInPacket: number,
+};
+
+// export type PacketGap = {
+//     size: number,
+// };

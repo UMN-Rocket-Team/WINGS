@@ -1,49 +1,18 @@
-import { createSignal, For, Match, onCleanup, onMount, Switch } from "solid-js";
-import { invoke } from "@tauri-apps/api/tauri";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { createSignal, For, Match, Switch } from "solid-js";
 import { ThemeContextValue, useTheme } from "./components/ThemeProvider";
 import Modal from "./components/Modal";
 import Credits from "./components/Credits";
-import SerialPort from "./core/serial_port";
+import { setActivePort, setTestPort } from "./backend_interop/api_calls";
+import { BackendInteropManagerContextValue, useBackendInteropManager } from "./components/BackendInteropManagerProvider";
 
 function App() {
     const { theme, setTheme }: ThemeContextValue = useTheme();
+    const { availablePortNames }: BackendInteropManagerContextValue = useBackendInteropManager();
 
-    const [selectedPort, setSelectedPort] = createSignal<string>();
-    const [availablePorts, setAvailablePorts] = createSignal<SerialPort[]>([]);
-
-    const [greetMsg, setGreetMsg] = createSignal("");
-    const [name, setName] = createSignal("");
+    const [selectedActivePort, setSelectedActivePort] = createSignal<string>();
+    const [selectedTestPort, setSelectedTestPort] = createSignal<string>();
 
     const [isCreditModalVisible, setCreditModalVisible] = createSignal(false);
-
-    async function greet() {
-        setGreetMsg(await invoke("greet", { name: name() }));
-    }
-
-    async function readFromPort(portName: string) {
-        await invoke("read_from_port", { portName: portName })
-    }
-
-    let unlisten_functions: UnlistenFn[];
-
-    onMount(async () => {
-        unlisten_functions = [
-            await listen("data-received", ({ payload }) => {
-                console.log(`Data received: "${payload}"`);
-            }),
-            await listen("ports-changed", ({ payload }) => {
-                console.log("New ports: ", payload);
-                setAvailablePorts(payload as SerialPort[]);
-            })
-        ];
-    });
-
-    onCleanup(() => {
-        for (const unlisten_function of unlisten_functions) {
-            unlisten_function();
-        }
-    });
 
     return (
         <div class="flex flex-col p-4 gap-4 dark:bg-dark-700 h-full">
@@ -66,32 +35,27 @@ function App() {
                     </div>
                 </button>
             </div>
-            
-            <h1 class="text-center">Welcome to Tauri!</h1>
-
-            <div class="flex justify-center">
-                <div>
-                    <input
-                        class="form-element mr-1.25"
-                        onChange={(e) => setName(e.currentTarget.value)}
-                        placeholder="Enter a name..."
-                        />
-                    <button type="button" onClick={() => greet()} class="form-element cursor-pointer hover:border-#396cd8">
-                        Greet
-                    </button>
-                </div>
-            </div>
-
-            <p>{greetMsg}</p>
 
             <div class="flex">
-                <input type="text" name="Serial Port" list="serialPorts" onInput={event => setSelectedPort((event.target as HTMLInputElement).value)} />
+                <p>Active Port:</p>
+                <input type="text" name="Serial Port" list="serialPorts" onInput={event => setSelectedActivePort((event.target as HTMLInputElement).value)} />
                 <datalist id="serialPorts">
-                    <For each={availablePorts()}>
+                    <For each={availablePortNames()}>
                         {(serialPort) => <option value={serialPort.name} /> }
                     </For>
                 </datalist>
-                <button onClick={() => readFromPort(selectedPort()!)} disabled={selectedPort() === undefined}>Connect</button>
+                <button onClick={() => setActivePort(selectedActivePort()!)} disabled={selectedActivePort() === undefined}>Connect</button>
+            </div>
+
+            <div class="flex">
+                <p>Test Port:</p>
+                <input type="text" name="Test Port" list="serialPorts" onInput={event => setSelectedTestPort((event.target as HTMLInputElement).value)} />
+                <datalist id="serialPorts">
+                    <For each={availablePortNames()}>
+                        {(serialPort) => <option value={serialPort.name} /> }
+                    </For>
+                </datalist>
+                <button onClick={() => setTestPort(selectedTestPort()!)} disabled={selectedTestPort() === undefined}>Connect</button>
             </div>
 
             <div class="flex justify-center items-center gap-2">
