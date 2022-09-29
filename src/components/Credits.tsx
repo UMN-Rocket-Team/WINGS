@@ -1,42 +1,46 @@
-import { JSX } from "solid-js/jsx-runtime";
+import { JSX } from "solid-js";
+import DefaultModalLayout from "./DefaultModalLayout";
+import { ModalProps } from "./ModalProvider";
 
-const Credits = (): JSX.Element => {
+const Credits = (creditsProps: ModalProps): JSX.Element => {
     return (
-        <div class="flex flex-col justify-center items-stretch gap-2">
-            <section class="flex flex-col">
-                <h1 class="text-center dark:text-white">Attributions</h1>
+        <DefaultModalLayout close={() => creditsProps.closeModal({})} title="Credits">
+            <div class="flex flex-col justify-center items-stretch gap-2">
+                <section class="flex flex-col">
+                    <h1 class="text-center dark:text-white">Attributions</h1>
 
-                <table>
-                    <thead class="dark:text-white">
-                        <tr>
-                            <th>Object</th>
-                            <th>Author</th>
-                            <th>License</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="dark:text-white">bxs:moon and bx:x Icons</td>
-                            <td><a href="https://github.com/atisawd/boxicons">Atisa</a></td>
-                            <td><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></td>
-                        </tr>
-                        <tr>
-                            <td class="dark:text-white">mdi:web Icon</td>
-                            <td><a href="https://github.com/Templarian/MaterialDesign">Austin Andrews</a></td>
-                            <td><a href="#apache2.0">Apache 2.0</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+                    <table>
+                        <thead class="dark:text-white">
+                            <tr>
+                                <th>Object</th>
+                                <th>Author</th>
+                                <th>License</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dark:text-white">bxs:moon and bx:x Icons</td>
+                                <td><a href="https://github.com/atisawd/boxicons">Atisa</a></td>
+                                <td><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></td>
+                            </tr>
+                            <tr>
+                                <td class="dark:text-white">mdi:web Icon</td>
+                                <td><a href="https://github.com/Templarian/MaterialDesign">Austin Andrews</a></td>
+                                <td><a href="#apache2.0">Apache 2.0</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
 
-            <section class="dark:text-white">
-                <h1 class="text-center">Licenses</h1>
+                <section class="dark:text-white">
+                    <h1 class="text-center">Licenses</h1>
 
-                <pre>
-                    {APACHE2_0_LICENSE}
-                </pre>
-            </section>
-        </div>
+                    <pre>
+                        {APACHE2_0_LICENSE}
+                    </pre>
+                </section>
+            </div>
+        </DefaultModalLayout>
     );
 };
 

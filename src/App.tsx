@@ -1,18 +1,17 @@
 import { createSignal, For, Match, Switch } from "solid-js";
 import { ThemeContextValue, useTheme } from "./components/ThemeProvider";
-import Modal from "./components/Modal";
 import Credits from "./components/Credits";
 import { setActivePort, setTestPort } from "./backend_interop/api_calls";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./components/BackendInteropManagerProvider";
+import { useModal } from "./components/ModalProvider";
 
 function App() {
     const { theme, setTheme }: ThemeContextValue = useTheme();
     const { availablePortNames }: BackendInteropManagerContextValue = useBackendInteropManager();
+    const { showModal } = useModal();
 
     const [selectedActivePort, setSelectedActivePort] = createSignal<string>();
     const [selectedTestPort, setSelectedTestPort] = createSignal<string>();
-
-    const [isCreditModalVisible, setCreditModalVisible] = createSignal(false);
 
     return (
         <div class="flex flex-col p-4 gap-4 dark:bg-dark-700 h-full">
@@ -67,8 +66,7 @@ function App() {
                 {/* Veritcal line */}
                 <hr style={{ "width": "0", "height": "100%", "margin": "0" }} />
                 <button class="p-2 border-none bg-gray-200 hover:bg-gray-300 dark:bg-dark-900 hover:dark:bg-black dark:text-white border-rounded"
-                        onClick={() => setCreditModalVisible(true)}>Credits</button>
-                <Modal title="Credits" isVisible={isCreditModalVisible} setVisible={setCreditModalVisible}><Credits /></Modal>
+                        onClick={() => showModal<{}, {}>(Credits, {})}>Credits</button>
             </div>
         </div>
     );

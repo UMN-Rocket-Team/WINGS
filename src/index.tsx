@@ -6,11 +6,14 @@ import 'uno.css'
 import App from "./App";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { BackendInteropManagerProvider } from "./components/BackendInteropManagerProvider";
+import { ModalProvider } from "./components/ModalProvider";
 
 render(() => 
     <ThemeProvider>
         <BackendInteropManagerProvider>
-            <App />
+            <ModalProvider>
+                <App />
+            </ModalProvider>
         </BackendInteropManagerProvider>
     </ThemeProvider>, 
     document.getElementById("root") as HTMLElement);
