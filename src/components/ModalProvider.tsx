@@ -1,5 +1,5 @@
 import { createContext, createSignal, JSX, ParentComponent, Show, useContext } from "solid-js";
-import { Portal } from "solid-js/web";
+import { Dynamic, Portal } from "solid-js/web";
 import { createShowModalFunction } from "../core/modal_helpers";
 
 /**
@@ -38,9 +38,7 @@ const ModalContext = createContext<ModalContextValue>({
 });
 
 export const ModalProvider: ParentComponent = (props): JSX.Element => {
-    const [modalComponent, setModalComponent] = createSignal<JSX.Element | null>(null);
-
-    const isVisible = (): boolean => modalComponent() !== null;
+    const [modalComponent, setModalComponent] = createSignal<(() => JSX.Element) | null>(null);
 
     const context: ModalContextValue = {
         showModal: createShowModalFunction(setModalComponent),
@@ -49,11 +47,9 @@ export const ModalProvider: ParentComponent = (props): JSX.Element => {
     return (
         <ModalContext.Provider value={context}>
             {props.children}
-            <Show when={isVisible}>
-                <Portal>
-                    {modalComponent()}
-                </Portal>
-            </Show>
+            <Portal>
+                <Dynamic component={modalComponent()} />
+            </Portal>
         </ModalContext.Provider>
     );
 };
