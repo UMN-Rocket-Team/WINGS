@@ -91,7 +91,7 @@ export enum PacketFieldType {
     SignedLong,
     Float,
     Double
-};
+}
 
 export enum PacketMetadataType {
     None,

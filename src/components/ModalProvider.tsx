@@ -1,4 +1,4 @@
-import { createContext, createSignal, JSX, ParentComponent, Show, useContext } from "solid-js";
+import { createContext, createSignal, JSX, ParentComponent, useContext } from "solid-js";
 import { Dynamic, Portal } from "solid-js/web";
 import { createShowModalFunction } from "../core/modal_helpers";
 
@@ -27,7 +27,7 @@ export type ModalMetadata<ResultType> = {
 export type ModalContextValue = {
     /**
      * Shows the modal with the given child component, child component properties, and metadata.
-     * The given component is constructed using the given child component properties. Metatdata is
+     * The given component is constructed using the given child component properties. Metadata is
      * used for things other than component creation.
      */
     showModal: <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, modalProps: BaseType & ModalMetadata<ResultType>) => void, 

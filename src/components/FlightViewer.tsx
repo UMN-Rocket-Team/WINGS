@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Match, Switch } from "solid-js";
+import { Component, createSignal, For } from "solid-js";
 import { setActivePort, setTestPort } from "../backend_interop/api_calls";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
 import ThemeSwitcher from "./ThemeSwitcher";

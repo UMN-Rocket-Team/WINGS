@@ -10,7 +10,7 @@ import { ModalMetadata, ModalProps } from "../components/ModalProvider";
  */
 export const createShowModalFunction = (setModalComponent: Setter<(() => JSX.Element) | null>) => {
     return <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, props: BaseType & ModalMetadata<ResultType>): void => {
-        // Note: to call a setter with a value of a function, the overload which takes the previous state must be explicity used
+        // Note: to call a setter with a value of a function, the overload which takes the previous state must be explicitly used
         setModalComponent((_previousModalComponent) => 
             // Wrap the component inside a function that takes no arguments--so the ModalProvider does not need to worry about props,
             // captures the props, and supplies the closeModal function implementation
