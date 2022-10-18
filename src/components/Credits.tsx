@@ -19,7 +19,7 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="dark:text-white">bxs:moon and bx:x Icons</td>
+                                <td class="dark:text-white">bxs:moon, bx:x, and bxs:lock-alt Icons</td>
                                 <td><a href="https://github.com/atisawd/boxicons">Atisa</a></td>
                                 <td><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></td>
                             </tr>
