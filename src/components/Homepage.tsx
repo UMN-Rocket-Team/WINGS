@@ -1,12 +1,11 @@
+import { useNavigate } from "@solidjs/router";
 import { Component } from "solid-js";
-import { MainComponentType } from "../core/main_component";
 import Credits from "./Credits";
-import { useMainComponent } from "./MainComponentProvider";
 import { useModal } from "./ModalProvider";
 import ThemeSwitcher from "./ThemeSwitcher";
 
 const Homepage: Component = () => {
-    const { setMainComponentId } = useMainComponent();
+    const navigate = useNavigate();
     const { showModal } = useModal();
 
     return (
@@ -22,7 +21,7 @@ const Homepage: Component = () => {
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
                 <div class="flex gap-4 flex-col md:flex-row">
                     <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded"
-                            onClick={() => setMainComponentId(MainComponentType.FlightViewer)}>
+                            onClick={() => navigate("/newFlight", { replace: true })}>
                         {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Create New Flight
                     </button>
