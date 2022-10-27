@@ -10,8 +10,8 @@ export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshA
 
     // TODO: can PacketFieldValues be serialized in a more efficent manner in Rust so they don't have to be simplified here?
     const simplifiedParsedPackets = parsed_packets.map((rustPacket: RustPacket): Packet => ({
-        field_data: rustPacket.field_data.map((fieldValue: PacketFieldValue): number => Object.entries(fieldValue)[0][1] as number), 
-        structure_id: rustPacket.structure_id, 
+        fieldData: rustPacket.field_data.map((fieldValue: PacketFieldValue): number => Object.entries(fieldValue)[0][1] as number), 
+        structureId: rustPacket.structure_id, 
         timestamp: rustPacket.timestamp
     }));
 

@@ -25,9 +25,12 @@ export type RustPacket = {
     timestamp: number,
 };
 
-export type Packet = {
-    structure_id: number,
-    field_data: number[],
+export type Packet = PacketData & {
+    structureId: number,
+};
+
+export type PacketData = {
+    fieldData: number[],
     timestamp: number,
 };
 

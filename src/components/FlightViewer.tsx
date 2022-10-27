@@ -1,13 +1,18 @@
-import { Component, createSignal, For } from "solid-js";
+import { Component, createEffect, createSignal, For } from "solid-js";
 import { setActivePort, setTestPort } from "../backend_interop/api_calls";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
 import ThemeSwitcher from "./ThemeSwitcher";
 
 const FlightViewer: Component = () => {
-    const { availablePortNames }: BackendInteropManagerContextValue = useBackendInteropManager();
+    const { availablePortNames, newParsedPackets }: BackendInteropManagerContextValue = useBackendInteropManager();
 
     const [selectedActivePort, setSelectedActivePort] = createSignal<string>();
     const [selectedTestPort, setSelectedTestPort] = createSignal<string>();
+
+    createEffect(() => {
+        // TODO: when the newParsedPackets change, update the graphs with the new PacketData
+        console.log("FlightViewer effect parsed packets: ", newParsedPackets());
+    }, { defer: true });
 
     return (
         <div class="flex flex-col p-4 gap-4 dark:bg-dark-700 h-full">
