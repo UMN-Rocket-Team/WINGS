@@ -8,7 +8,7 @@ import { ModalMetadata, ModalProps } from "../components/ModalProvider";
  * @param setModalComponent a setter for the child component of a modal
  * @returns a function that will show a modal with the given component, component properties, and metadata
  */
-export const createShowModalFunction = (setModalComponent: Setter<(() => JSX.Element) | null>) => {
+export const createShowModalFunction = (setModalComponent: Setter<(() => JSX.Element) | undefined>) => {
     return <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, props: BaseType & ModalMetadata<ResultType>): void => {
         // Note: to call a setter with a value of a function, the overload which takes the previous state must be explicitly used
         setModalComponent((_previousModalComponent) => 
@@ -16,7 +16,7 @@ export const createShowModalFunction = (setModalComponent: Setter<(() => JSX.Ele
             // captures the props, and supplies the closeModal function implementation
             () => component({
                 closeModal: (result: ResultType) => {
-                    setModalComponent(null);
+                    setModalComponent(undefined);
                     props.modalClosedCallback && props.modalClosedCallback(result);
                 },
                 ...props

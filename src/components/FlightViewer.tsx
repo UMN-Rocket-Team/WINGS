@@ -22,8 +22,8 @@ const FlightViewer: Component = () => {
 
             <div class="flex">
                 <p>Active Port:</p>
-                <input type="text" name="Serial Port" list="serialPorts" onInput={event => setSelectedActivePort((event.target as HTMLInputElement).value)} />
-                <datalist id="serialPorts">
+                <input type="text" name="Serial Port" list="activeSerialPorts" onInput={event => setSelectedActivePort((event.target as HTMLInputElement).value)} />
+                <datalist id="activeSerialPorts">
                     <For each={availablePortNames()}>
                         {(serialPort) => <option value={serialPort.name} /> }
                     </For>
@@ -33,8 +33,8 @@ const FlightViewer: Component = () => {
 
             <div class="flex">
                 <p>Test Port:</p>
-                <input type="text" name="Test Port" list="serialPorts" onInput={event => setSelectedTestPort((event.target as HTMLInputElement).value)} />
-                <datalist id="serialPorts">
+                <input type="text" name="Test Port" list="testSerialPorts" onInput={event => setSelectedTestPort((event.target as HTMLInputElement).value)} />
+                <datalist id="testSerialPorts">
                     <For each={availablePortNames()}>
                         {(serialPort) => <option value={serialPort.name} /> }
                     </For>

@@ -6,7 +6,7 @@ import { PacketData, SerialPortNames } from "../backend_interop/types";
 /**
  * The number of milliseconds to wait between refreshing the available serial ports and reading from the active port.
  */
- const REFRESH_AND_READ_INTERVAL_MILLISECONDS = 1000;
+const REFRESH_AND_READ_INTERVAL_MILLISECONDS = 1000;
 
 export type BackendInteropManagerContextValue = {
     availablePortNames: Accessor<SerialPortNames[]>,
@@ -34,10 +34,6 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
                 setAvailablePortNames(result.new_available_port_names);
             }
             if (result.parsed_packets) {
-                console.log("Parsed Packets:")
-                result.parsed_packets.forEach(element => {
-                    console.log(element);
-                });
                 setNewParsedPackets(pushParsedPackets(result.parsed_packets));
             }
         }, REFRESH_AND_READ_INTERVAL_MILLISECONDS);

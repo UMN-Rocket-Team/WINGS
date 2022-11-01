@@ -38,7 +38,7 @@ const ModalContext = createContext<ModalContextValue>({
 });
 
 export const ModalProvider: ParentComponent = (props): JSX.Element => {
-    const [modalComponent, setModalComponent] = createSignal<(() => JSX.Element) | null>(null);
+    const [modalComponent, setModalComponent] = createSignal<(() => JSX.Element) | undefined>(undefined);
 
     const context: ModalContextValue = {
         showModal: createShowModalFunction(setModalComponent),
