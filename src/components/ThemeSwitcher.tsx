@@ -5,7 +5,7 @@ const ThemeSwitcher: Component = () => {
     const { theme, setTheme }: ThemeContextValue = useTheme();
 
     return (
-        <button class="p-2 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded" 
+        <button class="p-2 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-200 border-rounded" 
                 onclick={() => setTheme(theme() === "light" ? "dark" : "light")}>
             {/* For some reason, when the theme is changed, a match is removed for long enough that the page is re-layed-out when the button does not have an icon */}
             {/* Workaround: place icons in a fixed-size container so no resize can occur */}

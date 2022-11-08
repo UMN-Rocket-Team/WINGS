@@ -1,13 +1,24 @@
 import { Component, createEffect, createSignal, For } from "solid-js";
-import { setActivePort, setTestPort } from "../backend_interop/api_calls";
+import { Dynamic } from "solid-js/web";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
+import DataTab from "./DataTab";
+import TestingTab from "./TestingTab";
 import ThemeSwitcher from "./ThemeSwitcher";
 
-const FlightViewer: Component = () => {
-    const { availablePortNames, newParsedPackets }: BackendInteropManagerContextValue = useBackendInteropManager();
+const tabNames: string[] = [
+    "Data",
+    "Testing"
+];
 
-    const [selectedActivePort, setSelectedActivePort] = createSignal<string>();
-    const [selectedTestPort, setSelectedTestPort] = createSignal<string>();
+const tabs: Component[] = [
+    DataTab,
+    TestingTab,
+];
+
+const FlightViewer: Component = () => {
+    const [selectedTabIndex, setSelectedTabIndex] = createSignal<number>(0);
+
+    const { newParsedPackets }: BackendInteropManagerContextValue = useBackendInteropManager();
 
     createEffect(() => {
         // TODO: when the newParsedPackets change, update the graphs with the new PacketData
@@ -16,31 +27,21 @@ const FlightViewer: Component = () => {
 
     return (
         <div class="flex flex-col p-4 gap-4 dark:bg-dark-700 h-full">
-            <div class="flex flex-row-reverse">
+            <nav class="flex p-2 justify-between drop-shadow-lightgray dark:drop-shadow-gray">
+                <div class="flex gap-2">
+                    <For each={tabNames}>
+                        {(tabName, index) => 
+                            <button data-index={index()} onClick={() => setSelectedTabIndex(index())}
+                                    class={`py-2 px-8 border-rounded border-0 text-base dark:text-white ${index() === selectedTabIndex() ? "bg-blue-400 dark:bg-blue-600" : "bg-transparent"} hover:bg-blue-400 hover:dark:bg-blue-600`}>
+                                        {tabName}
+                            </button>
+                        }
+                    </For>
+                </div>
                 <ThemeSwitcher />
-            </div>
+            </nav>
 
-            <div class="flex">
-                <p>Active Port:</p>
-                <input type="text" name="Serial Port" list="activeSerialPorts" onInput={event => setSelectedActivePort((event.target as HTMLInputElement).value)} />
-                <datalist id="activeSerialPorts">
-                    <For each={availablePortNames()}>
-                        {(serialPort) => <option value={serialPort.name} /> }
-                    </For>
-                </datalist>
-                <button onClick={() => setActivePort(selectedActivePort()!)} disabled={selectedActivePort() === undefined}>Connect</button>
-            </div>
-
-            <div class="flex">
-                <p>Test Port:</p>
-                <input type="text" name="Test Port" list="testSerialPorts" onInput={event => setSelectedTestPort((event.target as HTMLInputElement).value)} />
-                <datalist id="testSerialPorts">
-                    <For each={availablePortNames()}>
-                        {(serialPort) => <option value={serialPort.name} /> }
-                    </For>
-                </datalist>
-                <button onClick={() => setTestPort(selectedTestPort()!)} disabled={selectedTestPort() === undefined}>Connect</button>
-            </div>
+            <Dynamic component={tabs[selectedTabIndex()]} />
         </div>
     );
 };

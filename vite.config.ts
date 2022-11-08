@@ -6,11 +6,9 @@ export default defineConfig({
   plugins: [
     solidPlugin(),
     Unocss({ 
-      shortcuts: [
-        {
-          "form-element": "border border-transparent border-rd-2 px-4.8 py-2.4 text-4 font-medium duration-250 outline-none"
-        }
-      ]
+      rules: [
+        [/^drop-shadow-(\w+)$/, match => ({ "box-shadow": `0px 0px 0.5rem 0.25rem ${match[1]}` })],
+      ],
     }),
   ],
 

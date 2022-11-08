@@ -21,7 +21,7 @@ const Homepage: Component = () => {
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
                 <div class="flex gap-4 flex-col md:flex-row">
                     <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded"
-                            onClick={() => navigate("/newFlight", { replace: true })}>
+                            onClick={() => navigate("/newFlight")}>
                         {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Create New Flight
                     </button>
