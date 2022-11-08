@@ -32,7 +32,7 @@ const FlightViewer: Component = () => {
                     <For each={tabNames}>
                         {(tabName, index) => 
                             <button data-index={index()} onClick={() => setSelectedTabIndex(index())}
-                                    class={`py-2 px-8 border-rounded border-0 text-base dark:text-white ${index() === selectedTabIndex() ? "bg-blue-400 dark:bg-blue-600" : "bg-transparent"} hover:bg-blue-400 hover:dark:bg-blue-600`}>
+                                    class={`py-2 px-8 border-rounded border-0 text-base dark:text-white ${index() === selectedTabIndex() ? "bg-blue-600 text-white" : "bg-transparent"} hover:bg-blue-600 hover:text-white`}>
                                         {tabName}
                             </button>
                         }
