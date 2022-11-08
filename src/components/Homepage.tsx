@@ -3,6 +3,7 @@ import { Component } from "solid-js";
 import Credits from "./Credits";
 import { useModal } from "./ModalProvider";
 import ThemeSwitcher from "./ThemeSwitcher";
+import logo from "../assets/logo.png";
 
 const Homepage: Component = () => {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Homepage: Component = () => {
             </div>
             <div class="flex flex-col items-center ma py-8 px-16 gap-4 bg-gray-100 dark:bg-dark-800 border-rounded border-2 border-gray-200 dark:border-dark-900">
                 <div class="flex items-center justify-start gap-4">
-                    <img src="src/assets/logo.png" class="h-20"  alt="Wings Logo" />
+                    <img src={logo} class="h-20"  alt="Wings Logo" />
                     <span class="font-black text-5xl dark:text-white">Wings</span>
                 </div>
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
