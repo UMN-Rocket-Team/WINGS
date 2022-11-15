@@ -1,23 +1,21 @@
-import { Component, createEffect, createSignal, For } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { Component, createEffect } from "solid-js";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
 import DataTab from "./DataTab";
+import TabView from "./TabView";
 import TestingTab from "./TestingTab";
 import ThemeSwitcher from "./ThemeSwitcher";
-
-const tabNames: string[] = [
-    "Data",
-    "Testing"
-];
 
 const tabs: Component[] = [
     DataTab,
     TestingTab,
 ];
 
-const FlightViewer: Component = () => {
-    const [selectedTabIndex, setSelectedTabIndex] = createSignal<number>(0);
+const tabNames: string[] = [
+    "Data",
+    "Testing"
+];
 
+const FlightViewer: Component = () => {
     const { newParsedPackets }: BackendInteropManagerContextValue = useBackendInteropManager();
 
     createEffect(() => {
@@ -26,23 +24,9 @@ const FlightViewer: Component = () => {
     }, { defer: true });
 
     return (
-        <div class="flex flex-col p-4 gap-4 dark:bg-dark-700 h-full">
-            <nav class="flex p-2 justify-between drop-shadow-lightgray dark:drop-shadow-gray">
-                <div class="flex gap-2">
-                    <For each={tabNames}>
-                        {(tabName, index) => 
-                            <button data-index={index()} onClick={() => setSelectedTabIndex(index())}
-                                    class={`py-2 px-8 border-rounded border-0 text-base dark:text-white ${index() === selectedTabIndex() ? "bg-blue-600 text-white" : "bg-transparent"} hover:bg-blue-600 hover:text-white`}>
-                                        {tabName}
-                            </button>
-                        }
-                    </For>
-                </div>
-                <ThemeSwitcher />
-            </nav>
-
-            <Dynamic component={tabs[selectedTabIndex()]} />
-        </div>
+       <TabView tabs={tabs} tabNames={tabNames} navbarClasses="drop-shadow-lightgray dark:drop-shadow-gray">
+            <ThemeSwitcher />
+        </TabView>
     );
 };
 
