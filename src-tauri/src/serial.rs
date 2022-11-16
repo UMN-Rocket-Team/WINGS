@@ -8,7 +8,8 @@ pub struct SerialManager {
     pub available_port_names: Vec<SerialPortNames>,
 
     active_port: std::sync::Mutex<Option<Box<dyn serialport::SerialPort>>>,
-    test_port: std::sync::Mutex<Option<Box<dyn serialport::SerialPort>>>,
+    test_write_port: std::sync::Mutex<Option<Box<dyn serialport::SerialPort>>>,
+    test_read_port: std::sync::Mutex<Option<Box<dyn serialport::SerialPort>>>,
     
 }
 
@@ -21,6 +22,15 @@ pub struct SerialPortNames {
     name: String,
     manufacturer_name: Option<String>,
     product_name: Option<String>,
+
+}
+
+#[derive(serde::Serialize)]
+pub struct RadioTestResult {
+
+    packets_attempted: u32,
+    packets_written: u32,
+    packets_read: u32,
 
 }
 
@@ -52,8 +62,12 @@ impl SerialManager {
         Self::set_port(&mut self.active_port, port_name)
     }
 
-    pub fn set_test_port(&mut self, port_name: &str) -> Result<()> {
-        Self::set_port(&mut self.test_port, port_name)
+    pub fn set_test_write_port(&mut self, port_name: &str) -> Result<()> {
+        Self::set_port(&mut self.test_write_port, port_name)
+    }
+
+    pub fn set_test_read_port(&mut self, port_name: &str) -> Result<()> {
+        Self::set_port(&mut self.test_read_port, port_name)
     }
 
     fn set_port(port_mutex: &mut std::sync::Mutex<Option<Box<dyn serialport::SerialPort>>>, port_name: &str) -> Result<()> {
@@ -75,25 +89,53 @@ impl SerialManager {
 
         *port = Some(serialport::new(port_name, 9600).open()?);
 
+        // Workaround issue where first packet sent to test port is not received due to a timeout
+        port.as_deref_mut().unwrap().set_timeout(std::time::Duration::new(1, 0))?;
+
         Ok(())
     }
 
-    pub fn write_test_packet_to_test_port(&self) -> Result<()> {
-        let mut test_port_optional= match self.test_port.lock() {
+    pub fn write_test_packet_to_test_port(&self) -> Result<RadioTestResult> {
+        let mut test_write_port_optional = match self.test_write_port.lock() {
             Ok(test_port) => test_port,
             Err(_) => bail!("Failed to lock mutex!"),
         };
 
-        if test_port_optional.is_none() {
-            return Ok(());
+        let packet_count = 1;
+
+        if test_write_port_optional.is_none() {
+            return Ok(RadioTestResult { packets_attempted: packet_count, packets_written: 0, packets_read: 0 });
         }
 
-        let test_port = test_port_optional.as_mut().unwrap();
+        let test_write_port = test_write_port_optional.as_mut().unwrap();
 
-        test_port.write(&u32::to_le_bytes(42))?;
-        test_port.write(&u32::to_le_bytes(0xFFFFFFFF))?;
+        test_write_port.write(&u32::to_le_bytes(42))?;
+        test_write_port.write(&u32::to_le_bytes(0xFFFFFFFF))?;
 
-        return Ok(())
+        let packets_written = packet_count;
+
+        let mut test_read_port_optional = match self.test_read_port.lock() {
+            Ok(test_port) => test_port,
+            Err(_) => bail!("Failed to lock mutex!"),
+        };
+
+        if test_read_port_optional.is_none() {
+            return Ok(RadioTestResult { packets_attempted: packet_count, packets_written: packets_written, packets_read: 0 });
+        }
+
+        let test_read_port = test_read_port_optional.as_mut().unwrap();
+
+        let mut buffer = [0; 5];
+
+        let packets_read = match test_read_port.read_exact(&mut buffer) {
+            Ok(_) => 1,
+            Err(error) => {
+                println!("{}", error.to_string());
+                0
+            },
+        };
+
+        Ok(RadioTestResult { packets_attempted: packet_count, packets_written: packets_written, packets_read: packets_read })
     }
 
     pub fn read_from_active_port(&self, callback: &mut dyn FnMut(&[u8])) -> Result<()> {

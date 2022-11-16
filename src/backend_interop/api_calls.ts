@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { Packet, PacketFieldValue, PacketStructure, RefreshAndReadResult, RustPacket, RustRefreshAndReadResult } from "./types";
+import { Packet, PacketFieldValue, PacketStructure, RadioTestResult, RefreshAndReadResult, RustPacket, RustRefreshAndReadResult } from "./types";
 
 export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshAndReadResult> => {
     const { new_available_port_names, parsed_packets } = await invoke<RustRefreshAndReadResult>("refresh_available_ports_and_read_active_port");
@@ -20,9 +20,24 @@ export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshA
 
 export const setActivePort = async (portName: string) => await invoke("set_active_port", { portName: portName });
 
-export const setTestPort = async (portName: string) => await invoke("set_test_port", { portName: portName });
+let testWritePort: string | null;
+let testReadPort: string | null;
 
-export const writeTestPacketToTestPort = async () => await invoke("write_test_packet_to_test_port");
+export const setTestWritePort = async (portName: string) => {
+    await invoke("set_test_write_port", { portName: portName });
+    testWritePort = portName;
+}
+
+export const getTestWritePort = () => testWritePort;
+
+export const setTestReadPort = async (portName: string) => {
+    await invoke("set_test_read_port", { portName: portName });
+    testReadPort = portName;
+}
+
+export const getTestReadPort = () => testReadPort;
+
+export const testRadios: () => Promise<RadioTestResult> = async () => await invoke("test_radios");
 
 export const registerPacketStructure = async (packetStructure: PacketStructure) => 
     await invoke("register_packet_structure", { packetStructure: packetStructure });

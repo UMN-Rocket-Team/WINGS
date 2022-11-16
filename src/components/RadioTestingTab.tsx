@@ -1,34 +1,78 @@
-import { Component, createEffect, createSignal, For } from "solid-js";
-import { setActivePort, setTestPort } from "../backend_interop/api_calls";
+import { batch, Component, createEffect, createSignal, For, onCleanup, untrack } from "solid-js";
+import { getTestReadPort, getTestWritePort, setTestReadPort, setTestWritePort, testRadios } from "../backend_interop/api_calls";
+import { RadioTestResult } from "../backend_interop/types";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
 
 const RadioTestingTab: Component = () => {
     const { availablePortNames }: BackendInteropManagerContextValue = useBackendInteropManager();
 
     const [isSimulating, setSimulating] = createSignal<boolean>(false);
+    const [testInterval, setTestInterval] = createSignal<number>(500);
     const [secondsElapsed, setSecondsElapsed] = createSignal<number>(0);
+    const [packetsAttemptedCount, setPacketsAttemptedCount] = createSignal<number>(0);
     const [packetsSentCount, setPacketsSentCount] = createSignal<number>(0);
     const [packetsRecievedCount, setPacketsRecievedCount] = createSignal<number>(0);
     const [dataLossPercent, setDataLossPercent] = createSignal<number>(0);
 
-    const [selectedActivePort, setSelectedActivePort] = createSignal<string>();
-    const [selectedTestPort, setSelectedTestPort] = createSignal<string>();
+    const [selectedTestWritePort, setSelectedTestWritePort] = createSignal<string | null>(getTestWritePort());
+    const [selectedTestReadPort, setSelectedTestReadPort] = createSignal<string | null>(getTestReadPort());
 
-    let secondsElapsedIntervalId: number | undefined;
+    let testTimoutId: number | undefined;
+
+    const testRadiosAndUpdateState = async () => {
+        const test_results: RadioTestResult = await testRadios();
+        batch(() => {
+            setSecondsElapsed(secondsElapsed() + testInterval() / 1000);
+            setPacketsAttemptedCount(packetsAttemptedCount() + test_results.packets_attempted);
+            setPacketsSentCount(packetsSentCount() + test_results.packets_written);
+            setPacketsRecievedCount(packetsRecievedCount() + test_results.packets_read);
+            setDataLossPercent(100 * (packetsRecievedCount() == 0 ? 1 : (1 - packetsRecievedCount() / packetsAttemptedCount())));
+        });
+
+        testTimoutId = window.setTimeout(testRadiosAndUpdateState, testInterval());
+    };
+
+    onCleanup(() => {
+        if (testTimoutId !== undefined) {
+            window.clearTimeout(testTimoutId);
+        }
+    });
 
     createEffect(() => {
         if (isSimulating()) {
-            secondsElapsedIntervalId = window.setInterval(() => {
-                setSecondsElapsed(secondsElapsed() + 1);
-            }, 1000);
-            setSecondsElapsed(0);
-            setPacketsSentCount(0);
-            setPacketsRecievedCount(0);
-            setDataLossPercent(0);
+            testTimoutId = window.setTimeout(testRadiosAndUpdateState, untrack(testInterval));
+            batch(() => {
+                setSecondsElapsed(0);
+                setPacketsAttemptedCount(0);
+                setPacketsSentCount(0);
+                setPacketsRecievedCount(0);
+                setDataLossPercent(0);
+            })
         } else {
-            if (secondsElapsedIntervalId) {
-                window.clearInterval(secondsElapsedIntervalId);
+            if (testTimoutId) {
+                window.clearTimeout(testTimoutId);
             }
+        }
+    }, { defer: true });
+
+    createEffect(() => {
+        if (selectedTestReadPort() != null) {
+            setTestReadPort(selectedTestReadPort()!)
+        }
+    }, { defer: true });
+
+    createEffect(() => {
+        if (selectedTestWritePort() != null) {
+            setTestWritePort(selectedTestWritePort()!)
+        }
+    }, { defer: true });
+
+    createEffect(() => {
+        if (untrack(isSimulating)) {
+            if (testTimoutId) {
+                window.clearTimeout(testTimoutId);
+            }
+            testTimoutId = window.setTimeout(testRadiosAndUpdateState, testInterval());
         }
     }, { defer: true });
     
@@ -40,43 +84,44 @@ const RadioTestingTab: Component = () => {
                 <span class="dark:text-white">Packets to simulate:</span>
                 <div class="flex gap-2">
                     <label for="interval-input" class="dark:text-white">Interval:</label>
-                    <input type="number" value={500}></input>
+                    <input type="number" value={500} onChange={(e) => setTestInterval(+(e.target as HTMLInputElement).value)} />
                     <span class="dark:text-white">milliseconds</span>
                 </div>
 
                 <div class="flex gap-2">
                     <label for="sendingRadioPortInput" class="dark:text-white">Sending Radio Port:</label>
-                    <input type="text" name="Serial Port" id="sendingRadioPortInput" list="activeSerialPorts" onInput={event => setSelectedActivePort((event.target as HTMLInputElement).value)} />
+                    <input type="text" name="Serial Port" id="sendingRadioPortInput" list="activeSerialPorts" 
+                            onInput={event => setSelectedTestWritePort((event.target as HTMLInputElement).value)} value={selectedTestWritePort() ?? ""} />
                     <datalist id="activeSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name} /> }
                         </For>
                     </datalist>
-                    <button onClick={() => setActivePort(selectedActivePort()!)} disabled={selectedActivePort() === undefined}>Connect</button>
                 </div>
 
                 <div class="flex gap-2">
                     <label for="recievingRadioPortInput" class="dark:text-white">Reciving Radio Port:</label>
-                    <input type="text" name="Test Port" id="recievingRadioPortInput" list="testSerialPorts" onInput={event => setSelectedTestPort((event.target as HTMLInputElement).value)} />
+                    <input type="text" name="Test Port" id="recievingRadioPortInput" list="testSerialPorts" 
+                            onInput={event => setSelectedTestReadPort((event.target as HTMLInputElement).value)} value={selectedTestReadPort() ?? ""} />
                     <datalist id="testSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name} /> }
                         </For>
                     </datalist>
-                    <button onClick={() => setTestPort(selectedTestPort()!)} disabled={selectedTestPort() === undefined}>Connect</button>
                 </div>
 
-                <button onClick={() => setSimulating(!isSimulating())}>{isSimulating() ? "Stop Simulation" : "Start Simulation"}</button>
+                <button onClick={() => setSimulating(!isSimulating())} class={`py-2 px-8 border-rounded border-0 ${isSimulating() ? "bg-red" : "bg-green"}`}>{isSimulating() ? "Stop Test" : "Start Test"}</button>
             </div>
 
             <div class="flex flex-col gap-1 dark:text-white">
                 <h1 class="my-0.5">Results</h1>
-                <span>Elapsed time: {secondsElapsed()} second{secondsElapsed() == 1 ? "" : "s"}</span>
+                <span>Elapsed time: {secondsElapsed().toFixed(2)} second{secondsElapsed() == 1 ? "" : "s"}</span>
+                <span>Packets attempted: {packetsAttemptedCount()}</span>
                 <span>Packets sent: {packetsSentCount()}</span>
                 <span>Packets received: {packetsRecievedCount()}</span>
                 <div class="flex gap-1 items-center">
                     <span>Data loss:</span>
-                    <span class={`border-rounded p-1 ${secondsElapsed() != 0 ? (dataLossPercent() == 0 ? "bg-green" : (dataLossPercent() < 20 ? "bg-orange" : "bg-red")) : "bg-gray-300 dark:bg-gray-500"}`}>{dataLossPercent()}%</span>
+                    <span class={`border-rounded p-1 ${secondsElapsed() != 0 ? (dataLossPercent() == 0 ? "bg-green" : (dataLossPercent() < 20 ? "bg-orange" : "bg-red")) : "bg-gray-300 dark:bg-gray-500"}`}>{dataLossPercent().toFixed(2)}%</span>
                 </div>
             </div>
         </div>

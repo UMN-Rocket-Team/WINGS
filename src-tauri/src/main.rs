@@ -7,7 +7,7 @@ mod serial;
 mod packet_parser;
 
 use packet_parser::{Packet, PacketStructure, PacketField, PacketDelimiter, PacketMetadataType, PacketFieldType};
-use serial::{SerialManager, SerialPortNames};
+use serial::{SerialManager, SerialPortNames, RadioTestResult};
 use crate::packet_parser::PacketParser;
 
 #[derive(Default)]
@@ -91,8 +91,6 @@ async fn refresh_available_ports_and_read_active_port(serial_manager_state: taur
         result.parsed_packets = Some(packet_parser.parse_packets());
     }
 
-    println!("{:#?}", result);
-
     Ok(result)
 }
 
@@ -102,16 +100,21 @@ fn set_active_port(serial_manager_state: tauri::State<'_, SerialManagerState>, p
 }
 
 #[tauri::command]
-fn set_test_port(serial_manager_state: tauri::State<'_, SerialManagerState>, port_name: &str) -> Result<(), String> {
-    use_usb_manager(serial_manager_state, &mut |usb_manager| usb_manager.set_test_port(port_name))
+fn set_test_write_port(serial_manager_state: tauri::State<'_, SerialManagerState>, port_name: &str) -> Result<(), String> {
+    use_usb_manager(serial_manager_state, &mut |usb_manager| usb_manager.set_test_write_port(port_name))
 }
 
 #[tauri::command]
-fn write_test_packet_to_test_port(serial_manager_state: tauri::State<'_, SerialManagerState>) -> Result<(), String> {
+fn set_test_read_port(serial_manager_state: tauri::State<'_, SerialManagerState>, port_name: &str) -> Result<(), String> {
+    use_usb_manager(serial_manager_state, &mut |usb_manager| usb_manager.set_test_read_port(port_name))
+}
+
+#[tauri::command]
+fn test_radios(serial_manager_state: tauri::State<'_, SerialManagerState>) -> Result<RadioTestResult, String> {
     use_usb_manager(serial_manager_state, &mut |usb_manager| usb_manager.write_test_packet_to_test_port())
 }
 
-fn use_usb_manager(serial_manager_state: tauri::State<'_, SerialManagerState>, callback: &mut dyn FnMut(&mut SerialManager) -> Result<(), anyhow::Error>) -> Result<(), String> {
+fn use_usb_manager<ReturnType>(serial_manager_state: tauri::State<'_, SerialManagerState>, callback: &mut dyn FnMut(&mut SerialManager) -> Result<ReturnType, anyhow::Error>) -> Result<ReturnType, String> {
     let serial_manager_mutex = serial_manager_state.serial_manager.lock();
 
     if serial_manager_mutex.is_err() {
@@ -123,7 +126,7 @@ fn use_usb_manager(serial_manager_state: tauri::State<'_, SerialManagerState>, c
     let result = callback(serial_manager);
 
     match result {
-        Ok(_) => Ok(()),
+        Ok(return_value) => Ok(return_value),
         Err(error) => Err(error.to_string()),
     }
 }
@@ -151,7 +154,7 @@ async fn register_packet_structure(packet_parser_state: tauri::State<'_, PacketP
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![refresh_available_ports_and_read_active_port, set_active_port, 
-            set_test_port, register_packet_structure, write_test_packet_to_test_port])
+            set_test_write_port, set_test_read_port, register_packet_structure, test_radios])
         .manage(SerialManagerState::default())
         .manage(PacketParserState::default())
         .run(tauri::generate_context!())

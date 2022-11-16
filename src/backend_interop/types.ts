@@ -110,3 +110,9 @@ export type PacketDelimiter = {
 // export type PacketGap = {
 //     size: number,
 // };
+
+export type RadioTestResult = {
+    packets_attempted: number;
+    packets_written: number;
+    packets_read: number;
+};

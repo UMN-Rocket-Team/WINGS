@@ -1,5 +1,5 @@
 import { Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext } from "solid-js";
-import { refreshAvailablePortsAndReadActivePort, writeTestPacketToTestPort } from "../backend_interop/api_calls";
+import { refreshAvailablePortsAndReadActivePort } from "../backend_interop/api_calls";
 import { pushUnparsedPackets as pushParsedPackets } from "../backend_interop/buffers";
 import { PacketData, SerialPortNames } from "../backend_interop/types";
 
@@ -26,8 +26,6 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
 
     onMount(async () => {
         refreshIntervalId = window.setInterval(async (): Promise<void> => {
-            await writeTestPacketToTestPort();
-
             const result = await refreshAvailablePortsAndReadActivePort();
             
             if (result.new_available_port_names) {
