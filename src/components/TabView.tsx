@@ -1,5 +1,4 @@
 import { Component, createSignal, For, ParentProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
 
 export type TabViewProps = {
     tabs: Component[];
@@ -10,6 +9,8 @@ export type TabViewProps = {
 
 const TabView: Component<ParentProps<TabViewProps>> = (props) => {
     const [selectedTabIndex, setSelectedTabIndex] = createSignal<number>(0);
+
+    const tabsHtml = props.tabs.map(tab => tab({}));
 
     return (
         <div class={`flex flex-grow flex-col p-4 gap-4 dark:bg-dark-700 ${props.containerClasses}`}>
@@ -28,7 +29,7 @@ const TabView: Component<ParentProps<TabViewProps>> = (props) => {
             </nav>
 
             <div class="flex flex-grow">
-                <Dynamic component={props.tabs[selectedTabIndex()]} />
+                {tabsHtml[selectedTabIndex()]}
             </div>
         </div>
     );
