@@ -40,6 +40,10 @@ const RadioTestingTab: Component = () => {
 
     createEffect(() => {
         if (isSimulating()) {
+            // Note: testInterval can be invalid (0) if the input field is empty
+            if (untrack(testInterval) < 100) {
+                setTestInterval(100);
+            }
             testTimoutId = window.setTimeout(testRadiosAndUpdateState, untrack(testInterval));
             batch(() => {
                 setSecondsElapsed(0);
@@ -66,15 +70,6 @@ const RadioTestingTab: Component = () => {
             setTestWritePort(selectedTestWritePort()!)
         }
     }, { defer: true });
-
-    createEffect(() => {
-        if (untrack(isSimulating)) {
-            if (testTimoutId) {
-                window.clearTimeout(testTimoutId);
-            }
-            testTimoutId = window.setTimeout(testRadiosAndUpdateState, testInterval());
-        }
-    }, { defer: true });
     
     return (
         <div class="flex gap-4">
@@ -84,16 +79,42 @@ const RadioTestingTab: Component = () => {
                 <span class="dark:text-white">Packets to simulate:</span>
                 <div class="flex gap-2">
                     <label for="interval-input" class="dark:text-white">Interval:</label>
-                    <input type="number" value={500} onChange={(e) => setTestInterval(+(e.target as HTMLInputElement).value)} />
+                    <input type="number" onBeforeInput={e => {
+                        if (e.data?.match(/[^0-9]/) ?? false) {
+                            // Deny any non-number characters
+                            e.preventDefault();
+                            return;
+                        }
+                    }} onInput={e => {
+                        const value = (e.target as HTMLInputElement).value;
+                        if (value !== "") {
+                            setTestInterval(+value);    
+                        } else {
+                            setTestInterval(0);
+                            // Unsync the value of the input field from the state temporarily with an invalid value (0)
+                            // so that when onChange is called when the value is committed, it will be reset to the minimum;
+                            // this allows the user to easily replace the first digit in the number
+                            (e.target as HTMLInputElement).value = "";
+                        }
+                    }}
+                    onChange={e => {
+                        const value = +(e.target as HTMLInputElement).value;
+                        if (value < 100) {
+                            // Reset the input to the default minimum value
+                            setTestInterval(100);
+                        }
+                    }}
+                    value={testInterval()} disabled={isSimulating()} min={100} step={100} />
                     <span class="dark:text-white">milliseconds</span>
                 </div>
 
                 <div class="flex gap-2">
                     <label for="sendingRadioPortInput" class="dark:text-white">Sending Radio Port:</label>
                     <input type="text" name="Serial Port" id="sendingRadioPortInput" list="activeSerialPorts" 
-                            onInput={event => setSelectedTestWritePort((event.target as HTMLInputElement).value)} value={selectedTestWritePort() ?? ""} />
+                            onInput={event => setSelectedTestWritePort((event.target as HTMLInputElement).value)} value={selectedTestWritePort() ?? ""}
+                            disabled={isSimulating()} />
                     <datalist id="activeSerialPorts">
-                        <For each={availablePortNames()}>
+                        <For each={availablePortNames().filter(names => names.name !== selectedTestReadPort())}>
                             {(serialPort) => <option value={serialPort.name} /> }
                         </For>
                     </datalist>
@@ -102,9 +123,10 @@ const RadioTestingTab: Component = () => {
                 <div class="flex gap-2">
                     <label for="recievingRadioPortInput" class="dark:text-white">Reciving Radio Port:</label>
                     <input type="text" name="Test Port" id="recievingRadioPortInput" list="testSerialPorts" 
-                            onInput={event => setSelectedTestReadPort((event.target as HTMLInputElement).value)} value={selectedTestReadPort() ?? ""} />
+                            onInput={event => setSelectedTestReadPort((event.target as HTMLInputElement).value)} value={selectedTestReadPort() ?? ""}
+                            disabled={isSimulating()} />
                     <datalist id="testSerialPorts">
-                        <For each={availablePortNames()}>
+                        <For each={availablePortNames().filter(names => names.name !== selectedTestWritePort())}>
                             {(serialPort) => <option value={serialPort.name} /> }
                         </For>
                     </datalist>
