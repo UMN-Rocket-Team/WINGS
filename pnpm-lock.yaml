@@ -5,6 +5,7 @@ specifiers:
   '@tauri-apps/api': ^1.2.0
   '@tauri-apps/cli': ^1.2.0
   '@types/node': ^18.11.9
+  chart.js: ^4.0.1
   solid-js: ^1.6.2
   typescript: ^4.9.3
   unocss: ^0.45.30
@@ -14,6 +15,7 @@ specifiers:
 dependencies:
   '@solidjs/router': 0.5.0_solid-js@1.6.2
   '@tauri-apps/api': 1.2.0
+  chart.js: 4.0.1
   solid-js: 1.6.2
 
 devDependencies:
@@ -822,6 +824,11 @@ packages:
       escape-string-regexp: 1.0.5
       supports-color: 5.5.0
     dev: true
+
+  /chart.js/4.0.1:
+    resolution: {integrity: sha512-5/8/9eBivwBZK81mKvmIwTb2Pmw4D/5h1RK9fBWZLLZ8mCJ+kfYNmV9rMrGoa5Hgy2/wVDBMLSUDudul2/9ihA==}
+    engines: {pnpm: ^7.0.0}
+    dev: false
 
   /chokidar/3.5.3:
     resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
