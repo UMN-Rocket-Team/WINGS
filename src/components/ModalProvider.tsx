@@ -30,18 +30,18 @@ export type ModalContextValue = {
      * The given component is constructed using the given child component properties. Metadata is
      * used for things other than component creation.
      */
-    showModal: <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, modalProps: BaseType & ModalMetadata<ResultType>) => void, 
+    showBroadcastModal: <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, modalProps: BaseType & ModalMetadata<ResultType>) => void,
 };
 
 const ModalContext = createContext<ModalContextValue>({
-    showModal: (): never => { throw new Error("Cannot show modal in default ModalContext implementation!"); },
+    showBroadcastModal: (): never => { throw new Error("Cannot show modal in default ModalContext implementation!"); },
 });
 
 export const ModalProvider: ParentComponent = (props): JSX.Element => {
     const [modalComponent, setModalComponent] = createSignal<(() => JSX.Element) | undefined>(undefined);
 
     const context: ModalContextValue = {
-        showModal: createShowModalFunction(setModalComponent),
+        showBroadcastModal: createShowModalFunction(setModalComponent),
     };
 
     return (
