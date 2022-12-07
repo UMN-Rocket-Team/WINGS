@@ -1,4 +1,4 @@
-import {Component, For} from "solid-js";
+import {Component, createSignal, For} from "solid-js";
 // import {BackendInteropManagerContextValue, useBackendInteropManager} from "./BackendInteropManagerProvider";
 import {PacketStructure, SerialPortNames} from "../backend_interop/types";
 import BroadcastModal from "./BroadcastModal";
@@ -10,7 +10,8 @@ import FieldsBox, {FieldsBoxProps} from "./FieldsBox";
 import {createStore} from "solid-js/store";
 
 const DataTab: Component = () => {
-    const { showBroadcastModal } = useModal();
+    const { showModal } = useModal();
+    // const connectionState = createSignal(true);
 
     // const { availablePortNames }: BackendInteropManagerContextValue = useBackendInteropManager();
     const sampleSerialPortNames: SerialPortNames[] = [
@@ -37,8 +38,8 @@ const DataTab: Component = () => {
     const sampleFieldBoxes: FieldsBoxProps[] = [
         {
             fieldsInPackets: [
-                {packetStructure: samplePacketStructures[0], fieldInd: 0},
-                {packetStructure: samplePacketStructures[1], fieldInd: 0}
+                {packetStructure: samplePacketStructures[0], fieldIndex: 0},
+                {packetStructure: samplePacketStructures[1], fieldIndex: 0}
             ]
         }
     ]
@@ -66,23 +67,24 @@ const DataTab: Component = () => {
                         }
                     </For>
 
-                    {/*add button*/}
+                    {/*add box button*/}
                     <button class="p-2" onClick={() => setFieldBoxes([...fieldBoxes, sampleFieldBoxes[0]])}>+</button>
                 </div>
             </div>
 
             {/*bottom bar*/}
-            <footer class="flex">
+            <footer class="flex p-2 bg-gray">
                 <div class="flex w-2xl">
+                    <p>[Back button icon]</p>
                     <p class="dark:text-white">Serial Port:</p>
-                    <input list="dataSerialPorts" name="Serial Port:"/>
+                    <input list="dataSerialPorts" name="Serial Port :"/>
                     <datalist id="dataSerialPorts">
                         <For each={sampleSerialPortNames}>
                             {(serialPort) => <option value={serialPort.name} /> }
                         </For>
                     </datalist>
 
-                    <p>[Connection State]</p>
+                    <button>Connect/Disconnect</button>
                 </div>
 
                 <div class="flex w-2xl">
@@ -90,7 +92,7 @@ const DataTab: Component = () => {
                 </div>
 
                 <div class="flex w-2xl">
-                    <button onClick={() => showBroadcastModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>
+                    <button onClick={() => showModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>
                     <button>Save</button>
                     <button>Upload</button>
                 </div>
