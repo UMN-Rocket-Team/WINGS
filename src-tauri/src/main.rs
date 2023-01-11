@@ -151,10 +151,33 @@ async fn register_packet_structure(packet_parser_state: tauri::State<'_, PacketP
     }
 }
 
+#[tauri::command]
+async fn set_field_name(packet_parser_state: tauri::State<'_, PacketParserState>, packet_structure_id: usize, field_index: usize, name: &str) -> Result<(), String> {
+    let packet_parser_result = packet_parser_state.packet_parser.lock();
+    let mut packet_parser = match packet_parser_result {
+        Ok(packet_parser) => packet_parser,
+        Err(error) => return Err(error.to_string()),
+    };
+
+    Ok(packet_parser.set_field_name(packet_structure_id, field_index, name))
+}
+
+#[tauri::command]
+async fn set_field_type(packet_parser_state: tauri::State<'_, PacketParserState>, packet_structure_id: usize, field_index: usize, r#type: PacketFieldType) -> Result<(), String> {
+    let packet_parser_result = packet_parser_state.packet_parser.lock();
+    let mut packet_parser = match packet_parser_result {
+        Ok(packet_parser) => packet_parser,
+        Err(error) => return Err(error.to_string()),
+    };
+
+    Ok(packet_parser.set_field_type(packet_structure_id, field_index, r#type))
+}
+
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![refresh_available_ports_and_read_active_port, set_active_port, 
-            set_test_write_port, set_test_read_port, register_packet_structure, test_radios])
+            set_test_write_port, set_test_read_port, register_packet_structure, test_radios, set_field_name, set_field_type])
         .manage(SerialManagerState::default())
         .manage(PacketParserState::default())
         .run(tauri::generate_context!())

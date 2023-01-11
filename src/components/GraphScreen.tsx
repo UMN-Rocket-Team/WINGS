@@ -1,5 +1,5 @@
 import { Component, createSignal, For } from "solid-js";
-import SolidChart from "./SolidChart";
+import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 
 type PacketFieldIds = {
     packetId: number;
@@ -7,9 +7,10 @@ type PacketFieldIds = {
 };
 
 const GraphScreen: Component = () => {
+    const { packetStructures } = useBackendInteropManager();
+
     const [packets, setPackets] = createSignal<PacketFieldIds[]>([
         { packetId: 0, fieldIndex: 0 },
-        { packetId: -100, fieldIndex: 99 },
     ]);
 
     return (
@@ -17,12 +18,11 @@ const GraphScreen: Component = () => {
             <For each={packets()}>
                 {(ids) =>
                     <div class="flex">
-                        <span>{ids.packetId}</span>
-                        <span>{ids.fieldIndex}</span>
+                        <span>{packetStructures[ids.packetId].name}</span>
+                        <span>{packetStructures[ids.packetId].fields[ids.fieldIndex].name}</span>
                     </div>
                 }
             </For>
-            <SolidChart />
         </div>
     );
 };

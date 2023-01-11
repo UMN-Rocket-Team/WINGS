@@ -130,6 +130,14 @@ impl PacketParser {
         packets
     }
 
+    pub fn set_field_name(&mut self, packet_structure_id: usize, field_index: usize, name: &str) {
+        self.packet_structures[packet_structure_id].fields[field_index].name = name.to_string();
+    }
+
+    pub fn set_field_type(&mut self, packet_structure_id: usize, field_index: usize, r#type: PacketFieldType) {
+        self.packet_structures[packet_structure_id].fields[field_index].r#type = r#type;
+    }
+
 }
 
 fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: &Vec<u8>) -> bool {

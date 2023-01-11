@@ -1,17 +1,20 @@
 import { Component, createEffect } from "solid-js";
 import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
 import DataTab from "./DataTab";
+import PacketsTab from "./PacketsTab";
 import TabView from "./TabView";
 import TestingTab from "./TestingTab";
 import ThemeSwitcher from "./ThemeSwitcher";
 
 const tabs: Component[] = [
     DataTab,
+    PacketsTab,
     TestingTab,
 ];
 
 const tabNames: string[] = [
     "Data",
+    "Packets",
     "Testing"
 ];
 

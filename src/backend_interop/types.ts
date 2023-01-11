@@ -84,21 +84,21 @@ export type PacketField = {
 };
 
 export enum PacketFieldType {
-    UnsignedByte,
-    SignedByte,
-    UnsignedShort,
-    SignedShort,
-    UnsignedInteger,
-    SignedInteger,
-    UnsignedLong,
-    SignedLong,
-    Float,
-    Double
+    UnsignedByte = "Unsigned Byte",
+    SignedByte = "Signed Byte",
+    UnsignedShort = "Unsigned Short",
+    SignedShort = "Signed Short",
+    UnsignedInteger = "Unsigned Integer",
+    SignedInteger = "Signed Integer",
+    UnsignedLong = "Unsigned Long",
+    SignedLong = "Signed Long",
+    Float = "Float",
+    Double = "Double"
 }
 
 export enum PacketMetadataType {
-    None,
-    Timestamp,
+    None = "None",
+    Timestamp = "Timestamp",
 }
 
 export type PacketDelimiter = {
@@ -107,9 +107,9 @@ export type PacketDelimiter = {
     offsetInPacket: number,
 };
 
-// export type PacketGap = {
-//     size: number,
-// };
+export type PacketGap = {
+    size: number,
+};
 
 export type RadioTestResult = {
     packets_attempted: number;
