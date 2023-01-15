@@ -2,6 +2,7 @@ import {ModalProps} from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import {For, JSX} from "solid-js";
 import {FieldInPacket, FieldsBoxProps} from "./FieldsBox";
+import SolidChart from "./SolidChart";
 
 const ExpandedFieldsModal = (props: ModalProps<FieldsBoxProps>): JSX.Element => {
     return (
@@ -11,7 +12,7 @@ const ExpandedFieldsModal = (props: ModalProps<FieldsBoxProps>): JSX.Element => 
                     {(fieldInPacket: FieldInPacket) =>
                         <div class="bg-red p-2">
                             <p>{fieldInPacket.packetStructure.name} {fieldInPacket.packetStructure.fields[fieldInPacket.fieldIndex].name}</p>
-                            <h2>[Insert graph here]</h2>
+                            <SolidChart/>
                         </div>
                     }
                 </For>
