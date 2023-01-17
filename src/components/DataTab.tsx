@@ -4,6 +4,7 @@ import BroadcastModal from "./BroadcastModal";
 import {useModal} from "./ModalProvider";
 import FieldsPlayground from "./FieldsPlayground";
 import logo from "../assets/logo.png";
+import UploadModal from "./UploadModal";
 
 const DataTab: Component = () => {
     const { showModal } = useModal();
@@ -21,7 +22,7 @@ const DataTab: Component = () => {
         <div class="flex flex-col flex-grow gap-4 dark:text-white">
             <FieldsPlayground></FieldsPlayground>
 
-            {/*bottom bar (Actions bar)*/}
+            {/*Actions bar*/}
             <footer class="flex p-2 gap-10 bg-gray">
                 <div class="flex">
                     <a href="/">
@@ -38,14 +39,12 @@ const DataTab: Component = () => {
                     <button>Connect/Disconnect</button>
                 </div>
 
-                <div class="flex">
-                    <p class="m-0">Packets Received: {packetsReceived}</p>
-                </div>
+                <p class="m-0">Packets Received: {packetsReceived}</p>
 
-                <div class="flex">
+                <div class="flex gap-1">
                     <button onClick={() => showModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>
                     <button>Save</button>
-                    <button>Upload</button>
+                    <button onClick={() => showModal<{}, {}>(UploadModal, {})}>Upload</button>
                 </div>
             </footer>
         </div>
