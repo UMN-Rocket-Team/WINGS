@@ -1,7 +1,7 @@
 import {Component, For} from "solid-js";
 import {PacketStructure} from "../backend_interop/types";
 import PacketTab from "./PacketTab";
-import FieldsBox, {FieldsBoxProps} from "./FieldsBox";
+import FieldsView, {FieldsViewState} from "./FieldsView";
 import {createStore} from "solid-js/store";
 
 const samplePacketStructures: PacketStructure[] = [
@@ -20,22 +20,28 @@ const samplePacketStructures: PacketStructure[] = [
     }
 ]
 
-const sampleFieldBoxes: FieldsBoxProps[] = [
+const sampleViewStates: FieldsViewState[] = [
     {
         fieldsInPackets: [
             {packetStructure: samplePacketStructures[0], fieldIndex: 0},
             {packetStructure: samplePacketStructures[1], fieldIndex: 0}
         ]
-    }
+    },
+    {fieldsInPackets: []},
+    {fieldsInPackets: []}
 ]
 
 const FieldsPlayground: Component = () => {
     // initial value for sample testing
-    const [fieldBoxes, setFieldBoxes] = createStore<FieldsBoxProps[]>(sampleFieldBoxes);
+    const [viewStates, setViewStates] = createStore<FieldsViewState[]>(sampleViewStates);
+
+    const deleteFieldView = (fieldsViewStateToDelete: FieldsViewState) => {
+        setViewStates(viewStates.filter(fieldsInView => fieldsInView !== fieldsViewStateToDelete))
+    }
 
     return (
         <div class="flex flex-grow">
-            {/*packets and fields list*/}
+            {/*Packets and fields list*/}
             <div class="flex flex-col p-2 gap-2 bg-yellow">
                 <p>Packets</p>
                 <For each={samplePacketStructures}>
@@ -45,15 +51,19 @@ const FieldsPlayground: Component = () => {
                 </For>
             </div>
 
-            <div class="grid grid-rows-2 grid-cols-2 p-2 gap-2 bg-red-7">
-                <For each={fieldBoxes}>
-                    {(fieldsBoxProps: FieldsBoxProps) =>
-                        <FieldsBox fieldsInPackets={fieldsBoxProps.fieldsInPackets}></FieldsBox>
+            {/*Views*/}
+            <div class="grid grid-cols-2 p-2 gap-2 bg-red-7">
+                <For each={viewStates}>
+                    {(fieldsViewState: FieldsViewState) =>
+                        <FieldsView fieldsViewState={fieldsViewState} deleteFieldsView={deleteFieldView}></FieldsView>
                     }
                 </For>
 
                 {/*add box button*/}
-                <button class="p-2" onClick={() => setFieldBoxes([...fieldBoxes, sampleFieldBoxes[0]])}>+</button>
+                <button class="p-2" onClick={() => setViewStates([
+                    ...viewStates, { fieldsInPackets: [] }
+                ])}>+
+                </button>
             </div>
         </div>
     )
