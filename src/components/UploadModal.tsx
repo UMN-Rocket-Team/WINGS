@@ -2,9 +2,9 @@ import {ModalProps} from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import {JSX} from "solid-js";
 
-const BroadcastModal = (props: ModalProps): JSX.Element => {
+const UploadModal = (props: ModalProps): JSX.Element => {
     return (
-        <DefaultModalLayout close={() => props.closeModal({})} title="Broadcast">
+        <DefaultModalLayout close={() => props.closeModal({})} title="Upload">
             <div class="flex">
                 <p class="pr-2">Name :</p>
                 <input name="Name"/>
@@ -14,10 +14,10 @@ const BroadcastModal = (props: ModalProps): JSX.Element => {
                 <input type="checkbox"/>
             </div>
             <div class="flex place-content-center">
-                <button>Broadcast</button>
+                <button>Upload to Cloud</button>
             </div>
         </DefaultModalLayout>
     );
 };
 
-export default BroadcastModal;
+export default UploadModal;
