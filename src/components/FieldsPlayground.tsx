@@ -17,6 +17,18 @@ const samplePacketStructures: PacketStructure[] = [
         name: "Packet 2 Name",
         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
         delimiters: []
+    },
+    {
+        id: 71,
+        name: "Packet 3 Name",
+        fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
+        delimiters: []
+    },
+    {
+        id: 72,
+        name: "Packet 4 Name",
+        fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
+        delimiters: []
     }
 ]
 
@@ -40,9 +52,10 @@ const FieldsPlayground: Component = () => {
     }
 
     return (
-        <div class="flex flex-grow">
+        // h-0 is used to make the flexbox scrollable; see https://stackoverflow.com/a/65742620/16236499 for more information
+        <div class="flex flex-grow h-0">
             {/*Packets and fields list*/}
-            <div class="flex flex-col p-2 gap-2 bg-yellow">
+            <div class="flex flex-col w-xs p-2 gap-2 overflow-scroll bg-yellow">
                 <p>Packets</p>
                 <For each={samplePacketStructures}>
                     {(packet: PacketStructure) =>
@@ -52,7 +65,7 @@ const FieldsPlayground: Component = () => {
             </div>
 
             {/*Views*/}
-            <div class="grid grid-cols-2 p-2 gap-2 bg-red-7">
+            <div class="grid grid-cols-2 p-2 gap-2 bg-red-7" style={{"width": "100%"}}>
                 <For each={viewStates}>
                     {(fieldsViewState: FieldsViewState) =>
                         <FieldsView fieldsViewState={fieldsViewState} deleteFieldsView={deleteFieldView}></FieldsView>

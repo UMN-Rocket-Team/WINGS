@@ -3,15 +3,15 @@ import {PacketField, PacketStructure} from "../backend_interop/types";
 
 const PacketTab: Component<PacketStructure> = (props: PacketStructure): JSX.Element => {
     return (
-        <div class="flex flex-col bg-gray">
+        <div class="bg-gray">
             <p class="px-2">{props.name}</p>
-            <For each={props.fields}>
-                {(field: PacketField) =>
-                    <div class="flex">
-                        <p class="text-center px-2 py-2 gap-2 bg-white dark:bg-black">{field.name}</p>
-                    </div>
-                }
-            </For>
+            <div class="flex flex-col gap-2 py-2">
+                <For each={props.fields}>
+                    {(field: PacketField) =>
+                        <p class="mx-2 my-0 px-2 py-2 text-center bg-white dark:bg-black">{field.name}</p>
+                    }
+                </For>
+            </div>
         </div>
     );
 };
