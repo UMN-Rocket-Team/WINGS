@@ -4,48 +4,52 @@ import PacketTab from "./PacketTab";
 import FieldsView, {FieldsViewState} from "./FieldsView";
 import {createStore} from "solid-js/store";
 
-const samplePacketStructures: PacketStructure[] = [
-    {
-        id: 69,
-        name: "Packet 1 Name",
-        fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0},
-            {name: "Field 2", type: 0, offsetInPacket: 0, metadataType: 0}],
-        delimiters: []
-    },
-    {
-        id: 70,
-        name: "Packet 2 Name",
-        fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
-        delimiters: []
-    },
-    {
-        id: 71,
-        name: "Packet 3 Name",
-        fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
-        delimiters: []
-    },
-    {
-        id: 72,
-        name: "Packet 4 Name",
-        fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
-        delimiters: []
-    }
-]
+// const samplePacketStructures: PacketStructure[] = [
+//     {
+//         id: 69,
+//         name: "Packet 1 Name",
+//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0},
+//             {name: "Field 2", type: 0, offsetInPacket: 0, metadataType: 0}],
+//         delimiters: []
+//     },
+//     {
+//         id: 70,
+//         name: "Packet 2 Name",
+//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
+//         delimiters: []
+//     },
+//     {
+//         id: 71,
+//         name: "Packet 3 Name",
+//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
+//         delimiters: []
+//     },
+//     {
+//         id: 72,
+//         name: "Packet 4 Name",
+//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
+//         delimiters: []
+//     }
+// ]
+//
+// const sampleViewStates: FieldsViewState[] = [
+//     {
+//         fieldsInPackets: [
+//             {packetStructure: samplePacketStructures[0], fieldIndex: 0},
+//             {packetStructure: samplePacketStructures[1], fieldIndex: 0}
+//         ]
+//     },
+//     {fieldsInPackets: []},
+//     {fieldsInPackets: []}
+// ]
 
-const sampleViewStates: FieldsViewState[] = [
-    {
-        fieldsInPackets: [
-            {packetStructure: samplePacketStructures[0], fieldIndex: 0},
-            {packetStructure: samplePacketStructures[1], fieldIndex: 0}
-        ]
-    },
-    {fieldsInPackets: []},
-    {fieldsInPackets: []}
-]
+export type FieldsPlaygroundProps = {
+    packetStructures: PacketStructure[]
+}
 
-const FieldsPlayground: Component = () => {
+const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
     // initial value for sample testing
-    const [viewStates, setViewStates] = createStore<FieldsViewState[]>(sampleViewStates);
+    const [viewStates, setViewStates] = createStore<FieldsViewState[]>([{fieldsInPackets: []}, {fieldsInPackets: []}, {fieldsInPackets: []}]);
 
     const deleteFieldView = (fieldsViewStateToDelete: FieldsViewState) => {
         setViewStates(viewStates.filter(fieldsInView => fieldsInView !== fieldsViewStateToDelete))
@@ -57,7 +61,7 @@ const FieldsPlayground: Component = () => {
             {/*Packets and fields list*/}
             <div class="flex flex-col w-xs p-2 gap-2 overflow-scroll bg-yellow">
                 <p>Packets</p>
-                <For each={samplePacketStructures}>
+                <For each={props.packetStructures}>
                     {(packet: PacketStructure) =>
                         <PacketTab name={packet.name} fields={packet.fields} id={packet.id} delimiters={packet.delimiters}></PacketTab>
                     }
