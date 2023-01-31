@@ -1,8 +1,10 @@
 import { Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext } from "solid-js";
 import { createStore } from "solid-js/store";
-import { refreshAvailablePortsAndReadActivePort, setFieldName, setFieldType } from "../backend_interop/api_calls";
+import { refreshAvailablePortsAndReadActivePort } from "../backend_interop/api_calls";
 import { pushUnparsedPackets as pushParsedPackets } from "../backend_interop/buffers";
-import { PacketData, PacketFieldType, PacketMetadataType, PacketStructure, SerialPortNames } from "../backend_interop/types";
+import { PacketComponentType, PacketData, PacketGap, PacketViewModel, RustPacketDelimiter, RustPacketField, RustPacketViewModel, SerialPortNames } from "../backend_interop/types";
+import { emit, listen } from "@tauri-apps/api/event";
+import { toPacketFieldType } from "../core/packet_field_type";
 
 /**
  * The number of milliseconds to wait between refreshing the available serial ports and reading from the active port.
@@ -12,28 +14,22 @@ const REFRESH_AND_READ_INTERVAL_MILLISECONDS = 1000;
 export type BackendInteropManagerContextValue = {
     availablePortNames: Accessor<SerialPortNames[]>,
     newParsedPackets: Accessor<Record<number, PacketData[]> | undefined>,
-    packetStructures: PacketStructure[],
-    setFieldName: (packetStructureId: number, fieldIndex: number, name: string) => void,
-    setFieldType: (packetStructureId: number, fieldIndex: number, type: PacketFieldType) => void,
+    packetViewModels: PacketViewModel[],
 };
 
 const BackendInteropManagerContext = createContext<BackendInteropManagerContextValue>({
     availablePortNames: (): SerialPortNames[] => [],
     newParsedPackets: (): Record<number, PacketData[]> | undefined => undefined,
-    packetStructures: [],
-    setFieldName: () => { },
-    setFieldType: () => { },
+    packetViewModels: [],
 });
 
 export const BackendInteropManagerProvider: ParentComponent = (props) => {
     const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
     const [newParsedPackets, setNewParsedPackets] = createSignal<Record<number, PacketData[]>>();
-    const [packetStructures, setPacketStructures] = createStore<PacketStructure[]>([
-        { id: 0, name: "Packet 0", fields: [{ metadataType: PacketMetadataType.None, name: "Field 0", offsetInPacket: 0, type: PacketFieldType.UnsignedInteger }, { metadataType: PacketMetadataType.None, name: "Field 1", offsetInPacket: 4, type: PacketFieldType.Double }], delimiters: [{ identifier: new Uint8Array([0xFF]), name: "Delimiter 0", offsetInPacket: 8 }] },
-        { id: 1, name: "Packet 1", fields: [{ metadataType: PacketMetadataType.Timestamp, name: "Timestamp", offsetInPacket: 0, type: PacketFieldType.UnsignedLong }, { metadataType: PacketMetadataType.None, name: "Field 2", offsetInPacket: 8, type: PacketFieldType.SignedShort }], delimiters: [{ identifier: new Uint8Array([0xFF]), name: "Delimiter 2", offsetInPacket: 20 }] }
-    ]);
+    const [packetViewModels, setPacketViewModels] = createStore<PacketViewModel[]>([]);
 
     let refreshIntervalId: number;
+    let unlistenFunction: () => void;
 
     onMount(async () => {
         refreshIntervalId = window.setInterval(async (): Promise<void> => {
@@ -46,34 +42,73 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
                 setNewParsedPackets(pushParsedPackets(result.parsed_packets));
             }
         }, REFRESH_AND_READ_INTERVAL_MILLISECONDS);
+
+        unlistenFunction = await listen<RustPacketViewModel[]>("packet-structures-update", event => {
+            console.log(event);
+            const newPacketViewModels = event.payload.map<PacketViewModel>(packetViewModel => {
+                return ({
+                    id: packetViewModel.id,
+                    name: packetViewModel.name,
+                    components: packetViewModel.components.map(component => {
+                        if (Object.hasOwn(component, "Field")) {
+                            const rustField = (component as any).Field as RustPacketField;                            
+
+                            return {
+                                type: PacketComponentType.Field,
+                                data: {
+                                    index: rustField.index,
+                                    name: rustField.name,
+                                    type: toPacketFieldType(rustField.type),
+                                    offsetInPacket: rustField.offset_in_packet,
+                                    metadataType: rustField.metadata_type
+                                },
+                            };
+                        } else if (Object.hasOwn(component, "Delimiter")) {
+                            const rustDelimiter = (component as any).Delimiter as RustPacketDelimiter;
+
+                            return {
+                                type: PacketComponentType.Delimiter,
+                                data: {
+                                    index: rustDelimiter.index,
+                                    name: rustDelimiter.name,
+                                    offsetInPacket: rustDelimiter.offset_in_packet,
+                                    identifier: rustDelimiter.identifier.map(identifier => identifier.toString(16)).join(''),
+                                },
+                            };
+                        } else {
+                            return {
+                                type: PacketComponentType.Gap,
+                                data: (component as any).Gap as PacketGap
+                            }
+                        }
+                    }),
+                });
+            });
+
+            for (const packetViewModel of newPacketViewModels) {
+                if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
+                    setPacketViewModels(
+                        oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id,
+                        packetViewModel
+                    );
+                } else {
+                    setPacketViewModels(
+                        packetViewModels.length,
+                        packetViewModel
+                    );
+                }
+            }
+        });
+
+        await emit("initialized");
     });
 
-    onCleanup((): void => clearInterval(refreshIntervalId));
+    onCleanup((): void => {
+        clearInterval(refreshIntervalId);
+        unlistenFunction();
+    });
 
-    const setFieldNameWrapper = (packetStructureId: number, fieldIndex: number, name: string) => {
-        setFieldName(packetStructureId, fieldIndex, name);
-        setPacketStructures(
-            packetStructure => packetStructure.id === packetStructureId,
-            "fields",
-            fieldIndex,
-            "name",
-            name
-        );
-    };
-
-    const setFieldTypeWrapper = (packetStructureId: number, fieldIndex: number, type: PacketFieldType) => {
-        setFieldType(packetStructureId, fieldIndex, type.replaceAll(" ", "") as PacketFieldType);
-        setPacketStructures(
-            packetStructure => packetStructure.id === packetStructureId,
-            "fields",
-            fieldIndex,
-            "type",
-            type
-        );
-        console.log(packetStructures[packetStructureId].fields[fieldIndex].type);
-    };
-
-    const context = { availablePortNames: availablePortNames, newParsedPackets: newParsedPackets, packetStructures: packetStructures, setFieldName: setFieldNameWrapper, setFieldType: setFieldTypeWrapper };
+    const context = { availablePortNames: availablePortNames, newParsedPackets: newParsedPackets, packetViewModels: packetViewModels };
 
     return (
         <BackendInteropManagerContext.Provider value={context}>

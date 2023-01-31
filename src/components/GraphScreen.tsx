@@ -7,10 +7,9 @@ type PacketFieldIds = {
 };
 
 const GraphScreen: Component = () => {
-    const { packetStructures } = useBackendInteropManager();
+    const { packetViewModels } = useBackendInteropManager();
 
     const [packets, setPackets] = createSignal<PacketFieldIds[]>([
-        { packetId: 0, fieldIndex: 0 },
     ]);
 
     return (
@@ -18,8 +17,8 @@ const GraphScreen: Component = () => {
             <For each={packets()}>
                 {(ids) =>
                     <div class="flex">
-                        <span>{packetStructures[ids.packetId].name}</span>
-                        <span>{packetStructures[ids.packetId].fields[ids.fieldIndex].name}</span>
+                        <span>{packetViewModels[ids.packetId].name}</span>
+                        <span>{packetViewModels[ids.packetId].components[ids.fieldIndex].type}</span>
                     </div>
                 }
             </For>

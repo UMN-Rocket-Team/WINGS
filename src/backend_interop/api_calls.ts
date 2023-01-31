@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { Packet, PacketFieldType, PacketFieldValue, PacketStructure, RadioTestResult, RefreshAndReadResult, RustPacket, RustRefreshAndReadResult } from "./types";
+import { RustPacketFieldType } from "../core/packet_field_type";
+import { Packet, PacketFieldValue, PacketMetadataType, RadioTestResult, RefreshAndReadResult, RustPacket, RustRefreshAndReadResult } from "./types";
 
 export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshAndReadResult> => {
     const { new_available_port_names, parsed_packets } = await invoke<RustRefreshAndReadResult>("refresh_available_ports_and_read_active_port");
@@ -39,9 +40,14 @@ export const getTestReadPort = () => testReadPort;
 
 export const testRadios: () => Promise<RadioTestResult> = async () => await invoke("test_radios");
 
-export const registerPacketStructure = async (packetStructure: PacketStructure) => 
-    await invoke("register_packet_structure", { packetStructure: packetStructure });
-
 export const setFieldName = async (packetStructureId: number, fieldIndex: number, name: string) => await invoke("set_field_name", { packetStructureId, fieldIndex, name });
 
-export const setFieldType = async (packetStructureId: number, fieldIndex: number, type: PacketFieldType) => await invoke("set_field_type", { packetStructureId, fieldIndex, type });
+export const setFieldType = async (packetStructureId: number, fieldIndex: number, type: RustPacketFieldType) => await invoke("set_field_type", { packetStructureId, fieldIndex, type });
+
+export const setFieldMetadataType = async (packetStructureId: number, fieldIndex: number, metadataType: PacketMetadataType) => await invoke("set_field_metadata_type", { packetStructureId, fieldIndex, metadataType });
+
+export const setDelimiterName = async (packetStructureId: number, delimiterIndex: number, name: string) => await invoke("set_delimiter_name", { packetStructureId, delimiterIndex, name });
+
+export const setDelimiterIdentifier = async (packetStructureId: number, delimiterIndex: number, identifier: string) => await invoke("set_delimiter_identifier", { packetStructureId, delimiterIndex, identifier });
+
+export const setGapSize = async (packetStructureId: number, gapIndex: number, size: number) => await invoke("set_gap_size", { packetStructureId, gapIndex, size });

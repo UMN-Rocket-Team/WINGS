@@ -1,3 +1,5 @@
+import { PacketFieldType, RustPacketFieldType } from "../core/packet_field_type";
+
 export type RustRefreshAndReadResult = {
     new_available_port_names: SerialPortNames[] | null,
     parsed_packets: RustPacket[] | null,
@@ -39,7 +41,7 @@ export type PacketFieldValue = UnsignedByte | SignedByte | UnsignedShort | Signe
 type UnsignedByte = {
     unsignedByte: number,
 };
-type SignedByte = { 
+type SignedByte = {
     signedByte: number,
 };
 type UnsignedShort = {
@@ -67,48 +69,76 @@ type Double = {
     double: number,
 };
 
-export type PacketStructure = {
-    id: number,
-    name: string,
-    fields: PacketField[],
-    delimiters: PacketDelimiter[],
+export enum PacketComponentType {
+    Field = 0,
+    Delimiter = 1,
+    Gap = 2,
 };
 
-// export type PacketComponent = PacketField | PacketDelimiter | PacketGap;
+export type RustPacketViewModel = {
+    id: number,
+    name: string,
+    components: RustPacketComponent[],
+};
+
+type RustPacketComponent = {
+    Field: RustPacketField;
+} | {
+    Delimiter: RustPacketDelimiter;
+} | {
+    Gap: PacketGap;
+};
+
+export type RustPacketField = {
+    index: number,
+    metadata_type: PacketMetadataType;
+    name: string;
+    offset_in_packet: number;
+    type: RustPacketFieldType;
+};
+
+export type RustPacketDelimiter = {
+    index: number;
+    name: string,
+    identifier: number[],
+    offset_in_packet: number,
+};
+
+export type PacketViewModel = {
+    id: number,
+    name: string,
+    components: PacketComponent[],
+};
+
+export type PacketComponent = {
+    type: PacketComponentType;
+    data: PacketField | PacketDelimiter | PacketGap;
+};
 
 export type PacketField = {
+    index: number;
     name: string,
     type: PacketFieldType,
     offsetInPacket: number,
     metadataType: PacketMetadataType
 };
 
-export enum PacketFieldType {
-    UnsignedByte = "Unsigned Byte",
-    SignedByte = "Signed Byte",
-    UnsignedShort = "Unsigned Short",
-    SignedShort = "Signed Short",
-    UnsignedInteger = "Unsigned Integer",
-    SignedInteger = "Signed Integer",
-    UnsignedLong = "Unsigned Long",
-    SignedLong = "Signed Long",
-    Float = "Float",
-    Double = "Double"
-}
-
 export enum PacketMetadataType {
     None = "None",
     Timestamp = "Timestamp",
-}
+};
 
 export type PacketDelimiter = {
+    index: number;
     name: string,
-    identifier: Uint8Array,
+    identifier: string,
     offsetInPacket: number,
 };
 
 export type PacketGap = {
+    index: number,
     size: number,
+    offset: number,
 };
 
 export type RadioTestResult = {

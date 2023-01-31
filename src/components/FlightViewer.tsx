@@ -23,7 +23,7 @@ const FlightViewer: Component = () => {
 
     createEffect(() => {
         // TODO: when the newParsedPackets change, update the graphs with the new PacketData
-        console.log("FlightViewer effect parsed packets: ", newParsedPackets());
+        // console.log("FlightViewer effect parsed packets: ", newParsedPackets());
     }, { defer: true });
 
     return (
