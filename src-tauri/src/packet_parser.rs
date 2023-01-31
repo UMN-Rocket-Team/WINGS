@@ -261,7 +261,10 @@ impl PacketParser {
         packets
     }
 
-    fn update_packet_view_model(&mut self, packet_structure_id: usize) -> Result<Vec<usize>, (Vec<usize>, String)> {
+    fn update_packet_view_model(
+        &mut self,
+        packet_structure_id: usize,
+    ) -> Result<Vec<usize>, (Vec<usize>, String)> {
         self.packet_view_models[packet_structure_id] =
             Self::create_packet_view_model(&self.packet_structures[packet_structure_id]);
         Ok(vec![packet_structure_id])
@@ -463,6 +466,64 @@ impl PacketParser {
             vec![],
             String::from("Failed to find gap with the given index!"),
         ))
+    }
+
+    pub fn add_field(
+        &mut self,
+        packet_structure_id: usize,
+    ) -> Result<Vec<usize>, (Vec<usize>, String)> {
+        let packet_field_count = self.packet_structures[packet_structure_id].fields.len();
+        let end_of_packet = self.packet_structures[packet_structure_id].size();
+
+        self.packet_structures[packet_structure_id]
+            .fields
+            .push(PacketField {
+                index: packet_field_count,
+                metadata_type: PacketMetadataType::None,
+                name: format!("Field {}", (packet_field_count + 1)),
+                offset_in_packet: end_of_packet,
+                r#type: PacketFieldType::UnsignedInteger,
+            });
+
+        Self::update_packet_view_model(self, packet_structure_id)
+    }
+
+    pub fn add_delimiter(
+        &mut self,
+        packet_structure_id: usize,
+    ) -> Result<Vec<usize>, (Vec<usize>, String)> {
+        let packet_delimiter_count = self.packet_structures[packet_structure_id].delimiters.len();
+        let end_of_packet = self.packet_structures[packet_structure_id].size();
+
+        self.packet_structures[packet_structure_id]
+            .delimiters
+            .push(PacketDelimiter {
+                index: packet_delimiter_count,
+                name: format!("Delimiter {}", packet_delimiter_count + 1),
+                identifier: vec![0xFF],
+                offset_in_packet: end_of_packet,
+            });
+
+        Self::update_packet_view_model(self, packet_structure_id)
+    }
+
+    pub fn add_gap_after(
+        &mut self,
+        packet_structure_id: usize,
+        is_field: bool,
+        component_index: usize,
+    ) -> Result<Vec<usize>, (Vec<usize>, String)> {
+        let packet_structure = &mut self.packet_structures[packet_structure_id];
+
+        let minimum_offset = if is_field {
+            packet_structure.fields[component_index].offset_in_packet
+        } else {
+            packet_structure.delimiters[component_index].offset_in_packet
+        };
+
+        Self::shift_components_after(packet_structure, 1, minimum_offset);
+
+        Self::update_packet_view_model(self, packet_structure_id)
     }
 }
 

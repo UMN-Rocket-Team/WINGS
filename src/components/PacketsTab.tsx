@@ -1,5 +1,5 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { PacketFieldType, toRustPacketFieldType } from "../core/packet_field_type";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
@@ -73,9 +73,26 @@ const PacketsTab: Component = () => {
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button onClick={e => addField()}>Add Field</button>
-                    <button onClick={e => addDelimiter()}>Add Delimeter</button>
-                    <button onClick={e => addGap()}>Add Gap</button>
+                    <button onClick={() => addField(selectedPacketStructureIndex()!)}>Add Field</button>
+                    <button onClick={() => addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
+                    <button onClick={() => {
+                        const selectedComponentType = selectedPacketStructureComponent()!.type;
+                        let isField: boolean;
+                        let index: number;
+                        switch (selectedComponentType) {
+                            case PacketComponentType.Field:
+                                isField = true;
+                                index = selectedFieldData()!.index;
+                                break;
+                            case PacketComponentType.Delimiter:
+                                isField = false;
+                                index = selectedDelimiterData()!.index;
+                                break;
+                            default:
+                                throw new Error("Cannot add a gap after a gap!");
+                        }
+                        addGapAfter(selectedPacketStructureIndex()!, isField, index);
+                    }}>Add Gap</button>
                 </div>
             </div>
             <div class="flex flex-col justify-between border-1 p-2 border-rounded dark:b-white">

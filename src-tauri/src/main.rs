@@ -330,6 +330,41 @@ fn set_gap_size(
     })
 }
 
+#[tauri::command]
+fn add_field(
+    app_handle: tauri::AppHandle,
+    packet_parser_state: tauri::State<'_, PacketParserState>,
+    packet_structure_id: usize,
+) -> Result<(), String> {
+    update_packet_structures(app_handle, packet_parser_state, &mut |packet_parser| {
+        packet_parser.add_field(packet_structure_id)
+    })
+}
+
+#[tauri::command]
+fn add_delimiter(
+    app_handle: tauri::AppHandle,
+    packet_parser_state: tauri::State<'_, PacketParserState>,
+    packet_structure_id: usize,
+) -> Result<(), String> {
+    update_packet_structures(app_handle, packet_parser_state, &mut |packet_parser| {
+        packet_parser.add_delimiter(packet_structure_id)
+    })
+}
+
+#[tauri::command]
+fn add_gap_after(
+    app_handle: tauri::AppHandle,
+    packet_parser_state: tauri::State<'_, PacketParserState>,
+    packet_structure_id: usize,
+    is_field: bool,
+    component_index: usize,
+) -> Result<(), String> {
+    update_packet_structures(app_handle, packet_parser_state, &mut |packet_parser| {
+        packet_parser.add_gap_after(packet_structure_id, is_field, component_index)
+    })
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -343,7 +378,10 @@ fn main() {
             set_field_metadata_type,
             set_delimiter_name,
             set_delimiter_identifier,
-            set_gap_size
+            set_gap_size,
+            add_field,
+            add_delimiter,
+            add_gap_after
         ])
         .manage(SerialManagerState::default())
         .manage(PacketParserState::default())
