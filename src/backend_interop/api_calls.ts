@@ -1,23 +1,7 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { RustPacketFieldType } from "../core/packet_field_type";
-import { Packet, PacketFieldValue, PacketMetadataType, RadioTestResult, RefreshAndReadResult, RustPacket, RustRefreshAndReadResult } from "./types";
+import { PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult } from "./types";
 
-export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshAndReadResult> => {
-    const { new_available_port_names, parsed_packets } = await invoke<RustRefreshAndReadResult>("refresh_available_ports_and_read_active_port");
-
-    if (parsed_packets === null) {
-        return { new_available_port_names, parsed_packets };
-    }
-
-    // TODO: can PacketFieldValues be serialized in a more efficent manner in Rust so they don't have to be simplified here?
-    const simplifiedParsedPackets = parsed_packets.map((rustPacket: RustPacket): Packet => ({
-        fieldData: rustPacket.field_data.map((fieldValue: PacketFieldValue): number => Object.entries(fieldValue)[0][1] as number), 
-        structureId: rustPacket.structure_id, 
-        timestamp: rustPacket.timestamp
-    }));
-
-    return { new_available_port_names, parsed_packets: simplifiedParsedPackets };
-};
+export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshAndReadResult> => await invoke<RefreshAndReadResult>("refresh_available_ports_and_read_active_port");
 
 export const setActivePort = async (portName: string) => await invoke("set_active_port", { portName: portName });
 
@@ -42,7 +26,7 @@ export const testRadios: () => Promise<RadioTestResult> = async () => await invo
 
 export const setFieldName = async (packetStructureId: number, fieldIndex: number, name: string) => await invoke("set_field_name", { packetStructureId, fieldIndex, name });
 
-export const setFieldType = async (packetStructureId: number, fieldIndex: number, type: RustPacketFieldType) => await invoke("set_field_type", { packetStructureId, fieldIndex, type });
+export const setFieldType = async (packetStructureId: number, fieldIndex: number, type: PacketFieldType) => await invoke("set_field_type", { packetStructureId, fieldIndex, type });
 
 export const setFieldMetadataType = async (packetStructureId: number, fieldIndex: number, metadataType: PacketMetadataType) => await invoke("set_field_metadata_type", { packetStructureId, fieldIndex, metadataType });
 

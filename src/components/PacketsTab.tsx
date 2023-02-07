@@ -1,7 +1,6 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
 import { addDelimiter, addField, addGapAfter, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
-import { PacketComponentType, PacketDelimiter, PacketField, PacketGap, PacketMetadataType } from "../backend_interop/types";
-import { PacketFieldType, toRustPacketFieldType } from "../core/packet_field_type";
+import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 
@@ -114,7 +113,7 @@ const PacketsTab: Component = () => {
                                     <div class="flex flex-col">
                                         <label for="fieldType">Type</label>
                                         <select value={selectedFieldData()!.type} id="fieldType"
-                                            onInput={e => invokeApiSetter(setFieldType, toRustPacketFieldType((e.target as HTMLSelectElement).value as PacketFieldType))}>
+                                            onInput={e => invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
                                             </For>

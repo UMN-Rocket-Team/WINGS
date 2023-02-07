@@ -1,13 +1,6 @@
-import { PacketFieldType, RustPacketFieldType } from "../core/packet_field_type";
-
-export type RustRefreshAndReadResult = {
-    new_available_port_names: SerialPortNames[] | null,
-    parsed_packets: RustPacket[] | null,
-};
-
 export type RefreshAndReadResult = {
-    new_available_port_names: SerialPortNames[] | null,
-    parsed_packets: Packet[] | null,
+    newAvailablePortNames: SerialPortNames[] | null,
+    parsedPackets: Packet[] | null,
 }
 
 export type SerialPortNames = {
@@ -17,14 +10,8 @@ export type SerialPortNames = {
      * Used to identify a serial port to the backend.
      */
     name: string,
-    manufacturer_name: string | null,
-    product_name: string | null,
-};
-
-export type RustPacket = {
-    structure_id: number,
-    field_data: PacketFieldValue[],
-    timestamp: number,
+    manufacturerName: string | null,
+    productName: string | null,
 };
 
 export type Packet = PacketData & {
@@ -36,72 +23,28 @@ export type PacketData = {
     timestamp: number,
 };
 
-export type PacketFieldValue = UnsignedByte | SignedByte | UnsignedShort | SignedShort | UnsignedInteger | SignedInteger | UnsignedLong | SignedLong | Float | Double;
-
-type UnsignedByte = {
-    unsignedByte: number,
-};
-type SignedByte = {
-    signedByte: number,
-};
-type UnsignedShort = {
-    unsignedShort: number,
-};
-type SignedShort = {
-    signedShort: number,
-};
-type UnsignedInteger = {
-    unsignedInteger: number,
-};
-type SignedInteger = {
-    signedInteger: number,
-};
-type UnsignedLong = {
-    unsignedLong: number,
-};
-type SignedLong = {
-    signedLong: number,
-};
-type Float = {
-    float: number,
-};
-type Double = {
-    double: number,
+export type PacketFieldValue = {
+    type: PacketFieldType,
+    data: number,
 };
 
 export enum PacketComponentType {
-    Field = 0,
-    Delimiter = 1,
-    Gap = 2,
+    Field = "Field",
+    Delimiter = "Delimiter",
+    Gap = "Gap",
 };
 
-export type RustPacketViewModel = {
-    id: number,
-    name: string,
-    components: RustPacketComponent[],
-};
-
-type RustPacketComponent = {
-    Field: RustPacketField;
-} | {
-    Delimiter: RustPacketDelimiter;
-} | {
-    Gap: PacketGap;
-};
-
-export type RustPacketField = {
-    index: number,
-    metadata_type: PacketMetadataType;
-    name: string;
-    offset_in_packet: number;
-    type: RustPacketFieldType;
-};
-
-export type RustPacketDelimiter = {
-    index: number;
-    name: string,
-    identifier: number[],
-    offset_in_packet: number,
+export enum PacketFieldType {
+    UnsignedByte = "Unsigned Byte",
+    SignedByte = "Signed Byte",
+    UnsignedShort = "Unsigned Short",
+    SignedShort = "Signed Short",
+    UnsignedInteger = "Unsigned Integer",
+    SignedInteger = "Signed Integer",
+    UnsignedLong = "Unsigned Long",
+    SignedLong = "Signed Long",
+    Float = "Float",
+    Double = "Double"
 };
 
 export type PacketViewModel = {
@@ -111,8 +54,8 @@ export type PacketViewModel = {
 };
 
 export type PacketComponent = {
-    type: PacketComponentType;
-    data: PacketField | PacketDelimiter | PacketGap;
+    type: PacketComponentType,
+    data: PacketField | PacketDelimiter | PacketGap,
 };
 
 export type PacketField = {
@@ -129,7 +72,7 @@ export enum PacketMetadataType {
 };
 
 export type PacketDelimiter = {
-    index: number;
+    index: number,
     name: string,
     identifier: string,
     offsetInPacket: number,
@@ -142,7 +85,7 @@ export type PacketGap = {
 };
 
 export type RadioTestResult = {
-    packets_attempted: number;
-    packets_written: number;
-    packets_read: number;
+    packetsAttempted: number,
+    packetsWritten: number,
+    packetsRead: number,
 };

@@ -2,9 +2,8 @@ import { Accessor, createContext, createSignal, onCleanup, onMount, ParentCompon
 import { createStore } from "solid-js/store";
 import { refreshAvailablePortsAndReadActivePort } from "../backend_interop/api_calls";
 import { pushUnparsedPackets as pushParsedPackets } from "../backend_interop/buffers";
-import { PacketComponentType, PacketData, PacketGap, PacketViewModel, RustPacketDelimiter, RustPacketField, RustPacketViewModel, SerialPortNames } from "../backend_interop/types";
+import { PacketData, PacketViewModel, SerialPortNames } from "../backend_interop/types";
 import { emit, listen } from "@tauri-apps/api/event";
-import { toPacketFieldType } from "../core/packet_field_type";
 
 /**
  * The number of milliseconds to wait between refreshing the available serial ports and reading from the active port.
@@ -35,63 +34,26 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
         refreshIntervalId = window.setInterval(async (): Promise<void> => {
             const result = await refreshAvailablePortsAndReadActivePort();
 
-            if (result.new_available_port_names) {
-                setAvailablePortNames(result.new_available_port_names);
+            if (result.newAvailablePortNames) {
+                setAvailablePortNames(result.newAvailablePortNames);
             }
-            if (result.parsed_packets) {
-                setNewParsedPackets(pushParsedPackets(result.parsed_packets));
+            if (result.parsedPackets) {
+                setNewParsedPackets(pushParsedPackets(result.parsedPackets));
             }
         }, REFRESH_AND_READ_INTERVAL_MILLISECONDS);
 
-        unlistenFunction = await listen<RustPacketViewModel[]>("packet-structures-update", event => {
+        unlistenFunction = await listen<PacketViewModel[]>("packet-structures-update", event => {
             console.log(event);
-            const newPacketViewModels = event.payload.map<PacketViewModel>(packetViewModel => {
-                return ({
-                    id: packetViewModel.id,
-                    name: packetViewModel.name,
-                    components: packetViewModel.components.map(component => {
-                        if (Object.hasOwn(component, "Field")) {
-                            const rustField = (component as any).Field as RustPacketField;                            
 
-                            return {
-                                type: PacketComponentType.Field,
-                                data: {
-                                    index: rustField.index,
-                                    name: rustField.name,
-                                    type: toPacketFieldType(rustField.type),
-                                    offsetInPacket: rustField.offset_in_packet,
-                                    metadataType: rustField.metadata_type
-                                },
-                            };
-                        } else if (Object.hasOwn(component, "Delimiter")) {
-                            const rustDelimiter = (component as any).Delimiter as RustPacketDelimiter;
-
-                            return {
-                                type: PacketComponentType.Delimiter,
-                                data: {
-                                    index: rustDelimiter.index,
-                                    name: rustDelimiter.name,
-                                    offsetInPacket: rustDelimiter.offset_in_packet,
-                                    identifier: rustDelimiter.identifier.map(identifier => identifier.toString(16)).join(''),
-                                },
-                            };
-                        } else {
-                            return {
-                                type: PacketComponentType.Gap,
-                                data: (component as any).Gap as PacketGap
-                            }
-                        }
-                    }),
-                });
-            });
-
-            for (const packetViewModel of newPacketViewModels) {
+            for (const packetViewModel of event.payload) {
                 if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
+                    // Update the existing view model
                     setPacketViewModels(
                         oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id,
                         packetViewModel
                     );
                 } else {
+                    // Add the new view model
                     setPacketViewModels(
                         packetViewModels.length,
                         packetViewModel
@@ -100,6 +62,7 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
             }
         });
 
+        // Let the backend know that the frontend is ready to receive the initial "packet-structures-update" event
         await emit("initialized");
     });
 
