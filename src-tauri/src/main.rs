@@ -14,8 +14,8 @@ mod packet_structure_manager_state;
 mod packet_view_model;
 mod serial;
 mod serial_manager_state;
+mod update_loop;
 
-use anyhow::anyhow;
 use packet_structure_events::{
     send_initial_packet_structure_update_event, update_packet_structures,
 };
@@ -23,71 +23,12 @@ use packet_structure_manager::SetDelimiterIdentifierError;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
 use serial_manager_state::{use_serial_manager, SerialManagerState};
 
-use packet::Packet;
-use packet_parser_state::{use_packet_parser, PacketParserState};
+use packet_parser_state::PacketParserState;
 use packet_structure::{PacketFieldType, PacketMetadataType};
 
-use serial::{RadioTestResult, SerialPortNames};
+use serial::RadioTestResult;
 use tauri::Manager;
-
-#[derive(serde::Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct RefreshAndReadResult {
-    new_available_port_names: Option<Vec<SerialPortNames>>,
-    parsed_packets: Option<Vec<Packet>>,
-}
-
-#[tauri::command]
-fn refresh_available_ports_and_read_active_port(
-    serial_manager_state: tauri::State<'_, SerialManagerState>,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
-    packet_parser_state: tauri::State<'_, PacketParserState>,
-) -> Result<RefreshAndReadResult, String> {
-    let mut result: RefreshAndReadResult = RefreshAndReadResult {
-        new_available_port_names: None,
-        parsed_packets: None,
-    };
-    let mut read_data: Vec<u8> = vec![];
-
-    match use_serial_manager(serial_manager_state, &mut |serial_manager| {
-        match serial_manager.refresh_available_ports() {
-            Ok(new_ports) => {
-                if new_ports {
-                    result.new_available_port_names =
-                        Some(serial_manager.available_port_names.clone())
-                }
-            }
-            Err(error) => return Err(anyhow!(error.description)),
-        };
-
-        match serial_manager.read_from_active_port(&mut |bytes| read_data.extend(bytes)) {
-            Ok(_) => Ok(()),
-            Err(error) => return Err(anyhow!(error.to_string())),
-        }
-    }) {
-        Ok(_) => {}
-        Err(message) => return Err(message),
-    }
-
-    if !read_data.is_empty() {
-        match use_packet_parser(packet_parser_state, &mut |packet_parser| {
-            packet_parser.push_data(&read_data);
-
-            use_packet_structure_manager::<(), &str>(
-                &packet_structure_manager_state,
-                &mut |packet_structure_manager| {
-                    Ok(result.parsed_packets =
-                        Some(packet_parser.parse_packets(&packet_structure_manager)))
-                },
-            )
-        }) {
-            Ok(_) => {}
-            Err(message) => return Err(message),
-        }
-    }
-
-    Ok(result)
-}
+use update_loop::TimerState;
 
 #[tauri::command]
 fn set_active_port(
@@ -305,7 +246,6 @@ fn add_gap_after(
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            refresh_available_ports_and_read_active_port,
             set_active_port,
             set_test_write_port,
             set_test_read_port,
@@ -324,12 +264,26 @@ fn main() {
         .manage(SerialManagerState::default())
         .manage(PacketParserState::default())
         .setup(move |app| {
-            let app_handle = app.handle();
-            app_handle.clone().once_global("initialized", move |_| {
-                send_initial_packet_structure_update_event(app_handle);
+            let app_handle_1 = app.handle();
+            let app_handle_2 = app.handle();
+
+            app.once_global("initialized", move |_| {
+                send_initial_packet_structure_update_event(app_handle_1);
+
+                // Initialize and start the background refresh timer
+                // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
+                // program and accessed upon temination
+                app_handle_2.manage(TimerState::new(app_handle_2.clone()));
             });
 
             Ok(())
+        })
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::CloseRequested { .. } => {
+                // Timer internals need to manually dropped, do that here at program termination
+                event.window().app_handle().state::<TimerState>().destroy()
+            }
+            _ => {}
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

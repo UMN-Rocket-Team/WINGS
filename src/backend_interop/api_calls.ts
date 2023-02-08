@@ -1,8 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult } from "./types";
 
-export const refreshAvailablePortsAndReadActivePort = async (): Promise<RefreshAndReadResult> => await invoke<RefreshAndReadResult>("refresh_available_ports_and_read_active_port");
-
 export const setActivePort = async (portName: string) => await invoke("set_active_port", { portName: portName });
 
 let testWritePort: string | null;

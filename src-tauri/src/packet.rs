@@ -2,14 +2,14 @@ use serde::Serialize;
 
 use crate::packet_structure::PacketFieldType;
 
-#[derive(Serialize, Debug)]
+#[derive(PartialEq, Serialize, Debug, Clone)]
 pub struct Packet {
     pub(crate) structure_id: usize,
     pub(crate) field_data: Vec<PacketFieldValue>,
     pub(crate) timestamp: i64,
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(PartialEq, Serialize, Clone, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketFieldValue {
     UnsignedByte(u8),
