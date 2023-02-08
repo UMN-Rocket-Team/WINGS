@@ -3,7 +3,7 @@ use std::{
     vec,
 };
 
-use crate::packet_structure::{
+use crate::models::packet_structure::{
     PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
 };
 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::packet_structure::{PacketField, PacketStructure};
+use crate::models::packet_structure::{PacketField, PacketStructure};
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

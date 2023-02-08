@@ -1,10 +1,10 @@
 use std::sync::Mutex;
 
 use crate::{
-    mutex_utils::use_state_in_mutex,
-    packet_structure::{
+    models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
+    mutex_utils::use_state_in_mutex,
     packet_structure_manager::PacketStructureManager,
 };
 

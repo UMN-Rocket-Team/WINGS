@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::packet_structure::PacketFieldType;
+use crate::models::packet_structure::PacketFieldType;
 
 #[derive(PartialEq, Serialize, Debug, Clone)]
 pub struct Packet {

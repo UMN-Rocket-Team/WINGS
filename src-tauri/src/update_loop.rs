@@ -6,8 +6,8 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    mutex_utils::use_state_in_mutex, packet::Packet, packet_parser_state::use_packet_parser,
-    packet_parser_state::PacketParserState,
+    models::packet::Packet, mutex_utils::use_state_in_mutex,
+    packet_parser_state::use_packet_parser, packet_parser_state::PacketParserState,
     packet_structure_manager_state::PacketStructureManagerState, serial::SerialPortNames,
     serial_manager_state::SerialManagerState, use_packet_structure_manager, use_serial_manager,
 };
@@ -30,7 +30,7 @@ impl TimerState {
                     if result.new_available_port_names != None || result.parsed_packets != None {
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
-                },
+                }
                 Err(message) => app_handle.emit_all("error", message).unwrap(),
             };
         });

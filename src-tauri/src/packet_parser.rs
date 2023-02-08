@@ -1,8 +1,8 @@
 use std::cmp::max;
 
 use crate::{
-    packet::{Packet, PacketFieldValue},
-    packet_structure::PacketMetadataType,
+    models::packet::{Packet, PacketFieldValue},
+    models::packet_structure::PacketMetadataType,
     packet_structure_manager::PacketStructureManager,
 };
 
