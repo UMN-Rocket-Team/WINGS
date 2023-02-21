@@ -14,20 +14,20 @@ pub struct PacketParser {
 impl PacketParser {
     pub fn push_data(&mut self, data: &[u8]) {
         self.unparsed_data.extend(data);
+        println!("Unparsed data: {:02X?}", self.unparsed_data);
     }
 
     pub fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
     ) -> Vec<Packet> {
+        println!("Unparsed data length: {}", self.unparsed_data.len());
         let mut packets: Vec<Packet> = vec![];
 
         let mut last_successful_match_end_index: Option<usize> = None;
 
         let maximum_index =
             self.unparsed_data.len() - packet_structure_manager.minimum_packet_structure_size;
-
-        // println!("Unparsed data: {:#?}", self.unparsed_data);
 
         for i in 0..maximum_index {
             // Try to find a matching packet for the data
@@ -46,7 +46,7 @@ impl PacketParser {
                 }
 
                 if packet_structure.delimiters[0].offset_in_packet > i {
-                    // println!("- Packet starts before data begins!");
+                    println!("- Packet starts before data begins!");
                     continue;
                 }
 
@@ -55,7 +55,7 @@ impl PacketParser {
                 if let Some(last_successful_match_end_index) = last_successful_match_end_index {
                     if packet_start_index <= last_successful_match_end_index {
                         // The current packet cannot overlap with a previous one
-                        // println!("- Overlaps with previous packet");
+                        println!("- Overlaps with previous packet");
                         continue;
                     }
                 }
@@ -75,7 +75,7 @@ impl PacketParser {
                 }
 
                 if !is_remaining_delimiters_matched {
-                    // println!("- Remaining delimiters did not match");
+                    println!("- Remaining delimiters did not match");
                     continue;
                 }
 
@@ -100,7 +100,7 @@ impl PacketParser {
                     }
                 }
 
-                // println!("- MATCHED!");
+                println!("- MATCHED!");
 
                 packets.push(Packet {
                     structure_id: packet_structure.id,
@@ -115,7 +115,7 @@ impl PacketParser {
 
         // Throw away any garbage data that remains so that it does not have to be re-parsed
         let last_parsed_index = max(
-            self.unparsed_data.len() - packet_structure_manager.maximum_packet_structure_size,
+            max((self.unparsed_data.len() as isize) - (packet_structure_manager.maximum_packet_structure_size as isize), 0) as usize,
             last_successful_match_end_index.unwrap_or(usize::MIN),
         );
         println!("LPI: {}", last_parsed_index);

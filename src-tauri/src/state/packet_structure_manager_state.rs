@@ -18,47 +18,52 @@ impl Default for PacketStructureManagerState {
         let default_packet_structures = [
             PacketStructure {
                 id: 0,
-                name: String::from("Packet 1"),
+                name: String::from("Official Test"),
                 fields: vec![
                     PacketField {
                         index: 0,
-                        name: String::from("Field 1"),
-                        offset_in_packet: 0,
-                        r#type: PacketFieldType::UnsignedInteger,
-                        metadata_type: PacketMetadataType::None,
+                        name: String::from("var8"),
+                        r#type: PacketFieldType::UnsignedByte,
+                        offset_in_packet: 12,
+                        metadata_type: PacketMetadataType::None
                     },
                     PacketField {
                         index: 1,
-                        name: String::from("Field 2"),
-                        offset_in_packet: 7,
-                        r#type: PacketFieldType::SignedByte,
-                        metadata_type: PacketMetadataType::None,
+                        name: String::from("var82"),
+                        r#type: PacketFieldType::UnsignedByte,
+                        offset_in_packet: 13,
+                        metadata_type: PacketMetadataType::None
                     },
+                    PacketField {
+                        index: 0,
+                        name: String::from("var16"),
+                        r#type: PacketFieldType::UnsignedShort,
+                        offset_in_packet: 14,
+                        metadata_type: PacketMetadataType::None
+                    },
+                    PacketField {
+                        index: 1,
+                        name: String::from("var162"),
+                        r#type: PacketFieldType::UnsignedShort,
+                        offset_in_packet: 16,
+                        metadata_type: PacketMetadataType::None
+                    }
                 ],
-                delimiters: vec![PacketDelimiter {
-                    index: 0,
-                    name: String::from("Delimiter 1"),
-                    identifier: vec![0xFF, 0xAB, 0x21],
-                    offset_in_packet: 4,
-                }],
-            },
-            PacketStructure {
-                id: 1,
-                name: "Test 1".to_string(),
-                fields: vec![PacketField {
-                    index: 0,
-                    name: String::from("Test Field 1"),
-                    r#type: PacketFieldType::UnsignedInteger,
-                    offset_in_packet: 0,
-                    metadata_type: PacketMetadataType::None,
-                }],
-                delimiters: vec![PacketDelimiter {
-                    index: 0,
-                    name: String::from("Test Delimiter 1"),
-                    identifier: vec![0xFF, 0xFF, 0xFF, 0xFF],
-                    offset_in_packet: 4,
-                }],
-            },
+                delimiters: vec![
+                    PacketDelimiter {
+                        index: 0,
+                        name: String::from("start"),
+                        offset_in_packet: 0,
+                        identifier: 0xE15AADD0u32.to_le_bytes().to_vec()
+                    },
+                    PacketDelimiter {
+                        index: 1,
+                        name: String::from("end"),
+                        offset_in_packet: 18,
+                        identifier: 0xFFFFFFFFu32.to_le_bytes().to_vec()
+                    }
+                ]
+            }
         ];
 
         for default_packet_structure in default_packet_structures {

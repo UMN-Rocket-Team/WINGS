@@ -84,7 +84,7 @@ impl SerialManager {
             }
         }
 
-        *port = Some(serialport::new(port_name, 9600).open()?);
+        *port = Some(serialport::new(port_name, 57600).open()?);
 
         // Workaround issue where first packet sent to test port is not received due to a timeout
         port.as_deref_mut()

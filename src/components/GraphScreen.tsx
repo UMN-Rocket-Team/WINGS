@@ -9,8 +9,7 @@ type PacketFieldIds = {
 const GraphScreen: Component = () => {
     const { packetViewModels } = useBackendInteropManager();
 
-    const [packets, setPackets] = createSignal<PacketFieldIds[]>([
-    ]);
+    const [packets, setPackets] = createSignal<PacketFieldIds[]>([]);
 
     return (
         <div class="flex border-rounded border-transparent bg-gray">
