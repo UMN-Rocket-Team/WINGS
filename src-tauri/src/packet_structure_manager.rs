@@ -3,16 +3,24 @@ use std::{
     vec,
 };
 
-use crate::models::packet_structure::{
-    PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
+use crate::{
+    models::packet_structure::{
+        PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
+    },
+    packet_view_model::PacketComponentType,
 };
 
 #[readonly::make]
-#[derive(Default)]
 pub struct PacketStructureManager {
     pub(crate) packet_structures: Vec<PacketStructure>,
     pub(crate) minimum_packet_structure_size: usize,
     pub(crate) maximum_packet_structure_size: usize,
+}
+
+impl Default for PacketStructureManager {
+    fn default() -> Self {
+        Self { packet_structures: Default::default(), minimum_packet_structure_size: usize::MAX, maximum_packet_structure_size: 0 }
+    }
 }
 
 pub enum PacketStructureRegistrationError {
@@ -42,6 +50,12 @@ pub enum SetDelimiterIdentifierError {
     IdentifierCollision(Vec<usize>),
 }
 
+pub enum DeletePacketStructureComponentError {
+    LastField,
+    LastDelimiter,
+    DelimiterIdentifierCollision(Vec<usize>)
+}
+
 impl PacketStructureManager {
     pub fn register_packet_structure(
         &mut self,
@@ -64,6 +78,8 @@ impl PacketStructureManager {
             min(self.minimum_packet_structure_size, packet_structure_size);
         self.maximum_packet_structure_size =
             max(self.maximum_packet_structure_size, packet_structure_size);
+
+        println!("{}, {}", self.minimum_packet_structure_size, self.maximum_packet_structure_size);
 
         Ok(self.packet_structures.len() - 1)
     }
@@ -175,6 +191,26 @@ impl PacketStructureManager {
         Ok(bytes)
     }
 
+    fn check_for_identifier_collisions(packet_structures: &Vec<PacketStructure>, packet_structure_id: usize, delimiters: &Vec<PacketDelimiter>) -> Result<(), Vec<usize>> {
+        let mut identifier_collisions = Vec::new();
+
+        for other_packet_structure in packet_structures {
+            if other_packet_structure.id == packet_structure_id {
+                continue;
+            }
+
+            if other_packet_structure.delimiters == *delimiters {
+                identifier_collisions.push(other_packet_structure.id);
+            }
+        }
+
+        if !identifier_collisions.is_empty() {
+            return Err(identifier_collisions);
+        }
+
+        Ok(())
+    }
+
     pub fn set_delimiter_identifier(
         &mut self,
         packet_structure_id: usize,
@@ -215,22 +251,8 @@ impl PacketStructureManager {
         }
 
         // Check for collisions with other packet structure identifiers
-        let mut identifier_collisions = Vec::new();
-
-        for other_packet_structure in &self.packet_structures {
-            if other_packet_structure.id == packet_structure_id {
-                continue;
-            }
-
-            if other_packet_structure.delimiters == delimiters {
-                identifier_collisions.push(other_packet_structure.id);
-            }
-        }
-
-        if !identifier_collisions.is_empty() {
-            return Err(SetDelimiterIdentifierError::IdentifierCollision(
-                identifier_collisions,
-            ));
+        if let Err(colliding_ids) = Self::check_for_identifier_collisions(&self.packet_structures, packet_structure_id, &delimiters) {
+            return Err(SetDelimiterIdentifierError::IdentifierCollision(colliding_ids));
         }
 
         // Apply the change
@@ -347,5 +369,66 @@ impl PacketStructureManager {
         };
 
         Self::shift_components_after(packet_structure, 1, minimum_offset);
+    }
+
+    pub fn delete_packet_structure_component(
+        &mut self,
+        packet_structure_id: usize,
+        component_index: usize,
+        component_type: PacketComponentType,
+    ) -> Result<(), DeletePacketStructureComponentError> {
+        match component_type {
+            PacketComponentType::Field => {
+                let packet_structure = &mut self.packet_structures[packet_structure_id];
+
+                if packet_structure.fields.len() == 1 {
+                    return Err(DeletePacketStructureComponentError::LastField);
+                }
+
+                let removed_field = packet_structure.fields.remove(component_index);
+                Self::shift_components_after(
+                    packet_structure,
+                    -(removed_field.r#type.size() as isize),
+                    removed_field.offset_in_packet,
+                );
+                for field in &mut packet_structure.fields {
+                    if field.index > removed_field.index {
+                        field.index -= 1;
+                    }
+                }
+            }
+            PacketComponentType::Delimiter => {
+                let packet_structure = &self.packet_structures[packet_structure_id];
+
+                if packet_structure.delimiters.len() == 1 {
+                    return Err(DeletePacketStructureComponentError::LastDelimiter);
+                }
+
+                let mut delimiters = packet_structure.delimiters.clone();
+                let removed_delimiter = delimiters.remove(component_index);
+
+                if let Err(colliding_ids) = Self::check_for_identifier_collisions(&self.packet_structures, packet_structure_id, &delimiters) {
+                    return Err(DeletePacketStructureComponentError::DelimiterIdentifierCollision(colliding_ids));
+                }
+
+                let packet_structure = &mut self.packet_structures[packet_structure_id];
+
+                Self::shift_components_after(
+                    packet_structure,
+                    -(removed_delimiter.identifier.len() as isize),
+                    removed_delimiter.offset_in_packet,
+                );
+                for delimiter in &mut packet_structure.delimiters {
+                    if delimiter.index > removed_delimiter.index {
+                        delimiter.index -= 1;
+                    }
+                }
+            }
+            PacketComponentType::Gap => {
+                Self::set_gap_size(self, packet_structure_id, component_index, 0)
+            }
+        }
+
+        Ok(())
     }
 }

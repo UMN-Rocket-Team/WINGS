@@ -1,5 +1,5 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { addDelimiter, addField, addGapAfter, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { useBackendInteropManager } from "./BackendInteropManagerProvider";
@@ -66,7 +66,7 @@ const PacketsTab: Component = () => {
                                 )}
                             </For>
                         </div>
-                        <button class="bg-red border-rounded border-0 px-4 py-2" onClick={e => deletePacketStructure()}>
+                        <button class="bg-red border-rounded border-0 px-4 py-2" onClick={() => deletePacketStructure()}>
                             Delete {selectedPacket()!.name}
                         </button>
                     </Show>
@@ -164,7 +164,7 @@ const PacketsTab: Component = () => {
                             </Match>
                         </Switch>
                     </div>
-                    <button class="bg-red border-rounded border-0 px-4 py-2" onClick={e => deletePacketStructureComponent()}>
+                    <button class="bg-red border-rounded border-0 px-4 py-2" onClick={() => invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
                         Delete {(selectedPacketStructureComponent()?.data as any).name ?? "Gap"}
                     </button>
                 </Show>

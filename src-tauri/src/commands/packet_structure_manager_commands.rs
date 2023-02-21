@@ -1,8 +1,8 @@
 use crate::{
     models::packet_structure::{PacketFieldType, PacketMetadataType},
     packet_structure_events::update_packet_structures,
-    packet_structure_manager::SetDelimiterIdentifierError,
-    packet_structure_manager_state::PacketStructureManagerState,
+    packet_structure_manager::{SetDelimiterIdentifierError, DeletePacketStructureComponentError},
+    packet_structure_manager_state::PacketStructureManagerState, packet_view_model::PacketComponentType,
 };
 
 #[tauri::command]
@@ -176,5 +176,30 @@ pub fn add_gap_after(
             packet_structure_manager.add_gap_after(packet_structure_id, is_field, component_index);
             Ok(vec![packet_structure_id])
         },
+    )
+}
+
+#[tauri::command]
+pub fn delete_packet_structure_component(
+    app_handle: tauri::AppHandle,
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    packet_structure_id: usize,
+    component_index: usize,
+    component_type: PacketComponentType
+) -> Result<(), String> {
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            match packet_structure_manager.delete_packet_structure_component(packet_structure_id, component_index, component_type) {
+                Ok(_) => {},
+                Err(error) => return match error {
+                    DeletePacketStructureComponentError::LastField => Err((vec![], String::from("Last Field"))),
+                    DeletePacketStructureComponentError::LastDelimiter => Err((vec![], String::from("Last Delimiter"))),
+                    DeletePacketStructureComponentError::DelimiterIdentifierCollision(identifiers) => Err((identifiers, String::from("Identifier collision"))),
+                }
+            }
+            Ok(vec![packet_structure_id])
+        }
     )
 }

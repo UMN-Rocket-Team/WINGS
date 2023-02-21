@@ -10,6 +10,13 @@ pub struct PacketViewModel {
     components: Vec<PacketComponent>,
 }
 
+#[derive(Deserialize, Clone, Copy)]
+pub enum PacketComponentType {
+    Field,
+    Delimiter,
+    Gap
+}
+
 #[derive(Serialize, Clone)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketComponent {
