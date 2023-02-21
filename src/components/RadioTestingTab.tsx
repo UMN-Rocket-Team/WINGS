@@ -20,12 +20,12 @@ const RadioTestingTab: Component = () => {
     let testTimoutId: number | undefined;
 
     const testRadiosAndUpdateState = async () => {
-        const test_results: RadioTestResult = await testRadios();
+        const testResults: RadioTestResult = await testRadios();
         batch(() => {
             setSecondsElapsed(secondsElapsed() + testInterval() / 1000);
-            setPacketsAttemptedCount(packetsAttemptedCount() + test_results.packets_attempted);
-            setPacketsSentCount(packetsSentCount() + test_results.packets_written);
-            setPacketsRecievedCount(packetsRecievedCount() + test_results.packets_read);
+            setPacketsAttemptedCount(packetsAttemptedCount() + testResults.packetsAttempted);
+            setPacketsSentCount(packetsSentCount() + testResults.packetsWritten);
+            setPacketsRecievedCount(packetsRecievedCount() + testResults.packetsRead);
             setDataLossPercent(100 * (packetsRecievedCount() == 0 ? 1 : (1 - packetsRecievedCount() / packetsAttemptedCount())));
         });
 
