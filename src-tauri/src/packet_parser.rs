@@ -27,7 +27,7 @@ impl PacketParser {
         let mut last_successful_match_end_index: Option<usize> = None;
 
         let maximum_index =
-            self.unparsed_data.len() - packet_structure_manager.minimum_packet_structure_size;
+            self.unparsed_data.len() - packet_structure_manager.minimum_packet_structure_size + 1;
 
         for i in 0..maximum_index {
             // Try to find a matching packet for the data
@@ -109,7 +109,7 @@ impl PacketParser {
                 });
 
                 last_successful_match_end_index =
-                    Some(packet_start_index + packet_structure.size());
+                    Some(packet_start_index + packet_structure.size() - 1);
             }
         }
 
