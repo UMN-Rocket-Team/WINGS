@@ -1,5 +1,21 @@
 import { invoke } from "@tauri-apps/api/tauri";
+import { open, save } from '@tauri-apps/api/dialog';
 import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult } from "./types";
+
+export const importPacket = async () => {
+    const selectedFilePaths = await open({title: 'Import Flight Data', multiple: true, filters: [{name: 'FlightData', extensions: ['json'] }] });
+    if (Array.isArray(selectedFilePaths)) {
+        // user selected multiple files
+      } else if (selectedFilePaths === null) {
+        // user cancelled the selection
+      } else {
+        // user selected a single file
+      }
+}
+
+export const exportPacket = async () => {
+    const selectedFilePath = await save({title: 'Export Flight Data', filters: [{name: 'SpreadSheet', extensions: ['json'] }] });
+}
 
 export const setActivePort = async (portName: string) => await invoke("set_active_port", { portName: portName });
 
