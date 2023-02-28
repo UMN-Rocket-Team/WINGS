@@ -79,7 +79,7 @@ const RadioTestingTab: Component = () => {
                 <span class="dark:text-white">Packets to simulate:</span>
                 <div class="flex gap-2">
                     <label for="interval-input" class="dark:text-white">Interval:</label>
-                    <input type="number" onBeforeInput={e => {
+                    <input class = "bg-transparent dark:border-gray-4 dark:text-white border-1 border-rounded" type="number" onBeforeInput={e => {
                         if (e.data?.match(/[^0-9]/) ?? false) {
                             // Deny any non-number characters
                             e.preventDefault();
@@ -110,7 +110,7 @@ const RadioTestingTab: Component = () => {
 
                 <div class="flex gap-2">
                     <label for="sendingRadioPortInput" class="dark:text-white">Sending Radio Port:</label>
-                    <input type="text" name="Serial Port" id="sendingRadioPortInput" list="activeSerialPorts" 
+                    <input class = "bg-transparent dark:border-gray-4 dark:text-white border-1 border-rounded" type="text" name="Serial Port" id="sendingRadioPortInput" list="activeSerialPorts" 
                             onInput={event => setSelectedTestWritePort((event.target as HTMLInputElement).value)} value={selectedTestWritePort() ?? ""}
                             disabled={isSimulating()} />
                     <datalist id="activeSerialPorts">
@@ -122,7 +122,7 @@ const RadioTestingTab: Component = () => {
 
                 <div class="flex gap-2">
                     <label for="recievingRadioPortInput" class="dark:text-white">Reciving Radio Port:</label>
-                    <input type="text" name="Test Port" id="recievingRadioPortInput" list="testSerialPorts" 
+                    <input class = "bg-transparent dark:border-gray-4 dark:text-white border-1 border-rounded" type="text" name="Test Port" id="recievingRadioPortInput" list="testSerialPorts" 
                             onInput={event => setSelectedTestReadPort((event.target as HTMLInputElement).value)} value={selectedTestReadPort() ?? ""}
                             disabled={isSimulating()} />
                     <datalist id="testSerialPorts">

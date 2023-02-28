@@ -21,20 +21,20 @@ const Homepage: Component = () => {
                 </div>
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
                 <div class="flex gap-4 flex-col md:flex-row">
-                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded"
+                    <button class="homePageButton"
                             onClick={() => navigate("/newFlight")}>
                         {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Create New Flight
                     </button>
-                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded">
+                    <button class="homePageButton">
                         {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Load Flight File...
                     </button>
-                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded">
+                    <button class="homePageButton">
                         {/* <Icon icon="bi:collection-play-fill" width={28} height={28} class="dark:text-white" /> */}
                         Load Past Flight...
                     </button>
-                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded">
+                    <button class="homePageButton">
                         {/* <Icon icon="ri:live-fill" width={28} height={28} class="dark:text-white" /> */}
                         View Live Flight
                     </button>
