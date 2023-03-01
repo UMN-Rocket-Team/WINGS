@@ -15,9 +15,6 @@
       "dialog": {
         "open": true, 
         "save": true 
-      },
-      "fs": {
-        "all": true
       }
     },
     "bundle": {
