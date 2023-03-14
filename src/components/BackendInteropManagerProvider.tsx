@@ -13,7 +13,7 @@ export type BackendInteropManagerContextValue = {
 const BackendInteropManagerContext = createContext<BackendInteropManagerContextValue>({
     availablePortNames: (): SerialPortNames[] => [],
     newParsedPackets: (): Record<number, PacketData[]> | undefined => undefined,
-    packetViewModels: [],
+    packetViewModels: [{id:1,name:"test packet", components:[]}],
 });
 
 export const BackendInteropManagerProvider: ParentComponent = (props) => {

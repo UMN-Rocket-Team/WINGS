@@ -16,7 +16,7 @@ tauri-build = { version = "1.0.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.0", features = ["dialog-open", "dialog-save"] }
+tauri = { version = "1.0.0", features = ["dialog-open", "dialog-save", "fs-read-file", "fs-write-file"] }
 timer = "0.2.0"
 chrono = "0.4.22"
 serialport = "4.2.0"

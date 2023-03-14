@@ -36,7 +36,7 @@ const PacketsTab: Component = () => {
                     </For>
                 </div>
                 <button class="externalButton" onClick={e => importPacket()}>Import Packet...</button>
-                <button class="externalButton" onClick={e => exportPacket()}>Export Packet...</button>
+                <button class="externalButton" onClick={e => exportPacket(packetViewModels)}>Export Packet...</button>
                 <button class="externalButton" onClick={e => addEmptyPacket()}>Add Empty Packet</button>
             </div>
             <div class="flex flex-col gap-2">

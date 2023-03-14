@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { open, save } from '@tauri-apps/api/dialog';
 import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult } from "./types";
-import { useBackendInteropManager } from "../components/BackendInteropManagerProvider"
+import { PacketViewModel } from "../backend_interop/types";
 import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
 
 export const importPacket = async () => {
@@ -15,17 +15,15 @@ export const importPacket = async () => {
       }
 }
 
-export const exportPacket = async () => {
+export const exportPacket = async (packetView: PacketViewModel[]) => {
   const selectedFilePath = await save({title: 'Export Flight Data', filters: [{name: 'FlightData', extensions: ['json'] }] });
-  const { packetViewModels } = useBackendInteropManager();
   if (selectedFilePath != null)
   {
     await writeTextFile(
       {
-        contents: packetViewModels as String,
+        contents: JSON.stringify(packetView),
         path: selectedFilePath as string,
       },
-      
     );
   }
 
