@@ -49,6 +49,7 @@ export type FieldsPlaygroundProps = {
 
 const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
     // TODO: what happens if packets are added or removed? may have to implement reactivity
+    // TODO: wrap in createMemo()?
     const allFieldsInPackets: FieldInPacket[] = props.packetStructures.map((packetStructure: PacketStructure) =>
         packetStructure.fields.map((field, index) => (
             {packetStructure: packetStructure, fieldIndex: index}
@@ -85,7 +86,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
 
                 {/*Add box button*/}
                 <button class="p-2" onClick={() => setViewStates([
-                    ...viewStates, { allFieldsInPackets: [] }
+                    ...viewStates, { allFieldsInPackets: allFieldsInPackets }
                 ])}>+
                 </button>
             </div>

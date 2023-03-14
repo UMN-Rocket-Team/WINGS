@@ -33,7 +33,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
     return (
         <div class="relative bg-red p-2">
             {/*Dropdown list for adding fields*/}
-            <select class="absolute top-1 left-1 w-5 h-5 p-0" onChange={handleSelect}>
+            <select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>
                 {props.fieldsViewState.allFieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (
                     <option value={index}>
                         {fieldInPacket.packetStructure.name + ": " + fieldInPacket.packetStructure.fields[fieldInPacket.fieldIndex].name}
