@@ -35,9 +35,9 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class = "externalButton" onClick={e => importPacket()}>Import Packet...</button>
-                <button class = "externalButton" onClick={e => exportPacket()}>Export Packet...</button>
-                <button class = "externalButton" onClick={e => addEmptyPacket()}>Add Empty Packet</button>
+                <button class="externalButton" onClick={e => importPacket()}>Import Packet...</button>
+                <button class="externalButton" onClick={e => exportPacket()}>Export Packet...</button>
+                <button class="externalButton" onClick={e => addEmptyPacket()}>Add Empty Packet</button>
             </div>
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col justify-between flex-grow tab">
@@ -72,9 +72,9 @@ const PacketsTab: Component = () => {
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button class = "externalButton" onClick={() => addField(selectedPacketStructureIndex()!)}>Add Field</button>
-                    <button class = "externalButton" onClick={() => addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
-                    <button class = "externalButton" onClick={() => {
+                    <button class="externalButton" onClick={() => addField(selectedPacketStructureIndex()!)}>Add Field</button>
+                    <button class="externalButton" onClick={() => addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
+                    <button class="externalButton" onClick={() => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
                         let index: number;
@@ -106,13 +106,13 @@ const PacketsTab: Component = () => {
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
                                         <label for="fieldName">Name</label>
-                                        <input class = "inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
+                                        <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
                                             onInput={e => invokeApiSetter(setFieldName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <span>Offset in Packet: {selectedFieldData()!.offsetInPacket} byte{selectedFieldData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                     <div class="flex flex-col">
                                         <label for="fieldType">Type</label>
-                                        <select class = "inputBox" value={selectedFieldData()!.type} id="fieldType"
+                                        <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
                                             onInput={e => invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
@@ -121,7 +121,7 @@ const PacketsTab: Component = () => {
                                     </div>
                                     <div class="flex flex-col">
                                         <label for="fieldMetadataType">Metadata Type</label>
-                                        <select class = "inputBox" value={selectedFieldData()!.metadataType} id="fieldMetadataType"
+                                        <select class="inputBox" value={selectedFieldData()!.metadataType} id="fieldMetadataType"
                                             onInput={e => invokeApiSetter(setFieldMetadataType, (e.target as HTMLSelectElement).value as PacketMetadataType)}>
                                             <For each={Object.values(PacketMetadataType).filter(k => isNaN(Number(k)))}>
                                                 {(metadataType) => <option value={metadataType}>{metadataType}</option>}
@@ -135,12 +135,12 @@ const PacketsTab: Component = () => {
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
                                         <label for="delimiterName">Name</label>
-                                        <input class = "inputBox" type="text" value={selectedDelimiterData()!.name} id="delimiterName"
+                                        <input class="inputBox" type="text" value={selectedDelimiterData()!.name} id="delimiterName"
                                             onInput={e => invokeApiSetter(setDelimiterName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div>
                                         <label for="delimiterIdentifier">Identifier:</label>
-                                        <input class = "inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
+                                        <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
                                             onInput={e => invokeApiSetter(setDelimiterIdentifier, (e.target as HTMLInputElement).value)} />
                                         {/* TODO: enfore hex only characters on input! */}
                                     </div>
@@ -151,7 +151,7 @@ const PacketsTab: Component = () => {
                                 <h2 class="m-0">Gap Information</h2>
                                 <div class="flex flex-col">
                                     <label for="gapSize">Size</label>
-                                    <input class = "inputBox" type="number" value={selectedGapData()!.size} min={1} id="gapSize" onChange={(e) => {
+                                    <input class="inputBox" type="number" value={selectedGapData()!.size} min={1} id="gapSize" onChange={(e) => {
                                         const value = e.currentTarget.value;
 
                                         if (value.match('^[0-9]*$')) {
