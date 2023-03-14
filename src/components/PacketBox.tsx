@@ -1,7 +1,7 @@
 import {Component, For, JSX} from "solid-js";
 import {PacketField, PacketStructure} from "../backend_interop/types";
 
-const PacketTab: Component<PacketStructure> = (props: PacketStructure): JSX.Element => {
+const PacketBox: Component<PacketStructure> = (props: PacketStructure): JSX.Element => {
     return (
         <div class="bg-gray">
             <p class="px-2">{props.name}</p>
@@ -16,4 +16,4 @@ const PacketTab: Component<PacketStructure> = (props: PacketStructure): JSX.Elem
     );
 };
 
-export default PacketTab;
+export default PacketBox;

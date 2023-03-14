@@ -1,7 +1,7 @@
 import {Component, For} from "solid-js";
 import {PacketStructure} from "../backend_interop/types";
-import PacketTab from "./PacketTab";
-import FieldsView, {FieldsViewState} from "./FieldsView";
+import PacketBox from "./PacketBox";
+import FieldsView, {FieldInPacket, FieldsViewState} from "./FieldsView";
 import {createStore} from "solid-js/store";
 
 // const samplePacketStructures: PacketStructure[] = [
@@ -48,8 +48,15 @@ export type FieldsPlaygroundProps = {
 }
 
 const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
+    // TODO: what happens if packets are added or removed? may have to implement reactivity
+    const allFieldsInPackets: FieldInPacket[] = props.packetStructures.map((packetStructure: PacketStructure) =>
+        packetStructure.fields.map((field, index) => (
+            {packetStructure: packetStructure, fieldIndex: index}
+        ))
+    ).flat()
+
     // initial value for sample testing
-    const [viewStates, setViewStates] = createStore<FieldsViewState[]>([{fieldsInPackets: []}, {fieldsInPackets: []}, {fieldsInPackets: []}]);
+    const [viewStates, setViewStates] = createStore<FieldsViewState[]>([{allFieldsInPackets: allFieldsInPackets}, {allFieldsInPackets: allFieldsInPackets}, {allFieldsInPackets: allFieldsInPackets}]);
 
     const deleteFieldView = (fieldsViewStateToDelete: FieldsViewState) => {
         setViewStates(viewStates.filter(fieldsInView => fieldsInView !== fieldsViewStateToDelete))
@@ -63,7 +70,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
                 <p>Packets</p>
                 <For each={props.packetStructures}>
                     {(packet: PacketStructure) =>
-                        <PacketTab name={packet.name} fields={packet.fields} id={packet.id} delimiters={packet.delimiters}></PacketTab>
+                        <PacketBox name={packet.name} fields={packet.fields} id={packet.id} delimiters={packet.delimiters}></PacketBox>
                     }
                 </For>
             </div>
@@ -76,9 +83,9 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
                     }
                 </For>
 
-                {/*add box button*/}
+                {/*Add box button*/}
                 <button class="p-2" onClick={() => setViewStates([
-                    ...viewStates, { fieldsInPackets: [] }
+                    ...viewStates, { allFieldsInPackets: [] }
                 ])}>+
                 </button>
             </div>
