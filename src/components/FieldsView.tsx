@@ -1,5 +1,5 @@
 import {Component, For, JSX} from "solid-js";
-import {PacketStructure} from "../backend_interop/types";
+import {PacketField, PacketViewModel} from "../backend_interop/types";
 import {useModal} from "./ModalProvider";
 import ExpandedFieldsModal from "./ExpandedFieldsModal";
 import upRightArrow from "../assets/up-right-arrow.png"
@@ -7,7 +7,7 @@ import broom from "../assets/broom.png"
 import {createStore} from "solid-js/store";
 
 export type FieldInPacket = {
-    packetStructure: PacketStructure
+    packetViewModel: PacketViewModel
     fieldIndex: number
 }
 
@@ -36,7 +36,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
             <select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>
                 {props.fieldsViewState.allFieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (
                     <option value={index}>
-                        {fieldInPacket.packetStructure.name + ": " + fieldInPacket.packetStructure.fields[fieldInPacket.fieldIndex].name}
+                        {fieldInPacket.packetViewModel.name + ": " + (fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}
                     </option>
                 ))}
             </select>
@@ -58,8 +58,8 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
                 <For each={selected}>
                     {(fieldInPacket: FieldInPacket) =>
                         <div class="bg-gray p-2" style="height: 80%">
-                            <p>{fieldInPacket.packetStructure.name}</p>
-                            <p>{fieldInPacket.packetStructure.fields[fieldInPacket.fieldIndex].name}</p>
+                            <p>{fieldInPacket.packetViewModel.name}</p>
+                            <p>{(fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}</p>
                         </div>
                     }
                 </For>
