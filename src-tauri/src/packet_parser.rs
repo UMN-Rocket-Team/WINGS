@@ -27,7 +27,7 @@ impl PacketParser {
         let mut last_successful_match_end_index: Option<usize> = None;
 
         let maximum_index =
-            self.unparsed_data.len() - packet_structure_manager.minimum_packet_structure_size;
+            self.unparsed_data.len().checked_sub(packet_structure_manager.minimum_packet_structure_size).and_then(|min_index| Some(min_index + 1)).unwrap_or(0);
 
         for i in 0..maximum_index {
             // Try to find a matching packet for the data
@@ -100,7 +100,7 @@ impl PacketParser {
                     }
                 }
 
-                println!("- MATCHED!");
+                println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
 
                 packets.push(Packet {
                     structure_id: packet_structure.id,
@@ -115,8 +115,8 @@ impl PacketParser {
 
         // Throw away any garbage data that remains so that it does not have to be re-parsed
         let last_parsed_index = max(
-            max((self.unparsed_data.len() as isize) - (packet_structure_manager.maximum_packet_structure_size as isize), 0) as usize,
-            last_successful_match_end_index.unwrap_or(usize::MIN),
+            self.unparsed_data.len().checked_sub(packet_structure_manager.maximum_packet_structure_size).unwrap_or(0),
+            last_successful_match_end_index.unwrap_or(0),
         );
         println!("LPI: {}", last_parsed_index);
         self.unparsed_data.drain(0..last_parsed_index);

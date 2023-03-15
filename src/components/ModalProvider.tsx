@@ -30,7 +30,7 @@ export type ModalContextValue = {
      * The given component is constructed using the given child component properties. Metadata is
      * used for things other than component creation.
      */
-    showModal: <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, modalProps: BaseType & ModalMetadata<ResultType>) => void, 
+    showModal: <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, modalProps: BaseType & ModalMetadata<ResultType>) => void,
 };
 
 const ModalContext = createContext<ModalContextValue>({

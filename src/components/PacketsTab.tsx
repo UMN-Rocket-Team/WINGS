@@ -141,8 +141,11 @@ const PacketsTab: Component = () => {
                                     <div>
                                         <label for="delimiterIdentifier">Identifier:</label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
-                                            onInput={e => invokeApiSetter(setDelimiterIdentifier, (e.target as HTMLInputElement).value)} />
-                                        {/* TODO: enfore hex only characters on input! */}
+                                            onInput={e => {
+                                                (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\da-f]/g, '');
+
+                                                invokeApiSetter(setDelimiterIdentifier, (e.target as HTMLInputElement).value);
+                                            }} />
                                     </div>
                                     <span>Offset in Packet: {selectedDelimiterData()!.offsetInPacket} byte{selectedDelimiterData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                 </div>
