@@ -1,30 +1,31 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { open, save } from '@tauri-apps/api/dialog';
-import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult } from "./types";
+import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult,PacketComponent } from "./types";
 import { PacketViewModel } from "../backend_interop/types";
-import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { writeTextFile,readTextFile } from '@tauri-apps/api/fs';
 
 export const importPacket = async () => {
     const selectedFilePaths = await open({title: 'Import Flight Data', multiple: true, filters: [{name: 'FlightData', extensions: ['json'] }] });
+    let importedPackets = [];
     if (Array.isArray(selectedFilePaths)) {
-        // user selected multiple files
-      } else if (selectedFilePaths === null) {
-        // user cancelled the selections
-      } else {
-        // user selected a single file
+        for(const path of selectedFilePaths){
+          const contents = await readTextFile(path as string);
+          importedPackets.push(contents)
+        }
+      } 
+      else if(selectedFilePaths != null) {
+        const contents = await readTextFile(selectedFilePaths as string);
+        importedPackets.push(contents)
       }
 }
 
-export const exportPacket = async (packetView: PacketViewModel[]) => {
+export const exportPacket = async (packetView: PacketViewModel) => {
   const selectedFilePath = await save({title: 'Export Flight Data', filters: [{name: 'FlightData', extensions: ['json'] }] });
   if (selectedFilePath != null)
   {
-    await writeTextFile(
-      {
-        contents: JSON.stringify(packetView),
-        path: selectedFilePath as string,
-      },
-    );
+    let data = JSON.stringify(packetView)
+    let filePathString = selectedFilePath as string
+    await writeTextFile({contents: data,path: filePathString,});
   }
 
 }
