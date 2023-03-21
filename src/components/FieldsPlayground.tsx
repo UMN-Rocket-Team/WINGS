@@ -49,7 +49,7 @@ export type FieldsPlaygroundProps = {
 const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
     const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() =>
         props.packetViewModels.map((packetViewModel: PacketViewModel) =>
-            packetViewModel.components.map((component, index) => {
+            packetViewModel.components.map((component) => {
                 if (component.type === PacketComponentType.Field) {
                     const data: PacketField = (component.data as PacketField);
                     return { packetName: packetViewModel.name, packetId: packetViewModel.id, name: data.name, fieldIndex: data.index };
@@ -79,7 +79,8 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
                 {/*Add box button*/}
                 <button class="p-2" onClick={() => setViewStates([
                     ...viewStates, { fieldsInPackets: allFieldsInPackets() }
-                ])}>+
+                ])}>
+                    <h1>+</h1>
                 </button>
             </div>
         </div>

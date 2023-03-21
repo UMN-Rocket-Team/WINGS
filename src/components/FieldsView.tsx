@@ -4,6 +4,7 @@ import ExpandedFieldsModal from "./ExpandedFieldsModal";
 import upRightArrow from "../assets/up-right-arrow.png"
 import broom from "../assets/broom.png"
 import { createStore } from "solid-js/store";
+import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 
 export type FieldInPacket = {
     packetName: string,
@@ -27,20 +28,22 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
 
     const handleSelect = (event: Event) => {
-        const index = parseInt((event.target as HTMLSelectElement).value);
-        setSelected([...selected, props.fieldsViewState.fieldsInPackets[index]]);
+        const [selectedPacketId, selectedFieldIndex] = JSON.parse((event.target as HTMLSelectElement).value) as number[];
+        if ((event.target as HTMLInputElement).checked) {
+            setSelected([...selected, props.fieldsViewState.fieldsInPackets.find(
+                fieldInPacket => fieldInPacket.packetId === selectedPacketId && fieldInPacket.fieldIndex === selectedFieldIndex)!]);
+        } else {
+            setSelected(selected.filter(
+                fieldInPacket => fieldInPacket.packetId !== selectedPacketId || fieldInPacket.fieldIndex !== selectedFieldIndex));
+        }
     }
 
     return (
         <div class="relative bg-red p-2">
-            {/*Dropdown list for adding fields*/}
-            <select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>
-                {props.fieldsViewState.fieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (
-                    <option value={index}>
-                        {fieldInPacket.packetName + ": " + fieldInPacket.name}
-                    </option>
-                ))}
-            </select>
+            {/*Field Select Button*/}
+            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, { fieldViewState: props.fieldsViewState, handleSelect: handleSelect })}>
+                Select Fields
+            </button>
 
             {/*Expand button*/}
             <button class="absolute top-1 right-1 w-5 h-5 p-0"
