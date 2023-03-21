@@ -12,7 +12,7 @@ export type FieldInPacket = {
 }
 
 export type FieldsViewState = {
-    allFieldsInPackets: FieldInPacket[]
+    fieldsInPackets: FieldInPacket[]
 }
 
 export type FieldsViewProps = {
@@ -27,14 +27,14 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
     const handleSelect = (event: Event) => {
         const index = parseInt((event.target as HTMLSelectElement).value);
-        setSelected([...selected, props.fieldsViewState.allFieldsInPackets[index]]);
+        setSelected([...selected, props.fieldsViewState.fieldsInPackets[index]]);
     }
 
     return (
         <div class="relative bg-red p-2">
             {/*Dropdown list for adding fields*/}
             <select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>
-                {props.fieldsViewState.allFieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (
+                {props.fieldsViewState.fieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (
                     <option value={index}>
                         {fieldInPacket.packetViewModel.name + ": " + (fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}
                     </option>
@@ -43,7 +43,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
             {/*Expand button*/}
             <button class="absolute top-1 right-1 w-5 h-5 p-0"
-                    onClick={() => showModal<FieldsViewState, {}>(ExpandedFieldsModal, {allFieldsInPackets: selected})}>
+                    onClick={() => showModal<FieldsViewState, {}>(ExpandedFieldsModal, {fieldsInPackets: selected})}>
                 <img src={upRightArrow} style={{"width": "100%", "height": "100%"}} alt="Expand"></img>
             </button>
 

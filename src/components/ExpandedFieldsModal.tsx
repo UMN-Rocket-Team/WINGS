@@ -9,12 +9,11 @@ const ExpandedFieldsModal = (props: ModalProps<FieldsViewState>): JSX.Element =>
     return (
         <DefaultModalLayout close={() => props.closeModal({})}>
             <div class="flex flex-row gap-2 bg-red">
-                {/*TODO: update "props"'s field name to be "fieldsInPackets" rather than "allFieldsInPackets"*/}
-                <For each={props.allFieldsInPackets}>
+                <For each={props.fieldsInPackets}>
                     {(fieldInPacket: FieldInPacket) =>
                         <div class="p-2">
                             <p>{fieldInPacket.packetViewModel.name} {(fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}</p>
-                            <SolidChart/>
+                            <SolidChart fieldInPacket={fieldInPacket} />
                         </div>
                     }
                 </For>

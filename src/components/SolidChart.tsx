@@ -1,19 +1,27 @@
-import { onCleanup, onMount } from "solid-js";
-import { JSX } from "solid-js/jsx-runtime";
+import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LinearScale, LineController, LineElement, Point, PointElement } from "chart.js";
+import { FieldInPacket } from "./FieldsView";
+import { useBackendInteropManager } from "./BackendInteropManagerProvider";
+import { parsedPackets } from "../backend_interop/buffers";
 
 Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement);
 
-const SolidChart = (): JSX.Element => {
+type SolidChartProps = {
+    fieldInPacket: FieldInPacket;
+};
+
+const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
+    const { parsedPacketCount } = useBackendInteropManager();
+
     let canvas: HTMLCanvasElement;
     let chart: Chart;
-    let intervalID: number;
-    let x = 0;
+
+    const initialParsedPackets = parsedPackets[props.fieldInPacket.packetViewModel.id];
 
     const data = {
         datasets: [{
             label: 'My First dataset',
-            data: [{x: 0, y: 3}],
+            data: initialParsedPackets?.map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })) ?? [],
             backgroundColor: 'dark-blue',
             borderColor: 'blue',
             spanGaps: true,
@@ -55,26 +63,28 @@ const SolidChart = (): JSX.Element => {
         }
     };
 
-    onCleanup(() => clearInterval(intervalID));
+    let lastPacketCount = initialParsedPackets?.length ?? 0;
+
+    createEffect(() => {
+        const _unused = parsedPacketCount();
+
+        const packetData = parsedPackets[props.fieldInPacket.packetViewModel.id];
+
+        console.log("in chart", packetData, lastPacketCount)
+
+        if (packetData === undefined || lastPacketCount == packetData.length) {
+            return;
+        }
+
+        config.data.datasets[0].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })));
+
+        lastPacketCount = packetData.length;
+
+        chart.update();
+    }, { defer: true });
 
     onMount(() => {
         chart = new Chart(canvas, config);
-
-        intervalID = window.setInterval((): void => {
-            if (x > 700) {
-                window.clearInterval(intervalID);
-                return;
-            }
-
-            for (let i = 0; i < 100; ++i) {
-                config.data.datasets[0].data.push({ x: x++, y: Math.random() * 100 });
-            }
-    
-            chart.options.scales!.x!.min = Math.max(0, x - 500);
-            chart.options.scales!.x!.max = x;
-            
-            chart.update();
-        }, 1000);
     });
 
     onCleanup(() => {

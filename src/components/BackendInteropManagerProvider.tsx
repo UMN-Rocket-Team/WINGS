@@ -1,24 +1,24 @@
 import { Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext } from "solid-js";
 import { createStore } from "solid-js/store";
-import { pushUnparsedPackets as pushParsedPackets } from "../backend_interop/buffers";
-import { PacketData, PacketViewModel, RefreshAndReadResult, SerialPortNames } from "../backend_interop/types";
+import { parsedPackets, pushParsedPackets } from "../backend_interop/buffers";
+import { Packet, PacketData, PacketViewModel, RefreshAndReadResult, SerialPortNames } from "../backend_interop/types";
 import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
 
 export type BackendInteropManagerContextValue = {
     availablePortNames: Accessor<SerialPortNames[]>,
-    newParsedPackets: Accessor<Record<number, PacketData[]> | undefined>,
+    parsedPacketCount: Accessor<number>,
     packetViewModels: PacketViewModel[],
 };
 
 const BackendInteropManagerContext = createContext<BackendInteropManagerContextValue>({
     availablePortNames: (): SerialPortNames[] => [],
-    newParsedPackets: (): Record<number, PacketData[]> | undefined => undefined,
+    parsedPacketCount: () => 0,
     packetViewModels: [],
 });
 
 export const BackendInteropManagerProvider: ParentComponent = (props) => {
     const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
-    const [newParsedPackets, setNewParsedPackets] = createSignal<Record<number, PacketData[]>>();
+    const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
     const [packetViewModels, setPacketViewModels] = createStore<PacketViewModel[]>([]);
 
     let unlistenFunctions: UnlistenFn[];
@@ -34,7 +34,8 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
                     setAvailablePortNames(result.newAvailablePortNames);
                 }
                 if (result.parsedPackets) {
-                    setNewParsedPackets(pushParsedPackets(result.parsedPackets));
+                    pushParsedPackets(result.parsedPackets);
+                    setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }
             }),
             await listen<PacketViewModel[]>("packet-structures-update", event => {
@@ -62,6 +63,17 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
         await emit("initialized");
     });
 
+    setInterval(() => {
+        const parsedPackets: Packet[] = [
+            {fieldData: [ -100, -100, 10, 20, 30, 40 ], structureId: 0, timestamp: parsedPacketCount()}
+        ];
+
+        console.log("pushing");
+
+        pushParsedPackets(parsedPackets);
+        setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
+    }, 1000);
+
     onCleanup((): void => {
         // clearInterval(refreshIntervalId);
         for (const unlistenFunction of unlistenFunctions) {
@@ -69,7 +81,7 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
         }
     });
 
-    const context = { availablePortNames: availablePortNames, newParsedPackets: newParsedPackets, packetViewModels: packetViewModels };
+    const context = { availablePortNames: availablePortNames, parsedPacketCount: parsedPacketCount, packetViewModels: packetViewModels };
 
     return (
         <BackendInteropManagerContext.Provider value={context}>

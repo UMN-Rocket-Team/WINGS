@@ -1,8 +1,8 @@
 import { Packet, PacketData } from "./types";
 
-let parsedPackets: Record<number, PacketData[]> = [];
+export const parsedPackets: Record<number, PacketData[]> = [];
 
-export const pushUnparsedPackets = (packets: Packet[]): Record<number, PacketData[]> => {
+export const pushParsedPackets = (packets: Packet[]): void => {
     let sortedNewParsedPackets: Record<number, PacketData[]> = [];
 
     for (const packet of packets) {
@@ -19,6 +19,4 @@ export const pushUnparsedPackets = (packets: Packet[]): Record<number, PacketDat
         }
         parsedPackets[structureId].push(...sortedNewParsedPackets[structureId]);
     }
-
-    return sortedNewParsedPackets;
 };

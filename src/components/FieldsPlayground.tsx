@@ -58,7 +58,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
         ).flat());
 
     // initial value for sample testing
-    const [viewStates, setViewStates] = createStore<FieldsViewState[]>([{ allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }]);
+    const [viewStates, setViewStates] = createStore<FieldsViewState[]>([{ fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }]);
 
     const deleteFieldView = (fieldsViewStateToDelete: FieldsViewState) => {
         setViewStates(viewStates.filter(fieldsInView => fieldsInView !== fieldsViewStateToDelete))
@@ -77,7 +77,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
 
                 {/*Add box button*/}
                 <button class="p-2" onClick={() => setViewStates([
-                    ...viewStates, { allFieldsInPackets: allFieldsInPackets() }
+                    ...viewStates, { fieldsInPackets: allFieldsInPackets() }
                 ])}>+
                 </button>
             </div>
