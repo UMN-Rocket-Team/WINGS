@@ -5,10 +5,12 @@ import ExpandedFieldsModal from "./ExpandedFieldsModal";
 import upRightArrow from "../assets/up-right-arrow.png"
 import broom from "../assets/broom.png"
 import {createStore} from "solid-js/store";
+import FieldSelectModal, {FieldSelectModalProps} from "./FieldSelectModal";
 
 export type FieldInPacket = {
     packetViewModel: PacketViewModel
     fieldIndex: number
+    globalIndex: number
 }
 
 export type FieldsViewState = {
@@ -26,20 +28,29 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
 
     const handleSelect = (event: Event) => {
-        const index = parseInt((event.target as HTMLSelectElement).value);
-        setSelected([...selected, props.fieldsViewState.allFieldsInPackets[index]]);
+        const globalIndex = parseInt((event.target as HTMLSelectElement).value);
+        if ((event.target as HTMLInputElement).checked) {
+            setSelected([...selected, props.fieldsViewState.allFieldsInPackets[globalIndex]]);
+        } else {
+            setSelected(selected.filter((fieldInPacket: FieldInPacket) => fieldInPacket.globalIndex !== globalIndex));
+        }
     }
 
     return (
         <div class="relative bg-red p-2">
             {/*Dropdown list for adding fields*/}
-            <select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>
-                {props.fieldsViewState.allFieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (
-                    <option value={index}>
-                        {fieldInPacket.packetViewModel.name + ": " + (fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}
-                    </option>
-                ))}
-            </select>
+            {/*<select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>*/}
+            {/*    {props.fieldsViewState.allFieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (*/}
+            {/*        <option value={index}>*/}
+            {/*            {fieldInPacket.packetViewModel.name + ": " + (fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}*/}
+            {/*        </option>*/}
+            {/*    ))}*/}
+            {/*</select>*/}
+
+            {/*Field Select Button*/}
+            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {fieldViewState: props.fieldsViewState, handleSelect: handleSelect})}>
+                Select Fields
+            </button>
 
             {/*Expand button*/}
             <button class="absolute top-1 right-1 w-5 h-5 p-0"

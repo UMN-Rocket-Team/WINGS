@@ -47,15 +47,17 @@ export type FieldsPlaygroundProps = {
 }
 
 const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
-    const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() => 
-        props.packetViewModels.map((packetViewModel: PacketViewModel) =>
-            packetViewModel.components.map((component, index) => {
+    const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() => {
+        let globalIndex = 0;
+        return props.packetViewModels.map((packetViewModel: PacketViewModel) =>
+            packetViewModel.components.map((component, fieldIndex) => {
                 if (component.type === PacketComponentType.Field) {
-                    return { packetViewModel: packetViewModel, fieldIndex: index };
+                    return { packetViewModel: packetViewModel, fieldIndex: fieldIndex, globalIndex: globalIndex++ };
                 }
                 return null;
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
-        ).flat());
+        ).flat()
+    });
 
     // initial value for sample testing
     const [viewStates, setViewStates] = createStore<FieldsViewState[]>([{ allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }]);
@@ -78,7 +80,8 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
                 {/*Add box button*/}
                 <button class="p-2" onClick={() => setViewStates([
                     ...viewStates, { allFieldsInPackets: allFieldsInPackets() }
-                ])}>+
+                ])}>
+                    <h1>+</h1>
                 </button>
             </div>
         </div>
