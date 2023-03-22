@@ -40,7 +40,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
     return (
         <div class="relative bg-red p-2">
             {/*Field Select Button*/}
-            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, { fieldViewState: props.fieldsViewState, handleSelect: handleSelect })}>
+            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, { fieldViewState: props.fieldsViewState, selectedFields: selected, handleSelect: handleSelect })}>
                 Select Fields
             </button>
 
@@ -52,8 +52,8 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
-                    onClick={() => {setSelected([])}}>
-                <img src={broom} style={{"width": "100%", "height": "100%"}} alt="Delete"></img>
+                onClick={() => { setSelected([]) }}>
+                <img src={broom} style={{ "width": "100%", "height": "100%" }} alt="Delete"></img>
             </button>
 
             {/*Fields*/}

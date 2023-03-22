@@ -1,10 +1,11 @@
-import {ModalProps} from "./ModalProvider";
+import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import {For, JSX} from "solid-js";
-import {FieldInPacket, FieldsViewState} from "./FieldsView";
+import { For, JSX } from "solid-js";
+import { FieldInPacket, FieldsViewState } from "./FieldsView";
 
 export type FieldSelectModalProps = {
     fieldViewState: FieldsViewState,
+    selectedFields: FieldInPacket[],
     handleSelect: (event: Event) => void
 }
 
@@ -30,7 +31,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                             <For each={groupedFields[packetIdNum]}>
                                 {(fieldInPacket: FieldInPacket) =>
                                     <div>
-                                        <input type="checkbox" value={JSON.stringify([fieldInPacket.packetId, fieldInPacket.fieldIndex])} onclick={props.handleSelect}/>
+                                        <input type="checkbox" value={JSON.stringify([fieldInPacket.packetId, fieldInPacket.fieldIndex])}
+                                            checked={props.selectedFields.some(selectedField => selectedField.packetId === fieldInPacket.packetId && selectedField.fieldIndex === fieldInPacket.fieldIndex)}
+                                            onclick={props.handleSelect} />
                                         <label>{fieldInPacket.name}</label>
                                     </div>
                                 }
