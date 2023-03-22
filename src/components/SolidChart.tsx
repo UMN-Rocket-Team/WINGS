@@ -16,7 +16,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    const initialParsedPackets = parsedPackets[props.fieldInPacket.packetViewModel.id];
+    const initialParsedPackets = parsedPackets[props.fieldInPacket.packetId];
 
     const data = {
         datasets: [{
@@ -68,9 +68,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     createEffect(() => {
         const _unused = parsedPacketCount();
 
-        const packetData = parsedPackets[props.fieldInPacket.packetViewModel.id];
-
-        console.log("in chart", packetData, lastPacketCount)
+        const packetData = parsedPackets[props.fieldInPacket.packetId];
 
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;

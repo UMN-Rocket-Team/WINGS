@@ -14,9 +14,9 @@ export const pushParsedPackets = (packets: Packet[]): void => {
     }
 
     for (const structureId in sortedNewParsedPackets) {
-        if (parsedPackets[structureId] === undefined) {
-            parsedPackets[structureId] = [];
+        if (parsedPackets[+structureId] === undefined) {
+            parsedPackets[+structureId] = [];
         }
-        parsedPackets[structureId].push(...sortedNewParsedPackets[structureId]);
+        parsedPackets[+structureId].push(...sortedNewParsedPackets[structureId]);
     }
 };

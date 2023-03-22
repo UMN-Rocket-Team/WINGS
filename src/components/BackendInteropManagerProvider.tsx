@@ -1,7 +1,7 @@
 import { Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext } from "solid-js";
 import { createStore } from "solid-js/store";
-import { parsedPackets, pushParsedPackets } from "../backend_interop/buffers";
-import { Packet, PacketData, PacketViewModel, RefreshAndReadResult, SerialPortNames } from "../backend_interop/types";
+import { pushParsedPackets } from "../backend_interop/buffers";
+import { Packet, PacketViewModel, RefreshAndReadResult, SerialPortNames } from "../backend_interop/types";
 import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
 
 export type BackendInteropManagerContextValue = {
@@ -65,17 +65,14 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
 
     setInterval(() => {
         const parsedPackets: Packet[] = [
-            {fieldData: [ -100, -100, 10, 20, 30, 40 ], structureId: 0, timestamp: parsedPacketCount()}
+            { fieldData: [10, 20, 30, 40], structureId: 0, timestamp: parsedPacketCount() }
         ];
-
-        console.log("pushing");
 
         pushParsedPackets(parsedPackets);
         setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
     }, 1000);
 
     onCleanup((): void => {
-        // clearInterval(refreshIntervalId);
         for (const unlistenFunction of unlistenFunctions) {
             unlistenFunction();
         }

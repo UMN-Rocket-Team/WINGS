@@ -1,9 +1,8 @@
-import {ModalProps} from "./ModalProvider";
+import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import {For, JSX} from "solid-js";
-import {FieldInPacket, FieldsViewState} from "./FieldsView";
+import { For, JSX } from "solid-js";
+import { FieldInPacket, FieldsViewState } from "./FieldsView";
 import SolidChart from "./SolidChart";
-import { PacketField } from "../backend_interop/types";
 
 const ExpandedFieldsModal = (props: ModalProps<FieldsViewState>): JSX.Element => {
     return (
@@ -12,7 +11,7 @@ const ExpandedFieldsModal = (props: ModalProps<FieldsViewState>): JSX.Element =>
                 <For each={props.fieldsInPackets}>
                     {(fieldInPacket: FieldInPacket) =>
                         <div class="p-2">
-                            <p>{fieldInPacket.packetViewModel.name} {(fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}</p>
+                            <p>{fieldInPacket.packetName} {fieldInPacket.name}</p>
                             <SolidChart fieldInPacket={fieldInPacket} />
                         </div>
                     }

@@ -1,5 +1,5 @@
 import { Accessor, Component, createMemo, For } from "solid-js";
-import { PacketComponentType, PacketViewModel } from "../backend_interop/types";
+import { PacketComponentType, PacketField, PacketViewModel } from "../backend_interop/types";
 import FieldsView, { FieldInPacket, FieldsViewState } from "./FieldsView";
 import { createStore } from "solid-js/store";
 
@@ -47,11 +47,12 @@ export type FieldsPlaygroundProps = {
 }
 
 const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
-    const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() => 
+    const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() =>
         props.packetViewModels.map((packetViewModel: PacketViewModel) =>
             packetViewModel.components.map((component, index) => {
                 if (component.type === PacketComponentType.Field) {
-                    return { packetViewModel: packetViewModel, fieldIndex: index };
+                    const data: PacketField = (component.data as PacketField);
+                    return { packetName: packetViewModel.name, packetId: packetViewModel.id, name: data.name, fieldIndex: data.index };
                 }
                 return null;
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
