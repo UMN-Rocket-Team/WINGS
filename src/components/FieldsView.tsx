@@ -57,11 +57,11 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
             </button>
 
             {/*Fields*/}
-            <div class="flex items-center justify-center gap-4" style={{ "height": "100%" }}>
+            <div class="absolute flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll" style={{"width": "90%"}}>
                 <For each={selected}>
                     {(fieldInPacket: FieldInPacket) =>
-                        <div class="bg-gray p-2" style="height: 80%">
-                            <p>{fieldInPacket.packetName}</p>
+                        <div class="bg-gray p-2">
+                            <h3>{fieldInPacket.packetName}</h3>
                             <p>{fieldInPacket.name}</p>
                         </div>
                     }
