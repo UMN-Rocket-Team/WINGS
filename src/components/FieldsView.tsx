@@ -19,7 +19,6 @@ export type FieldsViewState = {
 
 export type FieldsViewProps = {
     fieldsViewState: FieldsViewState
-    deleteFieldsView: (fieldsViewToDelete: FieldsViewState) => void
 };
 
 const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Element => {
@@ -53,8 +52,8 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
-                onClick={() => props.deleteFieldsView(props.fieldsViewState)}>
-                <img src={broom} style={{ "width": "100%", "height": "100%" }} alt="Delete"></img>
+                    onClick={() => {setSelected([])}}>
+                <img src={broom} style={{"width": "100%", "height": "100%"}} alt="Delete"></img>
             </button>
 
             {/*Fields*/}
