@@ -38,7 +38,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
     return (
         <div class="relative bg-red p-2">
             {/*Field Select Button*/}
-            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {fieldViewState: props.fieldsViewState, handleSelect: handleSelect})}>
+            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {fieldViewState: props.fieldsViewState, selectedFields: selected, handleSelect: handleSelect})}>
                 Select Fields
             </button>
 

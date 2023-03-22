@@ -6,6 +6,7 @@ import { PacketField } from "../backend_interop/types";
 
 export type FieldSelectModalProps = {
     fieldViewState: FieldsViewState,
+    selectedFields: FieldInPacket[],
     handleSelect: (event: Event) => void
 }
 
@@ -20,6 +21,8 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
         return acc;
     }, {});
 
+    const selectedFieldIndices: Set<number> = new Set(props.selectedFields.map(fieldInPacket => fieldInPacket.globalIndex));
+
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
             <For each={Object.keys(groupedFields)}>
@@ -29,9 +32,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                         <div class={packetBackgroundColors[packetIndex() % packetBackgroundColors.length] + " p-2"}>
                             <h3 class="m-2">{groupedFields[packetIdNum][0].packetViewModel.name}</h3>
                             <For each={groupedFields[packetIdNum]}>
-                                {(fieldInPacket: FieldInPacket, index) =>
+                                {(fieldInPacket: FieldInPacket) =>
                                     <div>
-                                        <input type="checkbox" value={index()} onclick={props.handleSelect}/>
+                                        <input type="checkbox" value={fieldInPacket.globalIndex} onclick={props.handleSelect} checked={selectedFieldIndices.has(fieldInPacket.globalIndex)}/>
                                         <label>{(fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}</label>
                                     </div>
                                 }

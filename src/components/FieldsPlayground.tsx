@@ -2,45 +2,6 @@ import { Accessor, Component, createMemo, For } from "solid-js";
 import { PacketComponentType, PacketViewModel } from "../backend_interop/types";
 import FieldsView, { FieldInPacket, FieldsViewState } from "./FieldsView";
 
-// const samplePacketStructures: PacketStructure[] = [
-//     {
-//         id: 69,
-//         name: "Packet 1 Name",
-//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0},
-//             {name: "Field 2", type: 0, offsetInPacket: 0, metadataType: 0}],
-//         delimiters: []
-//     },
-//     {
-//         id: 70,
-//         name: "Packet 2 Name",
-//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
-//         delimiters: []
-//     },
-//     {
-//         id: 71,
-//         name: "Packet 3 Name",
-//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
-//         delimiters: []
-//     },
-//     {
-//         id: 72,
-//         name: "Packet 4 Name",
-//         fields: [{name: "Field 1", type: 0, offsetInPacket: 0, metadataType: 0}],
-//         delimiters: []
-//     }
-// ]
-//
-// const sampleViewStates: FieldsViewState[] = [
-//     {
-//         fieldsInPackets: [
-//             {packetStructure: samplePacketStructures[0], fieldIndex: 0},
-//             {packetStructure: samplePacketStructures[1], fieldIndex: 0}
-//         ]
-//     },
-//     {fieldsInPackets: []},
-//     {fieldsInPackets: []}
-// ]
-
 export type FieldsPlaygroundProps = {
     packetViewModels: PacketViewModel[]
 }
