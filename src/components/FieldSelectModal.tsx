@@ -22,14 +22,6 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
-            {/*<For each={props.fieldViewState.allFieldsInPackets}>*/}
-            {/*    {(fieldInPacket: FieldInPacket, index) =>*/}
-            {/*        <div>*/}
-            {/*            <input type="checkbox" value={index()} onclick={props.handleSelect}/>*/}
-            {/*            <label>{fieldInPacket.packetViewModel.name + ": " + (fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}</label>*/}
-            {/*        </div>*/}
-            {/*    }*/}
-            {/*</For>*/}
             <For each={Object.keys(groupedFields)}>
                 {(packetId: string, packetIndex) => {
                     const packetIdNum = parseInt(packetId);

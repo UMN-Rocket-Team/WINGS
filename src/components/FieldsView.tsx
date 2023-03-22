@@ -19,7 +19,6 @@ export type FieldsViewState = {
 
 export type FieldsViewProps = {
     fieldsViewState: FieldsViewState
-    deleteFieldsView: (fieldsViewToDelete: FieldsViewState) => void
 };
 
 const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Element => {
@@ -38,15 +37,6 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
     return (
         <div class="relative bg-red p-2">
-            {/*Dropdown list for adding fields*/}
-            {/*<select class="absolute top-1 left-1 p-0" name="Add Field" onChange={handleSelect}>*/}
-            {/*    {props.fieldsViewState.allFieldsInPackets.map((fieldInPacket: FieldInPacket, index: number) => (*/}
-            {/*        <option value={index}>*/}
-            {/*            {fieldInPacket.packetViewModel.name + ": " + (fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}*/}
-            {/*        </option>*/}
-            {/*    ))}*/}
-            {/*</select>*/}
-
             {/*Field Select Button*/}
             <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {fieldViewState: props.fieldsViewState, handleSelect: handleSelect})}>
                 Select Fields
@@ -60,7 +50,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
-                    onClick={() => props.deleteFieldsView(props.fieldsViewState)}>
+                    onClick={() => {setSelected([])}}>
                 <img src={broom} style={{"width": "100%", "height": "100%"}} alt="Delete"></img>
             </button>
 
