@@ -10,7 +10,7 @@ import { useNavigate } from "@solidjs/router";
 
 const DataTab: Component = () => {
     const { showModal } = useModal();
-    const { availablePortNames, packetViewModels } = useBackendInteropManager();
+    const { availablePortNames, packetViewModels, parsedPacketCount } = useBackendInteropManager();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
@@ -40,7 +40,7 @@ const DataTab: Component = () => {
                     </datalist>
                 </div>
 
-                <p class="m-0">Packets Received: {0 /* TODO: fill in */}</p>
+                <p class="m-0">Packets Received: {parsedPacketCount()}</p>
 
                 <div class="flex gap-1">
                     <button onClick={() => showModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>
