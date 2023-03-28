@@ -9,7 +9,7 @@ export type FieldSelectModalProps = {
     handleSelect: (event: Event) => void
 }
 
-const packetBackgroundColors = ["bg-red-2", "bg-gray-2"];
+const packetBackgroundColors = ["bg-neutral-200", "bg-neutral-400"];
 
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
     const groupedFields = props.fieldViewState.fieldsInPackets.reduce((acc: Record<number, FieldInPacket[]>, fieldInPacket) => {

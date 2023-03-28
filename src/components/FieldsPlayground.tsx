@@ -24,7 +24,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
         // h-0 is used to make the flexbox scrollable; see https://stackoverflow.com/a/65742620/16236499 for more information
         <div class="flex flex-grow h-0">
             {/*Views*/}
-            <div class="grid grid-cols-2 p-2 gap-2 bg-red-7" style={{ "width": "100%" }}>
+            <div class="grid grid-cols-2 p-2 gap-2" style={{ "width": "100%" }}>
                 <For each={viewStates}>
                     {(fieldsViewState: FieldsViewState) =>
                         <FieldsView fieldsViewState={fieldsViewState}></FieldsView>
