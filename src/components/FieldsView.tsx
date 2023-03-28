@@ -14,7 +14,8 @@ export type FieldInPacket = {
 }
 
 export type FieldsViewState = {
-    fieldsInPackets: FieldInPacket[]
+    fieldsInPackets: FieldInPacket[];
+    number: number;
 }
 
 export type FieldsViewProps = {
@@ -46,7 +47,7 @@ const FieldsView: Component<FieldsViewProps> = (props: FieldsViewProps): JSX.Ele
 
             {/*Expand button*/}
             <button class="absolute top-1 right-1 w-5 h-5 p-0"
-                onClick={() => showModal<FieldsViewState, {}>(ExpandedFieldsModal, { fieldsInPackets: selected })}>
+                onClick={() => showModal<FieldsViewState, {}>(ExpandedFieldsModal, { fieldsInPackets: selected, number: props.fieldsViewState.number })}>
                 <img src={upRightArrow} style={{ "width": "100%", "height": "100%" }} alt="Expand"></img>
             </button>
 

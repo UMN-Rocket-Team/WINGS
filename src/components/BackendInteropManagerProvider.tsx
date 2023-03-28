@@ -65,7 +65,7 @@ export const BackendInteropManagerProvider: ParentComponent = (props) => {
 
     setInterval(() => {
         const parsedPackets: Packet[] = [
-            { fieldData: [10, 20, 30, 40], structureId: 0, timestamp: parsedPacketCount() }
+            { fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now() }
         ];
 
         pushParsedPackets(parsedPackets);

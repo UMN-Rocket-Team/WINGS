@@ -1,13 +1,9 @@
 import {Component, createEffect, createSignal, For} from "solid-js";
-import BroadcastModal from "./BroadcastModal";
-import {useModal} from "./ModalProvider";
 import FieldsPlayground from "./FieldsPlayground";
 import logo from "../assets/logo.png";
-import UploadModal from "./UploadModal";
 import {useBackendInteropManager} from "./BackendInteropManagerProvider";
 import {setActivePort} from "../backend_interop/api_calls";
 import {useNavigate} from "@solidjs/router";
-import {PacketComponentType, PacketFieldType, PacketMetadataType, PacketViewModel} from "../backend_interop/types";
 
 // const samplePacketViewModels: PacketViewModel[] = [
 //     {
@@ -28,7 +24,6 @@ import {PacketComponentType, PacketFieldType, PacketMetadataType, PacketViewMode
 // ];
 
 const DataTab: Component = () => {
-    const { showModal } = useModal();
     const { availablePortNames, packetViewModels, parsedPacketCount } = useBackendInteropManager();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
@@ -62,9 +57,7 @@ const DataTab: Component = () => {
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
 
                 <div class="flex gap-1">
-                    <button onClick={() => showModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>
                     <button>Save</button>
-                    <button onClick={() => showModal<{}, {}>(UploadModal, {})}>Upload</button>
                 </div>
             </footer>
         </div>

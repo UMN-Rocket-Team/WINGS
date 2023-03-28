@@ -1,10 +1,11 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
-import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LinearScale, LineController, LineElement, Point, PointElement } from "chart.js";
+import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale } from "chart.js";
+import 'chartjs-adapter-luxon';
 import { FieldInPacket } from "./FieldsView";
 import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
-Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement);
+Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement);
 
 type SolidChartProps = {
     fieldInPacket: FieldInPacket;
@@ -33,6 +34,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             animation: false,
             parsing: false,
             normalized: true,
@@ -49,16 +51,16 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             },
             scales: {
                 x: {
-                    type: "linear",
-                    min: 0,
-                    max: 100,
+                    type: "time",
+                    time: {
+                        unit: 'second',
+                        displayFormats: {
+                            second: 'HH:mm:ss'
+                        }
+                    },
                     display: true,
-                    axis: "x",
                 },
-                y: {
-                    min: 0,
-                    max: 100
-                }
+                y: {}
             }
         }
     };
@@ -86,7 +88,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     });
 
     onCleanup(() => {
-        chart.destroy();
+        chart?.destroy();
     });
 
     return (

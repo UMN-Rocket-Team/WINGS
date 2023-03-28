@@ -18,7 +18,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
         ).flat());
 
-    const viewStates: FieldsViewState[] = [{ fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }];
+    const viewStates: FieldsViewState[] = [{ fieldsInPackets: allFieldsInPackets(), number: 1 }, { fieldsInPackets: allFieldsInPackets(), number: 2 }, { fieldsInPackets: allFieldsInPackets(), number: 3 }, { fieldsInPackets: allFieldsInPackets(), number: 4 }];
 
     return (
         // h-0 is used to make the flexbox scrollable; see https://stackoverflow.com/a/65742620/16236499 for more information
