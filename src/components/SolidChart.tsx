@@ -1,11 +1,11 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
-import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale } from "chart.js";
+import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title } from "chart.js";
 import 'chartjs-adapter-luxon';
 import { FieldInPacket } from "./FieldsView";
 import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
-Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement);
+Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title);
 
 type SolidChartProps = {
     fieldInPacket: FieldInPacket;
@@ -48,6 +48,10 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
                     enabled: true,
                     algorithm: "lttb",
                 },
+                title: {
+                    display: true,
+                    text: props.fieldInPacket.name,
+                }
             },
             scales: {
                 x: {
@@ -60,8 +64,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
                     },
                     display: true,
                 },
-                y: {}
-            }
+            },
         }
     };
 
