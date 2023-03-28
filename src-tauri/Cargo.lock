@@ -3144,22 +3144,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0046fef7e28c3804e5e38bfa31ea2a0f73905319b677e57ebe37e49358989b5d"
 
 [[package]]
-name = "webgs"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "chrono",
- "hex",
- "readonly",
- "serde",
- "serde_json",
- "serialport",
- "tauri",
- "tauri-build",
- "timer",
-]
-
-[[package]]
 name = "webkit2gtk"
 version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3431,6 +3415,22 @@ name = "windows_x86_64_msvc"
 version = "0.42.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "447660ad36a13288b1db4d4248e857b510e8c3a225c822ba4fb748c0aafecffd"
+
+[[package]]
+name = "wings"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "hex",
+ "readonly",
+ "serde",
+ "serde_json",
+ "serialport",
+ "tauri",
+ "tauri-build",
+ "timer",
+]
 
 [[package]]
 name = "winres"
