@@ -1,9 +1,9 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize} from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize,debug} from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 import { importPacket, exportPacket} from "../core/packet_file_handling";
+import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 const PacketsTab: Component = () => {
     const { packetViewModels } = useBackendInteropManager();
 
@@ -35,9 +35,11 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class="externalButton" onClick={e => importPacket()}>Import Packet...</button>
-                <button class="externalButton" onClick={e => exportPacket(selectedPacket())}>Export Packet...</button>
-                <button class="externalButton" onClick={e => addEmptyPacket()}>Add Empty Packet</button>
+                <button class="externalButton" onClick={() => {
+                    importPacket();
+                }}>Import Packet...</button>
+                <button class="externalButton" onClick={() => exportPacket(selectedPacket())}>Export Packet...</button>
+                <button class="externalButton" onClick={() => addEmptyPacket()}>Add Empty Packet</button>
             </div>
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col justify-between flex-grow tab">

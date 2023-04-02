@@ -1,23 +1,33 @@
 import { open, save } from '@tauri-apps/api/dialog';
 import { PacketViewModel } from "../backend_interop/types";
 import { writeTextFile,readTextFile } from '@tauri-apps/api/fs';
+import {addPacket, debug} from "../backend_interop/api_calls"
 
 export const importPacket = async () => {
-    const selectedFilePaths = await open({title: 'Import Flight Data', multiple: true, filters: [{name: 'FlightData', extensions: ['json'] }] });
-    let importedPackets:string[] = [];
-    if (Array.isArray(selectedFilePaths)) {
-        for(const path of selectedFilePaths){
-          const contents = await readTextFile(path as string);
-          importedPackets.push(contents)
-        }
-      } 
-      else if(selectedFilePaths != null) {
-        const contents = await readTextFile(selectedFilePaths as string);
-        importedPackets.push(contents)
+  debug("here1");
+  let importedPackets:PacketViewModel[] = [];
+
+  const selectedFilePaths = await open({title: 'Import Flight Data', multiple: true, filters: [{name: 'FlightData', extensions: ['json'] }] });
+  if (Array.isArray(selectedFilePaths)) {
+      for(const path of selectedFilePaths){
+        let contents = await readTextFile(path as string);
+        let parsedContents: PacketViewModel = JSON.parse(contents)
+        importedPackets.push(parsedContents)
       }
+    } 
+  else if(selectedFilePaths != null) {
+    let contents = await readTextFile(selectedFilePaths as string);
+    let parsedContents: PacketViewModel = JSON.parse(contents)
+    importedPackets.push(parsedContents)
+  }
+  for (const packetView of importedPackets){
+    debug("here2")
+    addPacket(packetView)      
+  }
 }
 
 export const exportPacket = async (packetView: PacketViewModel) => {
+  debug("here2");
   const selectedFilePath = await save({title: 'Export Flight Data', filters: [{name: 'FlightData', extensions: ['json'] }] });
   if (selectedFilePath != null)
   {

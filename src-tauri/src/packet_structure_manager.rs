@@ -80,7 +80,10 @@ impl PacketStructureManager {
             max(self.maximum_packet_structure_size, packet_structure_size);
 
         println!("{}, {}", self.minimum_packet_structure_size, self.maximum_packet_structure_size);
-
+        for i in self.packet_structures.iter(){
+            let i_name = i.name.clone();
+            println!("{i_name}");
+        }
         Ok(self.packet_structures.len() - 1)
     }
 
@@ -430,5 +433,13 @@ impl PacketStructureManager {
         }
 
         Ok(())
+    }
+
+    pub fn debug(
+        &mut self,
+        debug: &str,
+    ){
+        print!("Running debug:");
+        println!("{debug}");
     }
 }

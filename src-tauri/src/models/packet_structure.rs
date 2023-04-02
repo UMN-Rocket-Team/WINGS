@@ -2,7 +2,7 @@ use std::cmp::max;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Deserialize)]
+#[derive(PartialEq, Deserialize, Clone)]
 pub struct PacketStructure {
     pub(crate) id: usize,
     pub(crate) name: String,

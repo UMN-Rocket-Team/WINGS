@@ -2,7 +2,7 @@ use crate::{
     models::packet_structure::{PacketFieldType, PacketMetadataType},
     packet_structure_events::update_packet_structures,
     packet_structure_manager::{SetDelimiterIdentifierError, DeletePacketStructureComponentError},
-    packet_structure_manager_state::PacketStructureManagerState, packet_view_model::PacketComponentType,
+    packet_structure_manager_state::PacketStructureManagerState, packet_view_model::{PacketComponentType, PacketViewModel},
 };
 
 #[tauri::command]
@@ -201,5 +201,44 @@ pub fn delete_packet_structure_component(
             }
             Ok(vec![packet_structure_id])
         }
+    )
+}
+
+#[tauri::command]
+pub fn add_packet(app_handle: tauri::AppHandle,// pointing to the location of the app in memory?
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,// the main datastructure of evertything in the app
+    view: PacketViewModel // packet to be added(currently in json formatting)
+) -> Result<(), String> {
+    let packet_structure = view.to_packet_structure();
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            println!("here3");
+            match packet_structure_manager.register_packet_structure(packet_structure.clone()) {
+                Ok(_) => {Ok(vec![0])}
+                Err(_) => { 
+                    let error_usize: usize = 0;
+                    Err((vec![error_usize],"Failed to register imported packet structures!".to_string()))
+                }
+            }
+        }
+    )
+}
+
+
+#[tauri::command]
+pub fn debug(
+    app_handle: tauri::AppHandle,// pointing to the location of the app in memory?
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,// the main datastructure of evertything in the app
+    debug: &str
+) -> Result<(), String> {
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            packet_structure_manager.debug(debug);
+            Ok(vec![0])
+        },
     )
 }
