@@ -209,17 +209,16 @@ pub fn add_packet(app_handle: tauri::AppHandle,// pointing to the location of th
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,// the main datastructure of evertything in the app
     view: PacketViewModel // packet to be added(currently in json formatting)
 ) -> Result<(), String> {
-    let packet_structure = view.to_packet_structure();
     update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            println!("here3");
+            let new_id = packet_structure_manager.get_len();
+            let packet_structure = view.to_packet_structure(new_id);
             match packet_structure_manager.register_packet_structure(packet_structure.clone()) {
-                Ok(_) => {Ok(vec![0])}
+                Ok(_) => {Ok(vec![new_id])}
                 Err(_) => { 
-                    let error_usize: usize = 0;
-                    Err((vec![error_usize],"Failed to register imported packet structures!".to_string()))
+                    Err((vec![new_id - 1],"Failed to register imported packet structures!".to_string()))
                 }
             }
         }
@@ -229,16 +228,8 @@ pub fn add_packet(app_handle: tauri::AppHandle,// pointing to the location of th
 
 #[tauri::command]
 pub fn debug(
-    app_handle: tauri::AppHandle,// pointing to the location of the app in memory?
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,// the main datastructure of evertything in the app
     debug: &str
-) -> Result<(), String> {
-    update_packet_structures(
-        app_handle,
-        packet_structure_manager_state,
-        &mut |packet_structure_manager| {
-            packet_structure_manager.debug(debug);
-            Ok(vec![0])
-        },
-    )
+){
+    print!("Running debug: ");
+    println!("{debug}");
 }
