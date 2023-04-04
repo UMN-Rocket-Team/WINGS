@@ -1,11 +1,11 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
-import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title } from "chart.js";
+import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
 import 'chartjs-adapter-luxon';
 import { FieldInPacket } from "./FieldsView";
 import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
-Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title);
+Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
 
 type SolidChartProps = {
     fieldInPacket: FieldInPacket;
@@ -21,7 +21,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
 
     const data = {
         datasets: [{
-            label: 'My First dataset',
+            label: props.fieldInPacket.name,
             data: initialParsedPackets?.map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })) ?? [],
             backgroundColor: 'dark-blue',
             borderColor: 'blue',
