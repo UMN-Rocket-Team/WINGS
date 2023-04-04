@@ -204,32 +204,27 @@ pub fn delete_packet_structure_component(
     )
 }
 
+/// Takes PackerViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
+///
+/// # Arguments
+/// * 'view' - PackeViewModel containing the packet that will be added to the packet structure
 #[tauri::command]
-pub fn add_packet(app_handle: tauri::AppHandle,// pointing to the location of the app in memory?
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,// the main datastructure of evertything in the app
-    view: PacketViewModel // packet to be added(currently in json formatting)
+pub fn add_packet(app_handle: tauri::AppHandle,
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    view: PacketViewModel
 ) -> Result<(), String> {
     update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            let new_id = packet_structure_manager.get_len();
-            let packet_structure = view.to_packet_structure(new_id);
+            let packet_structure = view.to_packet_structure();
             match packet_structure_manager.register_packet_structure(packet_structure.clone()) {
-                Ok(_) => {Ok(vec![new_id])}
+                Ok(new_id) => {Ok(vec![new_id])}
                 Err(_) => { 
-                    Err((vec![new_id - 1],"Failed to register imported packet structures!".to_string()))
+                    Err((vec![],"Failed to register imported packet structures!".to_string()))
                 }
             }
         }
     )
 }
 
-
-#[tauri::command]
-pub fn debug(
-    debug: &str
-){
-    print!("Running debug: ");
-    println!("{debug}");
-}

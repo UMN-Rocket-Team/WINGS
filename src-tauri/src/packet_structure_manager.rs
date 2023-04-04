@@ -81,11 +81,6 @@ impl PacketStructureManager {
 
         println!("{}, {}", self.minimum_packet_structure_size, self.maximum_packet_structure_size);
 
-        for registered_packet_structure in self.packet_structures.iter() {
-            let registered_packet_structure_printable = registered_packet_structure.id.clone().to_string();
-            println!("{registered_packet_structure_printable}");
-        }
-
         Ok(self.packet_structures.len() - 1)
     }
 
@@ -435,11 +430,5 @@ impl PacketStructureManager {
         }
 
         Ok(())
-    }
-
-    pub fn get_len(
-        &mut self,
-    )-> usize{
-        self.packet_structures.len()
     }
 }

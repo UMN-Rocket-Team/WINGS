@@ -44,5 +44,4 @@ export const deletePacketStructureComponent = async (packetStructureId: number, 
 
 export const addPacket = async (view: PacketViewModel) => await invoke("add_packet", {view});
 
-export const debug = async (debug: string) => await invoke("debug", {debug});
 

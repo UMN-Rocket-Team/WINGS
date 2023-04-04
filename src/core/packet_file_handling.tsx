@@ -1,7 +1,7 @@
 import { open, save } from '@tauri-apps/api/dialog';
 import { PacketViewModel } from "../backend_interop/types";
 import { writeTextFile,readTextFile } from '@tauri-apps/api/fs';
-import {addPacket, debug} from "../backend_interop/api_calls"
+import {addPacket} from "../backend_interop/api_calls"
 
 export const importPacket = async () => {
   let importedPackets:PacketViewModel[] = [];
@@ -23,13 +23,7 @@ export const importPacket = async () => {
 const pathToPacketViewModel = async (path: string) => {
     let contents = await readTextFile(path as string);
     let parsedContents: PacketViewModel = JSON.parse(contents);
-    parsedContents.name = await pathtoFilename(path);
     return parsedContents;
-}
-const pathtoFilename = async (path: string) => {
-  let fileNameStart = Math.max(path.lastIndexOf("/"),path.lastIndexOf('\\'))+ 1;
-  let fileNameEnd = path.indexOf(".json");
-  return path.substring(fileNameStart,fileNameEnd)
 }
 
 export const exportPacket = async (packetView: PacketViewModel) => {

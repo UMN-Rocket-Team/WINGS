@@ -10,21 +10,20 @@ pub struct PacketViewModel {
     components: Vec<PacketComponent>,
 }
 impl PacketViewModel{
-    pub fn to_packet_structure(&self, new_id: usize) -> PacketStructure {
+    pub fn to_packet_structure(&self) -> PacketStructure {
         let mut packet_fields: Vec<PacketField> = Vec::new();
         let mut packet_delimiters: Vec<PacketDelimiter> = Vec::new();
-        let component_list = self.components.clone();
-        for component in component_list{
+        for component in &self.components{
 
             match component {
                 PacketComponent::Field(field) => 
-                    packet_fields.push(field),
+                    packet_fields.push(field.clone()),
 
                 PacketComponent::Delimiter(delimiter) => 
                     packet_delimiters.push(PacketDelimiter { 
                         index: delimiter.index, 
-                        name: delimiter.name, 
-                        identifier: hex::decode(delimiter.identifier).unwrap(), // used unwrap instead of match(program will panick if this cant decode)
+                        name: delimiter.name.to_string(), 
+                        identifier: hex::decode(delimiter.identifier.to_string()).unwrap(), // used unwrap instead of match(program will panick if this cant decode)
                         offset_in_packet: delimiter.offset_in_packet
                     }),
                 PacketComponent::Gap(_gap) => {}//gaps are view only and can be ignored
@@ -32,7 +31,7 @@ impl PacketViewModel{
             };
 
         };
-        return PacketStructure { id: new_id, name: self.name.clone(), fields: packet_fields, delimiters: packet_delimiters };
+        return PacketStructure { id: self.id, name: self.name.clone(), fields: packet_fields, delimiters: packet_delimiters };
     }
 }
 
