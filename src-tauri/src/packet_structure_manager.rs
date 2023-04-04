@@ -431,4 +431,10 @@ impl PacketStructureManager {
 
         Ok(())
     }
+    
+    pub fn get_len(
+        &mut self,
+    )-> usize{
+        self.packet_structures.len()
+    }
 }

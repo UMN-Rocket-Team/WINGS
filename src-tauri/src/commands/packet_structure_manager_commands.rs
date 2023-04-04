@@ -217,9 +217,10 @@ pub fn add_packet(app_handle: tauri::AppHandle,
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            let packet_structure = view.to_packet_structure();
+            let new_id = packet_structure_manager.get_len();
+            let packet_structure = view.to_packet_structure(new_id);
             match packet_structure_manager.register_packet_structure(packet_structure.clone()) {
-                Ok(new_id) => {Ok(vec![new_id])}
+                Ok(_) => {Ok(vec![new_id])}
                 Err(_) => { 
                     Err((vec![],"Failed to register imported packet structures!".to_string()))
                 }

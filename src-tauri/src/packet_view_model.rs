@@ -10,7 +10,7 @@ pub struct PacketViewModel {
     components: Vec<PacketComponent>,
 }
 impl PacketViewModel{
-    pub fn to_packet_structure(&self) -> PacketStructure {
+    pub fn to_packet_structure(&self, new_id: usize) -> PacketStructure {
         let mut packet_fields: Vec<PacketField> = Vec::new();
         let mut packet_delimiters: Vec<PacketDelimiter> = Vec::new();
         for component in &self.components{
@@ -31,7 +31,7 @@ impl PacketViewModel{
             };
 
         };
-        return PacketStructure { id: self.id, name: self.name.clone(), fields: packet_fields, delimiters: packet_delimiters };
+        return PacketStructure { id: new_id, name: self.name.clone(), fields: packet_fields, delimiters: packet_delimiters };
     }
 }
 
