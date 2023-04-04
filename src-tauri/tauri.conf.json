@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "WebGS",
+    "productName": "wings",
     "version": "0.0.0"
   },
   "tauri": {
@@ -65,7 +65,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "WebGS",
+        "title": "Wings",
         "width": 800
       }
     ]

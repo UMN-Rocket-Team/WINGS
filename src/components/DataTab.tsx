@@ -1,16 +1,30 @@
-import {Component, createEffect, createSignal, For, Show} from "solid-js";
-import BroadcastModal from "./BroadcastModal";
-import {useModal} from "./ModalProvider";
+import {Component, createEffect, createSignal, For} from "solid-js";
 import FieldsPlayground from "./FieldsPlayground";
 import logo from "../assets/logo.png";
-import UploadModal from "./UploadModal";
 import {useBackendInteropManager} from "./BackendInteropManagerProvider";
-import { setActivePort } from "../backend_interop/api_calls";
-import { useNavigate } from "@solidjs/router";
+import {setActivePort} from "../backend_interop/api_calls";
+import {useNavigate} from "@solidjs/router";
+
+// const samplePacketViewModels: PacketViewModel[] = [
+//     {
+//         id: 69,
+//         name: "Packet 1 Name",
+//         components: [
+//             { type: PacketComponentType.Field, data: { index: 0, name: "Field 1", type: PacketFieldType.SignedInteger, offsetInPacket: 0, metadataType: PacketMetadataType.None } },
+//             { type: PacketComponentType.Field, data: { index: 1, name: "Field 2", type: PacketFieldType.SignedInteger, offsetInPacket: 0, metadataType: PacketMetadataType.Timestamp } }
+//         ]
+//     },
+//     {
+//         id: 70,
+//         name: "Packet 2 Name",
+//         components: [
+//             { type: PacketComponentType.Field, data: { index: 0, name: "Field 1", type: PacketFieldType.SignedInteger, offsetInPacket: 0, metadataType: PacketMetadataType.None } }
+//         ]
+//     }
+// ];
 
 const DataTab: Component = () => {
-    const { showModal } = useModal();
-    const { availablePortNames, packetViewModels } = useBackendInteropManager();
+    const { availablePortNames, packetViewModels, parsedPacketCount } = useBackendInteropManager();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
@@ -40,12 +54,10 @@ const DataTab: Component = () => {
                     </datalist>
                 </div>
 
-                <p class="m-0">Packets Received: {0 /* TODO: fill in */}</p>
+                <p class="m-0">Packets Received: {parsedPacketCount()}</p>
 
                 <div class="flex gap-1">
-                    <button onClick={() => showModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>
                     <button>Save</button>
-                    <button onClick={() => showModal<{}, {}>(UploadModal, {})}>Upload</button>
                 </div>
             </footer>
         </div>

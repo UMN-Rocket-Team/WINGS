@@ -1,16 +1,13 @@
 import { Component } from "solid-js";
-import ApiTestingTab from "./ApiTestingTab";
 import RadioTestingTab from "./RadioTestingTab";
 import TabView from "./TabView";
 
 const tabs = [
     RadioTestingTab,
-    ApiTestingTab,
 ];
 
 const tabNames = [
     "Radio Test",
-    "API Test"
 ];
 
 const TestingTab: Component = () => {
