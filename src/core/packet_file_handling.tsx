@@ -9,27 +9,35 @@ export const importPacket = async () => {
   const selectedFilePaths = await open({title: 'Import Flight Data', multiple: true, filters: [{name: 'FlightData', extensions: ['json'] }] });
   if (Array.isArray(selectedFilePaths)) {
       for(const path of selectedFilePaths){
-        let contents = await readTextFile(path as string);
-        let parsedContents: PacketViewModel = JSON.parse(contents)
-        importedPackets.push(parsedContents)
+        importedPackets.push(await pathToPacketViewModel(path));
       }
     } 
   else if(selectedFilePaths != null) {
-    let contents = await readTextFile(selectedFilePaths as string);
-    let parsedContents: PacketViewModel = JSON.parse(contents)
-    importedPackets.push(parsedContents)
+    importedPackets.push(await pathToPacketViewModel(selectedFilePaths));
   }
   for (const packetView of importedPackets){
-    addPacket(packetView)      
+    addPacket(packetView);
   }
 }
 
+const pathToPacketViewModel = async (path: string) => {
+    let contents = await readTextFile(path as string);
+    let parsedContents: PacketViewModel = JSON.parse(contents);
+    parsedContents.name = await pathtoFilename(path);
+    return parsedContents;
+}
+const pathtoFilename = async (path: string) => {
+  let fileNameStart = Math.max(path.lastIndexOf("/"),path.lastIndexOf('\\'))+ 1;
+  let fileNameEnd = path.indexOf(".json");
+  return path.substring(fileNameStart,fileNameEnd)
+}
+
 export const exportPacket = async (packetView: PacketViewModel) => {
-  const selectedFilePath = await save({title: 'Export Flight Data', filters: [{name: 'FlightData', extensions: ['json'] }] });
+  const selectedFilePath = await save({title: 'Export Flight Data',defaultPath: packetView.name , filters: [{name: 'FlightData', extensions: ['json'] }] });
   if (selectedFilePath != null)
   {
-    let data = JSON.stringify(packetView)
-    let filePathString = selectedFilePath as string
+    let data = JSON.stringify(packetView);
+    let filePathString = selectedFilePath as string;
     await writeTextFile({contents: data,path: filePathString,});
   }
 
