@@ -35,14 +35,14 @@ impl Default for PacketStructureManagerState {
                         metadata_type: PacketMetadataType::None
                     },
                     PacketField {
-                        index: 0,
+                        index: 2,
                         name: String::from("var16"),
                         r#type: PacketFieldType::UnsignedShort,
                         offset_in_packet: 14,
                         metadata_type: PacketMetadataType::None
                     },
                     PacketField {
-                        index: 1,
+                        index: 3,
                         name: String::from("var162"),
                         r#type: PacketFieldType::UnsignedShort,
                         offset_in_packet: 16,
