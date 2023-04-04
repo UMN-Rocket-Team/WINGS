@@ -1,5 +1,5 @@
 import { ModalProps } from "./ModalProvider";
-import { For, JSX } from "solid-js";
+import { For, JSX, Show } from "solid-js";
 import { FieldInPacket, FieldsViewState } from "./FieldsView";
 import SolidChart from "./SolidChart";
 
@@ -29,6 +29,9 @@ const ExpandedFieldsModal = (props: ModalProps<FieldsViewState>): JSX.Element =>
                         </div>
                     }
                 </For>
+                <Show when={props.fieldsInPackets.length === 0}>
+                    <span class="inline-flex items-center justify-center">No packets to display</span>
+                </Show>
             </div>
         </div>
     );
