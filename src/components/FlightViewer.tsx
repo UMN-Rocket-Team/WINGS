@@ -1,5 +1,4 @@
-import { Component, createEffect } from "solid-js";
-import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
+import { Component } from "solid-js";
 import DataTab from "./DataTab";
 import PacketsTab from "./PacketsTab";
 import TabView from "./TabView";

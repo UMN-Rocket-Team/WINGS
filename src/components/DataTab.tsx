@@ -1,16 +1,12 @@
 import {Component, createEffect, createSignal, For} from "solid-js";
-import BroadcastModal from "./BroadcastModal";
-import {useModal} from "./ModalProvider";
 import FieldsPlayground from "./FieldsPlayground";
 import logo from "../assets/logo.png";
-import UploadModal from "./UploadModal";
 import {useBackendInteropManager} from "./BackendInteropManagerProvider";
 import {setActivePort} from "../backend_interop/api_calls";
 import {useNavigate} from "@solidjs/router";
 import {PacketComponentType, PacketFieldType, PacketMetadataType, PacketViewModel} from "../backend_interop/types";
 import {parsedPackets} from "../backend_interop/buffers";
 import {writeFile} from "@tauri-apps/api/fs";
-import {appDataDir} from "@tauri-apps/api/path";
 
 const samplePacketViewModels: PacketViewModel[] = [
     {
