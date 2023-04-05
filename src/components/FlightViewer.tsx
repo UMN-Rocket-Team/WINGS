@@ -19,13 +19,6 @@ const tabNames: string[] = [
 ];
 
 const FlightViewer: Component = () => {
-    const { newParsedPackets }: BackendInteropManagerContextValue = useBackendInteropManager();
-
-    createEffect(() => {
-        // TODO: when the newParsedPackets change, update the graphs with the new PacketData
-        // console.log("FlightViewer effect parsed packets: ", newParsedPackets());
-    }, { defer: true });
-
     return (
        <TabView tabs={tabs} tabNames={tabNames} navbarClasses="drop-shadow-lightgray dark:drop-shadow-gray">
             <ThemeSwitcher />

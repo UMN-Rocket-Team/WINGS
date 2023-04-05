@@ -1,5 +1,5 @@
 import { Accessor, Component, createMemo, For } from "solid-js";
-import { PacketComponentType, PacketViewModel } from "../backend_interop/types";
+import { PacketComponentType, PacketField, PacketViewModel } from "../backend_interop/types";
 import FieldsView, { FieldInPacket, FieldsViewState } from "./FieldsView";
 
 export type FieldsPlaygroundProps = {
@@ -7,19 +7,18 @@ export type FieldsPlaygroundProps = {
 }
 
 const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
-    const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() => {
-        let globalIndex = 0;
-        return props.packetViewModels.map((packetViewModel: PacketViewModel) =>
-            packetViewModel.components.map((component, fieldIndex) => {
+    const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() =>
+        props.packetViewModels.map((packetViewModel: PacketViewModel) =>
+            packetViewModel.components.map((component) => {
                 if (component.type === PacketComponentType.Field) {
-                    return { packetViewModel: packetViewModel, fieldIndex: fieldIndex, globalIndex: globalIndex++ };
+                    const data: PacketField = (component.data as PacketField);
+                    return { packetName: packetViewModel.name, packetId: packetViewModel.id, name: data.name, fieldIndex: data.index };
                 }
                 return null;
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
-        ).flat()
-    });
+        ).flat());
 
-    const viewStates = [{ allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }, { allFieldsInPackets: allFieldsInPackets() }];
+    const viewStates: FieldsViewState[] = [{ fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }];
 
     return (
         // h-0 is used to make the flexbox scrollable; see https://stackoverflow.com/a/65742620/16236499 for more information

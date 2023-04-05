@@ -1,8 +1,7 @@
-import {ModalProps} from "./ModalProvider";
+import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import {For, JSX} from "solid-js";
-import {FieldInPacket, FieldsViewState} from "./FieldsView";
-import { PacketField } from "../backend_interop/types";
+import { For, JSX } from "solid-js";
+import { FieldInPacket, FieldsViewState } from "./FieldsView";
 
 export type FieldSelectModalProps = {
     fieldViewState: FieldsViewState,
@@ -13,15 +12,13 @@ export type FieldSelectModalProps = {
 const packetBackgroundColors = ["bg-red-2", "bg-gray-2"];
 
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
-    const groupedFields = props.fieldViewState.allFieldsInPackets.reduce((acc: Record<number, FieldInPacket[]>, fieldInPacket) => {
-        if (acc[fieldInPacket.packetViewModel.id] === undefined) {
-            acc[fieldInPacket.packetViewModel.id] = [];
+    const groupedFields = props.fieldViewState.fieldsInPackets.reduce((acc: Record<number, FieldInPacket[]>, fieldInPacket) => {
+        if (acc[fieldInPacket.packetId] === undefined) {
+            acc[fieldInPacket.packetId] = [];
         }
-        acc[fieldInPacket.packetViewModel.id].push(fieldInPacket);
+        acc[fieldInPacket.packetId].push(fieldInPacket);
         return acc;
     }, {});
-
-    const selectedFieldIndices: Set<number> = new Set(props.selectedFields.map(fieldInPacket => fieldInPacket.globalIndex));
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -30,12 +27,14 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                     const packetIdNum = parseInt(packetId);
                     return (
                         <div class={packetBackgroundColors[packetIndex() % packetBackgroundColors.length] + " p-2"}>
-                            <h3 class="m-2">{groupedFields[packetIdNum][0].packetViewModel.name}</h3>
+                            <h3 class="m-2">{groupedFields[packetIdNum][0].packetName}</h3>
                             <For each={groupedFields[packetIdNum]}>
                                 {(fieldInPacket: FieldInPacket) =>
                                     <div>
-                                        <input type="checkbox" value={fieldInPacket.globalIndex} onclick={props.handleSelect} checked={selectedFieldIndices.has(fieldInPacket.globalIndex)}/>
-                                        <label>{(fieldInPacket.packetViewModel.components[fieldInPacket.fieldIndex].data as PacketField).name}</label>
+                                        <input type="checkbox" value={JSON.stringify([fieldInPacket.packetId, fieldInPacket.fieldIndex])}
+                                            checked={props.selectedFields.some(selectedField => selectedField.packetId === fieldInPacket.packetId && selectedField.fieldIndex === fieldInPacket.fieldIndex)}
+                                            onclick={props.handleSelect} />
+                                        <label>{fieldInPacket.name}</label>
                                     </div>
                                 }
                             </For>
