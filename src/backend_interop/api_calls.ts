@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, PacketViewModel} from "./types";
+import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, PacketViewModel } from "./types";
 
 export const setActivePort = async (portName: string) => await invoke("set_active_port", { portName: portName });
 
@@ -42,6 +42,6 @@ export const addGapAfter = async (packetStructureId: number, isField: boolean, c
 
 export const deletePacketStructureComponent = async (packetStructureId: number, componentIndex: number, componentType: PacketComponentType) => await invoke("delete_packet_structure_component", { packetStructureId, componentIndex, componentType });
 
-export const addPacket = async (view: PacketViewModel) => await invoke("add_packet", {view});
+export const addPacket = async (view: PacketViewModel) => await invoke("add_packet", { view });
 
 
