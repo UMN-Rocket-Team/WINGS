@@ -1,9 +1,15 @@
 import { ModalProps } from "./ModalProvider";
 import { For, JSX, Show } from "solid-js";
-import { FieldInPacket, FieldsViewState } from "./FieldsView";
+import { FieldInPacket, FieldsScreenState } from "./FieldsScreen";
 import SolidChart from "./SolidChart";
 
-const ExpandedFieldsModal = (props: ModalProps<FieldsViewState>): JSX.Element => {
+/**
+ * A modal component that displays the data received for the given list of fields in graphs. The modal will close when the `Escape` key
+ * is pressed or the close button is clicked.
+ * 
+ * @param props an object that contains a function to close the modal, the list of fields to be displayed, and the number of this screen
+ */
+const ExpandedFieldsModal = (props: ModalProps<FieldsScreenState>): JSX.Element => {
     return (
         <div class="absolute z-10 top-0 left-0 bottom-0 right-0 flex flex-col bg-white dark:bg-dark-700 p-4" tabIndex={-1}
             // Focus the root div of the modal when it is made visible so that it receives keyboard events.

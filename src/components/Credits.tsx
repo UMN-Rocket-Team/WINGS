@@ -2,6 +2,11 @@ import { JSX } from "solid-js";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { ModalProps } from "./ModalProvider";
 
+/**
+ * A modal component that shows the credits (contributors, attributions, and licenses) for this application.
+ * 
+ * @param creditsProps an object that contains a function to close the modal
+ */
 const Credits = (creditsProps: ModalProps): JSX.Element => {
     return (
         <DefaultModalLayout close={() => creditsProps.closeModal({})} title="Credits">

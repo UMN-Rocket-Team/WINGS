@@ -1,8 +1,20 @@
-export type RefreshAndReadResult = {
+/**
+ * The type of the payload of the `serial-update` event brodcast by the backend.
+ */
+export type SerialUpdateResult = {
+    /**
+     * The list of available serial ports
+     */
     newAvailablePortNames: SerialPortNames[] | null,
+    /**
+     * The list of new parsed packets
+     */
     parsedPackets: Packet[] | null,
 }
 
+/**
+ * The names of a serial port.
+ */
 export type SerialPortNames = {
     /**
      * The name of the serial port. On Windows, can be `COM[0-9]+`. On Unix, can be a file path like `/dev/ttyUSB[0-9]+`.
@@ -10,30 +22,43 @@ export type SerialPortNames = {
      * Used to identify a serial port to the backend.
      */
     name: string,
+    /**
+     * The name of the manufacturer of either the port or device
+     */
     manufacturerName: string | null,
+    /**
+     * The name of the product
+     */
     productName: string | null,
 };
 
+/**
+ * The type of a unit of identified radio data
+ */
 export type Packet = PacketData & {
     structureId: number,
 };
 
+/**
+ * The type of unidentified radio data
+ */
 export type PacketData = {
     fieldData: number[],
     timestamp: number,
 };
 
-export type PacketFieldValue = {
-    type: PacketFieldType,
-    data: number,
-};
-
+/**
+ * An enumeration of all the possible types of {@link PacketComponent}s
+ */
 export enum PacketComponentType {
     Field = "Field",
     Delimiter = "Delimiter",
     Gap = "Gap",
 };
 
+/**
+ * An enumeration of all the supported types for {@link PacketField}s
+ */
 export enum PacketFieldType {
     UnsignedByte = "Unsigned Byte",
     SignedByte = "Signed Byte",
@@ -47,45 +72,126 @@ export enum PacketFieldType {
     Double = "Double"
 };
 
+/**
+ * The type of a view model for a backend packet structure
+ */
 export type PacketViewModel = {
+    /**
+     * The identifier of this packet structure
+     */
     id: number,
+    /**
+     * The name of the packet structure
+     */
     name: string,
+    /**
+     * An ascending-ordered list of components inside this packet structure
+     */
     components: PacketComponent[],
 };
 
+/**
+ * A "tagged union" containing data for this packet component whether it is a packet field, delimiter, or gap
+ */
 export type PacketComponent = {
+    /**
+     * The type of this packet component
+     */
     type: PacketComponentType,
+    /**
+     * The type-specific data for this packet component
+     */
     data: PacketField | PacketDelimiter | PacketGap,
 };
 
+/**
+ * The type of a view model into a location in a packet containing data
+ */
 export type PacketField = {
+    /**
+     * The index of this packet inside its packet structure
+     */
     index: number;
+    /**
+     * The name assigned to this packet
+     */
     name: string,
+    /**
+     * The data type this packet's data is in
+     */
     type: PacketFieldType,
+    /**
+     * The byte offset of this packet inside its packet structure
+     */
     offsetInPacket: number,
+    /**
+     * The metadata type of this packet for special parsing rules 
+     */
     metadataType: PacketMetadataType
 };
 
+/**
+ * An enumeration for the possible special parsing rules for a {@link PacketField}
+ */
 export enum PacketMetadataType {
     None = "None",
     Timestamp = "Timestamp",
 };
 
+/**
+ * The type of a view model into a location in a packet containing an packet-specific identifier
+ */
 export type PacketDelimiter = {
+    /**
+     * The index of this delimiter inside its packet structure
+     */
     index: number,
+    /**
+     * The name assigned to this delimiter
+     */
     name: string,
+    /**
+     * A hex string representing the raw bytes of this delimiter's identifier
+     */
     identifier: string,
+    /**
+     * The byte offset of this delimiter inside its packet structure
+     */
     offsetInPacket: number,
 };
 
+/**
+ * The type of a view model into an empty location in a packet
+ */
 export type PacketGap = {
+    /**
+     * The index of this gap inside its packet structure
+     */
     index: number,
+    /**
+     * The size in bytes of this gap
+     */
     size: number,
+    /**
+     * The byte offset of this delimiter inside its packet structure
+     */
     offset: number,
 };
 
+/**
+ * The type of the return value of a `api_calls.testRadios` function call
+ */
 export type RadioTestResult = {
+    /**
+     * The number of packets that have been attempted to be written to the write radio
+     */
     packetsAttempted: number,
+    /**
+     * The number of packets sucessfully written to the write radio
+     */
     packetsWritten: number,
+    /**
+     * The number of packets sucessfully read from the read radio
+     */
     packetsRead: number,
 };

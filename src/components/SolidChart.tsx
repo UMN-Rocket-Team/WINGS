@@ -1,18 +1,25 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
 import 'chartjs-adapter-luxon';
-import { FieldInPacket } from "./FieldsView";
-import { useBackendInteropManager } from "./BackendInteropManagerProvider";
+import { FieldInPacket } from "./FieldsScreen";
+import { useBackend } from "./BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
+// Register the necessary components with ChartJS so that they can be used later
+// Note: any components that are not registered here will act like no-ops if they are attempted to be used later!
 Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
 
 type SolidChartProps = {
     fieldInPacket: FieldInPacket;
 };
 
+/**
+ * A component that displays the parsed data for a given packet field in a line chart
+ * 
+ * @param props an object containing the packet field to display data for
+ */
 const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
-    const { parsedPacketCount } = useBackendInteropManager();
+    const { parsedPacketCount } = useBackend();
 
     let canvas: HTMLCanvasElement;
     let chart: Chart;
@@ -70,7 +77,9 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
 
     let lastPacketCount = initialParsedPackets?.length ?? 0;
 
+    // Add new data to the chart whenever new data is parsed by the packet parser
     createEffect(() => {
+        // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
         const packetData = parsedPackets[props.fieldInPacket.packetId];

@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, RefreshAndReadResult } from "./types";
+import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, SerialUpdateResult } from "./types";
 
 export const setActivePort = async (portName: string) => await invoke("set_active_port", { portName: portName });
 
