@@ -2,14 +2,40 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { useBackendInteropManager } from "./BackendInteropManagerProvider";
+import { useBackend } from "./BackendProvider";
 
+/**
+ * A component that allows the user to manage packet structures. Changes on the frontend are synchronized with the Rust
+ * packet structure manager backend. 
+ * 
+ * The user can:
+ * - Add an empty packet structure
+ * - Save a packet structure to a file
+ * - Load a packet structure from a file
+ * - Modify a packet structure by:
+ *   - Changing its name
+ *   - Adding fields
+ *   - Adding delimiters
+ *   - Adding gaps
+ *   - Deleting fields, delimiters, and gaps
+ * - Modify a field by:
+ *   - Changing its name
+ *   - Changing its type
+ *   - Modifying its metadata type
+ * - Modify a delimiter by:
+ *   - Changing its name
+ *   - Changing its identifier
+ * - Modify a gap by:
+ *   - Changing its size
+ * - Delete a packet structure
+ */
 const PacketsTab: Component = () => {
-    const { packetViewModels } = useBackendInteropManager();
+    const { packetViewModels } = useBackend();
 
     const [selectedPacketStructureIndex, setSelectedPacketStructureIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
     const [selectedPacketComponentIndex, setSelectedPacketComponentIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
 
+    // Cache (memoize) revelent information about the selected packet
     const selectedPacket = createMemo(() => packetViewModels[selectedPacketStructureIndex()!]);
     const selectedPacketStructureComponents = createMemo(() => selectedPacketStructureIndex() === null ? [] : selectedPacket().components);
     const selectedPacketStructureComponent = createMemo(() => selectedPacketComponentIndex() === null ? null : selectedPacketStructureComponents()[selectedPacketComponentIndex()!]);
@@ -21,6 +47,7 @@ const PacketsTab: Component = () => {
 
     return (
         <div class="flex gap-2">
+            {/* Packet structure list */}
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col flex-grow border-1 p-2 border-rounded gap-2 dark:text-white">
                     <h1 class="m-0">Packets</h1>
@@ -39,6 +66,7 @@ const PacketsTab: Component = () => {
                 <button onClick={e => exportPacket()}>Export Packet...</button>
                 <button onClick={e => addEmptyPacket()}>Add Empty Packet</button>
             </div>
+            {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col justify-between flex-grow border-1 p-2 border-rounded gap-2 dark:b-white">
                     <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0">No packet selected</h2>}>
@@ -94,13 +122,15 @@ const PacketsTab: Component = () => {
                     }}>Add Gap</button>
                 </div>
             </div>
+            {/* Packet structure component editor */}
             <div class="flex flex-col justify-between border-1 p-2 border-rounded dark:b-white">
                 <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0">No component selected</h2>}>
                     <div class="flex flex-col dark:text-white">
                         <Switch>
                             <Match when={selectedPacketComponentIndex() === null}>
-
+                                {/* Should not happen */}
                             </Match>
+                            {/* Selected packet structure field editor */}
                             <Match when={selectedFieldData() !== null}>
                                 <h2 class="m-0">Field Information</h2>
                                 <div class="flex flex-col gap-2">
@@ -130,6 +160,7 @@ const PacketsTab: Component = () => {
                                     </div>
                                 </div>
                             </Match>
+                            {/* Selected packet structure delimiter editor */}
                             <Match when={selectedDelimiterData() !== null}>
                                 <h2 class="m-0">Delimiter Information</h2>
                                 <div class="flex flex-col gap-2">
@@ -150,6 +181,7 @@ const PacketsTab: Component = () => {
                                     <span>Offset in Packet: {selectedDelimiterData()!.offsetInPacket} byte{selectedDelimiterData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                 </div>
                             </Match>
+                            {/* Selected packet structure gap editor */}
                             <Match when={selectedGapData() !== null}>
                                 <h2 class="m-0">Gap Information</h2>
                                 <div class="flex flex-col">

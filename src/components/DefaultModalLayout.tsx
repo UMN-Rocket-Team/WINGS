@@ -1,10 +1,25 @@
 import { JSX, ParentComponent } from "solid-js";
 
+/**
+ * The properties required for the {@link DefaultModalLayout} component.
+ */
 export type DefaultModalLayoutProps = {
+    /**
+     * A function that closes the current modal.
+     */
     close: () => void,
+    /**
+     * The title of this modal. Nothing will be displayed by default.
+     */
     title?: string;
 };
 
+/**
+ * A component that positions its child elements so that they appear in a good-looking, modal way. The modal will close
+ * when the user clicks outside of the modal, presses `Escape`, or clicks the close button.
+ * 
+ * @param props the properties parameter to this component containing a close function and title
+ */
 const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JSX.Element => {   
     return (
         <div class="absolute z-10 top-0 left-0 bottom-0 right-0 flex" tabIndex={-1} 
@@ -27,7 +42,7 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
                     {/* bx:x */}
                     <svg xmlns="http://www.w3.org/2000/svg" class="dark:text-white" width={28} preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344l-4.243 4.242l-4.242-4.242l-1.414 1.414L10.535 12l-4.242 4.242l1.414 1.414l4.242-4.242l4.243 4.242l1.414-1.414L13.364 12l4.242-4.242z"/></svg>
                 </button>
-                <b class="text-center text-4xl dark:text-white">{props.title}</b>
+                <b class="text-center text-4xl dark:text-white mx-14">{props.title}</b>
                 <div class="overflow-scroll">
                     {props.children}
                 </div>

@@ -9,6 +9,16 @@ import {readTextFile} from "@tauri-apps/api/fs";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {Packet} from "../backend_interop/types";
 
+/**
+ * A component for the homepage/landing page of the application.
+ *
+ * Allows the user to:
+ * - Change the theme
+ * - create a new flight
+ * - Open an existing flight
+ * - Navigate to the UMN Rocket Team website
+ * - View the credits for this application
+ */
 const Homepage: Component = () => {
     const navigate = useNavigate();
     const { showModal } = useModal();
@@ -47,21 +57,11 @@ const Homepage: Component = () => {
                 <div class="flex gap-4 flex-col md:flex-row">
                     <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded"
                             onClick={() => navigate("/newFlight")}>
-                        {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Create New Flight
                     </button>
                     <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded"
                             onClick={loadFlight}>
-                        {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Load Flight File...
-                    </button>
-                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded">
-                        {/* <Icon icon="bi:collection-play-fill" width={28} height={28} class="dark:text-white" /> */}
-                        Load Past Flight...
-                    </button>
-                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded">
-                        {/* <Icon icon="ri:live-fill" width={28} height={28} class="dark:text-white" /> */}
-                        View Live Flight
                     </button>
                 </div>
             </div>
@@ -77,10 +77,6 @@ const Homepage: Component = () => {
                     <button class="p-2 border-none bg-gray-200 hover:bg-gray-300 dark:bg-dark-900 hover:dark:bg-black dark:text-white border-rounded"
                             onClick={() => showModal<{}, {}>(Credits, {})}>Credits</button>
                 </div>
-                <button class="absolute right-0 bottom-0 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-300 border-rounded">
-                    {/* bxs:lock-alt */}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="dark:text-white" width={24} preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5S7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7z"/></svg>
-                </button>
             </div>
         </div>
     );

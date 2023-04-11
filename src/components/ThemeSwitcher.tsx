@@ -1,6 +1,9 @@
 import { Component, Match, Switch } from "solid-js";
 import { ThemeContextValue, useTheme } from "./ThemeProvider";
 
+/**
+ * A component that allows the user to toggle the theme between light and dark mode
+ */
 const ThemeSwitcher: Component = () => {
     const { theme, setTheme }: ThemeContextValue = useTheme();
 

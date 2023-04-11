@@ -1,17 +1,25 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
-import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LinearScale, LineController, LineElement, Point, PointElement } from "chart.js";
-import { FieldInPacket } from "./FieldsView";
-import { useBackendInteropManager } from "./BackendInteropManagerProvider";
+import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
+import 'chartjs-adapter-luxon';
+import { FieldInPacket } from "./FieldsScreen";
+import { useBackend } from "./BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
-Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement);
+// Register the necessary components with ChartJS so that they can be used later
+// Note: any components that are not registered here will act like no-ops if they are attempted to be used later!
+Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
 
 type SolidChartProps = {
     fieldInPacket: FieldInPacket;
 };
 
+/**
+ * A component that displays the parsed data for a given packet field in a line chart
+ * 
+ * @param props an object containing the packet field to display data for
+ */
 const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
-    const { parsedPacketCount } = useBackendInteropManager();
+    const { parsedPacketCount } = useBackend();
 
     let canvas: HTMLCanvasElement;
     let chart: Chart;
@@ -20,7 +28,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
 
     const data = {
         datasets: [{
-            label: 'My First dataset',
+            label: props.fieldInPacket.name,
             data: initialParsedPackets?.map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })) ?? [],
             backgroundColor: 'dark-blue',
             borderColor: 'blue',
@@ -33,6 +41,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             animation: false,
             parsing: false,
             normalized: true,
@@ -46,26 +55,31 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
                     enabled: true,
                     algorithm: "lttb",
                 },
+                title: {
+                    display: true,
+                    text: props.fieldInPacket.name,
+                }
             },
             scales: {
                 x: {
-                    type: "linear",
-                    min: 0,
-                    max: 100,
+                    type: "time",
+                    time: {
+                        unit: 'second',
+                        displayFormats: {
+                            second: 'HH:mm:ss'
+                        }
+                    },
                     display: true,
-                    axis: "x",
                 },
-                y: {
-                    min: 0,
-                    max: 100
-                }
-            }
+            },
         }
     };
 
     let lastPacketCount = initialParsedPackets?.length ?? 0;
 
+    // Add new data to the chart whenever new data is parsed by the packet parser
     createEffect(() => {
+        // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
         const packetData = parsedPackets[props.fieldInPacket.packetId];
@@ -86,7 +100,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     });
 
     onCleanup(() => {
-        chart.destroy();
+        chart?.destroy();
     });
 
     return (

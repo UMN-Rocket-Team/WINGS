@@ -2,10 +2,25 @@ import { JSX } from "solid-js";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { ModalProps } from "./ModalProvider";
 
+/**
+ * A modal component that shows the credits (contributors, attributions, and licenses) for this application.
+ * 
+ * @param creditsProps an object that contains a function to close the modal
+ */
 const Credits = (creditsProps: ModalProps): JSX.Element => {
     return (
         <DefaultModalLayout close={() => creditsProps.closeModal({})} title="Credits">
-            <div class="flex flex-col justify-center items-stretch gap-2">
+            <div class="flex flex-col justify-center items-stretch gap-2 max-h-75%">
+                <section class="flex flex-col dark:text-white">
+                    <h1 class="text-center">Contributors</h1>
+                    <h2>Lead Developer, Project Manager</h2>
+                    <span>Ryan Hill</span>
+                    <h2>Developers</h2>
+                    <span>Jeffrey Hu</span>
+                    <span>Kuba Kedzior</span>
+                    <h2>UI Designer</h2>
+                    <span>Ashlyn Pietrowski</span>
+                </section>
                 <section class="flex flex-col">
                     <h1 class="text-center dark:text-white">Attributions</h1>
 
@@ -19,7 +34,7 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="dark:text-white">bxs:moon, bx:x, and bxs:lock-alt Icons</td>
+                                <td class="dark:text-white">bxs:moon and bx:x, Icons</td>
                                 <td><a href="https://github.com/atisawd/boxicons">Atisa</a></td>
                                 <td><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></td>
                             </tr>
