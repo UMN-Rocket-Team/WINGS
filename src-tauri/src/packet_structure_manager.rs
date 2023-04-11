@@ -19,7 +19,11 @@ pub struct PacketStructureManager {
 
 impl Default for PacketStructureManager {
     fn default() -> Self {
-        Self { packet_structures: Default::default(), minimum_packet_structure_size: usize::MAX, maximum_packet_structure_size: 0 }
+        Self {
+            packet_structures: Default::default(),
+            minimum_packet_structure_size: usize::MAX,
+            maximum_packet_structure_size: 0,
+        }
     }
 }
 
@@ -53,13 +57,13 @@ pub enum SetDelimiterIdentifierError {
 pub enum DeletePacketStructureComponentError {
     LastField,
     LastDelimiter,
-    DelimiterIdentifierCollision(Vec<usize>)
+    DelimiterIdentifierCollision(Vec<usize>),
 }
 
 impl PacketStructureManager {
     pub fn register_packet_structure(
         &mut self,
-        packet_structure: PacketStructure,
+        packet_structure: &mut PacketStructure,
     ) -> Result<usize, PacketStructureRegistrationError> {
         for (index, registered_packet_structure) in self.packet_structures.iter().enumerate() {
             if *registered_packet_structure.name == packet_structure.name {
@@ -73,15 +77,20 @@ impl PacketStructureManager {
 
         let packet_structure_size = packet_structure.size();
 
-        self.packet_structures.push(packet_structure);
+        packet_structure.id = self.packet_structures.len();
+
+        self.packet_structures.push(packet_structure.clone());
         self.minimum_packet_structure_size =
             min(self.minimum_packet_structure_size, packet_structure_size);
         self.maximum_packet_structure_size =
             max(self.maximum_packet_structure_size, packet_structure_size);
 
-        println!("{}, {}", self.minimum_packet_structure_size, self.maximum_packet_structure_size);
+        println!(
+            "{}, {}",
+            self.minimum_packet_structure_size, self.maximum_packet_structure_size
+        );
 
-        Ok(self.packet_structures.len() - 1)
+        Ok(packet_structure.id)
     }
 
     pub fn set_field_name(&mut self, packet_structure_id: usize, field_index: usize, name: &str) {
@@ -191,7 +200,11 @@ impl PacketStructureManager {
         Ok(bytes)
     }
 
-    fn check_for_identifier_collisions(packet_structures: &Vec<PacketStructure>, packet_structure_id: usize, delimiters: &Vec<PacketDelimiter>) -> Result<(), Vec<usize>> {
+    fn check_for_identifier_collisions(
+        packet_structures: &Vec<PacketStructure>,
+        packet_structure_id: usize,
+        delimiters: &Vec<PacketDelimiter>,
+    ) -> Result<(), Vec<usize>> {
         let mut identifier_collisions = Vec::new();
 
         for other_packet_structure in packet_structures {
@@ -251,8 +264,14 @@ impl PacketStructureManager {
         }
 
         // Check for collisions with other packet structure identifiers
-        if let Err(colliding_ids) = Self::check_for_identifier_collisions(&self.packet_structures, packet_structure_id, &delimiters) {
-            return Err(SetDelimiterIdentifierError::IdentifierCollision(colliding_ids));
+        if let Err(colliding_ids) = Self::check_for_identifier_collisions(
+            &self.packet_structures,
+            packet_structure_id,
+            &delimiters,
+        ) {
+            return Err(SetDelimiterIdentifierError::IdentifierCollision(
+                colliding_ids,
+            ));
         }
 
         // Apply the change
@@ -407,8 +426,16 @@ impl PacketStructureManager {
                 let mut delimiters = packet_structure.delimiters.clone();
                 let removed_delimiter = delimiters.remove(component_index);
 
-                if let Err(colliding_ids) = Self::check_for_identifier_collisions(&self.packet_structures, packet_structure_id, &delimiters) {
-                    return Err(DeletePacketStructureComponentError::DelimiterIdentifierCollision(colliding_ids));
+                if let Err(colliding_ids) = Self::check_for_identifier_collisions(
+                    &self.packet_structures,
+                    packet_structure_id,
+                    &delimiters,
+                ) {
+                    return Err(
+                        DeletePacketStructureComponentError::DelimiterIdentifierCollision(
+                            colliding_ids,
+                        ),
+                    );
                 }
 
                 let packet_structure = &mut self.packet_structures[packet_structure_id];
@@ -430,11 +457,5 @@ impl PacketStructureManager {
         }
 
         Ok(())
-    }
-    
-    pub fn get_len(
-        &mut self,
-    )-> usize{
-        self.packet_structures.len()
     }
 }

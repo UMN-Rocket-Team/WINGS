@@ -1,8 +1,8 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize} from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { importPacket, exportPacket} from "../core/packet_file_handling";
+import { importPacket, exportPacket } from "../core/packet_file_handling";
 import { useBackendInteropManager } from "./BackendInteropManagerProvider";
 const PacketsTab: Component = () => {
     const { packetViewModels } = useBackendInteropManager();
