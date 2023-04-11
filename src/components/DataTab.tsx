@@ -20,7 +20,7 @@ import {save} from "@tauri-apps/api/dialog";
  *  - Save flight data
  */
 const DataTab: Component = () => {
-    const { availablePortNames, packetViewModels, parsedPacketCount } = useBackend();
+    const {availablePortNames, packetViewModels, parsedPacketCount} = useBackend();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
@@ -80,11 +80,7 @@ const DataTab: Component = () => {
 
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
 
-                <div class="flex gap-1">
-                    {/*<button onClick={() => showModal<{}, {}>(BroadcastModal, {})}>Broadcast</button>*/}
-                    <button onClick={saveState}>Save</button>
-                    {/*<button onClick={() => showModal<{}, {}>(UploadModal, {})}>Upload</button>*/}
-                </div>
+                <button onClick={saveState}>Save</button>
             </footer>
         </div>
     );
