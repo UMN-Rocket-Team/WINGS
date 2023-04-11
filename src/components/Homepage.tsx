@@ -4,13 +4,34 @@ import Credits from "./Credits";
 import { useModal } from "./ModalProvider";
 import ThemeSwitcher from "./ThemeSwitcher";
 import logo from "../assets/logo.png";
+import { open } from '@tauri-apps/api/dialog';
+import {readTextFile} from "@tauri-apps/api/fs";
+import {pushParsedPackets} from "../backend_interop/buffers";
+import {Packet, PacketData} from "../backend_interop/types";
 
 const Homepage: Component = () => {
     const navigate = useNavigate();
     const { showModal } = useModal();
 
-    // import open, save from api.dialog
+    const loadFlight = async () => {
+        const selectedFilePath = await open({
+            title: 'Import Flight Data',
+            multiple: false, // TODO: should this be true or false?
+            filters: [
+                { name: '.*', extensions: ['json'] }
+            ]
+        });
 
+        if (selectedFilePath === null) {
+            return;
+        }
+
+        const contents = await readTextFile(selectedFilePath as string);
+        const parsedFlightData: Packet[] = JSON.parse(contents);
+        pushParsedPackets(parsedFlightData);
+
+        console.log("Loaded flight data from " + selectedFilePath + ".");
+    }
 
     return (
         <div class="flex flex-col flex-grow p-4 gap-4 dark:bg-dark-700">
@@ -30,7 +51,7 @@ const Homepage: Component = () => {
                         Create New Flight
                     </button>
                     <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 border-transparent border-rounded"
-                            >
+                            onClick={loadFlight}>
                         {/* <Icon icon="mdi:file-import" width={28} height={28} class="dark:text-white" /> */}
                         Load Flight File...
                     </button>

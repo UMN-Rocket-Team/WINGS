@@ -16,7 +16,8 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
                 }
                 return null;
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
-        ).flat());
+        ).flat()
+    );
 
     const viewStates: FieldsViewState[] = [{ fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }, { fieldsInPackets: allFieldsInPackets() }];
 
