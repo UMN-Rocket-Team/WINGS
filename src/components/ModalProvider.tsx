@@ -33,10 +33,20 @@ export type ModalContextValue = {
     showModal: <BaseType, ResultType>(component: (props: ModalProps<BaseType, ResultType>) => JSX.Element, modalProps: BaseType & ModalMetadata<ResultType>) => void,
 };
 
+/**
+ * The context that holds the global {@link ModalContextValue}.
+ */
 const ModalContext = createContext<ModalContextValue>({
     showModal: (): never => { throw new Error("Cannot show modal in default ModalContext implementation!"); },
 });
 
+/**
+ * A component that abstracts showing a single modal component on the screen.
+ * 
+ * @param props the children components to provide the ability to show a modal to
+ * @returns a component wrapping the given child component that provides the ability to show a modal
+ * @see {@link ModalContextValue} for the provided global function to show modals 
+ */
 export const ModalProvider: ParentComponent = (props): JSX.Element => {
     const [modalComponent, setModalComponent] = createSignal<(() => JSX.Element) | undefined>(undefined);
 
@@ -54,4 +64,9 @@ export const ModalProvider: ParentComponent = (props): JSX.Element => {
     );
 };
 
+/**
+ * Use the modal system provided by the global {@link ModalContext}.
+ * 
+ * @returns the current {@link ModalContextValue}
+ */
 export const useModal = (): ModalContextValue => useContext(ModalContext);

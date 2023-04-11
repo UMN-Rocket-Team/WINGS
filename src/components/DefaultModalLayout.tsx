@@ -1,10 +1,25 @@
 import { JSX, ParentComponent } from "solid-js";
 
+/**
+ * The properties required for the {@link DefaultModalLayout} component.
+ */
 export type DefaultModalLayoutProps = {
+    /**
+     * A function that closes the current modal.
+     */
     close: () => void,
+    /**
+     * The title of this modal. Nothing will be displayed by default.
+     */
     title?: string;
 };
 
+/**
+ * A component that positions its child elements so that they appear in a good-looking, modal way. The modal will close
+ * when the user clicks outside of the modal, presses `Escape`, or clicks the close button.
+ * 
+ * @param props the properties parameter to this component containing a close function and title
+ */
 const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JSX.Element => {   
     return (
         <div class="absolute z-10 top-0 left-0 bottom-0 right-0 flex" tabIndex={-1} 

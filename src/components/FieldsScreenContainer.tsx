@@ -1,12 +1,23 @@
 import { Accessor, Component, createMemo, For } from "solid-js";
 import { PacketComponentType, PacketField, PacketViewModel } from "../backend_interop/types";
-import FieldsView, { FieldInPacket, FieldsViewState } from "./FieldsView";
+import FieldsScreen, { FieldInPacket, FieldsScreenState } from "./FieldsScreen";
 
-export type FieldsPlaygroundProps = {
+/**
+ * The properties required for the {@link FieldsScreenContainer} component.
+ */
+export type FieldsScreenContainerProps = {
+    /**
+     * All the packet view models containing the fields to make available to display
+     */
     packetViewModels: PacketViewModel[]
 }
 
-const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygroundProps) => {
+/**
+ * A component that contains four {@link FieldsScreen} components arranged in a 2x2 grid.
+ * 
+ * @param props an object containing the packet view models which contain the packet fields to make available to display
+ */
+const FieldsScreenContainer: Component<FieldsScreenContainerProps> = (props: FieldsScreenContainerProps) => {
     const allFieldsInPackets: Accessor<FieldInPacket[]> = createMemo(() =>
         props.packetViewModels.map((packetViewModel: PacketViewModel) =>
             packetViewModel.components.map((component) => {
@@ -18,7 +29,7 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
         ).flat());
 
-    const viewStates: FieldsViewState[] = [{ fieldsInPackets: allFieldsInPackets(), number: 1 }, { fieldsInPackets: allFieldsInPackets(), number: 2 }, { fieldsInPackets: allFieldsInPackets(), number: 3 }, { fieldsInPackets: allFieldsInPackets(), number: 4 }];
+    const viewStates: FieldsScreenState[] = [{ fieldsInPackets: allFieldsInPackets(), number: 1 }, { fieldsInPackets: allFieldsInPackets(), number: 2 }, { fieldsInPackets: allFieldsInPackets(), number: 3 }, { fieldsInPackets: allFieldsInPackets(), number: 4 }];
 
     return (
         // h-0 is used to make the flexbox scrollable; see https://stackoverflow.com/a/65742620/16236499 for more information
@@ -26,8 +37,8 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
             {/*Views*/}
             <div class="grid grid-cols-2 p-2 gap-2" style={{ "width": "100%" }}>
                 <For each={viewStates}>
-                    {(fieldsViewState: FieldsViewState) =>
-                        <FieldsView fieldsViewState={fieldsViewState}></FieldsView>
+                    {(fieldsViewState: FieldsScreenState) =>
+                        <FieldsScreen fieldsViewState={fieldsViewState} />
                     }
                 </For>
             </div>
@@ -35,4 +46,4 @@ const FieldsPlayground: Component<FieldsPlaygroundProps> = (props: FieldsPlaygro
     )
 }
 
-export default FieldsPlayground;
+export default FieldsScreenContainer;

@@ -1,12 +1,33 @@
 import { Component, createSignal, For, ParentProps } from "solid-js";
 
+/**
+ * The properties required for the {@link TabView} component.
+ */
 export type TabViewProps = {
+    /**
+     * The list of tabs to display
+     */
     tabs: Component[];
+    /**
+     * The list of tab names corresponding to the {@link tabs} field.
+     */
     tabNames: string[];
+    /**
+     * The optional space-delimited set of css classes to include on the tab container
+     */
     containerClasses?: string;
+    /**
+     * The optional space-delimited set of css classes to include on the navbar
+     */
     navbarClasses?: string;
 };
 
+/**
+ * A customizable component that displays a list of given tab components one a a time depending on the user's selection
+ * on the tab bar.
+ * 
+ * @param props an object containing the tabs, the names of the tabs, and the styles of the tab container and navbar
+ */
 const TabView: Component<ParentProps<TabViewProps>> = (props) => {
     const [selectedTabIndex, setSelectedTabIndex] = createSignal<number>(0);
 
