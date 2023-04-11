@@ -15,47 +15,47 @@ import {parsedPackets} from "../backend_interop/buffers";
 import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
 
-const samplePacketViewModels: PacketViewModel[] = [
-    {
-        id: 69,
-        name: "Packet 1 Name",
-        components: [
-            {type: PacketComponentType.Field,
-                data: {
-                    index: 0,
-                    name: "Field 1",
-                    type: PacketFieldType.SignedInteger,
-                    offsetInPacket: 0,
-                    metadataType: PacketMetadataType.None
-                }
-            },
-            {type: PacketComponentType.Field,
-                data: {
-                    index: 1,
-                    name: "Field 2",
-                    type: PacketFieldType.SignedInteger,
-                    offsetInPacket: 0,
-                    metadataType: PacketMetadataType.Timestamp
-                }
-            }
-        ]
-    },
-    {
-        id: 70,
-        name: "Packet 2 Name",
-        components: [
-            {type: PacketComponentType.Field,
-                data: {
-                    index: 0,
-                    name: "Field 1",
-                    type: PacketFieldType.SignedInteger,
-                    offsetInPacket: 0,
-                    metadataType: PacketMetadataType.None
-                }
-            }
-        ]
-    }
-];
+// const samplePacketViewModels: PacketViewModel[] = [
+//     {
+//         id: 69,
+//         name: "Packet 1 Name",
+//         components: [
+//             {type: PacketComponentType.Field,
+//                 data: {
+//                     index: 0,
+//                     name: "Field 1",
+//                     type: PacketFieldType.SignedInteger,
+//                     offsetInPacket: 0,
+//                     metadataType: PacketMetadataType.None
+//                 }
+//             },
+//             {type: PacketComponentType.Field,
+//                 data: {
+//                     index: 1,
+//                     name: "Field 2",
+//                     type: PacketFieldType.SignedInteger,
+//                     offsetInPacket: 0,
+//                     metadataType: PacketMetadataType.Timestamp
+//                 }
+//             }
+//         ]
+//     },
+//     {
+//         id: 70,
+//         name: "Packet 2 Name",
+//         components: [
+//             {type: PacketComponentType.Field,
+//                 data: {
+//                     index: 0,
+//                     name: "Field 1",
+//                     type: PacketFieldType.SignedInteger,
+//                     offsetInPacket: 0,
+//                     metadataType: PacketMetadataType.None
+//                 }
+//             }
+//         ]
+//     }
+// ];
 
 const DataTab: Component = () => {
     const {availablePortNames, packetViewModels, parsedPacketCount} = useBackendInteropManager();

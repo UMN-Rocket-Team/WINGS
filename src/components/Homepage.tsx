@@ -7,7 +7,7 @@ import logo from "../assets/logo.png";
 import { open } from '@tauri-apps/api/dialog';
 import {readTextFile} from "@tauri-apps/api/fs";
 import {pushParsedPackets} from "../backend_interop/buffers";
-import {Packet, PacketData} from "../backend_interop/types";
+import {Packet} from "../backend_interop/types";
 
 const Homepage: Component = () => {
     const navigate = useNavigate();
