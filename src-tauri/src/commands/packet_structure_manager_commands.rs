@@ -1,8 +1,9 @@
 use crate::{
     models::packet_structure::{PacketFieldType, PacketMetadataType},
     packet_structure_events::update_packet_structures,
-    packet_structure_manager::{SetDelimiterIdentifierError, DeletePacketStructureComponentError},
-    packet_structure_manager_state::PacketStructureManagerState, packet_view_model::PacketComponentType,
+    packet_structure_manager::{DeletePacketStructureComponentError, SetDelimiterIdentifierError},
+    packet_structure_manager_state::PacketStructureManagerState,
+    packet_view_model::{PacketComponentType, PacketViewModel},
 };
 
 #[tauri::command]
@@ -185,21 +186,59 @@ pub fn delete_packet_structure_component(
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     packet_structure_id: usize,
     component_index: usize,
-    component_type: PacketComponentType
+    component_type: PacketComponentType,
 ) -> Result<(), String> {
     update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            match packet_structure_manager.delete_packet_structure_component(packet_structure_id, component_index, component_type) {
-                Ok(_) => {},
-                Err(error) => return match error {
-                    DeletePacketStructureComponentError::LastField => Err((vec![], String::from("Last Field"))),
-                    DeletePacketStructureComponentError::LastDelimiter => Err((vec![], String::from("Last Delimiter"))),
-                    DeletePacketStructureComponentError::DelimiterIdentifierCollision(identifiers) => Err((identifiers, String::from("Identifier collision"))),
+            match packet_structure_manager.delete_packet_structure_component(
+                packet_structure_id,
+                component_index,
+                component_type,
+            ) {
+                Ok(_) => {}
+                Err(error) => {
+                    return match error {
+                        DeletePacketStructureComponentError::LastField => {
+                            Err((vec![], String::from("Last Field")))
+                        }
+                        DeletePacketStructureComponentError::LastDelimiter => {
+                            Err((vec![], String::from("Last Delimiter")))
+                        }
+                        DeletePacketStructureComponentError::DelimiterIdentifierCollision(
+                            identifiers,
+                        ) => Err((identifiers, String::from("Identifier collision"))),
+                    }
                 }
             }
             Ok(vec![packet_structure_id])
-        }
+        },
+    )
+}
+
+/// Takes PackerViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
+///
+/// # Arguments
+/// * 'view' - PackeViewModel containing the packet that will be added to the packet structure
+#[tauri::command]
+pub fn add_packet(
+    app_handle: tauri::AppHandle,
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    view: PacketViewModel,
+) -> Result<(), String> {
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            let mut packet_structure = view.to_packet_structure();
+            match packet_structure_manager.register_packet_structure(&mut packet_structure) {
+                Ok(new_id) => Ok(vec![new_id]),
+                Err(_) => Err((
+                    vec![],
+                    "Failed to register imported packet structures!".to_string(),
+                )),
+            }
+        },
     )
 }
