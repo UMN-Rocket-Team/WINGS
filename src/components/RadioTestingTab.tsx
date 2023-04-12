@@ -1,11 +1,15 @@
 import { batch, Component, createEffect, createSignal, For, onCleanup, untrack } from "solid-js";
 import { getTestReadPort, getTestWritePort, setTestReadPort, setTestWritePort, testRadios } from "../backend_interop/api_calls";
 import { RadioTestResult } from "../backend_interop/types";
-import { BackendInteropManagerContextValue, useBackendInteropManager } from "./BackendInteropManagerProvider";
+import { BackendContextValue, useBackend } from "./BackendProvider";
 
+/**
+ * A component that allows the user to test two radios to ensure they can send and receive data.
+ */
 const RadioTestingTab: Component = () => {
-    const { availablePortNames }: BackendInteropManagerContextValue = useBackendInteropManager();
+    const { availablePortNames }: BackendContextValue = useBackend();
 
+    // Test state
     const [isSimulating, setSimulating] = createSignal<boolean>(false);
     const [testInterval, setTestInterval] = createSignal<number>(500);
     const [secondsElapsed, setSecondsElapsed] = createSignal<number>(0);
@@ -14,6 +18,7 @@ const RadioTestingTab: Component = () => {
     const [packetsRecievedCount, setPacketsRecievedCount] = createSignal<number>(0);
     const [dataLossPercent, setDataLossPercent] = createSignal<number>(0);
 
+    // Selected radios state
     const [selectedTestWritePort, setSelectedTestWritePort] = createSignal<string | null>(getTestWritePort());
     const [selectedTestReadPort, setSelectedTestReadPort] = createSignal<string | null>(getTestReadPort());
 
@@ -33,6 +38,7 @@ const RadioTestingTab: Component = () => {
     };
 
     onCleanup(() => {
+        // Stop the active test loop when the component is unmounted
         if (testTimoutId !== undefined) {
             window.clearTimeout(testTimoutId);
         }
@@ -40,6 +46,7 @@ const RadioTestingTab: Component = () => {
 
     createEffect(() => {
         if (isSimulating()) {
+            // Reset test statistics for new test
             // Note: testInterval can be invalid (0) if the input field is empty
             if (untrack(testInterval) < 100) {
                 setTestInterval(100);
@@ -51,21 +58,24 @@ const RadioTestingTab: Component = () => {
                 setPacketsSentCount(0);
                 setPacketsRecievedCount(0);
                 setDataLossPercent(0);
-            })
+            });
         } else {
             if (testTimoutId) {
+                // Stop the test loop when an active test is stopped
                 window.clearTimeout(testTimoutId);
             }
         }
     }, { defer: true });
 
     createEffect(() => {
+        // Update the backend to the change in the selected reading port when the frontend state changes
         if (selectedTestReadPort() != null) {
             setTestReadPort(selectedTestReadPort()!)
         }
     }, { defer: true });
 
     createEffect(() => {
+        // Update the backend to the change in the selected writing port when the frontend state changes
         if (selectedTestWritePort() != null) {
             setTestWritePort(selectedTestWritePort()!)
         }
@@ -73,6 +83,7 @@ const RadioTestingTab: Component = () => {
 
     return (
         <div class="flex gap-4">
+            {/* Test configuation column */}
             <div class="flex flex-col gap-1">
                 <h1 class="my-0.5 dark:text-white">Radio Connection Test</h1>
                 <span class="dark:text-white">Test whether packets can be sent and received through two RFD900s connected though serial ports</span>
@@ -135,6 +146,7 @@ const RadioTestingTab: Component = () => {
                 <button onClick={() => setSimulating(!isSimulating())} class={`py-2 px-8 border-rounded border-0 ${isSimulating() ? "bg-red" : "bg-green"}`}>{isSimulating() ? "Stop Test" : "Start Test"}</button>
             </div>
 
+            {/* Test results column */}
             <div class="flex flex-col gap-1 dark:text-white">
                 <h1 class="my-0.5">Results</h1>
                 <span>Elapsed time: {secondsElapsed().toFixed(2)} second{secondsElapsed() == 1 ? "" : "s"}</span>

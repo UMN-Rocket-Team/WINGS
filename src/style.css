@@ -1,3 +1,4 @@
+/* Ensures the content always fills the entire height of the screen */
 :root, body, #root {
     height: 100%;
 }

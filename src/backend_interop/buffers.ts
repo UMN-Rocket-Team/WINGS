@@ -1,7 +1,15 @@
 import { Packet, PacketData } from "./types";
 
+/**
+ * The global map between packet ids and the list of recevied packet data for the packet with that id
+ */
 export const parsedPackets: Record<number, PacketData[]> = [];
 
+/**
+ * Inserts the given list of parsed packets into the global map ({@link parsedPackets}).
+ * 
+ * @param packets the newly parsed packets to insert into the global map
+ */
 export const pushParsedPackets = (packets: Packet[]): void => {
     let sortedNewParsedPackets: Record<number, PacketData[]> = [];
 

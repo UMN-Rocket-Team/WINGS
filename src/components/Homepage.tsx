@@ -5,6 +5,16 @@ import { useModal } from "./ModalProvider";
 import ThemeSwitcher from "./ThemeSwitcher";
 import logo from "../assets/logo.png";
 
+/**
+ * A component for the homepage/landing page of the application. 
+ * 
+ * Allows the user to:
+ * - Change the theme
+ * - create a new flight
+ * - Open an existing flight
+ * - Navigate to the UMN Rocket Team website
+ * - View the credits for this application
+ */
 const Homepage: Component = () => {
     const navigate = useNavigate();
     const { showModal } = useModal();

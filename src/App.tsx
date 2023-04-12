@@ -1,5 +1,5 @@
 import { JSX } from "solid-js";
-import { BackendInteropManagerProvider } from "./components/BackendInteropManagerProvider";
+import { BackendProvider } from "./components/BackendProvider";
 import FlightViewer from "./components/FlightViewer";
 import Homepage from "./components/Homepage";
 import { ModalProvider } from "./components/ModalProvider";
@@ -9,7 +9,7 @@ import { Router, Routes, Route } from "@solidjs/router"
 const App = (): JSX.Element => {
     return (
         <ThemeProvider>
-            <BackendInteropManagerProvider>
+            <BackendProvider>
                 <ModalProvider>
                     <Router>
                         <Routes>
@@ -18,7 +18,7 @@ const App = (): JSX.Element => {
                         </Routes>
                     </Router>
                 </ModalProvider>
-            </BackendInteropManagerProvider>
+            </BackendProvider>
         </ThemeProvider>
     );
 };
