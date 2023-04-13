@@ -1,8 +1,13 @@
-import { Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext } from "solid-js";
-import { createStore } from "solid-js/store";
-import { pushParsedPackets } from "../backend_interop/buffers";
-import { Packet, PacketViewModel, SerialUpdateResult as SerialUpdateResult, SerialPortNames } from "../backend_interop/types";
-import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
+import {Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext} from "solid-js";
+import {createStore, SetStoreFunction} from "solid-js/store";
+import {pushParsedPackets} from "../backend_interop/buffers";
+import {
+    Packet,
+    PacketViewModel,
+    SerialUpdateResult as SerialUpdateResult,
+    SerialPortNames
+} from "../backend_interop/types";
+import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
 /**
  * The global state managed by the {@link BackendContext}.
@@ -20,6 +25,8 @@ export type BackendContextValue = {
      * The list of registered {@link PacketViewModel}s for each `PacketStructure`.
      */
     packetViewModels: PacketViewModel[],
+
+    setPacketViewModels: SetStoreFunction<PacketViewModel[]>
 };
 
 /**
@@ -29,12 +36,14 @@ const BackendContext = createContext<BackendContextValue>({
     availablePortNames: (): SerialPortNames[] => [],
     parsedPacketCount: () => 0,
     packetViewModels: [],
+    setPacketViewModels: () => {
+    }
 });
 
 /**
  * A component that abstracts interactions with the Rust backend by providing a context containing a view into
  * backend-managed state.
- * 
+ *
  * @param props the children to provide backend-managed state to
  * @returns a component wrapping the given child component that provides a context to access backend-managed state
  * @see {@link BackendContextValue} for the global view into the backend-managed state provided by this component
@@ -52,11 +61,11 @@ export const BackendProvider: ParentComponent = (props) => {
         // Save the result of each listen call so that in the event that this component is unmounted the listeners
         // can be safely unregistered
         unlistenFunctions = [
-            await listen<string>("error", ({ payload: message }) => {
+            await listen<string>("error", ({payload: message}) => {
                 // Log informative errors reported by the Rust backend for debugging purposes
                 console.error(message);
             }),
-            await listen<SerialUpdateResult>("serial-update", ({ payload: result }) => {
+            await listen<SerialUpdateResult>("serial-update", ({payload: result}) => {
                 console.log(result);
                 if (result.newAvailablePortNames) {
                     setAvailablePortNames(result.newAvailablePortNames);
@@ -96,7 +105,7 @@ export const BackendProvider: ParentComponent = (props) => {
     // Push test data to graphs once per second
     setInterval(() => {
         const parsedPackets: Packet[] = [
-            { fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now() }
+            {fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now()}
         ];
 
         pushParsedPackets(parsedPackets);
@@ -110,7 +119,12 @@ export const BackendProvider: ParentComponent = (props) => {
         }
     });
 
-    const context = { availablePortNames: availablePortNames, parsedPacketCount: parsedPacketCount, packetViewModels: packetViewModels };
+    const context = {
+        availablePortNames: availablePortNames,
+        parsedPacketCount: parsedPacketCount,
+        packetViewModels: packetViewModels,
+        setPacketViewModels: setPacketViewModels
+    };
 
     return (
         <BackendContext.Provider value={context}>
@@ -121,7 +135,7 @@ export const BackendProvider: ParentComponent = (props) => {
 
 /**
  * Use the view into the backend-managed state provided by the {@link BackendContext}.
- * 
+ *
  * @returns the current {@link BackendContextValue}
  */
 export const useBackend = (): BackendContextValue => useContext(BackendContext);

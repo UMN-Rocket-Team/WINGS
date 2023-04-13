@@ -24,11 +24,11 @@ const DataTab: Component = () => {
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
-    const saveState = async () => {
+    const saveFlight = async () => {
         const selectedFilePath = await save({
-            title: "Save State",
+            title: "Save Flight",
             filters: [
-                {name: ".*", extensions: ["json"]}
+                {name: "SaveFlight", extensions: ["json"]}
             ]
         });
 
@@ -38,13 +38,13 @@ const DataTab: Component = () => {
 
         const parsedPacketsArray: Packet[] = Object.entries(parsedPackets).map(([structureId, packetDataArray]) =>
             packetDataArray.map((packetData) => (
-                {structureId: parseInt(structureId), fieldData: packetData.fieldData, timestamp: packetData.timestamp}
+                {structureId: +structureId, fieldData: packetData.fieldData, timestamp: packetData.timestamp}
             ))
         ).flat();
 
-        writeFile(selectedFilePath as string, JSON.stringify(parsedPacketsArray))
-            .then(() => console.log("Saved state to " + selectedFilePath + "."))
-            .catch((err) => console.error(err))
+        writeFile(selectedFilePath as string, JSON.stringify({parsedPacketsArray, packetViewModels}))
+            .then(() => console.log("Saved state to " + selectedFilePath + ".")) // TODO: remove console log?
+            .catch((err) => console.error(err));
     };
 
     createEffect(() => {
@@ -80,7 +80,7 @@ const DataTab: Component = () => {
 
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
 
-                <button onClick={saveState}>Save</button>
+                <button onClick={saveFlight}>Save</button>
             </footer>
         </div>
     );
