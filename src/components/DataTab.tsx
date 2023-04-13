@@ -43,7 +43,7 @@ const DataTab: Component = () => {
         ).flat();
 
         writeFile(selectedFilePath as string, JSON.stringify({parsedPacketsArray, packetViewModels}))
-            .then(() => console.log("Saved state to " + selectedFilePath + ".")) // TODO: remove console log?
+            .then(() => console.log("Saved state to " + selectedFilePath + ".")) // TODO: replace console log with ErrorModal
             .catch((err) => console.error(err));
     };
 
