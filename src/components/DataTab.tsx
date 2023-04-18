@@ -1,9 +1,11 @@
-import {Component, createEffect, createSignal, For} from "solid-js";
+import {Component, createSignal, For} from "solid-js";
 import FieldsScreenContainer from "./FieldsScreenContainer";
 import logo from "../assets/logo.png";
 import {useBackend} from "./BackendProvider";
 import {setActivePort} from "../backend_interop/api_calls";
 import {useNavigate} from "@solidjs/router";
+import { useModal } from "./ModalProvider";
+import ErrorModal from "./ErrorModal";
 
 /**
  * A component that allows the user to:
@@ -17,15 +19,19 @@ import {useNavigate} from "@solidjs/router";
  */
 const DataTab: Component = () => {
     const { availablePortNames, packetViewModels, parsedPacketCount } = useBackend();
+    const { showModal } = useModal();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
-    createEffect(() => {
-        if (selectedPort() != null) {
-            // Apply the change in selected port name to the backend
-            setActivePort(selectedPort()!)
+    async function applyNewSelectedPort(newSelectedPort: string): Promise<string> {
+        // Apply the change in selected port name to the backend
+        let errorMessage = await setActivePort(selectedPort()!);
+        if (errorMessage !== null) {
+            showModal(ErrorModal, { error: 'Failed to set the active serial port', description: errorMessage });
         }
-    }, { defer: true });
+
+        return setSelectedPort(newSelectedPort);
+    }
 
     return (
         <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
@@ -41,7 +47,7 @@ const DataTab: Component = () => {
                     {/* Active serial port combobox */}
                     <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>
                     <input list="dataSerialPorts" name="Serial Port" id="serialPortInput"
-                        onInput={event => setSelectedPort((event.target as HTMLInputElement).value)} value={selectedPort() ?? ""}/>
+                        onInput={async event => await applyNewSelectedPort((event.target as HTMLInputElement).value)} value={selectedPort() ?? ""}/>
                     <datalist id="dataSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name} /> }

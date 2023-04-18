@@ -2,12 +2,15 @@ import { batch, Component, createEffect, createSignal, For, onCleanup, untrack }
 import { getTestReadPort, getTestWritePort, setTestReadPort, setTestWritePort, testRadios } from "../backend_interop/api_calls";
 import { RadioTestResult } from "../backend_interop/types";
 import { BackendContextValue, useBackend } from "./BackendProvider";
+import { useModal } from "./ModalProvider";
+import ErrorModal from "./ErrorModal";
 
 /**
  * A component that allows the user to test two radios to ensure they can send and receive data.
  */
 const RadioTestingTab: Component = () => {
     const { availablePortNames }: BackendContextValue = useBackend();
+    const { showModal } = useModal();
 
     // Test state
     const [isSimulating, setSimulating] = createSignal<boolean>(false);
@@ -25,7 +28,12 @@ const RadioTestingTab: Component = () => {
     let testTimoutId: number | undefined;
 
     const testRadiosAndUpdateState = async () => {
-        const testResults: RadioTestResult = await testRadios();
+        const testResults: RadioTestResult | string = await testRadios();
+        if (typeof testResults === 'string') {
+            showModal(ErrorModal, { error: 'Failed to get updated results', description: testResults });
+            return;
+        }
+
         batch(() => {
             setSecondsElapsed(secondsElapsed() + testInterval() / 1000);
             setPacketsAttemptedCount(packetsAttemptedCount() + testResults.packetsAttempted);
@@ -67,17 +75,25 @@ const RadioTestingTab: Component = () => {
         }
     }, { defer: true });
 
-    createEffect(() => {
+    createEffect(async () => {
         // Update the backend to the change in the selected reading port when the frontend state changes
         if (selectedTestReadPort() != null) {
-            setTestReadPort(selectedTestReadPort()!)
+            const result = await setTestReadPort(selectedTestReadPort()!);
+            if (typeof result === 'string') {
+                showModal(ErrorModal, { error: 'Failed to set test read port', description: result });
+                return;
+            }
         }
     }, { defer: true });
 
-    createEffect(() => {
+    createEffect(async () => {
         // Update the backend to the change in the selected writing port when the frontend state changes
         if (selectedTestWritePort() != null) {
-            setTestWritePort(selectedTestWritePort()!)
+            const result = await setTestWritePort(selectedTestWritePort()!);
+            if (typeof result === 'string') {
+                showModal(ErrorModal, { error: 'Failed to set test read port', description: result });
+                return;
+            }
         }
     }, { defer: true });
 

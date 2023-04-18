@@ -38,7 +38,7 @@ export const importPacket = async () => {
         importedPackets.push(await readPathAsPacket(selectedFilePaths));
     }
     for (const packetView of importedPackets) {
-        addPacket(packetView);
+        await addPacket(packetView);
     }
 }
 
