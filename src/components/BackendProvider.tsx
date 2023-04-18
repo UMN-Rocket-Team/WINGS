@@ -2,7 +2,6 @@ import {Accessor, createContext, createSignal, onCleanup, onMount, ParentCompone
 import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {
-    Packet,
     PacketViewModel,
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames
