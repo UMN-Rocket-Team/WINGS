@@ -1,7 +1,11 @@
 use crate::{
-    models::packet_structure::{PacketFieldType, PacketMetadataType},
+    models::packet_structure::{
+        PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
+    },
     packet_structure_events::update_packet_structures,
-    packet_structure_manager::{DeletePacketStructureComponentError, SetDelimiterIdentifierError},
+    packet_structure_manager::{
+        self, DeletePacketStructureComponentError, SetDelimiterIdentifierError,
+    },
     packet_structure_manager_state::PacketStructureManagerState,
     packet_view_model::{PacketComponentType, PacketViewModel},
 };
@@ -238,6 +242,68 @@ pub fn add_packet(
                     vec![],
                     "Failed to register imported packet structures!".to_string(),
                 )),
+            }
+        },
+    )
+}
+
+#[tauri::command]
+pub fn register_empty_packet_structure(
+    app_handle: tauri::AppHandle,
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+) -> Result<(), String> {
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            // Find the smallest number possible to append to the name "New Packet " so that subsequent new packet's names do not collide
+            let mut largest_new_packet_number: u32 = 0;
+
+            for packet_structure in &packet_structure_manager.packet_structures {
+                if packet_structure.name.starts_with("New Packet ") {
+                    match packet_structure.name[11..].parse::<u32>() {
+                        Ok(number) => {
+                            if number > largest_new_packet_number {
+                                largest_new_packet_number = number;
+                            }
+                        }
+                        Err(_) => continue,
+                    }
+                }
+            }
+
+            largest_new_packet_number += 1;
+
+            // Find a unique starting delimiter to identify to this packet structure
+            let mut smallest_delimiter = vec![0];
+
+            loop {
+                for packet_structure in &packet_structure_manager.packet_structures {
+                    if packet_structure.delimiters.len() == 1
+                        && packet_structure.delimiters[0].identifier == smallest_delimiter
+                    {
+                        smallest_delimiter[0] += 1;
+                        continue;
+                    }
+                }
+                break;
+            }
+
+            match packet_structure_manager.register_packet_structure(&mut PacketStructure {
+                id: 0,
+                name: format!("New Packet {largest_new_packet_number}"),
+                fields: vec![
+                    PacketField { index: 0, name: String::from("Field 1"), r#type: PacketFieldType::SignedInteger, offset_in_packet: 0, metadata_type: PacketMetadataType::None }
+                ],
+                delimiters: vec![
+                    PacketDelimiter { index: 0, name: String::from("Delimiter 1"), identifier: smallest_delimiter, offset_in_packet: PacketFieldType::SignedInteger.size() }
+                ],
+            }) {
+                Ok(new_id) => Ok(vec![new_id]),
+                Err(error) => match error {
+                    packet_structure_manager::PacketStructureRegistrationError::NameAlreadyRegistered(_) => Err((vec![], String::from("Unique name finding error: name collision!"))),
+                    packet_structure_manager::PacketStructureRegistrationError::DelimitersAlreadyRegistered(_) => Err((vec![], String::from("Unique delimiter finding error: delimiter collision!"))),
+                }
             }
         },
     )

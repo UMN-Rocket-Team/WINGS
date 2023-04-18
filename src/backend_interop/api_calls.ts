@@ -55,14 +55,16 @@ export const setDelimiterIdentifier = async (packetStructureId: number, delimite
 
 export const setGapSize = async (packetStructureId: number, gapIndex: number, size: number) => await returnErrorMessage<void>("set_gap_size", { packetStructureId, gapIndex, size });
 
-export const addField = async (packetStructureId: number) => await returnErrorMessage("add_field", { packetStructureId: packetStructureId });
+export const addField = async (packetStructureId: number) => await returnErrorMessage<void>("add_field", { packetStructureId: packetStructureId });
 
-export const addDelimiter = async (packetStructureId: number) => await returnErrorMessage("add_delimiter", { packetStructureId: packetStructureId });
+export const addDelimiter = async (packetStructureId: number) => await returnErrorMessage<void>("add_delimiter", { packetStructureId: packetStructureId });
 
-export const addGapAfter = async (packetStructureId: number, isField: boolean, componentIndex: number) => await returnErrorMessage("add_gap_after", { packetStructureId: packetStructureId, isField: isField, componentIndex: componentIndex });
+export const addGapAfter = async (packetStructureId: number, isField: boolean, componentIndex: number) => await returnErrorMessage<void>("add_gap_after", { packetStructureId: packetStructureId, isField: isField, componentIndex: componentIndex });
 
 export const deletePacketStructureComponent = async (packetStructureId: number, componentIndex: number, componentType: PacketComponentType) => await returnErrorMessage<void>("delete_packet_structure_component", { packetStructureId, componentIndex, componentType });
 
 export const addPacket = async (view: PacketViewModel) => await returnErrorMessage("add_packet", { view });
+
+export const registerEmptyPacketStructure = async () => await returnErrorMessage<void>("register_empty_packet_structure");
 
 

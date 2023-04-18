@@ -1,10 +1,11 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { importPacket, exportPacket} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
+import ErrorModal from "./ErrorModal";
 
 /**
  * A component that allows the user to manage packet structures. Changes on the frontend are synchronized with the Rust
@@ -48,6 +49,16 @@ const PacketsTab: Component = () => {
 
     const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureIndex, selectedPacketStructureComponent, showModal);
 
+    async function showErrorModalOnError(func: () => Promise<void | string>, errorTitle: string): Promise<void> {
+        const result = await func();
+        if (typeof result === 'string') {
+            showModal(ErrorModal, {
+                error: errorTitle,
+                description: result
+            });
+        }
+    }
+
     return (
         <div class="flex gap-2">
             {/* Packet structure list */}
@@ -67,7 +78,7 @@ const PacketsTab: Component = () => {
                 </div>
                 <button class="externalButton" onClick={async () => await importPacket()}>Import Packet...</button>
                 <button class="externalButton" onClick={async () => await exportPacket(selectedPacket())}>Export Packet...</button>
-                <button class="externalButton" onClick={async () => await addEmptyPacket()}>Add Empty Packet</button>
+                <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
@@ -103,8 +114,8 @@ const PacketsTab: Component = () => {
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button class="externalButton" onClick={async () => await addField(selectedPacketStructureIndex()!)}>Add Field</button>
-                    <button class="externalButton" onClick={async () => await addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
+                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureIndex()!), 'Failed to add field')}>Add Field</button>
+                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureIndex()!), 'Failed to add delimiter')}>Add Delimeter</button>
                     <button class="externalButton" onClick={async () => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
@@ -121,7 +132,7 @@ const PacketsTab: Component = () => {
                             default:
                                 throw new Error("Cannot add a gap after a gap!");
                         }
-                        await addGapAfter(selectedPacketStructureIndex()!, isField, index);
+                        await showErrorModalOnError(async () => await addGapAfter(selectedPacketStructureIndex()!, isField, index), 'Failed to add gap');
                     }}>Add Gap</button>
                 </div>
             </div>
