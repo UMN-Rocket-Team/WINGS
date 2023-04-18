@@ -103,14 +103,14 @@ export const BackendProvider: ParentComponent = (props) => {
 
     // TODO: remove once live telemetry is confirmed to work
     // Push test data to graphs once per second
-    setInterval(() => {
-        const parsedPackets: Packet[] = [
-            {fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now()}
-        ];
-
-        pushParsedPackets(parsedPackets);
-        setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
-    }, 1000);
+    // setInterval(() => {
+    //     const parsedPackets: Packet[] = [
+    //         {fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now()}
+    //     ];
+    //
+    //     pushParsedPackets(parsedPackets);
+    //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
+    // }, 1000);
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted

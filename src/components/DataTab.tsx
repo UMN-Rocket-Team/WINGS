@@ -8,6 +8,8 @@ import {Packet} from "../backend_interop/types";
 import {parsedPackets} from "../backend_interop/buffers";
 import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
+import ErrorModal, {ErrorModalProps} from "./ErrorModal";
+import {useModal} from "./ModalProvider";
 
 /**
  * A component that allows the user to:
@@ -23,6 +25,7 @@ const DataTab: Component = () => {
     const {availablePortNames, packetViewModels, parsedPacketCount} = useBackend();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
+    const {showModal} = useModal();
 
     const saveFlight = async () => {
         const selectedFilePath = await save({
@@ -43,8 +46,10 @@ const DataTab: Component = () => {
         ).flat();
 
         writeFile(selectedFilePath as string, JSON.stringify({parsedPacketsArray, packetViewModels}))
-            .then(() => console.log("Saved state to " + selectedFilePath + ".")) // TODO: replace console log with ErrorModal
-            .catch((err) => console.error(err));
+            .catch((err) => showModal<ErrorModalProps, {}>(ErrorModal, {
+                error: "Failed to Save Flight File",
+                description: err
+            }));
     };
 
     createEffect(() => {

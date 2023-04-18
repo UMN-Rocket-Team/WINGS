@@ -5,6 +5,7 @@ import Homepage from "./components/Homepage";
 import { ModalProvider } from "./components/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Router, Routes, Route } from "@solidjs/router"
+import SavedFlightViewer from "./components/SavedFlightViewer";
 
 const App = (): JSX.Element => {
     return (
@@ -15,6 +16,7 @@ const App = (): JSX.Element => {
                         <Routes>
                             <Route path="/" component={Homepage} />
                             <Route path="/newFlight" component={FlightViewer} />
+                            <Route path="/savedFlight" component={SavedFlightViewer} />
                         </Routes>
                     </Router>
                 </ModalProvider>

@@ -5,7 +5,7 @@ import {JSX} from "solid-js";
 /**
  * The properties required for the {@link ErrorModal} component.
  */
-type ErrorModalProps = {
+export type ErrorModalProps = {
     /**
      * The name of the error that occurred, displayed as the title of the modal
      */
