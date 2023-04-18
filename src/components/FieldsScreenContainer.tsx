@@ -27,7 +27,8 @@ const FieldsScreenContainer: Component<FieldsScreenContainerProps> = (props: Fie
                 }
                 return null;
             }).filter(packetViewModel => packetViewModel !== null) as FieldInPacket[]
-        ).flat());
+        ).flat()
+    );
 
     const viewStates: FieldsScreenState[] = [{ fieldsInPackets: allFieldsInPackets(), number: 1 }, { fieldsInPackets: allFieldsInPackets(), number: 2 }, { fieldsInPackets: allFieldsInPackets(), number: 3 }, { fieldsInPackets: allFieldsInPackets(), number: 4 }];
 

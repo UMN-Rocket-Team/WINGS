@@ -1,7 +1,7 @@
 import { Packet, PacketData } from "./types";
 
 /**
- * The global map between packet ids and the list of recevied packet data for the packet with that id
+ * The global map between packet ids and the list of received packet data for the packet with that id
  */
 export const parsedPackets: Record<number, PacketData[]> = [];
 
@@ -28,3 +28,14 @@ export const pushParsedPackets = (packets: Packet[]): void => {
         parsedPackets[+structureId].push(...sortedNewParsedPackets[structureId]);
     }
 };
+
+const clearParsedPackets = (): void => {
+    for (const structureId in parsedPackets) {
+        delete parsedPackets[+structureId];
+    }
+}
+
+export const setParsedPackets = (packets: Packet[]): void => {
+    clearParsedPackets();
+    pushParsedPackets(packets);
+}

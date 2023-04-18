@@ -1,10 +1,10 @@
-import { Component, For, JSX } from "solid-js";
-import { useModal } from "./ModalProvider";
+import {Component, For} from "solid-js";
+import {useModal} from "./ModalProvider";
 import ExpandedFieldsModal from "./ExpandedFieldsModal";
 import upRightArrow from "../assets/up-right-arrow.png"
 import broom from "../assets/broom.png"
-import { createStore } from "solid-js/store";
-import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
+import {createStore} from "solid-js/store";
+import FieldSelectModal, {FieldSelectModalProps} from "./FieldSelectModal";
 
 /**
  * An object that identifies a field in a packet by its packet id and field index and contains the name of the packet and field.
@@ -58,11 +58,11 @@ export type FieldsScreenProps = {
  * - Allows users to add fields to the screen
  * - Allows users to clear the screen
  * - Allows users to view the graphed data received for the selected fields
- * 
- * @param props an object that contains a {@link FieldsScreenState} so that this component knows 
+ *
+ * @param props an object that contains a {@link FieldsScreenState} so that this component knows
  */
 const FieldsScreen: Component<FieldsScreenProps> = (props) => {
-    const { showModal } = useModal();
+    const {showModal} = useModal();
 
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
 
@@ -79,24 +79,35 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, { fieldViewState: props.fieldsViewState, selectedFields: selected, handleSelect: handleSelect })}>
+            <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
+                fieldViewState: props.fieldsViewState,
+                selectedFields: selected,
+                handleSelect: handleSelect
+            })}>
                 Select Fields
             </button>
 
             {/*Expand button*/}
             <button class="absolute top-1 right-1 w-5 h-5 p-0"
-                onClick={() => showModal<FieldsScreenState, {}>(ExpandedFieldsModal, { fieldsInPackets: selected, number: props.fieldsViewState.number })}>
-                <img src={upRightArrow} style={{ "width": "100%", "height": "100%" }} alt="Expand"></img>
+                    onClick={() => showModal<FieldsScreenState, {}>(ExpandedFieldsModal, {
+                        fieldsInPackets: selected,
+                        number: props.fieldsViewState.number
+                    })}>
+                <img src={upRightArrow} style={{"width": "100%", "height": "100%"}} alt="Expand"></img>
             </button>
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
-                onClick={() => { setSelected([]) }}>
-                <img src={broom} style={{ "width": "100%", "height": "100%" }} alt="Delete"></img>
+                    onClick={() => {
+                        setSelected([])
+                    }}>
+                <img src={broom} style={{"width": "100%", "height": "100%"}} alt="Delete"></img>
             </button>
 
             {/*Fields*/}
-            <div class="absolute flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll" style={{"width": "90%"}}>
+            <div
+                class="absolute flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll"
+                style={{"width": "90%"}}>
                 <For each={selected}>
                     {(fieldInPacket: FieldInPacket) =>
                         <div class="bg-gray p-2">
