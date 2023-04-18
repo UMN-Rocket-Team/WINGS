@@ -1,8 +1,8 @@
 import {Component, createSignal, For} from "solid-js";
 import FieldsScreenContainer from "./FieldsScreenContainer";
 import logo from "../assets/logo.png";
-import {setActivePort} from "../backend_interop/api_calls";
 import {useBackend} from "./BackendProvider";
+import {setActivePort} from "../backend_interop/api_calls";
 import {useNavigate} from "@solidjs/router";
 import {Packet} from "../backend_interop/types";
 import {parsedPackets} from "../backend_interop/buffers";
@@ -22,10 +22,10 @@ import {useModal} from "./ModalProvider";
  *  - Save flight data
  */
 const DataTab: Component = () => {
-    const {availablePortNames, packetViewModels, parsedPacketCount} = useBackend();
+    const { availablePortNames, packetViewModels, parsedPacketCount } = useBackend();
+    const { showModal } = useModal();
     const navigate = useNavigate();
     const [selectedPort, setSelectedPort] = createSignal<string | null>();
-    const {showModal} = useModal();
 
     const saveFlight = async () => {
         const selectedFilePath = await save({
@@ -77,8 +77,7 @@ const DataTab: Component = () => {
                     {/* Active serial port combobox */}
                     <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>
                     <input list="dataSerialPorts" name="Serial Port" id="serialPortInput"
-                           onInput={async event => await applyNewSelectedPort((event.target as HTMLInputElement).value)}
-                           value={selectedPort() ?? ""}/>
+                        onInput={async event => await applyNewSelectedPort((event.target as HTMLInputElement).value)} value={selectedPort() ?? ""}/>
                     <datalist id="dataSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name}/>}
