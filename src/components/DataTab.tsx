@@ -1,4 +1,4 @@
-import {Component, createEffect, createSignal, For} from "solid-js";
+import {Component, createSignal, For} from "solid-js";
 import FieldsScreenContainer from "./FieldsScreenContainer";
 import logo from "../assets/logo.png";
 import {setActivePort} from "../backend_interop/api_calls";
