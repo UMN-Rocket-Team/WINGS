@@ -4,6 +4,7 @@ import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, Pac
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { importPacket, exportPacket} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
+import { useModal } from "./ModalProvider";
 
 /**
  * A component that allows the user to manage packet structures. Changes on the frontend are synchronized with the Rust
@@ -32,6 +33,7 @@ import { useBackend } from "./BackendProvider";
  */
 const PacketsTab: Component = () => {
     const { packetViewModels } = useBackend();
+    const { showModal } = useModal();
 
     const [selectedPacketStructureIndex, setSelectedPacketStructureIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
     const [selectedPacketComponentIndex, setSelectedPacketComponentIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
@@ -44,7 +46,7 @@ const PacketsTab: Component = () => {
     const selectedDelimiterData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Delimiter ? selectedPacketStructureComponent()?.data as PacketDelimiter : null);
     const selectedGapData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Gap ? selectedPacketStructureComponent()?.data as PacketGap : null);
 
-    const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureIndex, selectedPacketStructureComponent);
+    const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureIndex, selectedPacketStructureComponent, showModal);
 
     return (
         <div class="flex gap-2">
@@ -63,11 +65,9 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class="externalButton" onClick={() => {
-                    importPacket();
-                }}>Import Packet...</button>
-                <button class="externalButton" onClick={() => exportPacket(selectedPacket())}>Export Packet...</button>
-                <button class="externalButton" onClick={() => addEmptyPacket()}>Add Empty Packet</button>
+                <button class="externalButton" onClick={async () => await importPacket()}>Import Packet...</button>
+                <button class="externalButton" onClick={async () => await exportPacket(selectedPacket())}>Export Packet...</button>
+                <button class="externalButton" onClick={async () => await addEmptyPacket()}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
@@ -97,15 +97,15 @@ const PacketsTab: Component = () => {
                                 )}
                             </For>
                         </div>
-                        <button class="redButton" onClick={() => deletePacketStructure()}>
+                        <button class="redButton" onClick={async () => await deletePacketStructure()}>
                             Delete {selectedPacket()!.name}
                         </button>
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button class="externalButton" onClick={() => addField(selectedPacketStructureIndex()!)}>Add Field</button>
-                    <button class="externalButton" onClick={() => addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
-                    <button class="externalButton" onClick={() => {
+                    <button class="externalButton" onClick={async () => await addField(selectedPacketStructureIndex()!)}>Add Field</button>
+                    <button class="externalButton" onClick={async () => await addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
+                    <button class="externalButton" onClick={async () => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
                         let index: number;
@@ -121,7 +121,7 @@ const PacketsTab: Component = () => {
                             default:
                                 throw new Error("Cannot add a gap after a gap!");
                         }
-                        addGapAfter(selectedPacketStructureIndex()!, isField, index);
+                        await addGapAfter(selectedPacketStructureIndex()!, isField, index);
                     }}>Add Gap</button>
                 </div>
             </div>
@@ -140,13 +140,13 @@ const PacketsTab: Component = () => {
                                     <div class="flex flex-col">
                                         <label for="fieldName">Name</label>
                                         <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
-                                            onInput={e => invokeApiSetter(setFieldName, (e.target as HTMLInputElement).value)} />
+                                            onInput={async e => await invokeApiSetter(setFieldName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <span>Offset in Packet: {selectedFieldData()!.offsetInPacket} byte{selectedFieldData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                     <div class="flex flex-col">
                                         <label for="fieldType">Type</label>
                                         <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
-                                            onInput={e => invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
+                                            onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
                                             </For>
@@ -155,7 +155,7 @@ const PacketsTab: Component = () => {
                                     <div class="flex flex-col">
                                         <label for="fieldMetadataType">Metadata Type</label>
                                         <select class="inputBox" value={selectedFieldData()!.metadataType} id="fieldMetadataType"
-                                            onInput={e => invokeApiSetter(setFieldMetadataType, (e.target as HTMLSelectElement).value as PacketMetadataType)}>
+                                            onInput={async e => await invokeApiSetter(setFieldMetadataType, (e.target as HTMLSelectElement).value as PacketMetadataType)}>
                                             <For each={Object.values(PacketMetadataType).filter(k => isNaN(Number(k)))}>
                                                 {(metadataType) => <option value={metadataType}>{metadataType}</option>}
                                             </For>
@@ -170,15 +170,15 @@ const PacketsTab: Component = () => {
                                     <div class="flex flex-col">
                                         <label for="delimiterName">Name</label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.name} id="delimiterName"
-                                            onInput={e => invokeApiSetter(setDelimiterName, (e.target as HTMLInputElement).value)} />
+                                            onInput={async e => await invokeApiSetter(setDelimiterName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div>
                                         <label for="delimiterIdentifier">Identifier:</label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
-                                            onInput={e => {
+                                            onInput={async e => {
                                                 (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\da-f]/g, '');
 
-                                                invokeApiSetter(setDelimiterIdentifier, (e.target as HTMLInputElement).value);
+                                                await invokeApiSetter(setDelimiterIdentifier, (e.target as HTMLInputElement).value);
                                             }} />
                                     </div>
                                     <span>Offset in Packet: {selectedDelimiterData()!.offsetInPacket} byte{selectedDelimiterData()!.offsetInPacket == 1 ? "" : "s"}</span>
@@ -197,12 +197,12 @@ const PacketsTab: Component = () => {
                                             return value;
                                         }
                                         return selectedGapData()!.size;
-                                    }} onInput={e => invokeApiSetter(setGapSize, +(e.target as HTMLInputElement).value)} />
+                                    }} onInput={async e => await invokeApiSetter(setGapSize, +(e.target as HTMLInputElement).value)} />
                                 </div>
                             </Match>
                         </Switch>
                     </div>
-                    <button class="redButton" onClick={() => invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                    <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
                         Delete {(selectedPacketStructureComponent()?.data as any).name ?? "Gap"}
                     </button>
                 </Show>
