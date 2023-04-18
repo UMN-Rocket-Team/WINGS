@@ -2,6 +2,7 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
+import { importPacket, exportPacket} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 
 /**
@@ -49,11 +50,11 @@ const PacketsTab: Component = () => {
         <div class="flex gap-2">
             {/* Packet structure list */}
             <div class="flex flex-col gap-2">
-                <div class="flex flex-col flex-grow border-1 p-2 border-rounded gap-2 dark:text-white">
+                <div class="flex flex-col flex-grow tab">
                     <h1 class="m-0">Packets</h1>
                     <For each={packetViewModels}>
                         {(packetStructure, i) => (
-                            <button class={`flex justify-between gap-4 border-black dark:border-white ${selectedPacketStructureIndex() === i() ? "border-transparent bg-blue-600 text-white" : "bg-transparent"} border-rounded border-1 px-2 py-2 dark:text-white`} onClick={() => batch(() => {
+                            <button class={`flex justify-between gap-4 ${selectedPacketStructureIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
                                 setSelectedPacketStructureIndex(i());
                                 setSelectedPacketComponentIndex(0);
                             })}>
@@ -62,20 +63,22 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button onClick={e => importPacket()}>Import Packet...</button>
-                <button onClick={e => exportPacket()}>Export Packet...</button>
-                <button onClick={e => addEmptyPacket()}>Add Empty Packet</button>
+                <button class="externalButton" onClick={() => {
+                    importPacket();
+                }}>Import Packet...</button>
+                <button class="externalButton" onClick={() => exportPacket(selectedPacket())}>Export Packet...</button>
+                <button class="externalButton" onClick={() => addEmptyPacket()}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
-                <div class="flex flex-col justify-between flex-grow border-1 p-2 border-rounded gap-2 dark:b-white">
-                    <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0">No packet selected</h2>}>
+                <div class="flex flex-col justify-between flex-grow tab">
+                    <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
                         <div class="flex flex-col flex-grow gap-2 dark:text-white">
                             <h2 class="m-0">{selectedPacket()!.name}</h2>
                             <span>Components</span>
                             <For each={selectedPacketStructureComponents()}>
                                 {(component, i) => (
-                                    <button class={`flex justify-between gap-4 border-black ${selectedPacketComponentIndex() === i() ? "border-white bg-blue-600 text-white" : "bg-transparent dark:border-white"} border-rounded border-1 px-2 py-2 dark:text-white`} onClick={() => setSelectedPacketComponentIndex(i())}>
+                                    <button class={`flex justify-between gap-4 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>
                                         <Switch>
                                             <Match when={component.type === PacketComponentType.Field}>
                                                 <span>F</span>
@@ -94,15 +97,15 @@ const PacketsTab: Component = () => {
                                 )}
                             </For>
                         </div>
-                        <button class="bg-red border-rounded border-0 px-4 py-2" onClick={() => deletePacketStructure()}>
+                        <button class="redButton" onClick={() => deletePacketStructure()}>
                             Delete {selectedPacket()!.name}
                         </button>
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button onClick={() => addField(selectedPacketStructureIndex()!)}>Add Field</button>
-                    <button onClick={() => addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
-                    <button onClick={() => {
+                    <button class="externalButton" onClick={() => addField(selectedPacketStructureIndex()!)}>Add Field</button>
+                    <button class="externalButton" onClick={() => addDelimiter(selectedPacketStructureIndex()!)}>Add Delimeter</button>
+                    <button class="externalButton" onClick={() => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
                         let index: number;
@@ -123,8 +126,8 @@ const PacketsTab: Component = () => {
                 </div>
             </div>
             {/* Packet structure component editor */}
-            <div class="flex flex-col justify-between border-1 p-2 border-rounded dark:b-white">
-                <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0">No component selected</h2>}>
+            <div class="flex flex-col justify-between tab">
+                <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0 dark:text-white">No component selected</h2>}>
                     <div class="flex flex-col dark:text-white">
                         <Switch>
                             <Match when={selectedPacketComponentIndex() === null}>
@@ -136,13 +139,13 @@ const PacketsTab: Component = () => {
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
                                         <label for="fieldName">Name</label>
-                                        <input type="text" value={selectedFieldData()!.name} id="fieldName"
+                                        <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
                                             onInput={e => invokeApiSetter(setFieldName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <span>Offset in Packet: {selectedFieldData()!.offsetInPacket} byte{selectedFieldData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                     <div class="flex flex-col">
                                         <label for="fieldType">Type</label>
-                                        <select value={selectedFieldData()!.type} id="fieldType"
+                                        <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
                                             onInput={e => invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
@@ -151,7 +154,7 @@ const PacketsTab: Component = () => {
                                     </div>
                                     <div class="flex flex-col">
                                         <label for="fieldMetadataType">Metadata Type</label>
-                                        <select value={selectedFieldData()!.metadataType} id="fieldMetadataType"
+                                        <select class="inputBox" value={selectedFieldData()!.metadataType} id="fieldMetadataType"
                                             onInput={e => invokeApiSetter(setFieldMetadataType, (e.target as HTMLSelectElement).value as PacketMetadataType)}>
                                             <For each={Object.values(PacketMetadataType).filter(k => isNaN(Number(k)))}>
                                                 {(metadataType) => <option value={metadataType}>{metadataType}</option>}
@@ -166,12 +169,12 @@ const PacketsTab: Component = () => {
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
                                         <label for="delimiterName">Name</label>
-                                        <input type="text" value={selectedDelimiterData()!.name} id="delimiterName"
+                                        <input class="inputBox" type="text" value={selectedDelimiterData()!.name} id="delimiterName"
                                             onInput={e => invokeApiSetter(setDelimiterName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div>
                                         <label for="delimiterIdentifier">Identifier:</label>
-                                        <input type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
+                                        <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
                                             onInput={e => {
                                                 (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\da-f]/g, '');
 
@@ -186,7 +189,7 @@ const PacketsTab: Component = () => {
                                 <h2 class="m-0">Gap Information</h2>
                                 <div class="flex flex-col">
                                     <label for="gapSize">Size</label>
-                                    <input type="number" value={selectedGapData()!.size} min={1} id="gapSize" onChange={(e) => {
+                                    <input class="inputBox" type="number" value={selectedGapData()!.size} min={1} id="gapSize" onChange={(e) => {
                                         const value = e.currentTarget.value;
 
                                         if (value.match('^[0-9]*$')) {
@@ -199,7 +202,7 @@ const PacketsTab: Component = () => {
                             </Match>
                         </Switch>
                     </div>
-                    <button class="bg-red border-rounded border-0 px-4 py-2" onClick={() => invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                    <button class="redButton" onClick={() => invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
                         Delete {(selectedPacketStructureComponent()?.data as any).name ?? "Gap"}
                     </button>
                 </Show>

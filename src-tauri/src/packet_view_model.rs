@@ -1,23 +1,48 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::packet_structure::{PacketField, PacketStructure};
+use crate::models::packet_structure::{PacketDelimiter, PacketField, PacketStructure};
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketViewModel {
     id: usize,
     name: String,
     components: Vec<PacketComponent>,
 }
+impl PacketViewModel {
+    pub fn to_packet_structure(&self) -> PacketStructure {
+        let mut packet_fields: Vec<PacketField> = Vec::new();
+        let mut packet_delimiters: Vec<PacketDelimiter> = Vec::new();
+        for component in &self.components {
+            match component {
+                PacketComponent::Field(field) => packet_fields.push(field.clone()),
+
+                PacketComponent::Delimiter(delimiter) => packet_delimiters.push(PacketDelimiter {
+                    index: delimiter.index,
+                    name: delimiter.name.to_string(),
+                    identifier: hex::decode(delimiter.identifier.to_string()).unwrap(), // used unwrap instead of match(program will panick if this cant decode)
+                    offset_in_packet: delimiter.offset_in_packet,
+                }),
+                PacketComponent::Gap(_gap) => {} //gaps are view only and can be ignored
+            };
+        }
+        return PacketStructure {
+            id: self.id,
+            name: self.name.clone(),
+            fields: packet_fields,
+            delimiters: packet_delimiters,
+        };
+    }
+}
 
 #[derive(Deserialize, Clone, Copy)]
 pub enum PacketComponentType {
     Field,
     Delimiter,
-    Gap
+    Gap,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketComponent {
     Field(PacketField),
@@ -52,7 +77,7 @@ pub struct PacketDelimiterViewModel {
     pub(crate) offset_in_packet: usize,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Deserialize, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketGap {
     index: usize,
