@@ -23,7 +23,7 @@ pub fn set_field_name(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.set_field_name(packet_structure_id, field_index, name);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -41,7 +41,7 @@ pub fn set_field_type(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.set_field_type(packet_structure_id, field_index, r#type);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -63,7 +63,7 @@ pub fn set_field_metadata_type(
                 field_index,
                 metadata_type,
             );
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -81,7 +81,7 @@ pub fn set_delimiter_name(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.set_delimiter_name(packet_structure_id, delimiter_index, name);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -102,14 +102,15 @@ pub fn set_delimiter_identifier(
             delimiter_index,
             identifier,
         ) {
-            Ok(_) => Ok(vec![packet_structure_id]),
+            Ok(_) => Ok((vec![packet_structure_id], None)),
             Err(SetDelimiterIdentifierError::InvalidHexadecimalString(message)) => {
-                Err((vec![packet_structure_id], message))
+                Err((vec![packet_structure_id], None, message))
             }
             Err(SetDelimiterIdentifierError::IdentifierCollision(
                 colliding_packet_structure_ids,
             )) => Err((
                 colliding_packet_structure_ids,
+                None,
                 String::from("Identifiers must be unique between packet structures!"),
             )),
         },
@@ -129,7 +130,7 @@ pub fn set_gap_size(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.set_gap_size(packet_structure_id, gap_index, size);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -145,7 +146,7 @@ pub fn add_field(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.add_field(packet_structure_id);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -161,7 +162,7 @@ pub fn add_delimiter(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.add_delimiter(packet_structure_id);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -179,7 +180,7 @@ pub fn add_gap_after(
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
             packet_structure_manager.add_gap_after(packet_structure_id, is_field, component_index);
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -205,18 +206,18 @@ pub fn delete_packet_structure_component(
                 Err(error) => {
                     return match error {
                         DeletePacketStructureComponentError::LastField => {
-                            Err((vec![], String::from("Last Field")))
+                            Err((vec![], None, String::from("Last Field")))
                         }
                         DeletePacketStructureComponentError::LastDelimiter => {
-                            Err((vec![], String::from("Last Delimiter")))
+                            Err((vec![], None, String::from("Last Delimiter")))
                         }
                         DeletePacketStructureComponentError::DelimiterIdentifierCollision(
                             identifiers,
-                        ) => Err((identifiers, String::from("Identifier collision"))),
+                        ) => Err((identifiers, None, String::from("Identifier collision"))),
                     }
                 }
             }
-            Ok(vec![packet_structure_id])
+            Ok((vec![packet_structure_id], None))
         },
     )
 }
@@ -237,9 +238,10 @@ pub fn add_packet(
         &mut |packet_structure_manager| {
             let mut packet_structure = view.to_packet_structure();
             match packet_structure_manager.register_packet_structure(&mut packet_structure) {
-                Ok(new_id) => Ok(vec![new_id]),
+                Ok(new_id) => Ok((vec![new_id], None)),
                 Err(_) => Err((
                     vec![],
+                    None,
                     "Failed to register imported packet structures!".to_string(),
                 )),
             }
@@ -299,12 +301,28 @@ pub fn register_empty_packet_structure(
                     PacketDelimiter { index: 0, name: String::from("Delimiter 1"), identifier: smallest_delimiter, offset_in_packet: PacketFieldType::SignedInteger.size() }
                 ],
             }) {
-                Ok(new_id) => Ok(vec![new_id]),
+                Ok(new_id) => Ok((vec![new_id], None)),
                 Err(error) => match error {
-                    packet_structure_manager::PacketStructureRegistrationError::NameAlreadyRegistered(_) => Err((vec![], String::from("Unique name finding error: name collision!"))),
-                    packet_structure_manager::PacketStructureRegistrationError::DelimitersAlreadyRegistered(_) => Err((vec![], String::from("Unique delimiter finding error: delimiter collision!"))),
+                    packet_structure_manager::PacketStructureRegistrationError::NameAlreadyRegistered(_) => Err((vec![], None, String::from("Unique name finding error: name collision!"))),
+                    packet_structure_manager::PacketStructureRegistrationError::DelimitersAlreadyRegistered(_) => Err((vec![], None, String::from("Unique delimiter finding error: delimiter collision!"))),
                 }
             }
+        },
+    )
+}
+
+#[tauri::command]
+pub fn delete_packet_structure(
+    app_handle: tauri::AppHandle,
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    packet_structure_id: usize,
+) -> Result<(), String> {
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            packet_structure_manager.delete_packet_structure(packet_structure_id);
+            Ok((vec![], Some(vec![packet_structure_id])))
         },
     )
 }

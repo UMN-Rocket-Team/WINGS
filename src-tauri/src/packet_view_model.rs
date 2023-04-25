@@ -9,6 +9,7 @@ pub struct PacketViewModel {
     name: String,
     components: Vec<PacketComponent>,
 }
+
 impl PacketViewModel {
     pub fn to_packet_structure(&self) -> PacketStructure {
         let mut packet_fields: Vec<PacketField> = Vec::new();

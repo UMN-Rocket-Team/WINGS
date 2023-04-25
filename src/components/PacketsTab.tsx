@@ -1,5 +1,5 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { addDelimiter, addField, addGapAfter, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { importPacket, exportPacket} from "../core/packet_file_handling";
@@ -108,7 +108,12 @@ const PacketsTab: Component = () => {
                                 )}
                             </For>
                         </div>
-                        <button class="redButton" onClick={async () => await deletePacketStructure()}>
+                        <button class="redButton" onClick={async () => await showErrorModalOnError(async () => {
+                            await deletePacketStructure(selectedPacket().id);
+                            // Select the previous packet structure if the last packet structure was deleted, select no packet structure
+                            // if none are left
+                            setSelectedPacketStructureIndex(packetViewModels.length === 0 ? null : selectedPacketStructureIndex()! + (selectedPacketStructureIndex()! >= packetViewModels.length ? -1 : 0));
+                        }, 'Faled to delete packet structure!')}>
                             Delete {selectedPacket()!.name}
                         </button>
                     </Show>

@@ -67,4 +67,4 @@ export const addPacket = async (view: PacketViewModel) => await returnErrorMessa
 
 export const registerEmptyPacketStructure = async () => await returnErrorMessage<void>("register_empty_packet_structure");
 
-
+export const deletePacketStructure = async (packetStructureId: number) => await returnErrorMessage<void>('delete_packet_structure', { packetStructureId: packetStructureId });

@@ -85,11 +85,6 @@ impl PacketStructureManager {
         self.maximum_packet_structure_size =
             max(self.maximum_packet_structure_size, packet_structure_size);
 
-        println!(
-            "{}, {}",
-            self.minimum_packet_structure_size, self.maximum_packet_structure_size
-        );
-
         Ok(packet_structure.id)
     }
 
@@ -457,5 +452,9 @@ impl PacketStructureManager {
         }
 
         Ok(())
+    }
+
+    pub fn delete_packet_structure(&mut self, packet_structure_id: usize) {
+        self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
     }
 }

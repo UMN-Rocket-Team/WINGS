@@ -26,9 +26,10 @@ use update_loop::TimerState;
 
 use crate::commands::{
     packet_structure_manager_commands::{
-        add_delimiter, add_field, add_gap_after, add_packet, delete_packet_structure_component,
-        register_empty_packet_structure, set_delimiter_identifier, set_delimiter_name,
-        set_field_metadata_type, set_field_name, set_field_type, set_gap_size,
+        add_delimiter, add_field, add_gap_after, add_packet, delete_packet_structure,
+        delete_packet_structure_component, register_empty_packet_structure,
+        set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
+        set_field_type, set_gap_size,
     },
     serial_commands::{set_active_port, set_test_read_port, set_test_write_port, test_radios},
 };
@@ -51,7 +52,8 @@ fn main() {
             add_gap_after,
             delete_packet_structure_component,
             add_packet,
-            register_empty_packet_structure
+            register_empty_packet_structure,
+            delete_packet_structure
         ])
         .manage(PacketStructureManagerState::default())
         .manage(SerialManagerState::default())

@@ -4,7 +4,9 @@ import {pushParsedPackets} from "../backend_interop/buffers";
 import {
     PacketViewModel,
     SerialUpdateResult as SerialUpdateResult,
-    SerialPortNames
+    SerialPortNames,
+    PacketViewModelUpdate,
+    PacketViewModelUpdateType
 } from "../backend_interop/types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
@@ -74,23 +76,35 @@ export const BackendProvider: ParentComponent = (props) => {
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }
             }),
-            await listen<PacketViewModel[]>("packet-structures-update", event => {
+            await listen<PacketViewModelUpdate[]>("packet-structures-update", event => {
                 console.log(event);
 
-                for (const packetViewModel of event.payload) {
-                    if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
-                        // Update the existing view model
-                        setPacketViewModels(
-                            oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id,
-                            packetViewModel
-                        );
-                    } else {
-                        // Add the new view model
-                        setPacketViewModels(
-                            packetViewModels.length,
-                            packetViewModel
-                        );
+                for (const packetViewModelUpdate of event.payload) {
+                    switch (packetViewModelUpdate.type) {
+                        case PacketViewModelUpdateType.CreateOrUpdate:
+                            const packetViewModel = packetViewModelUpdate.data as PacketViewModel;
+                            if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
+                                // Update the existing view model
+                                setPacketViewModels(
+                                    oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id,
+                                    packetViewModel
+                                );
+                            } else {
+                                // Add the new view model
+                                setPacketViewModels(
+                                    packetViewModels.length,
+                                    packetViewModel
+                                );
+                            }
+                            break;
+                        case PacketViewModelUpdateType.Delete:
+                            const deletedPacketViewModelId = packetViewModelUpdate.data as number;
+                            setPacketViewModels(
+                                packetViewModels.filter(packetViewModel => packetViewModel.id !== deletedPacketViewModelId),
+                            );
+                            break;
                     }
+                    
                 }
             }),
         ];
