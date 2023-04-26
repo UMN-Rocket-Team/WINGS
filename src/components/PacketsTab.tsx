@@ -1,8 +1,8 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
-import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize } from "../backend_interop/api_calls";
+import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { importPacket, exportPacket} from "../core/packet_file_handling";
+import { importPacket, exportPacket } from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
@@ -86,6 +86,11 @@ const PacketsTab: Component = () => {
                     <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
                         <div class="flex flex-col flex-grow gap-2 dark:text-white">
                             <h2 class="m-0">{selectedPacket()!.name}</h2>
+                            <label class='flex flex-col'>
+                                <span>Name</span>
+                                <input class="inputBox" type='text' value={selectedPacket()!.name}
+                                    onInput={async e => await showErrorModalOnError(async () => await setPacketName(selectedPacket().id, (e.target as HTMLInputElement).value), 'Failed to change packet name')} />
+                            </label>
                             <span>Components</span>
                             <For each={selectedPacketStructureComponents()}>
                                 {(component, i) => (

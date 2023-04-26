@@ -11,6 +11,23 @@ use crate::{
 };
 
 #[tauri::command]
+pub fn set_packet_name(
+    app_handle: tauri::AppHandle,
+    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    packet_structure_id: usize,
+    name: &str,
+) -> Result<(), String> {
+    update_packet_structures(
+        app_handle,
+        packet_structure_manager_state,
+        &mut |packet_structure_manager| {
+            packet_structure_manager.set_packet_name(packet_structure_id, name);
+            Ok((vec![packet_structure_id], None))
+        },
+    )
+}
+
+#[tauri::command]
 pub fn set_field_name(
     app_handle: tauri::AppHandle,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,

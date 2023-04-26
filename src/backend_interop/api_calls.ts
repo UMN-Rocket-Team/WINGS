@@ -43,6 +43,8 @@ export const getTestReadPort = (): string | null => testReadPort;
 
 export const testRadios: () => Promise<string | RadioTestResult> = async () => await returnErrorMessage("test_radios");
 
+export const setPacketName = async (packetStructureId: number, name: string) => await returnErrorMessage<void>("set_packet_name", { packetStructureId, name });
+
 export const setFieldName = async (packetStructureId: number, fieldIndex: number, name: string) => await returnErrorMessage<void>("set_field_name", { packetStructureId, fieldIndex, name });
 
 export const setFieldType = async (packetStructureId: number, fieldIndex: number, type: PacketFieldType) => await returnErrorMessage<void>("set_field_type", { packetStructureId, fieldIndex, type });

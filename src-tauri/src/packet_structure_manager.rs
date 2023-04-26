@@ -88,6 +88,10 @@ impl PacketStructureManager {
         Ok(packet_structure.id)
     }
 
+    pub fn set_packet_name(&mut self, packet_structure_id: usize, name: &str) {
+        self.packet_structures[packet_structure_id].name = String::from(name);
+    }
+
     pub fn set_field_name(&mut self, packet_structure_id: usize, field_index: usize, name: &str) {
         self.packet_structures[packet_structure_id].fields[field_index].name = String::from(name);
     }

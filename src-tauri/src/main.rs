@@ -29,7 +29,7 @@ use crate::commands::{
         add_delimiter, add_field, add_gap_after, add_packet, delete_packet_structure,
         delete_packet_structure_component, register_empty_packet_structure,
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
-        set_field_type, set_gap_size,
+        set_field_type, set_gap_size, set_packet_name,
     },
     serial_commands::{set_active_port, set_test_read_port, set_test_write_port, test_radios},
 };
@@ -47,6 +47,7 @@ fn main() {
             set_delimiter_name,
             set_delimiter_identifier,
             set_gap_size,
+            set_packet_name,
             add_field,
             add_delimiter,
             add_gap_after,
@@ -62,13 +63,15 @@ fn main() {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
 
-            app.once_global("initialized", move |_| {
-                send_initial_packet_structure_update_event(app_handle_1);
+            app.listen_global("initialized", move |_| {
+                send_initial_packet_structure_update_event(app_handle_1.clone());
 
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
                 // program and accessed upon temination
-                app_handle_2.manage(TimerState::new(app_handle_2.clone()));
+                if app_handle_2.try_state::<TimerState>().is_none() {
+                    app_handle_2.manage(TimerState::new(app_handle_2.clone()));
+                }
             });
 
             Ok(())
