@@ -1,7 +1,21 @@
 import { ModalProps } from "./ModalProvider";
 import { For, JSX, Show } from "solid-js";
-import { FieldInPacket, FieldsScreenState } from "./FieldsScreen";
+import { FieldInPacket } from "./FieldsScreen";
 import SolidChart from "./SolidChart";
+
+/**
+ * The properties required for the {@link ExpandedFieldsModal} component.
+ */
+export type ExpandedFieldsModalProps = {
+    /**
+     * The list of selected packets on this screen
+     */
+    selectedFields: FieldInPacket[];
+    /**
+     * The user-displayable number of this screen
+     */
+    number: number;
+};
 
 /**
  * A modal component that displays the data received for the given list of fields in graphs. The modal will close when the `Escape` key
@@ -9,7 +23,7 @@ import SolidChart from "./SolidChart";
  * 
  * @param props an object that contains a function to close the modal, the list of fields to be displayed, and the number of this screen
  */
-const ExpandedFieldsModal = (props: ModalProps<FieldsScreenState>): JSX.Element => {
+const ExpandedFieldsModal = (props: ModalProps<ExpandedFieldsModalProps>): JSX.Element => {
     return (
         <div class="absolute z-10 top-0 left-0 bottom-0 right-0 flex flex-col bg-white dark:bg-dark-700 p-4" tabIndex={-1}
             // Focus the root div of the modal when it is made visible so that it receives keyboard events.
@@ -27,15 +41,15 @@ const ExpandedFieldsModal = (props: ModalProps<FieldsScreenState>): JSX.Element 
                 <svg xmlns="http://www.w3.org/2000/svg" class="dark:text-white" width={28} preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344l-4.243 4.242l-4.242-4.242l-1.414 1.414L10.535 12l-4.242 4.242l1.414 1.414l4.242-4.242l4.243 4.242l1.414-1.414L13.364 12l4.242-4.242z" /></svg>
             </button>
             <b class="text-center text-4xl dark:text-white">{`Screen ${props.number}`}</b>
-            <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, props.fieldsInPackets.length)}, 1fr)`}}>
-                <For each={props.fieldsInPackets}>
+            <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, props.selectedFields.length)}, 1fr)`}}>
+                <For each={props.selectedFields}>
                     {(fieldInPacket: FieldInPacket) =>
                         <div class="relative">
                             <SolidChart fieldInPacket={fieldInPacket} />
                         </div>
                     }
                 </For>
-                <Show when={props.fieldsInPackets.length === 0}>
+                <Show when={props.selectedFields.length === 0}>
                     <span class="inline-flex items-center justify-center">No packets to display</span>
                 </Show>
             </div>

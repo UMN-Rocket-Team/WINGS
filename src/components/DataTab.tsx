@@ -64,7 +64,7 @@ const DataTab: Component = () => {
 
     return (
         <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
-            <FieldsScreenContainer packetViewModels={packetViewModels}></FieldsScreenContainer>
+            <FieldsScreenContainer />
 
             {/*Actions bar*/}
             <footer class="flex p-2 items-center justify-between drop-shadow-lightgray dark:drop-shadow-gray">
