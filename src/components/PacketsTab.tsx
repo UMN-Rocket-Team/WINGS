@@ -2,7 +2,7 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { importPacket, exportPacket } from "../core/packet_file_handling";
+import { runImportPacketWindow, runExportPacketWindow} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
@@ -76,8 +76,8 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class="externalButton" onClick={async () => await importPacket()}>Import Packet...</button>
-                <button class="externalButton" onClick={async () => await exportPacket(selectedPacket())}>Export Packet...</button>
+                <button class="externalButton" onClick={async () => await runImportPacketWindow()}>Import Packet...</button>
+                <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket())}>Export Packet...</button>
                 <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
