@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import solidPlugin from "vite-plugin-solid";
 import Unocss from 'unocss/vite';
 
@@ -43,5 +43,10 @@ export default defineConfig({
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
   },
-
+  define: {
+    'import.meta.vitest': 'undefined',
+  },
+  test: {
+    includeSource: ['src/**/*.{js,ts,tsx}']
+  },
 });
