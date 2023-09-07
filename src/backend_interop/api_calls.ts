@@ -1,6 +1,10 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, PacketViewModel } from "./types";
-
+/**
+ * All direct function calls to the rust backend are sent through this file, 
+ * returnErrorMessage is use for error proccessing on each function call.
+ * The backend counterparts of each of the Functions are documented, so there will not be any documentation here
+ */
 /**
  * Calls the Rust backend function with the given name and arguments. If an error occurs, returns the error message as a string.
  * 
