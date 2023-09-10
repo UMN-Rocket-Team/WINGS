@@ -13,6 +13,7 @@ pub struct PacketStructureManagerState {
 }
 
 impl Default for PacketStructureManagerState {
+    ///The default configuration for a packetStructureManager(the test packet you see when creating a new flight)
     fn default() -> Self {
         let mut packet_structure_manager = PacketStructureManager::default();
         let default_packet_structures = [PacketStructure {
