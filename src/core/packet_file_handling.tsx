@@ -1,4 +1,4 @@
-import {  open, save } from '@tauri-apps/api/dialog';
+import { open, save } from '@tauri-apps/api/dialog';
 import { PacketViewModel, PacketComponentType } from "../backend_interop/types";
 import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
 import { addPacket } from "../backend_interop/api_calls";
