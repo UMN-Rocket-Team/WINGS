@@ -1,8 +1,6 @@
 import { Component, For } from "solid-js";
 import { useModal } from "./ModalProvider";
 import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
-import upRightArrow from "../assets/up-right-arrow.png"
-import broom from "../assets/broom.png"
 import { createStore } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
@@ -72,7 +70,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                     selectedFields: selected,
                     number: props.number
                 })}>
-                <img src={upRightArrow} style={{ "width": "100%", "height": "100%" }} alt="Expand"></img>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4.233 4.233" style={{width: '100%', height: '100%'}}><path d="M2.242.475a.229.229 0 1 0 0 .458h.734L.542 3.367a.229.229 0 1 0 .324.324L3.3 1.256v.734a.23.23 0 1 0 .458 0V.704a.229.229 0 0 0-.23-.23Z" fill="currentColor"/></svg>
             </button>
 
             {/*Delete button*/}
@@ -80,7 +78,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 onClick={() => {
                     setSelected([])
                 }}>
-                <img src={broom} style={{ "width": "100%", "height": "100%" }} alt="Delete"></img>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4.233 4.233" style={{width: '100%', height: '100%'}}><rect width="3.87" height=".411" x="1.058" y="-.205" ry=".205" fill="currentColor" transform="rotate(45)"/><rect width="3.87" height=".411" x="-1.935" y="-3.199" ry=".205" transform="rotate(135)" fill="currentColor" /></svg>
             </button>
 
             {/*Fields*/}
