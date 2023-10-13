@@ -17,13 +17,21 @@ export type ThemeContextValue = {
     setTheme: (theme: Theme) => void,
 };
 
-const DEFAULT_THEME: Theme = "light";
+/**
+ * Used to detect the system's default color scheme and be notified when it changes.
+ */
+const themeSelector = window.matchMedia('(prefers-color-scheme: dark)');
+
+/**
+ * Get the Theme that matches the system's default color scheme
+ */
+const getOSTheme = (): Theme => themeSelector.matches ? 'dark' : 'light';
 
 /**
  * The context that holds the global {@link ThemeContextValue}.
  */
 const ThemeContext = createContext<ThemeContextValue>({
-    theme: () => DEFAULT_THEME,
+    theme: () => getOSTheme(),
     setTheme: () => { throw new Error("Cannot set theme in default ThemeContext implementation!"); },
 });
 
@@ -35,13 +43,22 @@ const ThemeContext = createContext<ThemeContextValue>({
  * @see {@link BackendContextValue} for the provided global functions to access and change the theme
  */
 export const ThemeProvider: ParentComponent = (props) => {
-    const [theme, setTheme] = createSignal<Theme>(DEFAULT_THEME);
+    const [theme, setTheme] = createSignal<Theme>(getOSTheme());
+
+    const applyTheme = () => {
+        document.body.classList.toggle('dark', theme() === 'dark');
+        document.body.classList.toggle('light', theme() === 'light');
+    };
 
     const setThemeWrapper = (newTheme: Theme): void => {
-        document.body.classList.remove(theme());
-        document.body.classList.add(newTheme);
         setTheme(newTheme);
+        applyTheme();
     };
+    applyTheme();
+
+    themeSelector.addEventListener('change', () => {
+        setThemeWrapper(getOSTheme());
+    });
 
     const context = { theme, setTheme: setThemeWrapper };
 
