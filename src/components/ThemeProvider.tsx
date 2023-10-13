@@ -46,8 +46,10 @@ export const ThemeProvider: ParentComponent = (props) => {
     const [theme, setTheme] = createSignal<Theme>(getOSTheme());
 
     const applyTheme = () => {
-        document.body.classList.toggle('dark', theme() === 'dark');
-        document.body.classList.toggle('light', theme() === 'light');
+        // Apply theme to the root <html> element so that dark mode applies to everything
+        // including things "outside" of the page like overscroll.
+        document.documentElement.classList.toggle('dark', theme() === 'dark');
+        document.documentElement.classList.toggle('light', theme() === 'light');
     };
 
     const setThemeWrapper = (newTheme: Theme): void => {
