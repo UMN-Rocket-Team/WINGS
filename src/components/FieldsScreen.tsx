@@ -68,21 +68,19 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
             {/*Expand button*/}
             <button class="absolute top-1 right-1 w-5 h-5 p-0"
-                title="Expand"
                 onClick={() => showModal<ExpandedFieldsModalProps, {}>(ExpandedFieldsModal, {
                     selectedFields: selected,
                     number: props.number
                 })}>
-                <img src={expandIcon} class="w-full h-full dark:invert" />
+                <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" />
             </button>
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
-                title="Delete"
                 onClick={() => {
                     setSelected([])
                 }}>
-                <img src={closeIcon} class="w-full h-full dark:invert" />
+                <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" />
             </button>
 
             {/*Fields*/}
