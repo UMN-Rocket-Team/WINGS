@@ -17,10 +17,10 @@ const ThemeSwitcher: Component = () => {
             <div style={{ width: "28px", height: "28px" }}>
                 <Switch>
                     <Match when={theme() === "light"}>
-                        <img alt="Enable dark mode" src={moonIcon} class="w-full h-full" />
+                        <img alt="Enable dark mode" src={moonIcon} class="w-full h-full" draggable={false} />
                     </Match>
                     <Match when={theme() === "dark"}>
-                        <img alt="Enable light mode" src={sunIcon} class="w-full h-full" />
+                        <img alt="Enable light mode" src={sunIcon} class="w-full h-full" draggable={false} />
                     </Match>
                 </Switch>
             </div>

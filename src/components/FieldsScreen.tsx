@@ -72,7 +72,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                     selectedFields: selected,
                     number: props.number
                 })}>
-                <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" />
+                <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
 
             {/*Delete button*/}
@@ -80,7 +80,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 onClick={() => {
                     setSelected([])
                 }}>
-                <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" />
+                <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
 
             {/*Fields*/}

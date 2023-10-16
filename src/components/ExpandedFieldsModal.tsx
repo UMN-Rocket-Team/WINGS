@@ -38,7 +38,7 @@ const ExpandedFieldsModal = (props: ModalProps<ExpandedFieldsModalProps>): JSX.E
             }}>
             <button class="absolute w-8 h-8 right-4 top-4 p-1 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded aspect-square"
                 onClick={() => props.closeModal({})}>
-                <img src={closeIcon} class="w-full h-full dark:invert" />
+                <img src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
             <b class="text-center text-4xl dark:text-white">{`Screen ${props.number}`}</b>
             <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, props.selectedFields.length)}, 1fr)`}}>

@@ -67,7 +67,7 @@ const Homepage: Component = () => {
             <div
                 class="flex flex-col items-center ma py-8 px-16 gap-4 bg-gray-100 dark:bg-dark-800 border-rounded border-2 border-gray-200 dark:border-dark-900">
                 <div class="flex items-center justify-start gap-4">
-                    <img src={logo} class="h-20" alt="Wings Logo"/>
+                    <img src={logo} class="h-20" alt="Wings Logo" draggable={false} />
                     <span class="font-black text-5xl dark:text-white">Wings</span>
                 </div>
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
@@ -85,7 +85,7 @@ const Homepage: Component = () => {
             <div class="flex w-full justify-center relative">
                 <div class="flex justify-center gap-2 items-center">
                     <div class="flex justify-center gap-1 items-center border-r-1 p-r-2">
-                        <img src={webIcon} class="dark:invert w-6 h-6" />
+                        <img src={webIcon} class="dark:invert w-6 h-6" draggable={false} />
                         <a href="https://rkt.aem.umn.edu/">Website</a>
                     </div>
                     <button
