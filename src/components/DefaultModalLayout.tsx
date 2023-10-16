@@ -1,4 +1,5 @@
 import { JSX, ParentComponent } from "solid-js";
+import closeIcon from "../assets/close.svg";
 
 /**
  * The properties required for the {@link DefaultModalLayout} component.
@@ -37,10 +38,9 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
             <div class="flex flex-col items-center ma max-h-75% p-4 gap-4 bg-white dark:bg-dark-700 border-rounded border-2 border-gray-200 dark:border-dark-900 relative"
                     // Do not close the modal if the user clicks inside
                     onClick={event => event.stopPropagation()}>
-                <button class="absolute right-4 top-4 p-1 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded aspect-square"
+                <button class="absolute w-6 h-6 right-4 top-4 p-1 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded aspect-square"
                         onClick={() => props.close()}>
-                    {/* bx:x */}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="dark:text-white" width={28} preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344l-4.243 4.242l-4.242-4.242l-1.414 1.414L10.535 12l-4.242 4.242l1.414 1.414l4.242-4.242l4.243 4.242l1.414-1.414L13.364 12l4.242-4.242z"/></svg>
+                    <img alt="Close" src={closeIcon} class="w-full h-full dark:invert" />
                 </button>
                 <b class="text-center text-4xl dark:text-white mx-14">{props.title}</b>
                 <div class="overflow-scroll">
