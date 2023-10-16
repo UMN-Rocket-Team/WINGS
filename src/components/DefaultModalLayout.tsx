@@ -40,7 +40,7 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
                     onClick={event => event.stopPropagation()}>
                 <button class="absolute w-6 h-6 right-4 top-4 p-1 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded aspect-square"
                         onClick={() => props.close()}>
-                    <img alt="Close" src={closeIcon} class="w-full h-full dark:invert" />
+                    <img alt="Close" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
                 </button>
                 <b class="text-center text-4xl dark:text-white mx-14">{props.title}</b>
                 <div class="overflow-scroll">
