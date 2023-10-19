@@ -2,6 +2,7 @@ import { ModalProps } from "./ModalProvider";
 import { For, JSX, Show } from "solid-js";
 import { FieldInPacket } from "./FieldsScreen";
 import SolidChart from "./SolidChart";
+import closeIcon from "../assets/close.svg";
 
 /**
  * The properties required for the {@link ExpandedFieldsModal} component.
@@ -35,10 +36,9 @@ const ExpandedFieldsModal = (props: ModalProps<ExpandedFieldsModalProps>): JSX.E
                     props.closeModal({});
                 }
             }}>
-            <button class="absolute right-4 top-4 p-1 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded aspect-square"
+            <button class="absolute w-8 h-8 right-4 top-4 p-1 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-900 border-rounded aspect-square"
                 onClick={() => props.closeModal({})}>
-                {/* bx:x */}
-                <svg xmlns="http://www.w3.org/2000/svg" class="dark:text-white" width={28} preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m16.192 6.344l-4.243 4.242l-4.242-4.242l-1.414 1.414L10.535 12l-4.242 4.242l1.414 1.414l4.242-4.242l4.243 4.242l1.414-1.414L13.364 12l4.242-4.242z" /></svg>
+                <img src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
             <b class="text-center text-4xl dark:text-white">{`Screen ${props.number}`}</b>
             <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, props.selectedFields.length)}, 1fr)`}}>

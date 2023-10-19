@@ -1,12 +1,12 @@
 import { Component, For } from "solid-js";
 import { useModal } from "./ModalProvider";
 import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
-import upRightArrow from "../assets/up-right-arrow.png"
-import broom from "../assets/broom.png"
 import { createStore } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
+import expandIcon from "../assets/expand.svg";
+import closeIcon from "../assets/close.svg";
 
 /**
  * An object that identifies a field in a packet by its packet id and field index and contains the name of the packet and field.
@@ -72,7 +72,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                     selectedFields: selected,
                     number: props.number
                 })}>
-                <img src={upRightArrow} style={{ "width": "100%", "height": "100%" }} alt="Expand"></img>
+                <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
 
             {/*Delete button*/}
@@ -80,7 +80,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 onClick={() => {
                     setSelected([])
                 }}>
-                <img src={broom} style={{ "width": "100%", "height": "100%" }} alt="Delete"></img>
+                <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
 
             {/*Fields*/}
