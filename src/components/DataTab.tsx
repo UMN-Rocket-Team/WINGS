@@ -72,7 +72,7 @@ const DataTab: Component = () => {
                     {/* Homepage button */}
                     <button onClick={() => navigate("/")}
                             class="flex items-center justify-center border-transparent bg-transparent">
-                        <img src={logo} height={25} alt="Home"></img>
+                        <img src={logo} height={25} alt="Home" draggable={false}></img>
                     </button>
                     {/* Active serial port combobox */}
                     <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>

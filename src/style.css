@@ -15,3 +15,11 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+/* Apply dark mode styles from the browser. Improves scroll bars, buttons, links, etc. */
+.light {
+    color-scheme: light;
+}
+.dark {
+    color-scheme: dark;
+}
