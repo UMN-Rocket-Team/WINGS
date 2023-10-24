@@ -27,31 +27,13 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
         let data: string = JSON.stringify(packetView);
         let filePathString: string = selectedFilePath as string;
 
-        //adds new file directory to persistent data
         const store = new Store(".persistent.dat");
-        let prevSaves: String[] | null = await store.get("recentSaves");
-        if( Array.isArray(prevSaves)){
-            if (prevSaves.length >= 10){
-                prevSaves.shift();
-            }
-            console.log("pushing")
-            console.log(prevSaves)
-            prevSaves.push(filePathString);
-            await store.set("recentSaves", prevSaves);
-            console.log(prevSaves)
-            console.log("\n")
-        } else {
-            console.log("initializing persitent data")
-            console.log(prevSaves)
-            prevSaves = [filePathString];
-            await store.set("recentSaves", prevSaves);
-
-            console.log(prevSaves)
-            console.log("\n")
-        }
+        const prevSaves = await store.get("recentSaves") as string[];
+       
+        await store.set("recentSaves", prevSaves.push(filePathString));
         await store.save();
         
-        await writeTextFile({ contents: data, path: filePathString});
+        await writeTextFile({ contents: data, path: filePathString, });
     }
 }
 
