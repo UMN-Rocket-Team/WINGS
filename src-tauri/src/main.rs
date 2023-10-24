@@ -16,8 +16,7 @@ mod update_loop;
 
 use packet_structure_events::send_initial_packet_structure_update_event;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
-use serial_manager_state::{use_serial_manager, SerialManagerState};
-
+use serial_manager_state::SerialManagerState;
 use packet_parser_state::PacketParserState;
 
 use state::{packet_parser_state, packet_structure_manager_state, serial_manager_state};
@@ -31,16 +30,15 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    serial_commands::{set_active_port, set_test_read_port, set_test_write_port, test_radios},
+    serial_commands::{set_active_port, start_radio_test, stop_radio_test}
 };
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             set_active_port,
-            set_test_write_port,
-            set_test_read_port,
-            test_radios,
+            start_radio_test,
+            stop_radio_test,
             set_field_name,
             set_field_type,
             set_field_metadata_type,

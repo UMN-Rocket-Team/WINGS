@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { PacketComponentType, PacketFieldType, PacketMetadataType, RadioTestResult, PacketViewModel } from "./types";
+import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketViewModel } from "./types";
 /**
  * All direct function calls to the rust backend are sent through this file, 
  * returnErrorMessage is use for error proccessing on each function call.
@@ -20,32 +20,15 @@ async function returnErrorMessage<T>(backend_function_name: string, argument_val
 
 export const setActivePort = async (portName: string): Promise<string | null> => await returnErrorMessage("set_active_port", { portName: portName });
 
-let testWritePort: string | null;
-let testReadPort: string | null;
+export const startRadioTest = async (sendPort: string, receivePort: string, sendInterval: number) => {
+    return await invoke("start_radio_test", {
+        sendPort,
+        sendInterval,
+        receivePort,
+    });
+};
 
-export const setTestWritePort = async (portName: string): Promise<string | null> => {
-    return await invoke("set_test_write_port", { portName: portName })
-        .then(() => { 
-            testWritePort = portName; 
-            return null; 
-        })
-        .catch(e => e as string);
-}
-
-export const getTestWritePort = (): string | null => testWritePort;
-
-export const setTestReadPort = async (portName: string): Promise<string | null> => {
-    return await invoke("set_test_read_port", { portName: portName })
-        .then(() => {
-            testReadPort = portName;
-            return null;
-        })
-        .catch(e => e as string);
-}
-
-export const getTestReadPort = (): string | null => testReadPort;
-
-export const testRadios: () => Promise<string | RadioTestResult> = async () => await returnErrorMessage("test_radios");
+export const stopRadioTest = async () => await invoke("stop_radio_test");
 
 export const setPacketName = async (packetStructureId: number, name: string) => await returnErrorMessage<void>("set_packet_name", { packetStructureId, name });
 
