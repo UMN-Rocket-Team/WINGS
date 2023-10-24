@@ -2,9 +2,7 @@ import { open, save } from '@tauri-apps/api/dialog';
 import { PacketViewModel, PacketComponentType } from "../backend_interop/types";
 import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
 import { addPacket } from "../backend_interop/api_calls";
-// Import and Export fuctions have been split in to smaller functions in order to allow unit testing without opening dialouge windows
-
-
+import { Store } from"tauri-plugin-store-api";
 /**
  * Exports the given PacketViewModel as a .json file via a dialouge window.
  * 
@@ -28,6 +26,13 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
     if (selectedFilePath != null) {
         let data: string = JSON.stringify(packetView);
         let filePathString: string = selectedFilePath as string;
+
+        const store = new Store(".persistent.dat");
+        const prevSaves = await store.get("recentSaves") as string[];
+       
+        await store.set("recentSaves", prevSaves.push(filePathString));
+        await store.save();
+        
         await writeTextFile({ contents: data, path: filePathString, });
     }
 }
