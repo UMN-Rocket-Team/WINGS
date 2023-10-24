@@ -1,49 +1,52 @@
-use crate::{
-    serial::RadioTestResult,
-    serial_manager_state::{use_serial_manager, SerialManagerState},
-};
+use std::time::Duration;
+
+use crate::{state::serial_manager_state::SerialManagerState, state::serial_manager_state::use_serial_manager};
 
 // # serial_commands
-// 
-// Contains all tauri commands related to the packet structure manager
-// 
-// These functions update the ports in the serial_manager_state, by calling use_serial_manager
-// 
-#[tauri::command]
+//
+// Contains all tauri commands related to the serial manager.
+//
+#[tauri::command(async)]
 pub fn set_active_port(
     serial_manager_state: tauri::State<'_, SerialManagerState>,
     port_name: &str,
 ) -> Result<(), String> {
-    use_serial_manager(serial_manager_state, &mut |usb_manager| {
-        usb_manager.set_active_port(port_name)
+    use_serial_manager(serial_manager_state, &mut |serial_manager| {
+        serial_manager.set_active_port(port_name)
     })
 }
 
-#[tauri::command]
-pub fn set_test_write_port(
+#[tauri::command(async)]
+pub fn start_radio_test(
     serial_manager_state: tauri::State<'_, SerialManagerState>,
-    port_name: &str,
+    app_handle: tauri::AppHandle,
+    send_port: &str,
+    send_interval: u64,
+    receive_port: &str
 ) -> Result<(), String> {
-    use_serial_manager(serial_manager_state, &mut |usb_manager| {
-        usb_manager.set_test_write_port(port_name)
+    println!("Starting radio test: send port: {} receive port: {}", send_port, receive_port);
+
+    use_serial_manager(serial_manager_state, &mut |serial_manager| {
+        if !send_port.is_empty() {
+            serial_manager.start_send_test(app_handle.clone(), send_port, Duration::from_millis(send_interval))?;
+        }
+
+        if !receive_port.is_empty() {
+            serial_manager.start_receive_test(app_handle.clone(), receive_port)?;
+        }
+
+        Ok(())
     })
 }
 
-#[tauri::command]
-pub fn set_test_read_port(
-    serial_manager_state: tauri::State<'_, SerialManagerState>,
-    port_name: &str,
+#[tauri::command(async)]
+pub fn stop_radio_test(
+    serial_manager_state: tauri::State<'_, SerialManagerState>
 ) -> Result<(), String> {
-    use_serial_manager(serial_manager_state, &mut |usb_manager| {
-        usb_manager.set_test_read_port(port_name)
-    })
-}
+    println!("Stopping radio test");
 
-#[tauri::command]
-pub fn test_radios(
-    serial_manager_state: tauri::State<'_, SerialManagerState>,
-) -> Result<RadioTestResult, String> {
-    use_serial_manager(serial_manager_state, &mut |usb_manager| {
-        usb_manager.write_test_packet_to_test_port()
+    use_serial_manager(serial_manager_state, &mut |serial_manager| {
+        serial_manager.stop_tests();
+        Ok(())
     })
 }
