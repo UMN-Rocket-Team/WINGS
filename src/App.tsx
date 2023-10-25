@@ -2,7 +2,7 @@ import { JSX } from "solid-js";
 import { BackendProvider } from "./components/BackendProvider";
 import FlightViewer from "./components/FlightViewer";
 import Homepage from "./components/Homepage";
-import { ModalProvider } from "./components/ModalProvider";
+import { ModalProvider } from "./components/Modals/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Router, Routes, Route } from "@solidjs/router"
 import SavedFlightViewer from "./components/SavedFlightViewer";

@@ -1,5 +1,5 @@
 import { JSX, Setter } from "solid-js";
-import { ModalMetadata, ModalProps } from "../components/ModalProvider";
+import { ModalMetadata, ModalProps } from "../components/Modals/ModalProvider";
 
 /**
  * Creates a generic function that will show a modal. This function is defined in a `.ts` file separate from `ModalProvider.tsx` since `.tsx` syntax interferes

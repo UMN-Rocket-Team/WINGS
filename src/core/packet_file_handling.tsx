@@ -27,9 +27,12 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
         let data: string = JSON.stringify(packetView);
         let filePathString: string = selectedFilePath as string;
 
+        //adds new file directory to persistent data
         const store = new Store(".persistent.dat");
         const prevSaves = await store.get("recentSaves") as string[];
-       
+        if (prevSaves.length >= 9){
+            prevSaves.shift();
+        }
         await store.set("recentSaves", prevSaves.push(filePathString));
         await store.save();
         

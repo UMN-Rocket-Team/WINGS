@@ -25,6 +25,7 @@ const ErrorModal = (props: ModalProps<ErrorModalProps>): JSX.Element => {
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title={props.error}>
             {props.description}
+            <br></br>
             <button onClick={() => props.closeModal({})}>Ok</button>
         </DefaultModalLayout>
     );
