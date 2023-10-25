@@ -1,10 +1,8 @@
 import { batch, Component, createEffect, createSignal, For, onCleanup, onMount, Show, untrack } from "solid-js";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { BackendContextValue, useBackend } from "./BackendProvider";
-import { useModal } from "./ModalProvider";
-import ErrorModal from "./ErrorModal";
-import { startRadioTest, stopRadioTest } from "../backend_interop/api_calls";
-import { RadioTestReceivingState, RadioTestSendingState } from "../backend_interop/types";
+import { useModal } from "./Modals/ModalProvider";
+import ErrorModal from "./Modals/ErrorModal";
 
 /**
  * A component that allows the user to test two radios to ensure they can send and receive data.

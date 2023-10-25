@@ -4,8 +4,9 @@ import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, Pac
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { runImportPacketWindow, runExportPacketWindow} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
-import { useModal } from "./ModalProvider";
-import ErrorModal from "./ErrorModal";
+import { useModal } from "./Modals/ModalProvider";
+import ErrorModal from "./Modals/ErrorModal";
+import FileModal, { FileModalProps } from "./Modals/FilePathSelectModal";
 
 /**
  * A component that allows the user to manage packet structures. Changes on the frontend are synchronized with the Rust
@@ -77,9 +78,14 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class="externalButton" onClick={async () => await runImportPacketWindow()}>Import Packet...</button>
+                <button class="externalButton" onClick={async () => showModal<FileModalProps, {}>(FileModal, {
+                selectedFields: selected,
+                handleSelect: handleSelect
+            })}>Add Packet</button>
+                {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
                 <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket())}>Export Packet...</button>
-                <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
+                {/*<button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
+                */}
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">

@@ -1,9 +1,9 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { For, JSX } from "solid-js";
-import { FieldInPacket } from "./FieldsScreen";
-import { useBackend } from "./BackendProvider";
-import { PacketComponent, PacketComponentType, PacketField, PacketViewModel } from "../backend_interop/types";
+import { FieldInPacket } from "../FieldsScreen";
+import { useBackend } from "../BackendProvider";
+import { PacketComponent, PacketComponentType, PacketField, PacketViewModel } from "../../backend_interop/types";
 
 /**
  * The properties required for the {@link FieldSelectModal} component.

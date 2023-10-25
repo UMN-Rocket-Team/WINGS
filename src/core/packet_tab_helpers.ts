@@ -1,7 +1,7 @@
 import { Accessor, Component } from "solid-js";
 import { PacketComponent } from "../backend_interop/types";
-import ErrorModal, { ErrorModalProps } from "../components/ErrorModal";
-import { ModalProps } from "../components/ModalProvider";
+import ErrorModal, { ErrorModalProps } from "../components/Modals/ErrorModal";
+import { ModalProps } from "../components/Modals/ModalProvider";
 
 /**
  * Creates a generic function that will invoke a backend API setter function. This function is defined in a `.ts` file separate from `PacketsTab.tsx` since `.tsx` syntax interferes

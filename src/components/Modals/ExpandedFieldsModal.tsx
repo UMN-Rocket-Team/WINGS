@@ -1,7 +1,7 @@
 import { ModalProps } from "./ModalProvider";
 import { For, JSX, Show } from "solid-js";
-import { FieldInPacket } from "./FieldsScreen";
-import SolidChart from "./SolidChart";
+import { FieldInPacket } from "../FieldsScreen";
+import SolidChart from "../SolidChart";
 import closeIcon from "../assets/close.svg";
 
 /**
