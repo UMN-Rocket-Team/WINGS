@@ -2,11 +2,12 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { runImportPacketWindow, runExportPacketWindow} from "../core/packet_file_handling";
+import { runImportPacketWindow, runExportPacketWindow, ImportPacketsfromDirectories} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./Modals/ModalProvider";
 import ErrorModal from "./Modals/ErrorModal";
 import FileModal, { FileModalProps } from "./Modals/FilePathSelectModal";
+import { Store } from "tauri-plugin-store-api";
 
 /**
  * A component that allows the user to manage packet structures. Changes on the frontend are synchronized with the Rust
@@ -78,14 +79,17 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class="externalButton" onClick={async () => showModal<FileModalProps, {}>(FileModal, {
-                selectedFields: selected,
-                handleSelect: handleSelect
-            })}>Add Packet</button>
+                <button class="externalButton" onClick={async () => {
+                    const store = new Store(".persistent.dat");
+                    const recentPaths = (await store.get("recentSaves")) as string[];
+                    showModal(FileModal, {
+                        pathStrings: recentPaths,
+                        callBack: ImportPacketsfromDirectories
+                    })
+                    }}>Import Packet</button>
                 {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
                 <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket())}>Export Packet...</button>
-                {/*<button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
-                */}
+                <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
