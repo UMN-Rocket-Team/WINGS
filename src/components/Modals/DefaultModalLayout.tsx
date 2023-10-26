@@ -1,5 +1,5 @@
 import { JSX, ParentComponent } from "solid-js";
-import closeIcon from "../assets/close.svg";
+import closeIcon from "../../assets/close.svg";
 
 /**
  * The properties required for the {@link DefaultModalLayout} component.

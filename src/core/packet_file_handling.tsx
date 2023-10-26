@@ -29,31 +29,48 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
 
         //adds new file directory to persistent data
         const store = new Store(".persistent.dat");
-        const prevSaves = await store.get("recentSaves") as string[];
-        if (prevSaves.length >= 9){
-            prevSaves.shift();
+        let prevSaves: String[] | null = await store.get("recentSaves");
+        if( Array.isArray(prevSaves)){
+            if (prevSaves.length >= 10){
+                prevSaves.shift();
+            }
+            console.log("pushing")
+            console.log(prevSaves)
+            prevSaves.push(filePathString);
+            await store.set("recentSaves", prevSaves);
+            console.log(prevSaves)
+            console.log("\n")
+        } else {
+            console.log("initializing persitent data")
+            console.log(prevSaves)
+            prevSaves = [filePathString];
+            await store.set("recentSaves", prevSaves);
+
+            console.log(prevSaves)
+            console.log("\n")
         }
-        await store.set("recentSaves", prevSaves.push(filePathString));
         await store.save();
         
-        await writeTextFile({ contents: data, path: filePathString, });
+        await writeTextFile({ contents: data, path: filePathString});
     }
 }
 
 /**
  * Imports a set of packets selected by the user via a dialouge window.
  * 
- * Creates a file dialouge box, allowing user to select multiple .json packet files.
- * The function then imports from the selected filePath
+ * Creates a file dialouge box, allowing user to select multiple .json packet files. returns the file directories of said packets
  */
 export const runImportPacketWindow = async () => {
     const selectedFilePaths = await open({ title: 'Import Flight Data', multiple: true, filters: [{ name: 'FlightData', extensions: ['json'] }] });
-    const filePackets = await openPackets(selectedFilePaths);
+        return selectedFilePaths
+}
+
+export const ImportPacketsfromDirectories = async (filePaths: string | string[] | null)=>{
+    const filePackets = await openPackets(filePaths);
     for (const packetView of filePackets) {
         addPacket(packetView);
     }
 }
-
 /**
  * Imports from selected file path/paths.
  * 

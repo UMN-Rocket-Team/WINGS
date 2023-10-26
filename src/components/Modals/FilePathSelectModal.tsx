@@ -1,6 +1,7 @@
 import {ModalProps} from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import {For, JSX} from "solid-js";
+import { runImportPacketWindow } from "../../core/packet_file_handling";
 
 /**
  * The properties required for the {@link ErrorModal} component.
@@ -24,18 +25,18 @@ export type FileModalProps = {
  */
 const FileModal = (props: ModalProps<FileModalProps>): JSX.Element => {
 
-    const runCallBack = (filePath: string) => {
-        props.callBack(filePath);
+    const runCallBack = (filePaths: string[] | string | null) => {
+        props.callBack(filePaths);
         props.closeModal({});
     }
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="File Select">
-            <button onClick={() => selectFile}>Select Directory</button>
+            <button onClick={async () => runCallBack(await runImportPacketWindow())}>Select Directories</button>
             <p>Open Recent:</p>
             <For each={props.pathStrings}>{(item) => 
                 <div>
-                    <button onClick={() => runCallBack(item)}>{item}</button>
+                    <button onClick={() => runCallBack([item])}>{item}</button>
                 </div>
             }</For>
         </DefaultModalLayout>
