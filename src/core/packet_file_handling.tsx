@@ -28,9 +28,33 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
         let filePathString: string = selectedFilePath as string;
 
         const store = new Store(".persistent.dat");
-        const prevSaves = await store.get("recentSaves") as string[];
-       
-        await store.set("recentSaves", prevSaves.push(filePathString));
+        let prevSaves: String[] | null = await store.get("recentSaves");
+        if( Array.isArray(prevSaves)){
+
+            //limit length
+            if (prevSaves.length >= 10){
+                prevSaves.shift();
+
+            }
+
+            //get rid of repeates by filtering for only elements that arent equal to new element
+            prevSaves = prevSaves.filter((value) => value != filePathString)
+
+            console.log("pushing");
+            console.log(prevSaves);
+            prevSaves.push(filePathString);
+            await store.set("recentSaves", prevSaves);
+            console.log(prevSaves)
+            console.log("\n")
+        } else {
+            console.log("initializing persitent data")
+            console.log(prevSaves)
+            prevSaves = [filePathString];
+            await store.set("recentSaves", prevSaves);
+
+            console.log(prevSaves)
+            console.log("\n")
+        }
         await store.save();
         
         await writeTextFile({ contents: data, path: filePathString, });
