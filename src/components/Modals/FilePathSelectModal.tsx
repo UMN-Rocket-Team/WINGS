@@ -8,7 +8,7 @@ import { runImportPacketWindow } from "../../core/packet_file_handling";
  */
 export type FileModalProps = {
     /**
-     * list of paths
+     * list of paths in reverse order of what it will be displayed (last item will be on top)
      */
     pathStrings: string[]
     
@@ -32,11 +32,11 @@ const FileModal = (props: ModalProps<FileModalProps>): JSX.Element => {
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="File Select">
-            <button onClick={async () => runCallBack(await runImportPacketWindow())}>Select Directories</button>
+            <button class="listButton" onClick={async () => runCallBack(await runImportPacketWindow())}>Select Directory</button>
             <p>Open Recent:</p>
-            <For each={props.pathStrings}>{(item) => 
+            <For each={props.pathStrings.reverse()}>{(item) => 
                 <div>
-                    <button onClick={() => runCallBack([item])}>{item}</button>
+                    <button class="listButton" onClick={() => runCallBack([item])}>{item}</button>
                 </div>
             }</For>
         </DefaultModalLayout>

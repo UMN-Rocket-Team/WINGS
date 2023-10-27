@@ -16,6 +16,7 @@ export default defineConfig({
         redButton: "bg-red border-rounded border-0 px-4 py-2",
         tab: "border-1 p-2 border-rounded gap-2 dark:text-gray-100 dark: dark:border-gray-4",
         inputBox: "dark:bg-dark-700 dark:border-gray-4 dark:text-white border-1 border-rounded p-1 option:hover:blue-600",
+        listButton: "border-transparent bg-transparent hover:bg-gray hover:bg-blue-600 hover:text-white",
         //widget shortcuts are for the boxes in the packets tab that are used to show packets and packets structures
         widgetSelected:"border-transparent bg-blue-600 text-white",
         widgetNotSelected:"bg-transparent border-black dark:border-gray-4",
@@ -24,7 +25,7 @@ export default defineConfig({
     }),
   ],
 
-  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
+  // Vite optiosns tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent vite from obscuring rust errors
   clearScreen: false,
   // tauri expects a fixed port, fail if that port is not available
