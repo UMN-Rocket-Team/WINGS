@@ -40,20 +40,12 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
             //get rid of repeates by filtering for only elements that arent equal to new element
             prevSaves = prevSaves.filter((value) => value != filePathString)
 
-            console.log("pushing");
-            console.log(prevSaves);
             prevSaves.push(filePathString);
             await store.set("recentSaves", prevSaves);
-            console.log(prevSaves)
-            console.log("\n")
+
         } else {
-            console.log("initializing persitent data")
-            console.log(prevSaves)
             prevSaves = [filePathString];
             await store.set("recentSaves", prevSaves);
-
-            console.log(prevSaves)
-            console.log("\n")
         }
         await store.save();
         

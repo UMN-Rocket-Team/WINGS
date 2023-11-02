@@ -13,11 +13,12 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
             <div class="flex flex-col justify-center items-stretch gap-2 max-h-75%">
                 <section class="flex flex-col dark:text-white">
                     <h1 class="text-center">Contributors</h1>
-                    <h2>Lead Developer, Project Manager</h2>
+                    <h2>Lead Developers, Project Managers</h2>
                     <span>Ryan Hill</span>
+                    <span>Kuba Kedzior</span>
                     <h2>Developers</h2>
                     <span>Jeffrey Hu</span>
-                    <span>Kuba Kedzior</span>
+                    <span>Thomas Weber</span>
                     <h2>UI Designer</h2>
                     <span>Ashlyn Pietrowski</span>
                 </section>
