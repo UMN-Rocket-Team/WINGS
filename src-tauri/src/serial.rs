@@ -66,11 +66,21 @@ impl SerialManager {
         let ports = serialport::available_ports()?
             .into_iter()
             .filter_map(|port| match port.port_type {
-                serialport::SerialPortType::UsbPort(usb_info) => Some(SerialPortNames {
-                    name: port.port_name,
-                    manufacturer_name: usb_info.manufacturer,
-                    product_name: usb_info.product,
-                }),
+                serialport::SerialPortType::UsbPort(usb_info) => {
+                    // On macOS, each serial port shows up as both eg.:
+                    //  - /dev/cu.usbserial-AK06O4AO
+                    //  - /dev/tty.usbserial-AK06O4AO
+                    // For our use, these are equivalent, so we'll filter one out to avoid confusion.
+                    if cfg!(target_os = "macos") && port.port_name.starts_with("/dev/cu.usbserial-") {
+                        None
+                    } else {
+                        Some(SerialPortNames {
+                            name: port.port_name,
+                            manufacturer_name: usb_info.manufacturer,
+                            product_name: usb_info.product,
+                        })
+                    }
+                },
                 serialport::SerialPortType::PciPort
                 | serialport::SerialPortType::BluetoothPort
                 | serialport::SerialPortType::Unknown => None,
