@@ -1,8 +1,8 @@
 import { Component, For } from "solid-js";
-import { useModal } from "./Modals/ModalProvider";
-import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./Modals/ExpandedFieldsModal";
+import { useModal } from "./ModalProvider";
+import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
 import { createStore } from "solid-js/store";
-import FieldSelectModal, { FieldSelectModalProps } from "./Modals/FieldSelectModal";
+import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import expandIcon from "../assets/expand.svg";
