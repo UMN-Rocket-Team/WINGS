@@ -8,8 +8,8 @@ import {Packet} from "../backend_interop/types";
 import {parsedPackets} from "../backend_interop/buffers";
 import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
-import ErrorModal, {ErrorModalProps} from "./Modals/ErrorModal";
-import {useModal} from "./Modals/ModalProvider";
+import ErrorModal, {ErrorModalProps} from "./ErrorModal";
+import {useModal} from "./ModalProvider";
 
 /**
  * A component that allows the user to:

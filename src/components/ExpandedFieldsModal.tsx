@@ -1,8 +1,8 @@
 import { ModalProps } from "./ModalProvider";
 import { For, JSX, Show } from "solid-js";
-import { FieldInPacket } from "../FieldsScreen";
-import SolidChart from "../SolidChart";
-import closeIcon from "../../assets/close.svg";
+import { FieldInPacket } from "./FieldsScreen";
+import SolidChart from "./SolidChart";
+import closeIcon from "../assets/close.svg";
 
 /**
  * The properties required for the {@link ExpandedFieldsModal} component.

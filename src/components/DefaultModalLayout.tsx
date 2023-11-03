@@ -43,7 +43,7 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
                     <img alt="Close" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
                 </button>
                 <b class="text-center text-4xl dark:text-white mx-14">{props.title}</b>
-                <div class="overflow-auto">
+                <div class="overflow-scroll">
                     {props.children}
                 </div>
             </div>

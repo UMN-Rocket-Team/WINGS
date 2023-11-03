@@ -1,6 +1,6 @@
 import { createContext, createSignal, JSX, ParentComponent, useContext } from "solid-js";
 import { Dynamic, Portal } from "solid-js/web";
-import { createShowModalFunction } from "../../core/modal_helpers";
+import { createShowModalFunction } from "../core/modal_helpers";
 
 /**
  * The type of the properties passed to all child components used in a modal. 
