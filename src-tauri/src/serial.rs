@@ -1,4 +1,4 @@
-use std::{sync::{mpsc, Mutex}, time::Duration, thread, ops::Deref};
+use std::{sync::{mpsc, Mutex}, time::Duration, thread};
 
 use anyhow::bail;
 use serde::Serialize;
@@ -29,26 +29,39 @@ struct ReceivingState {
     packets_read: u32
 }
 
-struct StopMessage();
-
-fn should_continue(rx: &mpsc::Receiver<StopMessage>) -> bool {
-    match rx.try_recv() {
-        // Stop if the parent thread has sent us a stop message or has died
-        Ok(_) | Err(mpsc::TryRecvError::Disconnected) => false,
-        _ => true,
-    }
+/// A stoppable activity running in a background thread.
+pub struct BackgroundTask {
+    // Receiving end of a channel shared with the thread running the task.
+    // When the BackgroundTask struct is dropped, this will be dropped too,
+    // which the child thread can detect.
+    _stop_send: mpsc::Sender<()>
 }
 
-// Inner value is the receiving end of a channel shared with the thread that runs the
-// test. To stop the test, send a StopMessage.
-pub struct BackgroundTask(mpsc::Sender<StopMessage>);
-
 impl BackgroundTask {
-    /// Stops the task.
-    pub fn stop(&self) {
-        // Error can be ignored as if the channel is already closed, then the
-        // thread was already stopped.
-        let _ = self.0.send(StopMessage());
+    /// Repeatedly run the given closure in a background thread until the
+    /// returned struct is dropped.
+    /// 
+    /// The callback just should do something once -- it shouldn't include
+    /// its own `loop { ... }` as that's handled by BackgroundTask.
+    pub fn run_repeatedly<F>(mut callback: F) -> BackgroundTask where F: FnMut() -> (), F: Send + 'static {
+        let (tx, rx) = mpsc::channel();
+
+        thread::spawn(move || {
+            let is_stopped = || {
+                match rx.try_recv() {
+                    Err(mpsc::TryRecvError::Disconnected) => true,
+                    _ => false
+                }
+            };
+
+            while !is_stopped() {
+                callback();
+            }
+        });
+
+        BackgroundTask {
+            _stop_send: tx
+        }
     }
 }
 
@@ -149,27 +162,22 @@ impl SerialManager {
         // Send an initial state update so the frontend knows the port was opened successfully
         let _ = app_handle.emit_all("radio-test-send-update", SendingState::default());
 
-        let (tx, rx) = mpsc::channel();
-        thread::spawn(move || {
-            let mut packets_sent = 0;
-
-            while should_continue(&rx) {
-                let _ = port.write(&u8::to_le_bytes(TEST_MAGIC_BYTE));
-                for i in 1..TEST_PAYLOAD_SIZE {
-                    let _ = port.write(&u8::to_le_bytes(i.try_into().unwrap()));
-                }
-
-                packets_sent += 1;
-                let _ = app_handle.emit_all("radio-test-send-update", SendingState {
-                    packets_sent
-                });
-                println!("Sent packet {}", packets_sent);
-
-                thread::sleep(interval);
+        let mut packets_sent = 0;
+        *guard.unwrap() = Some(BackgroundTask::run_repeatedly(move || {
+            let _ = port.write(&u8::to_le_bytes(TEST_MAGIC_BYTE));
+            for i in 1..TEST_PAYLOAD_SIZE {
+                let _ = port.write(&u8::to_le_bytes(i.try_into().unwrap()));
             }
-        });
 
-        *guard.unwrap() = Some(BackgroundTask(tx));
+            packets_sent += 1;
+            let _ = app_handle.emit_all("radio-test-send-update", SendingState {
+                packets_sent
+            });
+            println!("Sent packet {}", packets_sent);
+
+            thread::sleep(interval);
+        }));
+
         Ok(())
     }
 
@@ -187,19 +195,15 @@ impl SerialManager {
         // Send an initial state update so the frontend knows the port was opened successfully
         let _ = app_handle.emit_all("radio-test-receive-update", ReceivingState::default());
 
-        let (tx, rx) = mpsc::channel();
-        thread::spawn(move || {
-            let mut packets_read = 0;
-
-            while should_continue(&rx) {
-                let mut buffer = [0; TEST_PAYLOAD_SIZE];
-                if let Ok(bytes_read) = port.read(&mut buffer) {
-                    let read_data = &buffer[0..bytes_read];
-                    println!("Read data: {:?}", read_data);
-                    for i in read_data.iter() {
-                        if *i == TEST_MAGIC_BYTE {
-                            packets_read += 1;
-                        }
+        let mut packets_read = 0;
+        *guard.unwrap() = Some(BackgroundTask::run_repeatedly(move || {
+            let mut buffer = [0; TEST_PAYLOAD_SIZE];
+            if let Ok(bytes_read) = port.read(&mut buffer) {
+                let read_data = &buffer[0..bytes_read];
+                println!("Read data: {:?}", read_data);
+                for i in read_data.iter() {
+                    if *i == TEST_MAGIC_BYTE {
+                        packets_read += 1;
                     }
                 }
 
@@ -207,28 +211,21 @@ impl SerialManager {
                     packets_read
                 });
             }
-        });
+        }));
 
-        *guard.unwrap() = Some(BackgroundTask(tx));
         Ok(())
     }
 
     /// Stop any ongoing sending and receiving tests.
     pub fn stop_tests(&mut self) {
-        let mut write_test_guard = self.send_test.lock().unwrap();
-        match write_test_guard.deref() {
-            Some(radio_test) => radio_test.stop(),
-            None => {}
-        }
-        *write_test_guard = None;
-        drop(write_test_guard);
+        // BackgroundTask stopping is handled by standard rust lifetimes
 
-        let mut read_test_guard = self.receive_test.lock().unwrap();
-        match read_test_guard.deref() {
-            Some(radio_test) => radio_test.stop(),
-            None => {}
-        }
-        *read_test_guard = None;
-        drop(read_test_guard);
+        let mut send_test_guard = self.send_test.lock().unwrap();
+        *send_test_guard = None;
+        drop(send_test_guard);
+
+        let mut receive_test_guard = self.receive_test.lock().unwrap();
+        *receive_test_guard = None;
+        drop(receive_test_guard);
     }
 }
