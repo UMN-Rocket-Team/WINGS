@@ -3,6 +3,7 @@ import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {
     PacketViewModel,
+    Packet, //for inserting fake packets when testing graphs
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames,
     PacketViewModelUpdate,
@@ -40,6 +41,9 @@ const BackendContext = createContext<BackendContextValue>({
     setPacketViewModels: () => {
     }
 });
+
+//for inserting fake packets
+//let iterator = 1;
 
 /**
  * A component that abstracts interactions with the Rust backend by providing a context containing a view into
@@ -117,10 +121,11 @@ export const BackendProvider: ParentComponent = (props) => {
     // TODO: remove once live telemetry is confirmed to work
     // Push test data to graphs once per second
     // setInterval(() => {
+        
     //     const parsedPackets: Packet[] = [
     //         {fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now()}
     //     ];
-    //
+    
     //     pushParsedPackets(parsedPackets);
     //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
     // }, 1000);

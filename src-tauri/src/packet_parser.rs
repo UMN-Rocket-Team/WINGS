@@ -11,12 +11,15 @@ pub struct PacketParser {
     unparsed_data: Vec<u8>,
 }
 
+/// responsible converting raw data to packets
 impl PacketParser {
+    //adds new unparsed data
     pub fn push_data(&mut self, data: &[u8]) {
         self.unparsed_data.extend(data);
         println!("Unparsed data: {:02X?}", self.unparsed_data);
     }
 
+    /// processes the raw data queue, returning a Vector(aka. array) of the proccessesed packets
     pub fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
@@ -125,6 +128,7 @@ impl PacketParser {
     }
 }
 
+//checks if the delimiter of a packet can be found in the given data
 fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: &Vec<u8>) -> bool {
     if start_index + delimiter_identifier.len() - 1 >= data.len() {
         return false;

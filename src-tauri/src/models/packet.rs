@@ -3,6 +3,9 @@ use serde::Serialize;
 use crate::models::packet_structure::PacketFieldType;
 
 #[derive(PartialEq, Serialize, Debug, Clone)]
+/// Represents a packet of data
+/// 
+/// This includes all of the variables that have been recieved within a packet of data and its timestamp
 pub struct Packet {
     pub(crate) structure_id: usize,
     pub(crate) field_data: Vec<PacketFieldValue>,
@@ -25,6 +28,7 @@ pub enum PacketFieldValue {
 }
 
 impl PacketFieldType {
+    /// takes raw bytes and assigns them the PacketFieldType which they match
     pub fn parse(&self, bytes: &[u8]) -> PacketFieldValue {
         match self {
             PacketFieldType::UnsignedByte => {
@@ -60,6 +64,7 @@ impl PacketFieldType {
         }
     }
 
+    /// returns the size of the data included within the packetFieldType
     pub fn size(&self) -> usize {
         match self {
             PacketFieldType::UnsignedByte | PacketFieldType::SignedByte => 1,

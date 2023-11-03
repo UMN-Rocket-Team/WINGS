@@ -9,7 +9,12 @@ use crate::{
     packet_structure_manager_state::PacketStructureManagerState,
     packet_view_model::{PacketComponentType, PacketViewModel},
 };
-
+// # packet_structure_manager_commands
+// 
+// Contains all tauri commands related to the packet structure manager
+// 
+// These functions update the current packet structures in the packet_Structure_manager_state, by calling update_packet_structures
+// 
 #[tauri::command]
 pub fn set_packet_name(
     app_handle: tauri::AppHandle,
@@ -239,12 +244,12 @@ pub fn delete_packet_structure_component(
     )
 }
 
-/// Takes PackerViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
+/// Takes PacketViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
 ///
-/// # Arguments
-/// * 'view' - PackeViewModel containing the packet that will be added to the packet structure
+/// ### Arguments
+/// * 'view' - PacketViewModel containing the packet that will be added to the packet structure
 #[tauri::command]
-pub fn add_packet(
+pub fn add_packet_structure(
     app_handle: tauri::AppHandle,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     view: PacketViewModel,

@@ -69,6 +69,9 @@ struct RefreshAndReadResult {
     parsed_packets: Option<Vec<Packet>>,
 }
 
+/// Main data loop in charge of 
+/// 1. Refreshes list of ports available
+/// 2. adds new data to ?
 fn refresh_available_ports_and_read_active_port(
     serial_manager_state: tauri::State<'_, SerialManagerState>,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,

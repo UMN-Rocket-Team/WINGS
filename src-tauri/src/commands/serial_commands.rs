@@ -3,6 +3,12 @@ use crate::{
     serial_manager_state::{use_serial_manager, SerialManagerState},
 };
 
+// # serial_commands
+// 
+// Contains all tauri commands related to the packet structure manager
+// 
+// These functions update the ports in the serial_manager_state, by calling use_serial_manager
+// 
 #[tauri::command]
 pub fn set_active_port(
     serial_manager_state: tauri::State<'_, SerialManagerState>,
