@@ -208,7 +208,7 @@ export type RadioTestSendingState = {
     /**
      * Number of test packets that have been sent.
      */
-    packetsSent: number;
+    packetsSent: number,
 };
 
 /**
@@ -218,5 +218,5 @@ export type RadioTestReceivingState = {
     /**
      * Number of valid test packets that have been detected.
      */
-    packetsRead: number;
+    packetsRead: number,
 };
