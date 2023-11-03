@@ -121,18 +121,17 @@ impl SerialManager {
     }
 
     /// Read bytes from the active port
-    pub fn read_active_port(&mut self) -> Result<Vec<u8>, String> {
+    pub fn read_active_port(&mut self) -> anyhow::Result<Vec<u8>> {
         let active_port = match self.active_port.as_mut() {
             Some(port) => port,
-            None => return Err("No active port".to_string())
+            None => bail!("No active port")
         };
 
         let mut buffer = [0; 1024];
-        let bytes_read = match active_port.read(&mut buffer) {
-            Ok(bytes_read) => bytes_read,
-            Err(err) => return Err(err.to_string())
-        };
+        let bytes_read = active_port.read(&mut buffer)?;
 
+        // Clone to a vec so we can return it easily, especially as we don't
+        // know how large it will end up being at compile time.
         let output = buffer[..bytes_read].to_vec();
         Ok(output)
     }
