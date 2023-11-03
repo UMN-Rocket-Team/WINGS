@@ -4,9 +4,9 @@ import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, Pac
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { runImportPacketWindow, runExportPacketWindow, ImportPacketsfromDirectories} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
-import { useModal } from "./Modals/ModalProvider";
-import ErrorModal from "./Modals/ErrorModal";
-import FileModal, { FileModalProps } from "./Modals/FilePathSelectModal";
+import { useModal } from "./ModalProvider";
+import ErrorModal from "./ErrorModal";
+import FileModal, { FileModalProps } from "./FilePathSelectModal";
 import { Store } from "tauri-plugin-store-api";
 
 /**

@@ -1,5 +1,5 @@
 import { JSX, ParentComponent } from "solid-js";
-import closeIcon from "../../assets/close.svg";
+import closeIcon from "../assets/close.svg";
 
 /**
  * The properties required for the {@link DefaultModalLayout} component.
@@ -43,7 +43,7 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
                     <img alt="Close" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
                 </button>
                 <b class="text-center text-4xl dark:text-white mx-14">{props.title}</b>
-                <div class="overflow-scroll">
+                <div class="overflow-auto">
                     {props.children}
                 </div>
             </div>
