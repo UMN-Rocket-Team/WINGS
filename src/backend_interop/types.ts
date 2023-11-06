@@ -202,19 +202,21 @@ export type PacketGap = {
 };
 
 /**
- * The type of the return value of a `api_calls.testRadios` function call
+ * State sent from backend for radio test status updates.
  */
-export type RadioTestResult = {
+export type RadioTestSendingState = {
     /**
-     * The number of packets that have been attempted to be written to the write radio
+     * Number of test packets that have been sent.
      */
-    packetsAttempted: number,
+    packetsSent: number,
+};
+
+/**
+ * State sent from backend for radio test status updates.
+ */
+export type RadioTestReceivingState = {
     /**
-     * The number of packets sucessfully written to the write radio
-     */
-    packetsWritten: number,
-    /**
-     * The number of packets sucessfully read from the read radio
+     * Number of valid test packets that have been detected.
      */
     packetsRead: number,
 };

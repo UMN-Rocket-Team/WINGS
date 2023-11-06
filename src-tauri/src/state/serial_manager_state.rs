@@ -4,7 +4,7 @@ use crate::{mutex_utils::use_state_in_mutex, serial::SerialManager};
 
 #[derive(Default)]
 pub struct SerialManagerState {
-    serial_manager: Mutex<SerialManager>,
+    serial_manager: Mutex<SerialManager>
 }
 
 pub fn use_serial_manager<ReturnType>(

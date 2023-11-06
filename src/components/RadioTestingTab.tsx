@@ -1,178 +1,136 @@
-import { batch, Component, createEffect, createSignal, For, onCleanup, untrack } from "solid-js";
-import { getTestReadPort, getTestWritePort, setTestReadPort, setTestWritePort, testRadios } from "../backend_interop/api_calls";
-import { RadioTestResult } from "../backend_interop/types";
+import { batch, Component, createEffect, createSignal, For, onCleanup, onMount, Show, untrack } from "solid-js";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { BackendContextValue, useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
+import { startRadioTest, stopRadioTest } from "../backend_interop/api_calls";
+import { RadioTestReceivingState, RadioTestSendingState } from "../backend_interop/types";
 
 /**
  * A component that allows the user to test two radios to ensure they can send and receive data.
  */
 const RadioTestingTab: Component = () => {
-    const { availablePortNames }: BackendContextValue = useBackend();
-    const { showModal } = useModal();
+    const {availablePortNames}: BackendContextValue = useBackend();
+    const {showModal} = useModal();
 
-    // Test state
-    const [isSimulating, setSimulating] = createSignal<boolean>(false);
-    const [testInterval, setTestInterval] = createSignal<number>(500);
-    const [secondsElapsed, setSecondsElapsed] = createSignal<number>(0);
-    const [packetsAttemptedCount, setPacketsAttemptedCount] = createSignal<number>(0);
-    const [packetsSentCount, setPacketsSentCount] = createSignal<number>(0);
-    const [packetsRecievedCount, setPacketsRecievedCount] = createSignal<number>(0);
-    const [dataLossPercent, setDataLossPercent] = createSignal<number>(0);
+    const [isSimulating, setSimulating] = createSignal(false);
+    const [sendPort, setSendPort] = createSignal('');
+    const [receivePort, setReceivePort] = createSignal('');
+    const [sendInterval, setSendInterval] = createSignal(500);
+    const [sendingState, setSendingState] = createSignal<RadioTestSendingState | null>(null);
+    const [receivingState, setReceivingState] = createSignal<RadioTestReceivingState | null>(null);
 
-    // Selected radios state
-    const [selectedTestWritePort, setSelectedTestWritePort] = createSignal<string | null>(getTestWritePort());
-    const [selectedTestReadPort, setSelectedTestReadPort] = createSignal<string | null>(getTestReadPort());
-
-    let testTimoutId: number | undefined;
-
-    const testRadiosAndUpdateState = async () => {
-        const testResults: RadioTestResult | string = await testRadios();
-        if (typeof testResults === 'string') {
-            showModal(ErrorModal, { error: 'Failed to get updated results', description: testResults });
-            return;
-        }
-
+    const startSimulating = async () => {
         batch(() => {
-            setSecondsElapsed(secondsElapsed() + testInterval() / 1000);
-            setPacketsAttemptedCount(packetsAttemptedCount() + testResults.packetsAttempted);
-            setPacketsSentCount(packetsSentCount() + testResults.packetsWritten);
-            setPacketsRecievedCount(packetsRecievedCount() + testResults.packetsRead);
-            setDataLossPercent(100 * (packetsRecievedCount() == 0 ? 1 : (1 - packetsRecievedCount() / packetsAttemptedCount())));
+            setSimulating(true);
+            setReceivingState(null);
+            setSendingState(null);
         });
-
-        testTimoutId = window.setTimeout(testRadiosAndUpdateState, testInterval());
+        try {
+            await startRadioTest(
+                sendPort(),
+                receivePort(),
+                sendInterval()
+            );
+        } catch (error) {
+            setSimulating(false);
+            showModal(ErrorModal, {
+                error: 'Failed to start simulation',
+                description: '' + error
+            });
+        }
     };
 
-    onCleanup(() => {
-        // Stop the active test loop when the component is unmounted
-        if (testTimoutId !== undefined) {
-            window.clearTimeout(testTimoutId);
-        }
+    const stopSimulating = async () => {
+        await stopRadioTest();
+        setSimulating(false);
+    };
+
+    let unlistenFunctions: UnlistenFn[];
+    onMount(async () => {
+        unlistenFunctions = [
+            await listen<RadioTestSendingState>("radio-test-send-update", ({payload}) => {
+                setSendingState(payload);
+            }),
+            await listen<RadioTestReceivingState>("radio-test-receive-update", ({payload}) => {
+                setReceivingState(payload);
+            })
+        ];
+        onCleanup(() => {
+            for (const fn of unlistenFunctions) {
+                fn();
+            }
+        });
     });
 
-    createEffect(() => {
-        if (isSimulating()) {
-            // Reset test statistics for new test
-            // Note: testInterval can be invalid (0) if the input field is empty
-            if (untrack(testInterval) < 100) {
-                setTestInterval(100);
-            }
-            testTimoutId = window.setTimeout(testRadiosAndUpdateState, untrack(testInterval));
-            batch(() => {
-                setSecondsElapsed(0);
-                setPacketsAttemptedCount(0);
-                setPacketsSentCount(0);
-                setPacketsRecievedCount(0);
-                setDataLossPercent(0);
-            });
-        } else {
-            if (testTimoutId) {
-                // Stop the test loop when an active test is stopped
-                window.clearTimeout(testTimoutId);
-            }
-        }
-    }, { defer: true });
-
-    createEffect(async () => {
-        // Update the backend to the change in the selected reading port when the frontend state changes
-        if (selectedTestReadPort() != null) {
-            const result = await setTestReadPort(selectedTestReadPort()!);
-            if (typeof result === 'string') {
-                showModal(ErrorModal, { error: 'Failed to set test read port', description: result });
-                return;
-            }
-        }
-    }, { defer: true });
-
-    createEffect(async () => {
-        // Update the backend to the change in the selected writing port when the frontend state changes
-        if (selectedTestWritePort() != null) {
-            const result = await setTestWritePort(selectedTestWritePort()!);
-            if (typeof result === 'string') {
-                showModal(ErrorModal, { error: 'Failed to set test read port', description: result });
-                return;
-            }
-        }
-    }, { defer: true });
-
     return (
-        <div class="flex gap-4">
-            {/* Test configuation column */}
-            <div class="flex flex-col gap-1">
-                <h1 class="my-0.5 dark:text-white">Radio Connection Test</h1>
-                <span class="dark:text-white">Test whether packets can be sent and received through two RFD900s connected though serial ports</span>
-                <span class="dark:text-white">Packets to simulate:</span>
-                <div class="flex gap-2">
-                    <label for="interval-input" class="dark:text-white">Interval:</label>
-                    <input class="bg-transparent dark:border-gray-4 dark:text-white border-1 border-rounded" type="number" onBeforeInput={e => {
-                        if (e.data?.match(/[^0-9]/) ?? false) {
+        <div class="flex gap-4 flex-grow">
+            <div class="flex flex-col gap-2 flex-grow">
+                {/* This isn't visible, just used for autocomplete on the port selectors */}
+                <datalist id="radioTestAvailablePorts">
+                    <For each={availablePortNames()}>
+                        {(serialPort) => <option value={serialPort.name} />}
+                    </For>
+                </datalist>
+
+                <label class="flex gap-1">
+                    <span>Sending radio port:</span>
+                    <input class="dark:border-gray-4 border-1 border-rounded flex-grow" list="radioTestAvailablePorts"
+                        value={sendPort() ?? ""}
+                        onChange={event => setSendPort((event.target as HTMLInputElement).value)}
+                        disabled={isSimulating()} />
+                </label>
+
+                <label class="flex gap-1">
+                    <span>Send a packet every:</span>
+                    <input class="dark:border-gray-4 border-1 border-rounded flex-grow" list="radioTestAvailablePorts"
+                        type="number"
+                        min={0}
+                        value={sendInterval()}
+                        onBeforeInput={e => {
                             // Deny any non-number characters
-                            e.preventDefault();
-                            return;
-                        }
-                    }} onInput={e => {
-                        const value = (e.target as HTMLInputElement).value;
-                        if (value !== "") {
-                            setTestInterval(+value);
-                        } else {
-                            setTestInterval(0);
-                            // Unsync the value of the input field from the state temporarily with an invalid value (0)
-                            // so that when onChange is called when the value is committed, it will be reset to the minimum;
-                            // this allows the user to easily replace the first digit in the number
-                            (e.target as HTMLInputElement).value = "";
-                        }
-                    }}
-                        onChange={e => {
-                            const value = +(e.target as HTMLInputElement).value;
-                            if (value < 100) {
-                                // Reset the input to the default minimum value
-                                setTestInterval(100);
+                            if (e.data?.match(/[^0-9]/) ?? false) {
+                                e.preventDefault();
                             }
                         }}
-                        value={testInterval()} disabled={isSimulating()} min={100} step={100} />
-                    <span class="dark:text-white">milliseconds</span>
-                </div>
-
-                <div class="flex gap-2">
-                    <label for="sendingRadioPortInput" class="dark:text-white">Sending Radio Port:</label>
-                    <input class="bg-transparent dark:border-gray-4 dark:text-white border-1 border-rounded" type="text" name="Serial Port" id="sendingRadioPortInput" list="activeSerialPorts"
-                        onInput={event => setSelectedTestWritePort((event.target as HTMLInputElement).value)} value={selectedTestWritePort() ?? ""}
+                        onChange={e => {
+                            const el = e.target as HTMLInputElement;
+                            // HTML min= is not actually enforced, so we have to enforce it ourselves
+                            const val = el.value.trim() === '' ? 500 : Math.max(0, +el.value);
+                            el.value = val.toString();
+                            setSendInterval(val);
+                        }}
                         disabled={isSimulating()} />
-                    <datalist id="activeSerialPorts">
-                        <For each={availablePortNames().filter(names => names.name !== selectedTestReadPort())}>
-                            {(serialPort) => <option value={serialPort.name} />}
-                        </For>
-                    </datalist>
-                </div>
+                    <span>ms</span>
+                </label>
 
-                <div class="flex gap-2">
-                    <label for="recievingRadioPortInput" class="dark:text-white">Reciving Radio Port:</label>
-                    <input class="bg-transparent dark:border-gray-4 dark:text-white border-1 border-rounded" type="text" name="Test Port" id="recievingRadioPortInput" list="testSerialPorts"
-                        onInput={event => setSelectedTestReadPort((event.target as HTMLInputElement).value)} value={selectedTestReadPort() ?? ""}
+                <label class="flex gap-1">
+                    <span>Receiving radio port:</span>
+                    <input class="dark:border-gray-4 border-1 border-rounded flex-grow" list="radioTestAvailablePorts"
+                        value={receivePort() ?? ""}
+                        onChange={event => setReceivePort((event.target as HTMLInputElement).value)}
                         disabled={isSimulating()} />
-                    <datalist id="testSerialPorts">
-                        <For each={availablePortNames().filter(names => names.name !== selectedTestWritePort())}>
-                            {(serialPort) => <option value={serialPort.name} />}
-                        </For>
-                    </datalist>
-                </div>
+                </label>
 
-                <button onClick={() => setSimulating(!isSimulating())} class={`py-2 px-8 border-rounded border-0 ${isSimulating() ? "bg-red" : "bg-green"}`}>{isSimulating() ? "Stop Test" : "Start Test"}</button>
-            </div>
+                <button
+                    class="py-2 px-8 border-rounded border-0"
+                    classList={{
+                        "bg-red": isSimulating(),
+                        "bg-green": !isSimulating()
+                    }}
+                    onClick={() => isSimulating() ? stopSimulating() : startSimulating()}
+                    disabled={!sendPort() && !receivePort()}
+                >
+                    {isSimulating() ? "Stop Test" : "Start Test"}
+                </button>
 
-            {/* Test results column */}
-            <div class="flex flex-col gap-1 dark:text-white">
-                <h1 class="my-0.5">Results</h1>
-                <span>Elapsed time: {secondsElapsed().toFixed(2)} second{secondsElapsed() == 1 ? "" : "s"}</span>
-                <span>Packets attempted: {packetsAttemptedCount()}</span>
-                <span>Packets sent: {packetsSentCount()}</span>
-                <span>Packets received: {packetsRecievedCount()}</span>
-                <div class="flex gap-1 items-center">
-                    <span>Data loss:</span>
-                    <span class={`border-rounded p-1 ${secondsElapsed() != 0 ? (dataLossPercent() == 0 ? "bg-green" : (dataLossPercent() < 20 ? "bg-orange" : "bg-red")) : "bg-gray-300 dark:bg-gray-500"}`}>{dataLossPercent().toFixed(2)}%</span>
-                </div>
+                <Show when={receivingState() !== null}>
+                    <div>Read {receivingState()?.packetsRead} packets</div>
+                </Show>
+
+                <Show when={sendingState() !== null}>
+                    <div>Sent {sendingState()?.packetsSent} packets</div>
+                </Show>
             </div>
         </div>
     );
