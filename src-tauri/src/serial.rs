@@ -1,5 +1,7 @@
 use anyhow::bail;
 use serde::Serialize;
+use libftd2xx::{Ftdi, FtdiCommon};
+use tauri::Manager;
 
 const BAUD_RATE: u32 = 57600;
 
