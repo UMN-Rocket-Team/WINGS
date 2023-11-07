@@ -7,6 +7,7 @@ mod commands;
 mod models;
 mod mutex_utils;
 mod packet_parser;
+mod packet_generator;
 mod packet_structure_events;
 mod packet_structure_manager;
 mod packet_view_model;

@@ -38,6 +38,41 @@ pub enum PacketFieldValue {
     Double(f64),
 }
 
+impl PacketFieldValue {
+    /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
+    pub fn to_le_bytes(&self) -> Vec<u8> {
+        // Need to return a vec here instead of a [u8] as the size is not known at compile time
+        match self {
+            PacketFieldValue::UnsignedByte(i) => u8::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedByte(i) => i8::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::UnsignedShort(i) => u16::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedShort(i) => i16::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::UnsignedInteger(i) => u32::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedInteger(i) => i32::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::UnsignedLong(i) => u64::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedLong(i) => i64::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::Float(i) => f32::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::Double(i) => f64::to_le_bytes(*i).to_vec()
+        }
+    }
+
+    /// Returns the matching PacketFieldType for this parsed value.
+    pub fn get_field_type(&self) -> PacketFieldType {
+        match self {
+            PacketFieldValue::UnsignedByte(_) => PacketFieldType::UnsignedByte,
+            PacketFieldValue::SignedByte(_) => PacketFieldType::SignedByte,
+            PacketFieldValue::UnsignedShort(_) => PacketFieldType::UnsignedShort,
+            PacketFieldValue::SignedShort(_) => PacketFieldType::SignedShort,
+            PacketFieldValue::UnsignedInteger(_) => PacketFieldType::UnsignedInteger,
+            PacketFieldValue::SignedInteger(_) => PacketFieldType::SignedInteger,
+            PacketFieldValue::UnsignedLong(_) => PacketFieldType::UnsignedLong,
+            PacketFieldValue::SignedLong(_) => PacketFieldType::SignedLong,
+            PacketFieldValue::Float(_) => PacketFieldType::Float,
+            PacketFieldValue::Double(_) => PacketFieldType::Double,
+        }
+    }
+}
+
 impl PacketFieldType {
     /// takes raw bytes and assigns them the PacketFieldType which they match
     pub fn parse(&self, bytes: &[u8]) -> PacketFieldValue {
