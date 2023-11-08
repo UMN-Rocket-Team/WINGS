@@ -56,7 +56,9 @@ impl PacketParser {
                 let packet_start_index = i - packet_structure.delimiters[0].offset_in_packet;
 
                 if let Some(last_successful_match_end_index) = last_successful_match_end_index {
-                    if packet_start_index <= last_successful_match_end_index {
+                    // Use < instead of <= as the "last index" points to the byte *after*
+                    // the packet ended.
+                    if packet_start_index < last_successful_match_end_index {
                         // The current packet cannot overlap with a previous one
                         println!("- Overlaps with previous packet");
                         continue;
@@ -111,6 +113,7 @@ impl PacketParser {
                     timestamp: timestamp.unwrap_or(chrono::offset::Utc::now().timestamp_millis()),
                 });
 
+                // This points to the index *after* the packet ends.
                 last_successful_match_end_index =
                     Some(packet_start_index + packet_structure.size());
             }
