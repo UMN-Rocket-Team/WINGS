@@ -1,8 +1,10 @@
-use std::{sync::{mpsc, Mutex}, time::Duration, thread};
+use std::{sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}, thread};
 
 use anyhow::bail;
 use serde::Serialize;
 use tauri::Manager;
+
+use crate::{state::packet_structure_manager_state::PacketStructureManagerState, packet_generator::generate_packet, models::packet::PacketFieldValue};
 
 const BAUD_RATE: u32 = 57600;
 
@@ -159,23 +161,47 @@ impl SerialManager {
         let mut port = serialport::new(port_name, BAUD_RATE).open()?;
         port.clear(serialport::ClearBuffer::All)?;
 
+        let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
+        let packet_structure = structure_manager_state.radio_test_structure.clone();
+
         // Send an initial state update so the frontend knows the port was opened successfully
         let _ = app_handle.emit_all("radio-test-send-update", SendingState::default());
 
         let mut packets_sent = 0;
         *guard.unwrap() = Some(BackgroundTask::run_repeatedly(move || {
-            let _ = port.write(&u8::to_le_bytes(TEST_MAGIC_BYTE));
-            for i in 1..TEST_PAYLOAD_SIZE {
-                let _ = port.write(&u8::to_le_bytes(i.try_into().unwrap()));
-            }
-
-            packets_sent += 1;
-            let _ = app_handle.emit_all("radio-test-send-update", SendingState {
-                packets_sent
-            });
-            println!("Sent packet {}", packets_sent);
-
+            // Sleep at start as this can return early in case of errors, but we always
+            // want the sleep to happen.
             thread::sleep(interval);
+
+            let unix_millis = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or(Duration::ZERO)
+                .as_millis();
+
+            let packet = match generate_packet(&packet_structure, &vec![
+                PacketFieldValue::SignedLong(unix_millis.try_into().unwrap_or(i64::MAX)),
+                PacketFieldValue::UnsignedInteger(packets_sent)
+            ]) {
+                Ok(packet) => packet,
+                Err(err) => {
+                    println!("Failed to generate test packet: {}", err);
+                    return;
+                }
+            };
+
+            match port.write(&packet) {
+                Ok(_) => {
+                    packets_sent = packets_sent.wrapping_add(1);
+                    println!("Sent packet {}: {:?}", packets_sent, packet);
+
+                    let _ = app_handle.emit_all("radio-test-send-update", SendingState {
+                        packets_sent
+                    });
+                },
+                Err(err) => {
+                    println!("Failed to write to test port: {}", err);
+                }
+            }
         }));
 
         Ok(())

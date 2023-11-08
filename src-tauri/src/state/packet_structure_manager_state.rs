@@ -10,14 +10,15 @@ use crate::{
 
 pub struct PacketStructureManagerState {
     pub(crate) packet_structure_manager: Mutex<PacketStructureManager>,
+    pub radio_test_structure: PacketStructure
 }
 
 impl Default for PacketStructureManagerState {
     ///The default configuration for a packetStructureManager(the test packet you see when creating a new flight)
     fn default() -> Self {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let default_packet_structures = [PacketStructure {
-            id: 0,
+        // Used for testing the packet editor.
+        let mut example_structure = PacketStructure {
+            id: 0, // overwritten by register_packet_structure
             name: String::from("Official Test"),
             fields: vec![
                 PacketField {
@@ -63,18 +64,53 @@ impl Default for PacketStructureManagerState {
                     identifier: 0xFFFFFFFFu32.to_le_bytes().to_vec(),
                 },
             ],
-        }];
+        };
 
-        for mut default_packet_structure in default_packet_structures {
-            match packet_structure_manager.register_packet_structure(&mut default_packet_structure)
-            {
-                Ok(_) => {}
-                Err(_) => panic!("Failed to register default packet structures!"),
-            }
-        }
+        // Used by radio test.
+        let mut radio_test_structure = PacketStructure {
+            id: 0, // overwritten by register_packet_structure
+            name: String::from("Radio Test Packet"),
+            fields: vec![
+                PacketField {
+                    index: 0,
+                    name: String::from("Timestamp"),
+                    r#type: PacketFieldType::SignedLong,
+                    offset_in_packet: 4,
+                    metadata_type: PacketMetadataType::Timestamp,
+                },
+                PacketField {
+                    index: 1,
+                    name: String::from("Counter"),
+                    r#type: PacketFieldType::UnsignedInteger,
+                    offset_in_packet: 12,
+                    metadata_type: PacketMetadataType::None
+                }
+            ],
+            delimiters: vec![
+                PacketDelimiter {
+                    index: 0,
+                    name: String::from("start"),
+                    offset_in_packet: 0,
+                    // 0xdeadbeef!
+                    identifier: vec![0xde, 0xad, 0xbe, 0xef]
+                },
+                PacketDelimiter {
+                    index: 1,
+                    name: String::from("end"),
+                    offset_in_packet: 16,
+                    // 0xdeadbeef backwards
+                    identifier: vec![0xfe, 0xeb, 0xda, 0xed]
+                },
+            ]
+        };
+
+        let mut packet_structure_manager = PacketStructureManager::default();
+        packet_structure_manager.register_packet_structure(&mut example_structure).expect("Failed to register example packet");
+        packet_structure_manager.register_packet_structure(&mut radio_test_structure).expect("Failed to register radio test packet");
 
         Self {
             packet_structure_manager: Mutex::new(packet_structure_manager),
+            radio_test_structure
         }
     }
 }

@@ -28,6 +28,7 @@ impl Default for PacketStructureManager {
     }
 }
 
+#[derive(Debug)]
 pub enum PacketStructureRegistrationError {
     NameAlreadyRegistered(usize),
     DelimitersAlreadyRegistered(usize),
