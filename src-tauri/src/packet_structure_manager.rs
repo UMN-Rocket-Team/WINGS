@@ -10,10 +10,11 @@ use crate::{
     packet_view_model::PacketComponentType,
 };
 
+//A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
 #[readonly::make]
 pub struct PacketStructureManager {
-    pub(crate) packet_structures: Vec<PacketStructure>,
-    pub(crate) minimum_packet_structure_size: usize,
+    pub(crate) packet_structures: Vec<PacketStructure>, 
+    pub(crate) minimum_packet_structure_size: usize, // These variables are used in situations when matching packets to bits
     pub(crate) maximum_packet_structure_size: usize,
 }
 
@@ -61,6 +62,9 @@ pub enum DeletePacketStructureComponentError {
 }
 
 impl PacketStructureManager {
+
+    ///takes the given PacketStructure and makes a copy within the manager for future use
+    ///Note: this also needs to be unit tested
     pub fn register_packet_structure(
         &mut self,
         packet_structure: &mut PacketStructure,
@@ -88,14 +92,26 @@ impl PacketStructureManager {
         Ok(packet_structure.id)
     }
 
+    ///sets a packet structures name, uses the id in order to find the packet structure within the 
     pub fn set_packet_name(&mut self, packet_structure_id: usize, name: &str) {
         self.packet_structures[packet_structure_id].name = String::from(name);
     }
-
+    ///sets the name of a specific field within a specific packet structure
+    ///packet_structure_id is used to find the packet_structure within the manager
+    ///field_index is used to find the field within the packetstructure
     pub fn set_field_name(&mut self, packet_structure_id: usize, field_index: usize, name: &str) {
         self.packet_structures[packet_structure_id].fields[field_index].name = String::from(name);
     }
 
+    ///shifts components all componets after a specified point in the packet structure
+    ///ex:
+    ///before:
+    ///[][][][][][][]
+    ///after:
+    ///[][][]  [][][][]
+    ///
+    ///offset_diff is the size we want to shift by
+    ///minimum_offset is where the shifting will start
     fn shift_components_after(
         packet_structure: &mut PacketStructure,
         offset_diff: isize,
@@ -105,7 +121,7 @@ impl PacketStructureManager {
             if field.offset_in_packet > minimum_offset {
                 field.offset_in_packet = field
                     .offset_in_packet
-                    .checked_add_signed(offset_diff)
+                    .checked_add_signed(offset_diff)//checking for overflow
                     .expect("Packet component offset calculation failed!");
             }
         }
@@ -119,7 +135,7 @@ impl PacketStructureManager {
             }
         }
     }
-
+    /// sets the data type we can expect for a field, and adjusts all following packets to make room for the new data
     pub fn set_field_type(
         &mut self,
         packet_structure_id: usize,
@@ -163,7 +179,7 @@ impl PacketStructureManager {
             String::from(name);
     }
 
-    // Adapted from https://codereview.stackexchange.com/a/201699
+    /// Adapted from https://codereview.stackexchange.com/a/201699
     fn get_hex_char_value(hex_char: u8) -> Option<u8> {
         match hex_char {
             b'0'..=b'9' => Some(hex_char - b'0'),
@@ -173,6 +189,8 @@ impl PacketStructureManager {
         }
     }
 
+    ///takes a hexadeximal string and returns its binary equivilant
+    ///(currently used primarly to decode the user input for delimiter identifiers)
     fn parse_hex(hex_string: &str) -> Result<Vec<u8>, &str> {
         let mut bytes = Vec::with_capacity((hex_string.len() + 1) / 2);
 
@@ -199,6 +217,7 @@ impl PacketStructureManager {
         Ok(bytes)
     }
 
+    ///checks if a packet structure in packets structures(Specified by id) has the same delimiters as another packet structure in packet structures
     fn check_for_identifier_collisions(
         packet_structures: &Vec<PacketStructure>,
         packet_structure_id: usize,
@@ -211,7 +230,7 @@ impl PacketStructureManager {
                 continue;
             }
 
-            if other_packet_structure.delimiters == *delimiters {
+            if other_packet_structure.delimiters == *delimiters {// this feels like it could miss some problematic delimiters(make sure to unit test extensively)
                 identifier_collisions.push(other_packet_structure.id);
             }
         }
@@ -223,6 +242,7 @@ impl PacketStructureManager {
         Ok(())
     }
 
+    ///takes a delimiter and changes its identifier, it then shifts all other packets as neccisary to keep offset relative to new identifier
     pub fn set_delimiter_identifier(
         &mut self,
         packet_structure_id: usize,
@@ -282,6 +302,7 @@ impl PacketStructureManager {
         Ok(())
     }
 
+    ///looks for a field or delimiter with the given offset
     fn find_field_or_delimiter_with_offset(
         &self,
         packet_structure_id: usize,
@@ -302,6 +323,10 @@ impl PacketStructureManager {
         return None;
     }
 
+    ///changes the size of a gap between two items inside a packet
+    /// gap_index is the marking of the gaps location in the packet based off of the number of gaps before it(nth gap)
+    /// gap_size is the size we want to set the gap to
+    /// should probably be rewritten to use gap offset rather than index
     pub fn set_gap_size(&mut self, packet_structure_id: usize, gap_index: usize, gap_size: usize) {
         // Find the gap with the given index
         let mut found_gap_index: usize = 0;
@@ -310,6 +335,7 @@ impl PacketStructureManager {
         let mut maybe_field_or_delimiter =
             self.find_field_or_delimiter_with_offset(packet_structure_id, 0);
 
+        // itterates and finds every gap in the packet until it reaches the nth gap(gap_index), it then shifts everything after the gap
         while let Some(field_or_delimiter) = maybe_field_or_delimiter {
             let previous_field_or_delimiter_end = if previous_field_or_delimiter.is_some() {
                 previous_field_or_delimiter.unwrap().end_offset()
@@ -343,6 +369,8 @@ impl PacketStructureManager {
         }
     }
 
+    ///creates a new field inside the end of the packet
+    //needs to be reworked to add to a user-specified location
     pub fn add_field(&mut self, packet_structure_id: usize) {
         let packet_field_count = self.packet_structures[packet_structure_id].fields.len();
         let end_of_packet = self.packet_structures[packet_structure_id].size();
@@ -357,7 +385,8 @@ impl PacketStructureManager {
                 r#type: PacketFieldType::UnsignedInteger,
             });
     }
-
+    ///creates a new delimeter inside the end of the packet
+    //needs to be reworked to add to a user-specified location
     pub fn add_delimiter(&mut self, packet_structure_id: usize) {
         let packet_delimiter_count = self.packet_structures[packet_structure_id].delimiters.len();
         let end_of_packet = self.packet_structures[packet_structure_id].size();
@@ -372,7 +401,8 @@ impl PacketStructureManager {
             });
     }
 
-    pub fn add_gap_after(
+    ///Creates a gap after the specified component_index
+    pub fn add_gap_after(//Doesnt seem to work when the current index is a gap or the end of a packet
         &mut self,
         packet_structure_id: usize,
         is_field: bool,
@@ -389,7 +419,8 @@ impl PacketStructureManager {
         Self::shift_components_after(packet_structure, 1, minimum_offset);
     }
 
-    pub fn delete_packet_structure_component(
+    ///deletes a component, taking its index and type as parameters
+    pub fn delete_packet_structure_component(//probably could be reworked to not take the type(maybe split this into three diferent functions)
         &mut self,
         packet_structure_id: usize,
         component_index: usize,
@@ -415,7 +446,7 @@ impl PacketStructureManager {
                     }
                 }
             }
-            PacketComponentType::Delimiter => {
+            PacketComponentType::Delimiter => {//also doesn't seem to work
                 let packet_structure = &self.packet_structures[packet_structure_id];
 
                 if packet_structure.delimiters.len() == 1 {
@@ -451,14 +482,35 @@ impl PacketStructureManager {
                 }
             }
             PacketComponentType::Gap => {
-                Self::set_gap_size(self, packet_structure_id, component_index, 0)
+                Self::set_gap_size(self, packet_structure_id, component_index, 0)//not working
             }
         }
 
         Ok(())
     }
 
+    ///Deletes the packet structure with the given packet structure id
     pub fn delete_packet_structure(&mut self, packet_structure_id: usize) {
         self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;//lets the unit tests use everything in this file
+    #[test]
+    fn test_set_packet_name(){
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![],
+            delimiters: vec![],
+        });
+
+        packet_structure_manager.set_packet_name(0, "Second Name"); //calls the function we are testing on the manager
+
+        assert_eq!(packet_structure_manager.packet_structures[0].name, "Second Name"); //checks that the change we wanted actually happened
+    }
+
 }

@@ -27,6 +27,7 @@ impl TimerState {
                 app_handle.state::<PacketParserState>(),
             ) {
                 Ok(result) => {
+                    //sends packets to frontend
                     if result.new_available_port_names != None || result.parsed_packets != None {
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
@@ -69,9 +70,8 @@ struct RefreshAndReadResult {
     parsed_packets: Option<Vec<Packet>>,
 }
 
-/// Main data loop in charge of 
-/// 1. Refreshes list of ports available
-/// 2. adds new data to ?
+/// Refreshes list of ports available
+/// reads from active ports and returns parsed data
 fn refresh_available_ports_and_read_active_port(
     serial_manager_state: tauri::State<'_, SerialManagerState>,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
