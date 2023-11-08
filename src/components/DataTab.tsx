@@ -52,15 +52,14 @@ const DataTab: Component = () => {
             }));
     };
 
-    async function applyNewSelectedPort(newSelectedPort: string): Promise<string> {
+    async function applyNewSelectedPort(newSelectedPort: string) {
         // Apply the change in selected port name to the backend
         try {
-            await setActivePort(selectedPort()!);
+            setSelectedPort(newSelectedPort);
+            await setActivePort(newSelectedPort);
         } catch (error) {
             showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
         }
-
-        return setSelectedPort(newSelectedPort);
     }
 
     return (
