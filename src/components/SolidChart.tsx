@@ -88,7 +88,11 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             return;
         }
 
-        config.data.datasets[0].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })));
+        const newPackets = packetData.slice(lastPacketCount);
+        config.data.datasets[0].data.push(...newPackets.map(packetData => ({
+            x: packetData.timestamp,
+            y: packetData.fieldData[props.fieldInPacket.fieldIndex].data
+        })));
 
         lastPacketCount = packetData.length;
 
