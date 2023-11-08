@@ -10,8 +10,10 @@ import { RadioTestSendingState } from "../backend_interop/types";
  * A component that allows the user to send test packets over a radio.
  */
 const RadioTestingTab: Component = () => {
-    const {availablePortNames}: BackendContextValue = useBackend();
+    const {availablePortNames, parsedPacketCount} = useBackend();
     const {showModal} = useModal();
+
+    let initialPacketCount = parsedPacketCount();
 
     const [isSimulating, setSimulating] = createSignal(false);
     const [sendPort, setSendPort] = createSignal('');
@@ -20,6 +22,7 @@ const RadioTestingTab: Component = () => {
 
     const startSimulating = async () => {
         batch(() => {
+            initialPacketCount = parsedPacketCount();
             setSimulating(true);
             setSendingState(null);
         });
@@ -104,6 +107,7 @@ const RadioTestingTab: Component = () => {
 
                 <Show when={sendingState() !== null}>
                     <div>Sent {sendingState()?.packetsSent} packets</div>
+                    <div>Received {parsedPacketCount() - initialPacketCount} packets</div>
                 </Show>
             </div>
         </div>

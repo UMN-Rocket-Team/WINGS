@@ -77,8 +77,8 @@ const DataTab: Component = () => {
                     {/* Active serial port combobox */}
                     <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>
                     <input name="Serial Port" id="serialPortInput" class="w-50"
-                        list="dataSerialPorts" 
-                        onInput={async event => await applyNewSelectedPort((event.target as HTMLInputElement).value)} value={selectedPort() ?? ""}/>
+                        list="dataSerialPorts" value={selectedPort() ?? ""}
+                        onInput={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
                     <datalist id="dataSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name}/>}
