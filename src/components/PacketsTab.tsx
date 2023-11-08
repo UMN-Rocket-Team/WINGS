@@ -49,12 +49,13 @@ const PacketsTab: Component = () => {
 
     const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureIndex, selectedPacketStructureComponent, showModal);
 
-    async function showErrorModalOnError(func: () => Promise<void | string>, errorTitle: string): Promise<void> {
-        const result = await func();
-        if (typeof result === 'string') {
+    async function showErrorModalOnError(func: () => Promise<unknown>, errorTitle: string): Promise<void> {
+        try {
+            await func();
+        } catch (error) {
             showModal(ErrorModal, {
                 error: errorTitle,
-                description: result
+                description: `${error}`
             });
         }
     }

@@ -13,13 +13,13 @@ import { ModalProps } from "../components/ModalProvider";
  * @returns a function that will call the given API setter on the curent selected packet stucture component with the given value
  */
 export const createInvokeApiSetterFunction = (selectedPacketStructureIndex: Accessor<number | null>, selectedPacketStructureComponent: Accessor<PacketComponent | null>, showModal: (component: Component<ModalProps<ErrorModalProps>>, modalProps: ErrorModalProps) => void) => {
-    return async <T>(apiSetter: (packetStructureId: number, fieldIndex: number, value: T) => Promise<void | string>, value: T) => {
-        const result = await apiSetter(selectedPacketStructureIndex()!, selectedPacketStructureComponent()!.data.index, value);
-        if (typeof result === 'string') {
-            // The api setter failed with an error message
+    return async <T>(apiSetter: (packetStructureId: number, fieldIndex: number, value: T) => Promise<unknown>, value: T) => {
+        try {
+            await apiSetter(selectedPacketStructureIndex()!, selectedPacketStructureComponent()!.data.index, value);
+        } catch (error) {
             showModal(ErrorModal, {
                 error: "Failed to modify value",
-                description: result
+                description: `${error}`
             });
         }
     };

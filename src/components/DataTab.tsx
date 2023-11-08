@@ -54,9 +54,10 @@ const DataTab: Component = () => {
 
     async function applyNewSelectedPort(newSelectedPort: string): Promise<string> {
         // Apply the change in selected port name to the backend
-        let errorMessage = await setActivePort(selectedPort()!);
-        if (errorMessage !== null) {
-            showModal(ErrorModal, {error: 'Failed to set the active serial port', description: errorMessage});
+        try {
+            await setActivePort(selectedPort()!);
+        } catch (error) {
+            showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
         }
 
         return setSelectedPort(newSelectedPort);
