@@ -22,7 +22,7 @@ impl PacketParser {
     /// processes the raw data queue, returning a Vector(aka. array) of the proccessesed packets
     pub fn parse_packets(
         &mut self,
-        packet_structure_manager: &PacketStructureManager,
+        packet_structure_manager: &PacketStructureManager, //maybe this could just be a list for easier readability
     ) -> Vec<Packet> {
         println!("Unparsed data length: {}", self.unparsed_data.len());
         let mut packets: Vec<Packet> = vec![];
