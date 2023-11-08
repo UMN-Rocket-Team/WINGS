@@ -43,8 +43,16 @@ export type Packet = PacketData & {
  * The type of unidentified radio data
  */
 export type PacketData = {
-    fieldData: number[],
+    fieldData: PacketFieldValue[],
     timestamp: number,
+};
+
+/**
+ * The type of each field value inside of a parsed packet.
+ */
+export type PacketFieldValue = {
+    type: PacketFieldType,
+    data: number
 };
 
 /**

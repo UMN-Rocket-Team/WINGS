@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::models::packet_structure::PacketFieldType;
 
 #[derive(PartialEq, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 /// Represents a packet of data
 /// 
 /// This includes all of the variables that have been recieved within a packet of data and its timestamp
@@ -15,13 +16,23 @@ pub struct Packet {
 #[derive(PartialEq, Serialize, Clone, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketFieldValue {
+    // Ensure that this enum is in sync with PacketFieldType
+
+    #[serde(rename = "Unsigned Byte")]
     UnsignedByte(u8),
+    #[serde(rename = "Signed Byte")]
     SignedByte(i8),
+    #[serde(rename = "Unsigned Short")]
     UnsignedShort(u16),
+    #[serde(rename = "Signed Short")]
     SignedShort(i16),
+    #[serde(rename = "Unsigned Integer")]
     UnsignedInteger(u32),
+    #[serde(rename = "Signed Integer")]
     SignedInteger(i32),
+    #[serde(rename = "Unsigned Long")]
     UnsignedLong(u64),
+    #[serde(rename = "Signed Long")]
     SignedLong(i64),
     Float(f32),
     Double(f64),

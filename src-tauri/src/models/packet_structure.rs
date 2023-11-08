@@ -56,6 +56,8 @@ pub struct PacketField {
 #[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
 ///Represents the different types that can be recieved in a packetField
 pub enum PacketFieldType {
+    // Ensure that this enum is in sync with PacketFieldValue
+
     #[serde(rename = "Unsigned Byte")]
     UnsignedByte,
     #[serde(rename = "Signed Byte")]
