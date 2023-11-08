@@ -71,8 +71,7 @@ impl BackgroundTask {
 pub struct SerialManager {
     previous_available_ports: Vec<SerialPortNames>,
     active_port: Option<Box<dyn serialport::SerialPort>>,
-    send_test: Mutex<Option<BackgroundTask>>,
-    receive_test: Mutex<Option<BackgroundTask>>
+    send_test: Mutex<Option<BackgroundTask>>
 }
 
 impl SerialManager {
@@ -207,51 +206,12 @@ impl SerialManager {
         Ok(())
     }
 
-    /// Begin receiving test packets. Events are sent directly to the frontend.
-    pub fn start_receive_test(&mut self, app_handle: tauri::AppHandle, port_name: &str) -> anyhow::Result<()> {
-        let guard = self.receive_test.lock();
-        if !guard.is_ok() {
-            bail!("Failed to lock")
-        }
-
-        let mut port = serialport::new(port_name, BAUD_RATE).open()?;
-        port.clear(serialport::ClearBuffer::All)?;
-        port.set_timeout(Duration::from_millis(100))?;
-
-        // Send an initial state update so the frontend knows the port was opened successfully
-        let _ = app_handle.emit_all("radio-test-receive-update", ReceivingState::default());
-
-        let mut packets_read = 0;
-        *guard.unwrap() = Some(BackgroundTask::run_repeatedly(move || {
-            let mut buffer = [0; TEST_PAYLOAD_SIZE];
-            if let Ok(bytes_read) = port.read(&mut buffer) {
-                let read_data = &buffer[0..bytes_read];
-                println!("Read data: {:?}", read_data);
-                for i in read_data.iter() {
-                    if *i == TEST_MAGIC_BYTE {
-                        packets_read += 1;
-                    }
-                }
-
-                let _ = app_handle.emit_all("radio-test-receive-update", ReceivingState {
-                    packets_read
-                });
-            }
-        }));
-
-        Ok(())
-    }
-
     /// Stop any ongoing sending and receiving tests.
-    pub fn stop_tests(&mut self) {
+    pub fn stop_send_test(&mut self) {
         // BackgroundTask stopping is handled by standard rust lifetimes
 
         let mut send_test_guard = self.send_test.lock().unwrap();
         *send_test_guard = None;
         drop(send_test_guard);
-
-        let mut receive_test_guard = self.receive_test.lock().unwrap();
-        *receive_test_guard = None;
-        drop(receive_test_guard);
     }
 }

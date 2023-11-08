@@ -8,7 +8,7 @@ import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketViewMod
 
 export const setActivePort = async (portName: string) => await invoke<void>("set_active_port", { portName: portName });
 
-export const startRadioTest = async (sendPort: string, receivePort: string, sendInterval: number) => await invoke<void>("start_radio_test", { sendPort, sendInterval, receivePort });
+export const startRadioTest = async (sendPort: string, sendInterval: number) => await invoke<void>("start_radio_test", { sendPort, sendInterval });
 
 export const stopRadioTest = async () => await invoke<void>("stop_radio_test");
 

@@ -218,13 +218,3 @@ export type RadioTestSendingState = {
      */
     packetsSent: number,
 };
-
-/**
- * State sent from backend for radio test status updates.
- */
-export type RadioTestReceivingState = {
-    /**
-     * Number of valid test packets that have been detected.
-     */
-    packetsRead: number,
-};
