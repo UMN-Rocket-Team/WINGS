@@ -8,9 +8,6 @@ use crate::{state::packet_structure_manager_state::PacketStructureManagerState, 
 
 const BAUD_RATE: u32 = 57600;
 
-const TEST_MAGIC_BYTE: u8 = 42;
-const TEST_PAYLOAD_SIZE: usize = 8;
-
 #[derive(PartialEq, Serialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SerialPortNames {
