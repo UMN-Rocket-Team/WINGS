@@ -41,7 +41,7 @@ pub enum PacketFieldValue {
 impl PacketFieldValue {
     /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
     pub fn to_le_bytes(&self) -> Vec<u8> {
-        // Need to return a vec here instead of a [u8] as the size is not known at compile time
+        // Need to return a vec here instead of a [u8] as the size is not constant
         match self {
             PacketFieldValue::UnsignedByte(i) => u8::to_le_bytes(*i).to_vec(),
             PacketFieldValue::SignedByte(i) => i8::to_le_bytes(*i).to_vec(),
