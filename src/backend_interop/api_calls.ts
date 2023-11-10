@@ -38,12 +38,4 @@ export const addPacket = async (view: PacketViewModel) => await invoke<void>("ad
 
 export const registerEmptyPacketStructure = async () => await invoke<void>("register_empty_packet_structure");
 
-export const addGapAfter = async (packetStructureId: number, isField: boolean, componentIndex: number) => await invoke<void>("add_gap_after", { packetStructureId: packetStructureId, isField: isField, componentIndex: componentIndex });
-
-export const deletePacketStructureComponent = async (packetStructureId: number, componentIndex: number, componentType: PacketComponentType) => await invoke<void>("delete_packet_structure_component", { packetStructureId, componentIndex, componentType });
-
-export const addPacket = async (view: PacketViewModel) => await invoke("add_packet_structure", { view });
-
-export const registerEmptyPacketStructure = async () => await invoke<void>("register_empty_packet_structure");
-
 export const deletePacketStructure = async (packetStructureId: number) => await invoke<void>('delete_packet_structure', { packetStructureId: packetStructureId });
