@@ -2,7 +2,7 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { runImportPacketWindow, runExportPacketWindow, ImportPacketsfromDirectories} from "../core/packet_file_handling";
+import { runImportPacketWindow, runExportPacketWindow, importPacketsfromDirectories} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
@@ -80,11 +80,11 @@ const PacketsTab: Component = () => {
                     </For>
                 </div>
                 <button class="externalButton" onClick={async () => {
-                    const store = new Store(".persistent.dat");
-                    const recentPaths = (await store.get("recentSaves")) as string[];
+                    const store = new Store("persistent.dat");
+                    const recentPaths = (await store.get("recentSaves") || []) as string[];
                     showModal(FileModal, {
                         pathStrings: recentPaths,
-                        callBack: ImportPacketsfromDirectories
+                        callBack: importPacketsfromDirectories
                     })
                     }}>Import Packet</button>
                 {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}

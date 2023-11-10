@@ -27,7 +27,8 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
         let data: string = JSON.stringify(packetView);
         let filePathString: string = selectedFilePath as string;
 
-        const store = new Store(".persistent.dat");
+        //adds new file directory to persistent data
+        const store = new Store("persistent.dat");
         let prevSaves: String[] | null = await store.get("recentSaves");
         if( Array.isArray(prevSaves)){
 
@@ -63,7 +64,7 @@ export const runImportPacketWindow = async () => {
         return selectedFilePaths
 }
 
-export const ImportPacketsfromDirectories = async (filePaths: string | string[] | null)=>{
+export const importPacketsfromDirectories = async (filePaths: string | string[] | null)=>{
     const filePackets = await openPackets(filePaths);
     for (const packetView of filePackets) {
         addPacket(packetView);
