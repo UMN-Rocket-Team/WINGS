@@ -15,23 +15,8 @@ use crate::models::{packet_structure::{PacketStructure, PacketMetadataType, Pack
 /// However some errors will not be caught such as packets overlapping each other, so please
 /// make sure your structures are valid first :)
 pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<PacketFieldValue>) -> Result<Vec<u8>, String> {
-    // Calculate size ahead of time so we can make the vec the right size right from the start
-    let mut packet_size = 0;
-    for delimiter in &packet_structure.delimiters {
-        let delimeter_max_index = delimiter.offset_in_packet + delimiter.identifier.len();
-        if delimeter_max_index > packet_size {
-            packet_size = delimeter_max_index;
-        }
-    }
-    for field in &packet_structure.fields {
-        let field_max_index = field.offset_in_packet + field.r#type.size();
-        if field_max_index > packet_size {
-            packet_size = field_max_index;
-        }
-    }
-
     // Don't grow this after making it. It's already the exact right size.
-    let mut result = vec![0; packet_size];
+    let mut result = vec![0; packet_structure.size()];
 
     for delimiter in &packet_structure.delimiters {
         let bytes = &delimiter.identifier;
