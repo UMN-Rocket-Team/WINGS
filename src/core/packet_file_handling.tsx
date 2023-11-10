@@ -61,7 +61,7 @@ export const exportToLocation = async (selectedFilePath: string | null, packetVi
  */
 export const runImportPacketWindow = async () => {
     const selectedFilePaths = await open({ title: 'Import Flight Data', multiple: true, filters: [{ name: 'FlightData', extensions: ['json'] }] });
-        return selectedFilePaths
+    return selectedFilePaths;
 }
 
 export const importPacketsfromDirectories = async (filePaths: string | string[] | null)=>{
