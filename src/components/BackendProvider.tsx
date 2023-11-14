@@ -7,7 +7,8 @@ import {
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames,
     PacketViewModelUpdate,
-    PacketViewModelUpdateType
+    PacketViewModelUpdateType,
+    SendingLoopState
 } from "../backend_interop/types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
@@ -28,7 +29,13 @@ export type BackendContextValue = {
      */
     packetViewModels: PacketViewModel[],
 
-    setPacketViewModels: SetStoreFunction<PacketViewModel[]>
+    setPacketViewModels: SetStoreFunction<PacketViewModel[]>,
+
+    /**
+     * Information about the current or most recent sending loop task.
+     * Will be null before an update is received.
+     */
+    sendingLoopState: Accessor<SendingLoopState | null>
 };
 
 /**
@@ -38,8 +45,8 @@ const BackendContext = createContext<BackendContextValue>({
     availablePortNames: (): SerialPortNames[] => [],
     parsedPacketCount: () => 0,
     packetViewModels: [],
-    setPacketViewModels: () => {
-    }
+    setPacketViewModels: () => {},
+    sendingLoopState: () => null
 });
 
 //for inserting fake packets
@@ -57,6 +64,7 @@ export const BackendProvider: ParentComponent = (props) => {
     const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
     const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
     const [packetViewModels, setPacketViewModels] = createStore<PacketViewModel[]>([]);
+    const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
 
     let unlistenFunctions: UnlistenFn[];
 
@@ -111,6 +119,9 @@ export const BackendProvider: ParentComponent = (props) => {
                     
                 }
             }),
+            await listen<SendingLoopState>("radio-test-update", ({payload}) => {
+                setSendingLoopState(payload);
+            })
         ];
 
         // Let the backend know that the frontend is ready to receive the initial "packet-structures-update" event
@@ -141,7 +152,8 @@ export const BackendProvider: ParentComponent = (props) => {
         availablePortNames: availablePortNames,
         parsedPacketCount: parsedPacketCount,
         packetViewModels: packetViewModels,
-        setPacketViewModels: setPacketViewModels
+        setPacketViewModels: setPacketViewModels,
+        sendingLoopState: sendingLoopState
     };
 
     return (

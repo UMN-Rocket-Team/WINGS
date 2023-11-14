@@ -10,9 +10,9 @@ export const setActivePort = async (portName: string) => await invoke<void>("set
 
 export const setTestPort = async (portName: string) => await invoke<void>("set_test_port", { portName });
 
-export const startRadioTest = async (interval: number) => await invoke<void>("start_radio_test", { interval });
+export const startSendingLoop = async (interval: number) => await invoke<void>("start_sending_loop", { interval });
 
-export const stopRadioTest = async () => await invoke<void>("stop_radio_test");
+export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
 
 export const setPacketName = async (packetStructureId: number, name: string) => await invoke<void>("set_packet_name", { packetStructureId, name });
 

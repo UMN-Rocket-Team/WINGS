@@ -210,9 +210,9 @@ export type PacketGap = {
 };
 
 /**
- * State sent from backend for radio test status updates.
+ * State sent from backend by the sending loop.
  */
-export type RadioTestSendingState = {
+export type SendingLoopState = {
     /**
      * Number of test packets that have been sent.
      */

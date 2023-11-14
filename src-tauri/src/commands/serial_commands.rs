@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::{state::serial_manager_state::SerialManagerState, state::serial_manager_state::use_serial_manager};
 
 // # serial_commands

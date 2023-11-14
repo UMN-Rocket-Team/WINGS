@@ -10,7 +10,7 @@ use crate::{
 
 pub struct PacketStructureManagerState {
     pub(crate) packet_structure_manager: Mutex<PacketStructureManager>,
-    pub radio_test_structure: PacketStructure
+    pub sending_loop_structure: PacketStructure
 }
 
 impl Default for PacketStructureManagerState {
@@ -66,8 +66,8 @@ impl Default for PacketStructureManagerState {
             ],
         };
 
-        // Used by radio test.
-        let mut radio_test_structure = PacketStructure {
+        // Used by sending loop.
+        let mut sending_loop_structure = PacketStructure {
             id: 0, // overwritten by register_packet_structure
             name: String::from("Radio Test Packet"),
             fields: vec![
@@ -106,11 +106,11 @@ impl Default for PacketStructureManagerState {
 
         let mut packet_structure_manager = PacketStructureManager::default();
         packet_structure_manager.register_packet_structure(&mut example_structure).expect("Failed to register example packet");
-        packet_structure_manager.register_packet_structure(&mut radio_test_structure).expect("Failed to register radio test packet");
+        packet_structure_manager.register_packet_structure(&mut sending_loop_structure).expect("Failed to register radio test packet");
 
         Self {
             packet_structure_manager: Mutex::new(packet_structure_manager),
-            radio_test_structure
+            sending_loop_structure
         }
     }
 }
