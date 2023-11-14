@@ -3,7 +3,7 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
-import { startRadioTest, stopRadioTest } from "../backend_interop/api_calls";
+import { setTestPort, startRadioTest, stopRadioTest } from "../backend_interop/api_calls";
 import { RadioTestSendingState } from "../backend_interop/types";
 
 /**
@@ -27,7 +27,8 @@ const RadioTestingTab: Component = () => {
             setSendingState(null);
         });
         try {
-            await startRadioTest(sendPort(), sendInterval());
+            await setTestPort(sendPort());
+            await startRadioTest(sendInterval());
         } catch (error) {
             setSimulating(false);
             showModal(ErrorModal, {
@@ -39,6 +40,7 @@ const RadioTestingTab: Component = () => {
 
     const stopSimulating = async () => {
         await stopRadioTest();
+        await setTestPort('');
         setSimulating(false);
     };
 

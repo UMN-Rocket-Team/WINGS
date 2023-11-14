@@ -1,10 +1,5 @@
-use std::{sync::{mpsc, Mutex}, time::{Duration, SystemTime, UNIX_EPOCH}, thread};
-
 use anyhow::bail;
 use serde::Serialize;
-use tauri::Manager;
-
-use crate::{state::packet_structure_manager_state::PacketStructureManagerState, packet_generator::generate_packet, models::packet::PacketFieldValue};
 
 const BAUD_RATE: u32 = 57600;
 
@@ -16,63 +11,15 @@ pub struct SerialPortNames {
     product_name: Option<String>,
 }
 
-#[derive(Serialize, Clone, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-struct SendingState {
-    packets_sent: u32
-}
-
-#[derive(Serialize, Clone, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-struct ReceivingState {
-    packets_read: u32
-}
-
-/// A stoppable activity running in a background thread.
-pub struct BackgroundTask {
-    // Receiving end of a channel shared with the thread running the task.
-    // When the BackgroundTask struct is dropped, this will be dropped too,
-    // which the child thread can detect.
-    _stop_send: mpsc::Sender<()>
-}
-
-impl BackgroundTask {
-    /// Repeatedly run the given closure in a background thread until the
-    /// returned struct is dropped.
-    /// 
-    /// The callback just should do something once -- it shouldn't include
-    /// its own `loop { ... }` as that's handled by BackgroundTask.
-    pub fn run_repeatedly<F>(mut callback: F) -> BackgroundTask where F: FnMut() -> (), F: Send + 'static {
-        let (tx, rx) = mpsc::channel();
-
-        thread::spawn(move || {
-            let is_stopped = || {
-                match rx.try_recv() {
-                    Err(mpsc::TryRecvError::Disconnected) => true,
-                    _ => false
-                }
-            };
-
-            while !is_stopped() {
-                callback();
-            }
-        });
-
-        BackgroundTask {
-            _stop_send: tx
-        }
-    }
-}
-
 #[derive(Default)]
 pub struct SerialManager {
     previous_available_ports: Vec<SerialPortNames>,
     active_port: Option<Box<dyn serialport::SerialPort>>,
-    send_test: Mutex<Option<BackgroundTask>>
+    test_port: Option<Box<dyn serialport::SerialPort>>
 }
 
 impl SerialManager {
-    /// Returns a list of all possible serial ports
+    /// Returns a list of all accessible serial ports
     pub fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
         let ports = serialport::available_ports()?
             .into_iter()
@@ -116,12 +63,14 @@ impl SerialManager {
     }
 
     /// Set the path of the active port
-    /// If path is empty, active port is reset
+    /// If path is empty, any active port is closed
     pub fn set_active_port(&mut self, port_name: &str) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.active_port = None;
         } else {
-            self.active_port = Some(serialport::new(port_name, BAUD_RATE).open()?);
+            let port = serialport::new(port_name, BAUD_RATE).open()?;
+            port.clear(serialport::ClearBuffer::All)?;
+            self.active_port = Some(port);
         }
         Ok(())
     }
@@ -147,68 +96,28 @@ impl SerialManager {
         Ok(output)
     }
 
-    /// Begin sending test packets. Events are sent directly to the frontend.
-    pub fn start_send_test(&mut self, app_handle: tauri::AppHandle, port_name: &str, interval: Duration) -> anyhow::Result<()> {
-        let guard = self.send_test.lock();
-        if !guard.is_ok() {
-            bail!("Failed to lock");
+    /// Set the path of the test radio port
+    /// If path is empty, any existing port is closed
+    pub fn set_test_port(&mut self, port_name: &str) -> anyhow::Result<()> {
+        if port_name.is_empty() {
+            self.test_port = None;
+        } else {
+            let port = serialport::new(port_name, BAUD_RATE).open()?;
+            port.clear(serialport::ClearBuffer::All)?;
+            self.test_port = Some(port);
         }
-
-        let mut port = serialport::new(port_name, BAUD_RATE).open()?;
-        port.clear(serialport::ClearBuffer::All)?;
-
-        let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
-        let packet_structure = structure_manager_state.radio_test_structure.clone();
-
-        // Send an initial state update so the frontend knows the port was opened successfully
-        let _ = app_handle.emit_all("radio-test-send-update", SendingState::default());
-
-        let mut packets_sent = 0;
-        *guard.unwrap() = Some(BackgroundTask::run_repeatedly(move || {
-            // Sleep at start as this can return early in case of errors, but we always
-            // want the sleep to happen.
-            thread::sleep(interval);
-
-            let unix_millis = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap_or(Duration::ZERO)
-                .as_millis();
-
-            let packet = match generate_packet(&packet_structure, &vec![
-                PacketFieldValue::SignedLong(unix_millis.try_into().unwrap_or(i64::MAX)),
-                PacketFieldValue::UnsignedInteger(packets_sent)
-            ]) {
-                Ok(packet) => packet,
-                Err(err) => {
-                    println!("Failed to generate test packet: {}", err);
-                    return;
-                }
-            };
-
-            match port.write(&packet) {
-                Ok(_) => {
-                    packets_sent = packets_sent.wrapping_add(1);
-                    println!("Sent packet {}: {:?}", packets_sent, packet);
-
-                    let _ = app_handle.emit_all("radio-test-send-update", SendingState {
-                        packets_sent
-                    });
-                },
-                Err(err) => {
-                    println!("Failed to write to test port: {}", err);
-                }
-            }
-        }));
-
         Ok(())
     }
 
-    /// Stop any ongoing sending and receiving tests.
-    pub fn stop_send_test(&mut self) {
-        // BackgroundTask stopping is handled by standard rust lifetimes
+    /// Attempt to write bytes to the radio test port
+    pub fn write_test_port(&mut self, packet: &[u8]) -> anyhow::Result<()> {
+        let test_port = match self.test_port.as_mut() {
+            Some(port) => port,
+            None => bail!("No active test port")
+        };
 
-        let mut send_test_guard = self.send_test.lock().unwrap();
-        *send_test_guard = None;
-        drop(send_test_guard);
+        test_port.write(packet)?;
+
+        Ok(())
     }
 }
