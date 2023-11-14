@@ -12,15 +12,17 @@ mod packet_structure_events;
 mod packet_structure_manager;
 mod packet_view_model;
 mod serial;
+mod test;
 mod state;
 mod update_loop;
 
+use commands::test_commands::{start_radio_test, stop_radio_test};
 use packet_structure_events::send_initial_packet_structure_update_event;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
 use serial_manager_state::SerialManagerState;
 use packet_parser_state::PacketParserState;
 
-use state::{packet_parser_state, packet_structure_manager_state, serial_manager_state};
+use state::{packet_parser_state, packet_structure_manager_state, serial_manager_state, test_manager_state::TestManagerState};
 use tauri::Manager;
 use update_loop::TimerState;
 
@@ -31,13 +33,14 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    serial_commands::{set_active_port, start_radio_test, stop_radio_test}
+    serial_commands::{set_active_port, set_test_port}
 };
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             set_active_port,
+            set_test_port,
             start_radio_test,
             stop_radio_test,
             set_field_name,
@@ -58,6 +61,7 @@ fn main() {
         .manage(PacketStructureManagerState::default())
         .manage(SerialManagerState::default())
         .manage(PacketParserState::default())
+        .manage(TestManagerState::default())
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();

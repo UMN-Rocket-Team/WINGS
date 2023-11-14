@@ -17,30 +17,11 @@ pub fn set_active_port(
 }
 
 #[tauri::command(async)]
-pub fn start_radio_test(
+pub fn set_test_port(
     serial_manager_state: tauri::State<'_, SerialManagerState>,
-    app_handle: tauri::AppHandle,
-    send_port: &str,
-    send_interval: u64
+    port_name: &str,
 ) -> Result<(), String> {
-    println!("Starting radio test: send port: {} interval: {}", send_port, send_interval);
-
     use_serial_manager(serial_manager_state, &mut |serial_manager| {
-        if !send_port.is_empty() {
-            serial_manager.start_send_test(app_handle.clone(), send_port, Duration::from_millis(send_interval))?;
-        }
-        Ok(())
-    })
-}
-
-#[tauri::command(async)]
-pub fn stop_radio_test(
-    serial_manager_state: tauri::State<'_, SerialManagerState>
-) -> Result<(), String> {
-    println!("Stopping radio test");
-
-    use_serial_manager(serial_manager_state, &mut |serial_manager| {
-        serial_manager.stop_send_test();
-        Ok(())
+        serial_manager.set_test_port(port_name)
     })
 }
