@@ -1,16 +1,14 @@
-import { batch, Component, createSignal, For, onCleanup, onMount, Show } from "solid-js";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { batch, Component, createSignal, For, Show } from "solid-js";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
-import { setTestPort, startRadioTest, stopRadioTest } from "../backend_interop/api_calls";
-import { RadioTestSendingState } from "../backend_interop/types";
+import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 
 /**
  * A component that allows the user to send test packets over a radio.
  */
 const RadioTestingTab: Component = () => {
-    const {availablePortNames, parsedPacketCount} = useBackend();
+    const {availablePortNames, parsedPacketCount, sendingLoopState} = useBackend();
     const {showModal} = useModal();
 
     let initialPacketCount = parsedPacketCount();
@@ -18,17 +16,16 @@ const RadioTestingTab: Component = () => {
     const [isSimulating, setSimulating] = createSignal(false);
     const [sendPort, setSendPort] = createSignal('');
     const [sendInterval, setSendInterval] = createSignal(500);
-    const [sendingState, setSendingState] = createSignal<RadioTestSendingState | null>(null);
 
     const startSimulating = async () => {
         batch(() => {
             initialPacketCount = parsedPacketCount();
             setSimulating(true);
-            setSendingState(null);
         });
+
         try {
             await setTestPort(sendPort());
-            await startRadioTest(sendInterval());
+            await startSendingLoop(sendInterval());
         } catch (error) {
             setSimulating(false);
             showModal(ErrorModal, {
@@ -39,20 +36,10 @@ const RadioTestingTab: Component = () => {
     };
 
     const stopSimulating = async () => {
-        await stopRadioTest();
+        await stopSendingLoop();
         await setTestPort('');
         setSimulating(false);
     };
-
-    let unlistenFunction: UnlistenFn;
-    onMount(async () => {
-        unlistenFunction = await listen<RadioTestSendingState>("radio-test-send-update", ({payload}) => {
-            setSendingState(payload);
-        });
-    });
-    onCleanup(() => {
-        unlistenFunction();
-    });
 
     return (
         <div class="flex gap-4 flex-grow">
@@ -107,8 +94,8 @@ const RadioTestingTab: Component = () => {
                     {isSimulating() ? "Stop Test" : "Start Test"}
                 </button>
 
-                <Show when={sendingState() !== null}>
-                    <div>Sent {sendingState()?.packetsSent} packets</div>
+                <Show when={sendingLoopState() !== null}>
+                    <div>Sent {sendingLoopState()?.packetsSent} packets</div>
                     <div>Received {parsedPacketCount() - initialPacketCount} packets</div>
                 </Show>
             </div>
