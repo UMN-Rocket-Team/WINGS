@@ -105,8 +105,10 @@ impl Default for PacketStructureManagerState {
         };
 
         let mut packet_structure_manager = PacketStructureManager::default();
-        packet_structure_manager.register_packet_structure(&mut example_structure).expect("Failed to register example packet");
-        packet_structure_manager.register_packet_structure(&mut sending_loop_structure).expect("Failed to register radio test packet");
+        packet_structure_manager.register_packet_structure(&mut example_structure)
+            .expect("Failed to register example packet");
+        packet_structure_manager.register_packet_structure(&mut sending_loop_structure)
+            .expect("Failed to register radio test packet");
 
         Self {
             packet_structure_manager: Mutex::new(packet_structure_manager),
