@@ -64,6 +64,15 @@ impl BackgroundTask {
     }
 }
 
+fn unix_time() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or(Duration::ZERO)
+        .as_millis()
+        .try_into()
+        .unwrap_or(i64::MAX)
+}
+
 #[derive(Default)]
 pub struct SendingLoop {
     task: Option<BackgroundTask>
@@ -82,15 +91,19 @@ impl SendingLoop {
             thread::sleep(interval);
         };
 
+        // let mut velocity: f64 = 0.0;
+        // let mut millis_to_send: f64 = 10.0;
         let mut packets_sent = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
-            let unix_millis = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap_or(Duration::ZERO)
-                .as_millis();
+            let current_time = unix_time();
+
+            // millis_to_send += velocity;
+            // velocity += -0.1 * millis_to_send;
+            // println!("{}", millis_to_send.round() as i64);
 
             let packet = match generate_packet(&packet_structure, &vec![
-                PacketFieldValue::SignedLong(unix_millis.try_into().unwrap_or(i64::MAX)),
+                PacketFieldValue::SignedLong(current_time),
+                // PacketFieldValue::SignedLong(((millis_to_send.round() as i64)* 1000) + 10000),
                 PacketFieldValue::UnsignedInteger(packets_sent)
             ]) {
                 Ok(packet) => packet,
