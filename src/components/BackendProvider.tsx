@@ -119,7 +119,7 @@ export const BackendProvider: ParentComponent = (props) => {
                     
                 }
             }),
-            await listen<SendingLoopState>("radio-test-update", ({payload}) => {
+            await listen<SendingLoopState>("sending-loop-update", ({payload}) => {
                 setSendingLoopState(payload);
             })
         ];
