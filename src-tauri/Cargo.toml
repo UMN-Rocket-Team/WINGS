@@ -20,7 +20,7 @@ tauri = { version = "1.0.0", features = ["dialog-all", "fs-all", "shell-open"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 timer = "0.2.0"
 chrono = "0.4.22"
-serialport = "4.2.0"
+serialport = "4.2.2"
 readonly = "0.2"
 anyhow = "1.0"
 hex = "0.4"
