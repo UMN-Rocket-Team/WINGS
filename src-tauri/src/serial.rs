@@ -68,8 +68,11 @@ impl SerialManager {
         if port_name.is_empty() {
             self.active_port = None;
         } else {
-            let port = serialport::new(port_name, BAUD_RATE).open()?;
+            let mut port = serialport::new(port_name, BAUD_RATE).open()?;
             port.clear(serialport::ClearBuffer::All)?;
+            // Short non-zero timeout is needed to receive data from the serialport when
+            // the buffer isn't full yet.
+            port.set_timeout(std::time::Duration::from_millis(1))?;
             self.active_port = Some(port);
         }
         Ok(())
