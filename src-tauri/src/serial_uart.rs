@@ -1,7 +1,5 @@
 use anyhow::bail;
 use serde::Serialize;
-use libftd2xx::{Ftdi, FtdiCommon};
-use tauri::Manager;
 
 const BAUD_RATE: u32 = 57600;
 
@@ -14,13 +12,13 @@ pub struct SerialPortNames {
 }
 
 #[derive(Default)]
-pub struct SerialManager {
+pub struct SerialPortManager {
     previous_available_ports: Vec<SerialPortNames>,
     active_port: Option<Box<dyn serialport::SerialPort>>,
     test_port: Option<Box<dyn serialport::SerialPort>>
 }
 
-impl SerialManager {
+impl SerialPortManager {
     /// Returns a list of all accessible serial ports
     pub fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
         let ports = serialport::available_ports()?

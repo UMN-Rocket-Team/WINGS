@@ -2,7 +2,7 @@ use std::{time::{Duration, SystemTime, UNIX_EPOCH}, sync::mpsc, thread};
 use serde::Serialize;
 use tauri::Manager;
 
-use crate::{state::{packet_structure_manager_state::PacketStructureManagerState, serial_manager_state::{use_serial_manager, SerialManagerState}}, packet_generator::generate_packet, models::packet::PacketFieldValue};
+use crate::{state::{packet_structure_manager_state::PacketStructureManagerState, communication_state::{use_communication_manager, CommunicationManagerState}}, packet_generator::generate_packet, models::packet::PacketFieldValue};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -114,8 +114,8 @@ impl SendingLoop {
                 }
             };
 
-            match use_serial_manager(app_handle.state::<SerialManagerState>(), &mut |serial_manager| {
-                serial_manager.write_test_port(&packet)
+            match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                communication_manager.write_data(&packet)
             }) {
                 Ok(_) => {
                     packets_sent = packets_sent.wrapping_add(1);
