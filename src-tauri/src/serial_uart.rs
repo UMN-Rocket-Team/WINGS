@@ -80,14 +80,20 @@ impl SerialPortManager {
 
     /// Returns true if there is an active port
     pub fn has_active_port(&self) -> bool {
-        return self.active_port.is_some()
+        self.active_port.is_some()
     }
 
-    /// Read bytes from the active port
-    pub fn read_active_port(&mut self) -> anyhow::Result<Vec<u8>> {
+    /// Reads bytes from the active port and adds new bytes to the write_buffer
+    /// 
+    /// # Results
+    /// 
+    /// returns an empty set when the function runs successfully, 
+    /// bails and returns an error if there is no active port
+    ///
+    pub fn read_active_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
         let active_port = match self.active_port.as_mut() {
             Some(port) => port,
-            None => bail!("No active port")
+            None => bail!("No read port has been set")
         };
 
         let mut buffer = [0; 1024];
@@ -95,8 +101,8 @@ impl SerialPortManager {
 
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
-        let output = buffer[..bytes_read].to_vec();
-        Ok(output)
+        write_buffer.extend(buffer[..bytes_read].to_vec());
+        Ok(())
     }
 
     /// Set the path of the test radio port

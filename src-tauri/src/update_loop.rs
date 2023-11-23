@@ -86,7 +86,7 @@ fn refresh_available_ports_and_read_active_port(
     match use_communication_manager(communication_manager_state, &mut |communication_manager| {
         match communication_manager.get_data() {
             Ok(data) => {
-                read_data.extend(data.read_data);
+                read_data.extend(data.data_read);
                 result.new_available_port_names = data.new_ports;
             },
             Err(error) => return Err(anyhow!(error.to_string()))
