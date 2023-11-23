@@ -6,7 +6,7 @@ use crate::state::communication_state::{CommunicationManagerState, use_communica
 //
 #[tauri::command(async)]
 pub fn set_active_port(
-    serial_manager_state: tauri::State<'_, CommunicationManagerState>,
+    communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     port_name: &str,
 ) -> Result<(), String> {
     use_communication_manager(serial_manager_state, &mut |communication_manager| {
