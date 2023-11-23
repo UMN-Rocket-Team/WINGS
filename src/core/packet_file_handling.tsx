@@ -19,7 +19,8 @@ export const runExportPacketWindow = async (packetView: PacketViewModel) => {
 
 const runExport = async (selectedFilePath: string | null, packetView: PacketViewModel) => {
     updatePersistentFilePaths(await exportToLocation(selectedFilePath, packetView));
-}
+};
+
 /**
  * Writes a given packetViewModel to a selected File directory
  * 
