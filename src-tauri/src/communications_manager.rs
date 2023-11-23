@@ -5,7 +5,7 @@ use crate::{
 
 pub struct GetDataResult {
     pub(crate) new_ports: Option<Vec<SerialPortNames>>,
-    pub(crate) read_data: Vec<u8>
+    pub(crate) data_read: Vec<u8>
 }
 #[derive(Default)]
 pub struct CommunicationsManager {
@@ -15,18 +15,17 @@ pub struct CommunicationsManager {
 }
 impl CommunicationsManager{
     pub fn get_data(&mut self) -> Result<GetDataResult, String>{
-
         let mut result: GetDataResult = GetDataResult {
             new_ports: None,
-            read_data: vec![]
+            data_read: vec![]
         };
 
         let new_ports = self.uart_manager.get_new_available_ports();
         result.new_ports = new_ports;
 
         if self.uart_manager.has_active_port() {
-            match self.uart_manager.read_active_port() {
-                Ok(data) => result.read_data.extend(data),
+            match self.uart_manager.read_active_port(&mut result.data_read) {
+                Ok(_) => return Ok(result),
                 Err(error) => return Err(error.to_string())
             }
         }
