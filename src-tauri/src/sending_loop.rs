@@ -81,7 +81,7 @@ pub struct SendingLoop {
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
-        let packet_structure = structure_manager_state.sending_loop_structure.clone();
+        let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[0].clone();
 
         // Send an initial state update so the frontend knows the port was opened successfully
         let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::starting());
@@ -93,7 +93,7 @@ impl SendingLoop {
 
         let mut flipper: u8 = 1;
         // let mut millis_to_send: f64 = 10.0;
-        let mut packets_sent = 0;
+        let mut packets_sent: u32 = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
             let current_time = unix_time();
 
@@ -101,8 +101,8 @@ impl SendingLoop {
 
             let packet = match generate_packet(&packet_structure, &vec![
                 PacketFieldValue::SignedLong(current_time),
-                PacketFieldValue::UnsignedShort(packets_sent),
-                PacketFieldValue::UnsignedShort(packets_sent),
+                PacketFieldValue::UnsignedShort(packets_sent as u16),
+                PacketFieldValue::UnsignedShort(packets_sent as u16),
                 PacketFieldValue::UnsignedByte(flipper),
                 PacketFieldValue::UnsignedByte(!flipper),
                 PacketFieldValue::UnsignedShort(0),
@@ -121,7 +121,7 @@ impl SendingLoop {
             }) {
                 Ok(_) => {
                     packets_sent = packets_sent.wrapping_add(1);
-                    println!("Sent packet {}: {:?}", packets_sent, packet);
+                    //println!("Sent packet {}: {:?}", packets_sent, packet);
 
                     let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
                 },

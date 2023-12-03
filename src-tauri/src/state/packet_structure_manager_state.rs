@@ -69,7 +69,7 @@ impl Default for PacketStructureManagerState {
                     index: 0,
                     name: String::from("start"),
                     offset_in_packet: 0,
-                    identifier: 0xBA5EBA11u32.to_le_bytes().to_vec(),
+                    identifier: vec![0xba, 0x5e, 0xba, 0x11],
                 },
                 PacketDelimiter {
                     index: 1,
@@ -87,7 +87,7 @@ impl Default for PacketStructureManagerState {
                     index: 3,
                     name: String::from("end"),
                     offset_in_packet: 26,
-                    identifier: 0xCA11AB1Eu32.to_le_bytes().to_vec(),
+                    identifier: vec![0xca, 0x11, 0xab, 0x1e],
                 },
             ],
         };
