@@ -91,21 +91,21 @@ impl SendingLoop {
             thread::sleep(interval);
         };
 
-        let mut velocity: f32 = 1.0;
+        let mut flipper: u8 = 1;
         // let mut millis_to_send: f64 = 10.0;
         let mut packets_sent = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
             let current_time = unix_time();
 
-            // millis_to_send += velocity;
-             velocity *= -1.0;
-            // println!("{}", millis_to_send.round() as i64);
+            flipper = !flipper;
 
             let packet = match generate_packet(&packet_structure, &vec![
-                PacketFieldValue::UnsignedByte(packets_sent),
-                PacketFieldValue::UnsignedByte(packets_sent),
-                PacketFieldValue::SignedShort(current_time),
-                PacketFieldValue::SignedShort(current_time),
+                PacketFieldValue::SignedLong(current_time),
+                PacketFieldValue::UnsignedShort(packets_sent),
+                PacketFieldValue::UnsignedShort(packets_sent),
+                PacketFieldValue::UnsignedByte(flipper),
+                PacketFieldValue::UnsignedByte(!flipper),
+                PacketFieldValue::UnsignedShort(0),
                 // PacketFieldValue::SignedLong(((millis_to_send.round() as i64)* 1000) + 10000),
             ]) {
                 Ok(packet) => packet,

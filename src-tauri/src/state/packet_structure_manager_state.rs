@@ -24,7 +24,7 @@ impl Default for PacketStructureManagerState {
                 PacketField {
                     index: 0,
                     name: String::from("timestamp"),
-                    r#type: PacketFieldType::UnsignedLong,
+                    r#type: PacketFieldType::SignedLong,
                     offset_in_packet: 8,
                     metadata_type: PacketMetadataType::Timestamp,
                 },
