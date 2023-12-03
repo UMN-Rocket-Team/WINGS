@@ -20,7 +20,7 @@ impl TimerState {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
 
-        let update_task_guard = timer.schedule_repeating(Duration::seconds(1), move || {
+        let update_task_guard = timer.schedule_repeating(Duration::milliseconds(1), move || {
             match refresh_available_ports_and_read_active_port(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
