@@ -1,18 +1,23 @@
 import { Component, For, createSignal } from "solid-js";
+import { Component, For, createSignal } from "solid-js";
 import { useModal } from "./ModalProvider";
 import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
 import { createStore } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
 import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
+import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
 import expandIcon from "../assets/expand.svg";
 import closeIcon from "../assets/close.svg";
+import { SolidChartProps } from "./SolidChart";
+import { time } from "console";
 import { SolidChartProps } from "./SolidChart";
 import { time } from "console";
 
 /**
  * An object that identifies a field in a packet by its packet id and field index and contains the name of the packet and field.
  */
+
 
 export type FieldInPacket = {
     packetId: number,
@@ -23,7 +28,7 @@ export type FieldInPacket = {
 export type GraphStruct = {
     graphName: String,
     x: FieldInPacket | null,
-    y: FieldInPacket[],
+    y: PacketComponentType[],
 }
 
 /**
@@ -52,6 +57,9 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
     const [selected, setSelected] = createStore<GraphStruct[]>([]);
 
+    const [selected, setSelected] = createStore<GraphStruct[]>([]);
+
+    const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
     const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
         if (isChecked) {
             setSelected([...selected, { graphName: "Graph", x: packetId, y: fieldIndex }]);
@@ -72,9 +80,22 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
 
 
+    const initialSelected: GraphStruct = {graphName: "Graph", x: null, y: [{packetId: 1, fieldIndex: -1}]};
+    const [select, setSelect] = createStore<GraphStruct>(initialSelected);
+
+    const handleXAxisSelect = (packetId: number, fieldIndex: number) => {
+        
+    }
+
+    const [graphs, newGraph] = createStore<GraphStruct[]>([]);
+
+
+
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
+            <button onClick={() => newGraph([...graphs, {graphName: "graph", x: null, y: []}])}>
+                New Graph
             <button onClick={() => newGraph([...graphs, {graphName: "graph", x: null, y: []}])}>
                 New Graph
             </button>
@@ -102,11 +123,22 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 style={{ "width": "90%" }}>
                 <For each={graphs}>
                     {(fieldInPacket: GraphStruct) => {
+                <For each={graphs}>
+                    {(fieldInPacket: GraphStruct) => {
                         const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === fieldInPacket.packetId);
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === fieldInPacket.fieldIndex);
 
                         return (
                             <div class="bg-gray p-2">
+                                <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
+                                    xSelectedField: select,
+                                    ySelectedFields: selected,
+                                    handleXAxisSelect: handleXAxisSelect,
+                                    handleYAxisSelect: handleYAxisSelect
+                                })}>
+                                    <h3>{packetViewModel?.name}</h3>
+                                    <p>{(field?.data as PacketField)?.name}</p>
+                                </button>
                                 <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                     xSelectedField: select,
                                     ySelectedFields: selected,
