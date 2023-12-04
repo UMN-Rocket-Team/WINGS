@@ -46,6 +46,7 @@ const [selectedRadio, setSelectedRadio] = createSignal<number>(-1);
  */
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
     const { packetViewModels } = useBackend();
+    
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
