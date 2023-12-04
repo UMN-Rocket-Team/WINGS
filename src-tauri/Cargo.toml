@@ -1,6 +1,6 @@
 [package]
 name = "wings"
-version = "0.4.0"
+version = "0.4.1"
 description = "The Ground Station of the University of Minnesota Twin Cities Rocket Team"
 authors = ["University of Minnesota Twin Cities Rocket Team: Avionics Sub-Team Contributors"]
 license = "AGPL-3.0"
