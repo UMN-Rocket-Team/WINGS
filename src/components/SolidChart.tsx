@@ -1,7 +1,7 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
 import 'chartjs-adapter-luxon';
-import { FieldInPacket } from "./FieldsScreen";
+import { GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
@@ -10,7 +10,7 @@ import { parsedPackets } from "../backend_interop/buffers";
 Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
 
 type SolidChartProps = {
-    fieldInPacket: FieldInPacket;
+    fieldInPacket: GraphStruct;
 };
 
 /**
@@ -88,11 +88,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             return;
         }
 
-        const newPackets = packetData.slice(lastPacketCount);
-        config.data.datasets[0].data.push(...newPackets.map(packetData => ({
-            x: packetData.timestamp,
-            y: packetData.fieldData[props.fieldInPacket.fieldIndex].data
-        })));
+        config.data.datasets[0].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })));
 
         lastPacketCount = packetData.length;
 

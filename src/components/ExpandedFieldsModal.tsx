@@ -1,6 +1,6 @@
 import { ModalProps } from "./ModalProvider";
 import { For, JSX, Show } from "solid-js";
-import { FieldInPacket } from "./FieldsScreen";
+import { GraphStruct } from "./FieldsScreen";
 import SolidChart from "./SolidChart";
 import closeIcon from "../assets/close.svg";
 
@@ -11,7 +11,7 @@ export type ExpandedFieldsModalProps = {
     /**
      * The list of selected packets on this screen
      */
-    selectedFields: FieldInPacket[];
+    selectedFields: GraphStruct[];
     /**
      * The user-displayable number of this screen
      */
@@ -43,7 +43,7 @@ const ExpandedFieldsModal = (props: ModalProps<ExpandedFieldsModalProps>): JSX.E
             <b class="text-center text-4xl dark:text-white">{`Screen ${props.number}`}</b>
             <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, props.selectedFields.length)}, 1fr)`}}>
                 <For each={props.selectedFields}>
-                    {(fieldInPacket: FieldInPacket) =>
+                    {(fieldInPacket: GraphStruct) =>
                         <div class="relative">
                             <SolidChart fieldInPacket={fieldInPacket} />
                         </div>
