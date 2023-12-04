@@ -11,12 +11,9 @@ const FieldsScreenContainer: Component = () => {
         // h-0 is used to make the flexbox scrollable; see https://stackoverflow.com/a/65742620/16236499 for more information
         <div class="flex flex-grow h-0">
             {/*Views*/}
-            <div class="grid grid-cols-2 p-2 gap-2" style={{ "width": "100%" }}>
-                <For each={[1, 2, 3, 4]}>
-                    {(number: number) =>
-                        <FieldsScreen number={number} />
-                    }
-                </For>
+            <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+            
+                <FieldsScreen number={1} />
             </div>
         </div>
     );
