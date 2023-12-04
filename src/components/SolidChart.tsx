@@ -100,7 +100,19 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     }, { defer: true });
 
     onMount(() => {
+        console.log("here")
         chart = new Chart(canvas, config);
+        const packetData = parsedPackets[props.fieldInPacket.packetId];
+        if (packetData === undefined) {
+            return;
+        }
+
+        config.data.datasets[0].data.push(...packetData.map(packetData => ({
+            x: packetData.timestamp,
+            y: packetData.fieldData[props.fieldInPacket.fieldIndex].data
+        })));
+        lastPacketCount = packetData.length;
+        chart.update();
     });
 
     onCleanup(() => {
