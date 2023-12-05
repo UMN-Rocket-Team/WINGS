@@ -1,7 +1,7 @@
 use anyhow::bail;
 use serde::Serialize;
 
-const BAUD_RATE: u32 = 57600;
+const BAUD_RATE: u32 = 115200;
 
 #[derive(PartialEq, Serialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase")]
