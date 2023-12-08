@@ -36,6 +36,27 @@ impl PacketStructure {
 
         max_end
     }
+
+    /// fills the packet calling it using string inputs,
+    /// THIS IS MENT FOR TESTING ONLY
+    /// 
+    /// rerere
+    /// 0 - f,    represents delimiters
+    /// _1-inf    represents gaps, the number after is the length
+    /// u8 - u64  represents unsigned ints
+    /// i8 - i64  represents signed ints
+    /// F32 & F64 represents floats
+    /// 
+    /// spaces and formating are trimmed for a better user experiences
+    /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
+    pub fn ez_make(&self, input: &[char]) {
+        let offset: u32 = 0;
+        for c in input {
+            if c.is_digit(16){
+                
+            }
+        }
+    }
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
