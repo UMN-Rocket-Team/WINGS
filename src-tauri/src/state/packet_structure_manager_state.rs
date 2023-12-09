@@ -92,6 +92,17 @@ impl Default for PacketStructureManagerState {
             ],
         };
 
+        let mut example_2 = PacketStructure {
+            id: 1,
+            name: String::from("Official Test 2"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        example_2.ez_make("d0ad5ae1 _8 u8 u8 u16 u16 ffffffff");
+        println!("{:?}", example_structure);
+        println!("{:?}", example_2);
+        example_structure = example_2;
+
         // Used by sending loop.
         let mut sending_loop_structure = PacketStructure {
             id: 0, // overwritten by register_packet_structure

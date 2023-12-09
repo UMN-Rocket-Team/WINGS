@@ -2,7 +2,7 @@ use std::cmp::max;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Deserialize, Clone)]
+#[derive(PartialEq, Deserialize, Clone, Debug)]
 
 /// Represents an entire "Data Packet Structure" 
 /// 
@@ -40,20 +40,60 @@ impl PacketStructure {
     /// fills the packet calling it using string inputs,
     /// THIS IS MENT FOR TESTING ONLY
     /// 
-    /// rerere
-    /// 0 - f,    represents delimiters
-    /// _1-inf    represents gaps, the number after is the length
+    /// 0 - f,    represents delimiters in hex
+    /// _1-inf    represents gaps, the number after is the length in decimal
     /// u8 - u64  represents unsigned ints
     /// i8 - i64  represents signed ints
     /// F32 & F64 represents floats
     /// 
-    /// spaces and formating are trimmed for a better user experiences
+    /// all delimiters will be named "test delimiter" and all fields "test field"
+    /// 
+    /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
-    pub fn ez_make(&self, input: &[char]) {
-        let offset: u32 = 0;
-        for c in input {
-            if c.is_digit(16){
-                
+    pub fn ez_make(&mut self, input: &str) {
+        let mut curr_offset = 0;
+        for substr in input.split(" ") {
+            let first_char = substr.chars().nth(0).unwrap();
+            if first_char.is_digit(16){
+                let new_delimiter = PacketDelimiter{
+                    index: self.delimiters.len(),
+                    name:"test delimiter".to_string(),
+                    identifier: hex::decode(substr).unwrap(),
+                    offset_in_packet: curr_offset
+                };
+                curr_offset += new_delimiter.identifier.len();
+                self.delimiters.push(new_delimiter);
+            }
+            else if first_char == '_' {
+                let trimmedstr = substr.chars().next().map(|c| &substr[c.len_utf8()..]);
+                curr_offset += trimmedstr.unwrap().parse::<usize>().unwrap();
+            }
+            else{
+                let offset: usize;
+                let t: PacketFieldType;
+                match substr{
+                        "u8" => {offset = 1; t = PacketFieldType::UnsignedByte},
+                        "i8" => {offset = 1; t = PacketFieldType::SignedByte},
+                        "u16" => {offset = 2; t = PacketFieldType::UnsignedShort},
+                        "i16" => {offset = 2; t = PacketFieldType::SignedShort},
+                        "u32" => {offset = 4; t = PacketFieldType::UnsignedInteger},
+                        "i32" => {offset = 4; t = PacketFieldType::SignedInteger},
+                        "u64" => {offset = 8; t = PacketFieldType::UnsignedLong},
+                        "i64" => {offset = 8; t = PacketFieldType::SignedLong},
+                        "F32" => {offset = 4; t = PacketFieldType::Float},
+                        "F64" => {offset = 8; t = PacketFieldType::Double},
+                        &_ => {offset = 0; t = PacketFieldType::UnsignedByte},
+                }
+                let new_field = PacketField{
+                    index: self.fields.len(),
+                    name:"test field".to_string(),
+                    r#type: t,
+                    offset_in_packet: curr_offset,
+                    metadata_type: PacketMetadataType::None,
+                };
+                self.fields.push(new_field);
+                curr_offset += offset;
+
             }
         }
     }
