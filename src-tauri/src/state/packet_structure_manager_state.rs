@@ -1,9 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
-    models::packet_structure::{
-        PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
-    },
+    models::packet_structure::PacketStructure,
     mutex_utils::use_state_in_mutex,
     packet_structure_manager::PacketStructureManager,
 };
@@ -18,7 +16,7 @@ impl Default for PacketStructureManagerState {
     fn default() -> Self {
         // Used for testing the packet editor.
         let mut example_structure = PacketStructure {
-            id: 1,
+            id: 0,
             name: String::from("Official Test"),
             fields: vec![],
             delimiters: vec![],
