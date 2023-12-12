@@ -55,10 +55,13 @@ impl PacketStructure {
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
             if first_char.is_digit(16){
+                let mut new_identifier = hex::decode(substr).unwrap();
+                new_identifier.reverse();
+
                 let new_delimiter = PacketDelimiter{
                     index: self.delimiters.len(),
                     name:"test delimiter".to_string(),
-                    identifier: hex::decode(substr).unwrap(),
+                    identifier: new_identifier,
                     offset_in_packet: curr_offset
                 };
                 curr_offset += new_delimiter.identifier.len();

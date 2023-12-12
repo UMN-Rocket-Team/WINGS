@@ -21,8 +21,8 @@ impl Default for PacketStructureManagerState {
             fields: vec![],
             delimiters: vec![],
         };
-        example_structure.ez_make("11ba5eba _4 u64 u16 u16 u8 u8 _6 1eab11ca");
-
+        example_structure.ez_make("ba5eba11 _4 u64 u16 u16 u8 u8 _6 ca11ab1e");
+        
         let mut packet_structure_manager = PacketStructureManager::default();
         packet_structure_manager.register_packet_structure(&mut example_structure)
             .expect("Failed to register example packet");
