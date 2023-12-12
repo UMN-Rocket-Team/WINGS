@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
-    models::packet_structure::PacketStructure,
+    models::packet_structure::{PacketStructure, PacketMetadataType},
     mutex_utils::use_state_in_mutex,
     packet_structure_manager::PacketStructureManager,
 };
@@ -21,8 +21,15 @@ impl Default for PacketStructureManagerState {
             fields: vec![],
             delimiters: vec![],
         };
-        example_structure.ez_make("ba5eba11 _4 u64 u16 u16 u8 u8 _6 ca11ab1e");
-        
+
+        example_structure.ez_make("ba5eba11 _4 i64 u16 u16 u8 u8 _6 ca11ab1e");
+        example_structure.fields[0].metadata_type = PacketMetadataType::Timestamp;
+        example_structure.fields[0].name = "Timestamp".to_owned();
+        example_structure.fields[1].name = "rkt_speed".to_owned();
+        example_structure.fields[2].name = "rkt_speed_also".to_owned();
+        example_structure.fields[3].name = "rkt_budget".to_owned();
+        example_structure.fields[4].name = "var8".to_owned();
+
         let mut packet_structure_manager = PacketStructureManager::default();
         packet_structure_manager.register_packet_structure(&mut example_structure)
             .expect("Failed to register example packet");
