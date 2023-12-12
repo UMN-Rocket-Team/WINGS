@@ -16,7 +16,7 @@ impl PacketParser {
     //adds new unparsed data
     pub fn push_data(&mut self, data: &[u8]) {
         self.unparsed_data.extend(data);
-        //println!("Unparsed data: {:02X?}", self.unparsed_data);
+        println!("Unparsed data: {:02X?}", self.unparsed_data);
     }
 
     /// processes the raw data queue, returning a Vector(aka. array) of the proccessesed packets
@@ -24,7 +24,7 @@ impl PacketParser {
         &mut self,
         packet_structure_manager: &PacketStructureManager, //maybe this could just be a list for easier readability
     ) -> Vec<Packet> {
-        //println!("Unparsed data length: {}", self.unparsed_data.len());
+        println!("Unparsed data length: {}", self.unparsed_data.len());
         let mut packets: Vec<Packet> = vec![];
 
         let mut last_successful_match_end_index: Option<usize> = None;
@@ -37,7 +37,7 @@ impl PacketParser {
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
 
-                // println!("At index {}, matching structure {}", i, j);
+                println!("At index {}, matching structure {}", i, j);
 
                 if !is_delimiter_match(
                     &self.unparsed_data,
