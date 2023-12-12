@@ -115,7 +115,7 @@ impl SendingLoop {
                     return;
                 }
             };
-
+            println!("{:#?}", packet);
             match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
                 communication_manager.write_data(&packet)
             }) {
