@@ -145,3 +145,28 @@ fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: 
 
     true
 }
+
+
+
+#[cfg(test)]
+mod tests {
+    use crate::models::packet_structure::PacketStructure;
+
+    use super::*;//lets the unit tests use everything in this file
+    #[test]
+    fn test_set_packet_name(){
+        //initiallizing a packet_structure_manager with the test packet structure
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _6 ca11ab1e");
+        let _ = packet_structure_manager.register_packet_structure(&mut p_structure);
+        
+        assert_eq!(""); //checks that the change we wanted actually happened
+    }
+
+}
