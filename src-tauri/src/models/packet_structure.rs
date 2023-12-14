@@ -2,7 +2,7 @@ use std::cmp::max;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Deserialize, Clone, Debug)]
+#[derive(PartialEq, Deserialize, Clone, Debug, Default)]
 
 /// Represents an entire "Data Packet Structure" 
 /// 
@@ -51,20 +51,25 @@ impl PacketStructure {
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
     pub fn ez_make(&mut self, input: &str) {
+        self.name = "Test Packet".to_string();
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
             if first_char.is_digit(16){
-                let mut new_identifier = hex::decode(substr).unwrap();
-                new_identifier.reverse();
 
+                let mut new_identifier = hex::decode(substr).unwrap();
+                new_identifier.reverse();//this is the way firmware brodcasts the identifiers
+
+                let offset = new_identifier.len();//calculates size of the delimiter in memory
+                curr_offset = (curr_offset + offset - 1)/ offset * offset;//alligns the variable
+                
                 let new_delimiter = PacketDelimiter{
                     index: self.delimiters.len(),
-                    name:"test delimiter".to_string(),
+                    name:"test delimiter ".to_string() + self.delimiters.len(),
                     identifier: new_identifier,
                     offset_in_packet: curr_offset
                 };
-                curr_offset += new_delimiter.identifier.len();
+                curr_offset += offset;
                 self.delimiters.push(new_delimiter);
             }
             else if first_char == '_' {
@@ -87,9 +92,10 @@ impl PacketStructure {
                         "F64" => {offset = 8; t = PacketFieldType::Double},
                         &_ => {offset = 0; t = PacketFieldType::UnsignedByte},
                 }
+                curr_offset = (curr_offset + offset - 1)/ offset * offset;//alligns the variable
                 let new_field = PacketField{
                     index: self.fields.len(),
-                    name:"test field".to_string(),
+                    name:"test field ".to_string()  + self.fields.len(),
                     r#type: t,
                     offset_in_packet: curr_offset,
                     metadata_type: PacketMetadataType::None,
