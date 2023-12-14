@@ -15,14 +15,8 @@ impl Default for PacketStructureManagerState {
     ///The default configuration for a packetStructureManager(the test packet you see when creating a new flight)
     fn default() -> Self {
         // Used for testing the packet editor.
-        let mut example_structure = PacketStructure {
-            id: 0,
-            name: String::from("Official Test"),
-            fields: vec![],
-            delimiters: vec![],
-        };
-
-        example_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _6 ca11ab1e");
+        let mut example_structure = PacketStructure::default();
+        example_structure.ez_make("ba5eba11 _4 i64 u16 u16 u8 u8 _4 ca11ab1e");
         example_structure.fields[0].metadata_type = PacketMetadataType::Timestamp;
         example_structure.fields[0].name = "Timestamp".to_owned();
         example_structure.fields[1].name = "rkt_speed".to_owned();
