@@ -65,7 +65,7 @@ impl PacketStructure {
                 
                 let new_delimiter = PacketDelimiter{
                     index: self.delimiters.len(),
-                    name:"test delimiter ".to_string() + self.delimiters.len(),
+                    name:"test delimiter ".to_string() + &(self.delimiters.len()).to_string(),
                     identifier: new_identifier,
                     offset_in_packet: curr_offset
                 };
@@ -95,7 +95,7 @@ impl PacketStructure {
                 curr_offset = (curr_offset + offset - 1)/ offset * offset;//alligns the variable
                 let new_field = PacketField{
                     index: self.fields.len(),
-                    name:"test field ".to_string()  + self.fields.len(),
+                    name:"test field ".to_string()  + &(self.fields.len()).to_string(),
                     r#type: t,
                     offset_in_packet: curr_offset,
                     metadata_type: PacketMetadataType::None,
