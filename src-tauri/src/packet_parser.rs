@@ -154,7 +154,8 @@ mod tests {
 
     use super::*;//lets the unit tests use everything in this file
     #[test]
-    fn test_set_packet_name(){
+    // test for basic test packet recognision and parsing
+    fn test_test_packet_parsing(){
         //initiallizing a packet_structure_manager with the test packet structure
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure {
@@ -163,10 +164,35 @@ mod tests {
             fields: vec![],
             delimiters: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _6 ca11ab1e");
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         let _ = packet_structure_manager.register_packet_structure(&mut p_structure);
-        
-        assert_eq!(""); //checks that the change we wanted actually happened
-    }
+        let mut packet_parser = PacketParser::default();
+        let data = [0x11,0xBA,0x5E,0xBA,
+                    0x10,0x00,
+                    0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x01,0x00,
+                    0x02,0x00,
+                    0x03,
+                    0x04,
+                    0x00,0x00,
+                    0x00,0x00,0x00,0x00,
+                    0x1E,0xAB,0x11,0xCA];
+        packet_parser.push_data(&data);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager);
 
+        assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
+        assert_eq!(parsed[0].field_data[2],PacketFieldValue::UnsignedShort(2));
+        assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
+        assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
+    }
+    // test for overlapping packets
+    // test for packets of slightly longer length than expected
+    // test for packets slightly shorter length than expected
+    // test consecutive packets
+    // test parsing with multiple packet structures
+    // test parsing with mulitiple ps's that have the same first delimiter
+    // 
+    // test for when packets just barely make, or dont make it into the pushed data state
 }
