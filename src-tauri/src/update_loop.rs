@@ -92,13 +92,13 @@ fn refresh_available_ports_and_read_active_port(
 
     if !read_data.is_empty() {
         match use_packet_parser(packet_parser_state, &mut |packet_parser| {
-            packet_parser.push_data(&read_data);
+            packet_parser.push_data(&read_data,false);
 
             use_packet_structure_manager::<(), &str>(
                 &packet_structure_manager_state,
                 &mut |packet_structure_manager| {
                     Ok(result.parsed_packets =
-                        Some(packet_parser.parse_packets(&packet_structure_manager)))
+                        Some(packet_parser.parse_packets(&packet_structure_manager,false)))
                 },
             )
         }) {

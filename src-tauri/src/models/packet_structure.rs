@@ -51,7 +51,6 @@ impl PacketStructure {
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
     pub fn ez_make(&mut self, input: &str) {
-        self.name = "Test Packet".to_string();
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
@@ -102,7 +101,6 @@ impl PacketStructure {
                 };
                 self.fields.push(new_field);
                 curr_offset += offset;
-
             }
         }
     }
