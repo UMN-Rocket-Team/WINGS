@@ -19,6 +19,7 @@ pub struct PacketStructureManager {
     pub(crate) packet_structures: Vec<PacketStructure>, 
     pub(crate) minimum_packet_structure_size: usize, // These variables are used in situations when matching packets to bits
     pub(crate) maximum_packet_structure_size: usize,
+    pub(crate) maximum_first_delimiter: usize,
 }
 
 impl Default for PacketStructureManager {
@@ -27,6 +28,7 @@ impl Default for PacketStructureManager {
             packet_structures: Default::default(),
             minimum_packet_structure_size: usize::MAX,
             maximum_packet_structure_size: 0,
+            maximum_first_delimiter: 0,
         }
     }
 }
@@ -88,11 +90,7 @@ impl PacketStructureManager {
         packet_structure.id = self.packet_structures.len();
 
         self.packet_structures.push(packet_structure.clone());
-        self.minimum_packet_structure_size =
-            min(self.minimum_packet_structure_size, packet_structure_size);
-        self.maximum_packet_structure_size =
-            max(self.maximum_packet_structure_size, packet_structure_size);
-
+        self.update_tracked_values();
         Ok(packet_structure.id)
     }
 
@@ -161,6 +159,7 @@ impl PacketStructureManager {
         }
 
         Self::shift_components_after(packet_structure, offset_diff, minimum_offset);
+        self.update_tracked_values();
     }
 
     pub fn set_field_metadata_type(
@@ -242,7 +241,6 @@ impl PacketStructureManager {
         if !identifier_collisions.is_empty() {
             return Err(identifier_collisions);
         }
-
         Ok(())
     }
 
@@ -302,7 +300,7 @@ impl PacketStructureManager {
         packet_structure.delimiters = delimiters;
 
         Self::shift_components_after(packet_structure, offset_diff, delimiter_offset);
-
+        self.update_tracked_values();
         Ok(())
     }
 
@@ -371,6 +369,7 @@ impl PacketStructureManager {
                 field_or_delimiter.end_offset(),
             )
         }
+        self.update_tracked_values();
     }
 
     ///creates a new field inside the end of the packet
@@ -388,6 +387,7 @@ impl PacketStructureManager {
                 offset_in_packet: end_of_packet,
                 r#type: PacketFieldType::UnsignedInteger,
             });
+        self.update_tracked_values();
     }
     ///creates a new delimeter inside the end of the packet
     //needs to be reworked to add to a user-specified location
@@ -403,10 +403,13 @@ impl PacketStructureManager {
                 identifier: vec![0xFF],
                 offset_in_packet: end_of_packet,
             });
+        self.update_tracked_values();
     }
 
-    ///Creates a gap after the specified component_index
-    pub fn add_gap_after(//Doesnt seem to work when the current index is a gap or the end of a packet
+    /// Creates a gap after the specified component_index
+    /// 
+    /// Doesnt work when the current index is a gap
+    pub fn add_gap_after(
         &mut self,
         packet_structure_id: usize,
         is_field: bool,
@@ -421,6 +424,7 @@ impl PacketStructureManager {
         };
 
         Self::shift_components_after(packet_structure, 1, minimum_offset);
+        self.update_tracked_values();
     }
 
     ///deletes a component, taking its index and type as parameters
@@ -488,13 +492,37 @@ impl PacketStructureManager {
                 Self::set_gap_size(self, packet_structure_id, component_index, 0)//not working
             }
         }
-
+        self.update_tracked_values();
         Ok(())
     }
 
     ///Deletes the packet structure with the given packet structure id
-    pub fn delete_packet_structure(&mut self, packet_structure_id: usize) {
+    pub fn delete_packet_structure(&mut self, packet_structure_id: usize){
         self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
+        self.update_tracked_values();
+    }
+
+    /// Updates all of the universal values in the manager 
+    /// 
+    /// this isnt the most efficient way of doing this since 
+    /// not all of these values need to be updated every time the function is called.
+    /// choose to write it this way since its more general and can be reused alot in the code
+    /// keep in mind that the packet structure manager does not need to be super fast since its not done while the groundstation is running
+    /// 
+    /// call this function whenever a packet structures length is changed, or a delimiters location is changed
+    fn update_tracked_values(&mut self){
+        let mut min_ps = usize::MAX;
+        let mut max_ps = 0;
+        let mut max_delim = 0;
+        for ps in &self.packet_structures {
+            let packet_size = ps.size();
+            min_ps = min(self.minimum_packet_structure_size, packet_size);
+            max_ps = max(self.maximum_packet_structure_size, packet_size);
+            max_delim = max(self.maximum_first_delimiter,ps.delimiters[0].offset_in_packet);
+        }
+        self.minimum_packet_structure_size = min_ps;
+        self.maximum_packet_structure_size = max_ps;
+        self.maximum_first_delimiter = max_delim;
     }
 }
 
@@ -515,7 +543,7 @@ mod tests {
 
         assert_eq!(packet_structure_manager.packet_structures[0].name, "Second Name"); //checks that the change we wanted actually happened
     }
-
+    //add a unit test that checks for updated minimum and maximum trackers
     #[test]
     fn test_set_field_name() {
         let packet_field_type = PacketFieldType::Double;

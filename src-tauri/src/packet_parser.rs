@@ -13,38 +13,45 @@ pub struct PacketParser {
 
 /// responsible converting raw data to packets
 impl PacketParser {
-    //adds new unparsed data
-    pub fn push_data(&mut self, data: &[u8]) {
+    // adds new unparsed data
+    pub fn push_data(&mut self, data: &[u8], printflag: bool) {
         self.unparsed_data.extend(data);
-        println!("Unparsed data: {:02X?}", self.unparsed_data);
+        if printflag {
+            println!("Unparsed data: {:02X?}", self.unparsed_data);
+        }
     }
 
     /// processes the raw data queue, returning a Vector(aka. array) of the proccessesed packets
     pub fn parse_packets(
         &mut self,
-        packet_structure_manager: &PacketStructureManager, //maybe this could just be a list for easier readability
+        packet_structure_manager: &PacketStructureManager,
+        printflag: bool
     ) -> Vec<Packet> {
-        println!("Unparsed data length: {}", self.unparsed_data.len());
+        if printflag {
+            println!("Unparsed data length: {}", self.unparsed_data.len());
+        }
         let mut packets: Vec<Packet> = vec![];
 
         let mut last_successful_match_end_index: Option<usize> = None;
 
-        let maximum_index =
-            self.unparsed_data.len().checked_sub(packet_structure_manager.minimum_packet_structure_size).and_then(|min_index| Some(min_index + 1)).unwrap_or(0);
-
+        let mut maximum_index = self.unparsed_data.len();
+        maximum_index -= packet_structure_manager.minimum_packet_structure_size; //don't look for packets that cany be completely inside the buffwer
+        maximum_index += packet_structure_manager.maximum_first_delimiter + 1;
         for i in 0..maximum_index {
             // Try to find a matching packet for the data
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
-
-                println!("At index {}, matching structure {}", i, j);
-
+                if printflag {
+                    println!("At index {}, matching structure {}", i, j);
+                }
                 if !is_delimiter_match(
                     &self.unparsed_data,
                     i,
                     &packet_structure.delimiters[0].identifier,
-                ) {
-                    // println!("- First delimiter did not match");
+                ) { 
+                    if printflag {
+                        println!("- First delimiter did not match");
+                    }
                     continue;
                 }
 
@@ -80,7 +87,7 @@ impl PacketParser {
                 }
 
                 if !is_remaining_delimiters_matched {
-                    //println!("- Remaining delimiters did not match");
+                    println!("- Remaining delimiters did not match");
                     continue;
                 }
 
@@ -104,9 +111,9 @@ impl PacketParser {
                         }
                     }
                 }
-
-                //println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
-
+                if printflag {
+                    println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
+                }
                 packets.push(Packet {
                     structure_id: packet_structure.id,
                     field_data,
@@ -124,7 +131,9 @@ impl PacketParser {
             self.unparsed_data.len().checked_sub(packet_structure_manager.maximum_packet_structure_size).unwrap_or(0),
             last_successful_match_end_index.unwrap_or(0),
         );
-        //println!("LPI: {}", last_parsed_index);
+        if printflag {
+            println!("LPI: {}", last_parsed_index);
+        }
         self.unparsed_data.drain(0..last_parsed_index);
 
         packets
@@ -138,23 +147,23 @@ fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: 
     }
 
     for j in 0..delimiter_identifier.len() {
+        print!("{:02X?}",data[start_index + j]);
+        println!("{:02X?}",delimiter_identifier[j]);
         if data[start_index + j] != delimiter_identifier[j] {
             return false;
         }
     }
-
     true
 }
-
-
 
 #[cfg(test)]
 mod tests {
     use crate::models::packet_structure::PacketStructure;
 
     use super::*;//lets the unit tests use everything in this file
+
+    /// test for basic packet recognision and parsing
     #[test]
-    /// test for basic test packet recognision and parsing
     fn test_basic_parsing(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure {
@@ -177,8 +186,8 @@ mod tests {
                     0x00,0x00,
                     0x00,0x00,0x00,0x00,
                     0x1E,0xAB,0x11,0xCA];
-        packet_parser.push_data(&data);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager);
+        packet_parser.push_data(&data,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
         assert_eq!(parsed[0].structure_id,0);//does the packet have the right ID?
         assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
         assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
@@ -186,8 +195,9 @@ mod tests {
         assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
         assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
     }
+    
+    /// test that data isn't mistaked for packets
     #[test]
-    /// test that data isnt mistaked for packets
     fn can_data_be_mistaken_for_delimiters(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure {
@@ -213,16 +223,17 @@ mod tests {
                     0x00,0x00,0x00,0x00,
                     0x1E,0xAB,0x11,0xCA,
                     0x1E,0xAB,0x11,0xCA];
-        packet_parser.push_data(&data);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager);
+        packet_parser.push_data(&data, false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
         assert_eq!(parsed.len(),1);//is only the first packet parsed?
         assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));//does some of the data still get parsed correctly?
         assert_eq!(parsed[0].field_data[2],PacketFieldValue::UnsignedShort(2));
         assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
         assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
     }
+    
+    /// test for packets of slightly longer or shorter length than expected
     #[test]
-    // test for packets of slightly longer length than expected
     fn bad_data_test(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure {
@@ -237,9 +248,47 @@ mod tests {
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x01,0x00,
+                    0x02,0x00,
+                    0x03,
+                    0x04,
+                    0x00,0x00,0x00,//one too long
+                    0x00,0x00,0x00,0x00,
+                    0x1E,0xAB,0x11,0xCA,
                     0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x01,0x00,
+                    0x02,0x00,
+                    0x03,
+                    0x04,
+                    0x00,//one too short
+                    0x00,0x00,0x00,0x00,
+                    0x1E,0xAB,0x11,0xCA];
+        packet_parser.push_data(&data,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        assert_eq!(parsed.len(),0);//did we accidently parse any packets?
+    }
+    
+    /// test consecutive packets
+    #[test]
+    fn consecutive_parsing_test(){
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
+        let _ = packet_structure_manager.register_packet_structure(&mut p_structure);
+        let mut packet_parser = PacketParser::default();
+        let data = [0x11,0xBA,0x5E,0xBA,
+                    0x10,0x00,
+                    0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                     0x01,0x00,
                     0x02,0x00,
                     0x03,
@@ -247,19 +296,92 @@ mod tests {
                     0x00,0x00,
                     0x00,0x00,0x00,0x00,
                     0x1E,0xAB,0x11,0xCA,
-                    0x1E,0xAB,0x11,0xCA];
-        packet_parser.push_data(&data);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager);
-        assert_eq!(parsed.len(),1);//is only the first packet parsed?
-        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));//does some of the data still get parsed correctly?
+                    0xBA,0xBB,0xE1,];//garbage data
+        packet_parser.push_data(&data,false);
+        packet_parser.push_data(&data,false);
+        packet_parser.push_data(&data,false);//push data 3 times
+        let data = [0x11,0xBA,0x5E,0xBA,
+                    0x10,0x00,
+                    0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x05,0x00,
+                    0x06,0x00,
+                    0x07,
+                    0x08,//changing variables
+                    0x00,0x00,
+                    0x00,0x00,0x00,0x00,
+                    0x1E,0xAB,0x11,0xCA,
+                    0xBA,0xBB,0xE1,];//garbage data
+        packet_parser.push_data(&data,false);
+        packet_parser.push_data(&data,false);//push data 2 more times
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        assert_eq!(parsed.len(),5);//did we catach all the packets?
+        assert_eq!(parsed[2].field_data[1],PacketFieldValue::UnsignedShort(1));//did we parse the first group of packets correctly
+        assert_eq!(parsed[2].field_data[2],PacketFieldValue::UnsignedShort(2));
+        assert_eq!(parsed[2].field_data[3],PacketFieldValue::UnsignedByte(3));
+        assert_eq!(parsed[2].field_data[4],PacketFieldValue::UnsignedByte(4));
+        assert_eq!(parsed[4].field_data[1],PacketFieldValue::UnsignedShort(5));//did we parse the second group of packets correctly
+        assert_eq!(parsed[4].field_data[2],PacketFieldValue::UnsignedShort(6));
+        assert_eq!(parsed[4].field_data[3],PacketFieldValue::UnsignedByte(7));
+        assert_eq!(parsed[4].field_data[4],PacketFieldValue::UnsignedByte(8));
+    }
+    
+    /// test parsing with multiple packet structures, make sure to look at ID's
+    #[test]
+    fn multiple_structures(){
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
+        let _ = packet_structure_manager.register_packet_structure(&mut p_structure);
+        let mut wacky_structure = PacketStructure {
+            id: 1,
+            name: String::from("Wacky Structure"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        wacky_structure.ez_make("i16 fa1a1a1a u8 u64");
+        let _ = packet_structure_manager.register_packet_structure(&mut wacky_structure);
+        let mut packet_parser = PacketParser::default();
+        let data = [0x11,0xBA,0x5E,0xBA,
+                    0x10,0x00,
+                    0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x01,0x00,
+                    0x02,0x00,
+                    0x03,
+                    0x04,
+                    0x00,0x00,
+                    0x00,0x00,0x00,0x00,
+                    0x1E,0xAB,0x11,0xCA,
+                    0xBA,0xBB,0xE1];
+        packet_parser.push_data(&data,false);
+        let data2 = [0x01,0x00,
+                    0x00,0x00,
+                    0x1A,0x1A,0x1A,0xFA,
+                    0x02,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,];
+        packet_parser.push_data(&data2,true);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,true);
+        assert_eq!(parsed.len(),2); // are packets parsed?
+        assert_eq!(parsed[0].structure_id,0);//does the packet have the right ID?
+        assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
         assert_eq!(parsed[0].field_data[2],PacketFieldValue::UnsignedShort(2));
         assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
         assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
+        assert_eq!(parsed[1].structure_id,1);//does the packet have the right ID?
+        assert_eq!(parsed[1].field_data[0],PacketFieldValue::SignedShort(1));//does the data parse correctly?
+        assert_eq!(parsed[1].field_data[1],PacketFieldValue::UnsignedByte(2));
+        assert_eq!(parsed[1].field_data[2],PacketFieldValue::UnsignedLong(3));
     }
-    // test for packets slightly shorter length than expected
-    // test consecutive packets
-    // test parsing with multiple packet structures, make sure to look at ID's
+
     // test parsing with mulitiple ps's that have the same first delimiter
-    // 
+    // test packet structures that dont start/end with delimiters
     // test for when packets just barely make, or dont make it into the pushed data state
 }
