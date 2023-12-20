@@ -35,8 +35,8 @@ impl PacketParser {
         let mut last_successful_match_end_index: Option<usize> = None;
 
         let mut maximum_index = self.unparsed_data.len();
-        maximum_index -= packet_structure_manager.minimum_packet_structure_size; //don't look for packets that cany be completely inside the buffwer
-        maximum_index += packet_structure_manager.maximum_first_delimiter + 1;
+        maximum_index = maximum_index.checked_sub(packet_structure_manager.minimum_packet_structure_size).unwrap_or(maximum_index); //don't look for packets that cany be completely inside the buffwer
+        maximum_index += packet_structure_manager.maximum_first_delimiter + 1; //look at the furthest point where a first delimiter could appear
         for i in 0..maximum_index {
             // Try to find a matching packet for the data
             for j in 0..packet_structure_manager.packet_structures.len() {
@@ -47,7 +47,7 @@ impl PacketParser {
                 if !is_delimiter_match(
                     &self.unparsed_data,
                     i,
-                    &packet_structure.delimiters[0].identifier,
+                    &packet_structure.delimiters[0].identifier,printflag
                 ) { 
                     if printflag {
                         println!("- First delimiter did not match");
@@ -80,6 +80,7 @@ impl PacketParser {
                         &self.unparsed_data,
                         delimiter_start_index,
                         &delimiter.identifier,
+                        printflag
                     ) {
                         is_remaining_delimiters_matched = false;
                         break;
@@ -141,14 +142,16 @@ impl PacketParser {
 }
 
 //checks if the delimiter of a packet can be found in the given data
-fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: &Vec<u8>) -> bool {
+fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: &Vec<u8>,printflag: bool) -> bool {
     if start_index + delimiter_identifier.len() - 1 >= data.len() {
         return false;
     }
 
     for j in 0..delimiter_identifier.len() {
-        print!("{:02X?}",data[start_index + j]);
-        println!("{:02X?}",delimiter_identifier[j]);
+        if printflag {
+            print!("{:02X?}",data[start_index + j]);
+            println!("{:02X?}",delimiter_identifier[j]);
+        }
         if data[start_index + j] != delimiter_identifier[j] {
             return false;
         }
@@ -384,4 +387,5 @@ mod tests {
     // test parsing with mulitiple ps's that have the same first delimiter
     // test packet structures that dont start/end with delimiters
     // test for when packets just barely make, or dont make it into the pushed data state
+    // check for value edge cases(like stuff that causes unsafe subtraction)
 }

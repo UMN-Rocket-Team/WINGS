@@ -96,7 +96,7 @@ impl SerialPortManager {
             None => bail!("No read port has been set")
         };
 
-        let mut buffer = [0; 1024];
+        let mut buffer = [0; 4096];
         let bytes_read = active_port.read(&mut buffer)?;
 
         // Clone to a vec so we can return it easily, especially as we don't
