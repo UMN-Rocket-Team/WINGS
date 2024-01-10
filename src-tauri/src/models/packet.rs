@@ -89,9 +89,9 @@ impl PacketFieldType {
             PacketFieldType::SignedShort => {
                 PacketFieldValue::SignedShort(i16::from_le_bytes(slice_to_fixed_size::<2>(bytes)))
             }
-            PacketFieldType::UnsignedInteger => PacketFieldValue::UnsignedInteger(
-                u32::from_le_bytes(slice_to_fixed_size::<4>(bytes)),
-            ),
+            PacketFieldType::UnsignedInteger => {
+                PacketFieldValue::UnsignedInteger(u32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
+            }
             PacketFieldType::SignedInteger => {
                 PacketFieldValue::SignedInteger(i32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
             }
