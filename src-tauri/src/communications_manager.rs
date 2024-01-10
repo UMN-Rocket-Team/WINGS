@@ -1,13 +1,15 @@
-use crate::{
+use crate::communications::{
     serial_uart::{SerialPortManager, SerialPortNames}, 
-    serial_ftdi::SerialFTDIManager
+    serial_ftdi::SerialFTDIManager,
 };
+
 
 pub struct GetDataResult {
     pub(crate) new_ports: Option<Vec<SerialPortNames>>,
     pub(crate) data_read: Vec<u8>
 }
 #[derive(Default)]
+#[allow(dead_code)]
 pub struct CommunicationsManager {
     uart_manager : SerialPortManager,
     ftdi_manager : SerialFTDIManager,

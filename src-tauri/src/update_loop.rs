@@ -8,7 +8,7 @@ use timer::{Guard, Timer};
 use crate::{
     models::packet::Packet,
     packet_parser_state::use_packet_parser, packet_parser_state::PacketParserState,
-    packet_structure_manager_state::PacketStructureManagerState, serial_uart::SerialPortNames,
+    packet_structure_manager_state::PacketStructureManagerState, communications::serial_uart::SerialPortNames,
     communication_state::CommunicationManagerState, use_packet_structure_manager, state::communication_state::use_communication_manager
 };
 

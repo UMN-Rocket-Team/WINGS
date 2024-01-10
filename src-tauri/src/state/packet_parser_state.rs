@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use crate::{mutex_utils::use_state_in_mutex, packet_parser::PacketParser};
+use crate::{state::mutex_utils::use_state_in_mutex, packet_parser::PacketParser};
 
 pub struct PacketParserState {
     pub(crate) packet_parser: Mutex<PacketParser>,

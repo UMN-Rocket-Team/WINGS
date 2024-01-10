@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use crate::{
     models::packet_structure::{PacketStructure, PacketMetadataType},
-    mutex_utils::use_state_in_mutex,
+    state::mutex_utils::use_state_in_mutex,
     packet_structure_manager::PacketStructureManager,
 };
 

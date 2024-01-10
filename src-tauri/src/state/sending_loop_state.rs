@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use crate::{mutex_utils::use_state_in_mutex, sending_loop::SendingLoop};
+use crate::{state::mutex_utils::use_state_in_mutex, sending_loop::SendingLoop};
 
 #[derive(Default)]
 pub struct SendingLoopState {

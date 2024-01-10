@@ -7,7 +7,7 @@ use crate::{
     models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
-    packet_view_model::PacketComponentType,
+    models::packet_view_model::PacketComponentType,
 };
 
 //A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors

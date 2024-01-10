@@ -1,11 +1,11 @@
-use crate::{use_packet_structure_manager, packet_view_model::PacketViewModel};
+use crate::{use_packet_structure_manager, models::packet_view_model::PacketViewModel};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
 use crate::{
     packet_structure_manager::PacketStructureManager,
     packet_structure_manager_state::PacketStructureManagerState,
-    packet_view_model::create_packet_view_model,
+    models::packet_view_model::create_packet_view_model,
 };
 
 #[derive(Serialize)]

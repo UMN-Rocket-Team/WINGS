@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use crate::{mutex_utils::use_state_in_mutex, communications_manager::CommunicationsManager};
+use crate::{state::mutex_utils::use_state_in_mutex, communications_manager::CommunicationsManager};
 
 #[derive(Default)]
 pub struct CommunicationManagerState {
