@@ -18,7 +18,7 @@ mod sending_loop;
 mod communications_manager;
 mod serial_ftdi;
 
-use commands::test_commands::{start_sending_loop, stop_sending_loop};
+use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use packet_structure_events::send_initial_packet_structure_update_event;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
 use communication_state::CommunicationManagerState;
