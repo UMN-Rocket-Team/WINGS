@@ -6,14 +6,14 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    models::packet::Packet, mutex_utils::use_state_in_mutex,
+    models::packet::Packet,
     packet_parser_state::use_packet_parser, packet_parser_state::PacketParserState,
     packet_structure_manager_state::PacketStructureManagerState, serial_uart::SerialPortNames,
     communication_state::CommunicationManagerState, use_packet_structure_manager, state::communication_state::use_communication_manager
 };
 
 pub struct TimerState {
-    refresh_timer_data: Mutex<RefreshTimerData>,
+    refresh_timer_data: RefreshTimerData,
 }
 
 impl TimerState {
@@ -37,30 +37,22 @@ impl TimerState {
         });
 
         return Self {
-            refresh_timer_data: Mutex::new(RefreshTimerData {
-                timer,
-                update_task_guard,
-            }),
+            refresh_timer_data:RefreshTimerData {
+                timer: timer.into(),
+                update_task_guard: update_task_guard.into(),
+            },
         };
     }
 
     pub fn destroy(&self) {
-        match use_state_in_mutex::<RefreshTimerData, (), &str>(
-            &self.refresh_timer_data,
-            &mut |refresh_timer_data| {
-                drop(&refresh_timer_data.update_task_guard);
-                drop(&refresh_timer_data.timer);
-                Ok(())
-            },
-        ) {
-            _ => {}
-        }
+        drop(self.refresh_timer_data.timer.lock().unwrap());
+        drop(self.refresh_timer_data.update_task_guard.lock().unwrap());
     }
 }
 
 struct RefreshTimerData {
-    timer: Timer,
-    update_task_guard: Guard,
+    timer: Mutex<Timer>,
+    update_task_guard: Mutex<Guard>,
 }
 
 #[derive(serde::Serialize, Debug, Clone)]
