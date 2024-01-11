@@ -448,19 +448,18 @@ impl PacketStructureManager {
                 }
             }
             PacketComponentType::Delimiter => {//also doesn't seem to work
-                let packet_structure = &self.packet_structures[packet_structure_id];
+                let packet_structures = &mut self.packet_structures;
 
-                if packet_structure.delimiters.len() == 1 {
+                if packet_structures[packet_structure_id].delimiters.len() == 1 {
                     return Err(DeletePacketStructureComponentError::LastDelimiter);
                 }
 
-                let mut delimiters = packet_structure.delimiters.clone();
-                let removed_delimiter = delimiters.remove(component_index);
+                let removed_delimiter = packet_structures[packet_structure_id].delimiters.remove(component_index);
 
                 if let Err(colliding_ids) = Self::check_for_identifier_collisions(
-                    &self.packet_structures,
+                    packet_structures,
                     packet_structure_id,
-                    &delimiters,
+                    &packet_structures[packet_structure_id].delimiters,
                 ) {
                     return Err(
                         DeletePacketStructureComponentError::DelimiterIdentifierCollision(
