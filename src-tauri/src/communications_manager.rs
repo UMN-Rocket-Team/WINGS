@@ -1,6 +1,6 @@
 use crate::communications::{
     serial_uart::{SerialPortManager, SerialPortNames}, 
-    serial_ftdi::SerialFTDIManager,
+    spi_ftdi::SerialFTDIManager,
 };
 
 

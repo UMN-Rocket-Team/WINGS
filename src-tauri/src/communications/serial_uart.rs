@@ -1,8 +1,6 @@
 use anyhow::bail;
 use serde::Serialize;
 
-const BAUD_RATE: u32 = 57600;
-
 #[derive(PartialEq, Serialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SerialPortNames {
@@ -15,7 +13,8 @@ pub struct SerialPortNames {
 pub struct SerialPortManager {
     previous_available_ports: Vec<SerialPortNames>,
     active_port: Option<Box<dyn serialport::SerialPort>>,
-    test_port: Option<Box<dyn serialport::SerialPort>>
+    test_port: Option<Box<dyn serialport::SerialPort>>,
+    baud: u32
 }
 
 impl SerialPortManager {
@@ -68,7 +67,8 @@ impl SerialPortManager {
         if port_name.is_empty() {
             self.active_port = None;
         } else {
-            let mut port = serialport::new(port_name, BAUD_RATE).open()?;
+            self.baud = 57600;
+            let mut port = serialport::new(port_name, self.baud).open()?;
             port.clear(serialport::ClearBuffer::All)?;
             // Short non-zero timeout is needed to receive data from the serialport when
             // the buffer isn't full yet.
@@ -111,7 +111,7 @@ impl SerialPortManager {
         if port_name.is_empty() {
             self.test_port = None;
         } else {
-            let port = serialport::new(port_name, BAUD_RATE).open()?;
+            let port = serialport::new(port_name, self.baud).open()?;
             port.clear(serialport::ClearBuffer::All)?;
             self.test_port = Some(port);
         }
