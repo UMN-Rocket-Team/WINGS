@@ -56,7 +56,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
 
-    const [selected, setSelected] = createStore<GraphStruct[]>([]);
+//    const [selected, setSelected] = createStore<GraphStruct[]>([]);
 
     const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
         if (isChecked) {
@@ -74,27 +74,9 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
         
     }
 
-    const [graphs, newGraph] = createStore<GraphStruct[]>([]);
-
-
-
-    const initialSelected: GraphStruct = {graphName: "Graph", x: null, y: [{packetId: 1, fieldIndex: -1}]};
-    const [select, setSelect] = createStore<GraphStruct>(initialSelected);
-
-    const handleXAxisSelect = (packetId: number, fieldIndex: number) => {
-        
-    }
-
-    const [graphs, newGraph] = createStore<GraphStruct[]>([]);
-
-
-
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => newGraph([...graphs, {graphName: "graph", x: null, y: []}])}>
-                New Graph
-            <button onClick={() => newGraph([...graphs, {graphName: "graph", x: null, y: []}])}>
             <button onClick={() => newGraph([...graphs, {graphName: "Graph", x: null, y: []}])}>
                 New Graph
             </button>
@@ -139,15 +121,6 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
                         return (
                             <div class="bg-gray p-2">
-                                <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
-                                    xSelectedField: select,
-                                    ySelectedFields: selected,
-                                    handleXAxisSelect: handleXAxisSelect,
-                                    handleYAxisSelect: handleYAxisSelect
-                                })}>
-                                    <h3>{packetViewModel?.name}</h3>
-                                    <p>{(field?.data as PacketField)?.name}</p>
-                                </button>
                                 <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                     xSelectedField: select,
                                     ySelectedFields: selected,
