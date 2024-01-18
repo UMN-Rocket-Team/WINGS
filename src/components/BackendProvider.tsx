@@ -2,7 +2,7 @@ import {Accessor, createContext, createSignal, onCleanup, onMount, ParentCompone
 import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {
-    PacketViewModel,
+    PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames,
@@ -25,11 +25,11 @@ export type BackendContextValue = {
      */
     parsedPacketCount: Accessor<number>,
     /**
-     * The list of registered {@link PacketViewModel}s for each `PacketStructure`.
+     * The list of registered {@link PacketStructureViewModel}s for each `PacketStructure`.
      */
-    packetViewModels: PacketViewModel[],
+    packetViewModels: PacketStructureViewModel[],
 
-    setPacketViewModels: SetStoreFunction<PacketViewModel[]>,
+    setPacketViewModels: SetStoreFunction<PacketStructureViewModel[]>,
 
     /**
      * Information about the current or most recent sending loop task.
@@ -63,7 +63,7 @@ const BackendContext = createContext<BackendContextValue>({
 export const BackendProvider: ParentComponent = (props) => {
     const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
     const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
-    const [packetViewModels, setPacketViewModels] = createStore<PacketViewModel[]>([]);
+    const [packetViewModels, setPacketViewModels] = createStore<PacketStructureViewModel[]>([]);
     const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
 
     let unlistenFunctions: UnlistenFn[];
@@ -94,7 +94,7 @@ export const BackendProvider: ParentComponent = (props) => {
                 for (const packetViewModelUpdate of event.payload) {
                     switch (packetViewModelUpdate.type) {
                         case PacketViewModelUpdateType.CreateOrUpdate:
-                            const packetViewModel = packetViewModelUpdate.data as PacketViewModel;
+                            const packetViewModel = packetViewModelUpdate.data as PacketStructureViewModel;
                             if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
                                 // Update the existing view model
                                 setPacketViewModels(

@@ -4,13 +4,13 @@ use crate::models::packet_structure::{PacketDelimiter, PacketField, PacketStruct
 
 #[derive(Serialize, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PacketViewModel {
+pub struct PacketStructureViewModel {
     id: usize,
     name: String,
     components: Vec<PacketComponent>,
 }
 
-impl PacketViewModel {
+impl PacketStructureViewModel {
 
     /// Takes current PacketViewModel and parses it into a packetStructure which is then returned
     ///
@@ -97,7 +97,7 @@ pub struct PacketGap {
     /// * 'packet_structure' - contains a packet structure that needs to be put into a displayable format
     /// ### Output
     /// * 'PacketViewModel' contains the packet structure that was given in a new format
-    pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketViewModel {
+    pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStructureViewModel {
     let mut components: Vec<PacketComponent> =
         Vec::with_capacity(packet_structure.delimiters.len() + packet_structure.fields.len());
 
@@ -137,7 +137,7 @@ pub struct PacketGap {
         }
     }
 
-    return PacketViewModel {
+    return PacketStructureViewModel {
         id: packet_structure.id,
         name: packet_structure.name.clone(),
         components,

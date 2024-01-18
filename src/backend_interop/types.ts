@@ -100,13 +100,13 @@ export type PacketViewModelUpdate = {
      * If this packet view model update is for a created or modified packet view model, the new packet view model.
      * If this packet view model update is for a deleted packet view model, the id of the deleted packet view model.
      */
-    data: PacketViewModel | number,
+    data: PacketStructureViewModel | number,
 };
 
 /**
  * The type of a view model for a backend packet structure
  */
-export type PacketViewModel = {
+export type PacketStructureViewModel = {
     /**
      * The identifier of this packet structure
      */
