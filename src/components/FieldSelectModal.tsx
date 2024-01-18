@@ -10,15 +10,15 @@ import { PacketComponent, PacketComponentType, PacketField, PacketViewModel } fr
  * The properties required for the {@link FieldSelectModal} component.
  */
 export type FieldSelectModalProps = {
-    /**
-     * The currently selected field for x-axis
-     */
-    xSelectedField: GraphStruct,
+    // /**
+    //  * The currently selected field for x-axis
+    //  */
+    // xSelectedField: GraphStruct,
 
-    /**
-     * The list of currently selected fields for the y-axis
-     */
-    ySelectedFields: GraphStruct[],
+    // /**
+    //  * The list of currently selected fields for the y-axis
+    //  */
+    // ySelectedFields: GraphStruct[],
 
     /**
      * A function that toggles the inclusion of the X-Axis field with the given packet id and field index in the current screen.
@@ -46,7 +46,7 @@ const [selectedRadio, setSelectedRadio] = createSignal<number>(-1);
  */
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
     const { packetViewModels } = useBackend();
-    
+
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">

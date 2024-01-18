@@ -1,18 +1,15 @@
 import { Component, For, createSignal } from "solid-js";
-import { Component, For, createSignal } from "solid-js";
 import { useModal } from "./ModalProvider";
 import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
 import { createStore } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
 import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
-import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
 import expandIcon from "../assets/expand.svg";
 import closeIcon from "../assets/close.svg";
 import { SolidChartProps } from "./SolidChart";
 import { time } from "console";
-import { SolidChartProps } from "./SolidChart";
-import { time } from "console";
+
 
 /**
  * An object that identifies a field in a packet by its packet id and field index and contains the name of the packet and field.
@@ -28,7 +25,7 @@ export type FieldInPacket = {
 export type GraphStruct = {
     graphName: String,
     x: FieldInPacket | null,
-    y: PacketComponentType[],
+    y: FieldInPacket[],
 }
 
 /**
@@ -54,12 +51,13 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
+    const [graphs, newGraph] = createStore<GraphStruct[]>([]);
+
+
+    const [selected, setSelected] = createStore<FieldInPacket[]>([]);
 
     const [selected, setSelected] = createStore<GraphStruct[]>([]);
 
-    const [selected, setSelected] = createStore<GraphStruct[]>([]);
-
-    const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
     const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
         if (isChecked) {
             setSelected([...selected, { graphName: "Graph", x: packetId, y: fieldIndex }]);
@@ -97,17 +95,18 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
             <button onClick={() => newGraph([...graphs, {graphName: "graph", x: null, y: []}])}>
                 New Graph
             <button onClick={() => newGraph([...graphs, {graphName: "graph", x: null, y: []}])}>
+            <button onClick={() => newGraph([...graphs, {graphName: "Graph", x: null, y: []}])}>
                 New Graph
             </button>
 
             {/*Expand button*/}
-            <button class="absolute top-1 right-1 w-5 h-5 p-0"
+            {/* <button class="absolute top-1 right-1 w-5 h-5 p-0"
                 onClick={() => showModal<ExpandedFieldsModalProps, {}>(ExpandedFieldsModal, {
                     selectedFields: selected,
                     number: props.number
                 })}>
                 <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" draggable={false} />
-            </button>
+            </button> */}
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
@@ -123,6 +122,16 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 style={{ "width": "90%" }}>
                 <For each={graphs}>
                     {(fieldInPacket: GraphStruct) => {
+                        const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
+                            if (isChecked) {
+                                setSelected([...selected, { packetId: packetId, fieldIndex: fieldIndex }]);
+                            } else {
+                                setSelected(selected.filter(
+                                    fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
+                            }
+                        }
+                    }}
+                </For>
                 <For each={graphs}>
                     {(fieldInPacket: GraphStruct) => {
                         const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === fieldInPacket.packetId);
