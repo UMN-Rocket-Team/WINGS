@@ -1,4 +1,4 @@
-use crate::{use_packet_structure_manager, models::packet_view_model::PacketViewModel};
+use crate::{use_packet_structure_manager, models::packet_view_model::PacketStructureViewModel};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
@@ -11,7 +11,7 @@ use crate::{
 #[derive(Serialize)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketStructureViewModelUpdate {
-    CreateOrUpdate(PacketViewModel),
+    CreateOrUpdate(PacketStructureViewModel),
     Delete(usize)
 }
 

@@ -9,13 +9,13 @@ import {open as openHref} from '@tauri-apps/api/shell';
 import {readTextFile} from "@tauri-apps/api/fs";
 import {setParsedPackets} from "../backend_interop/buffers";
 import {useBackend} from "./BackendProvider";
-import {Packet, PacketViewModel} from "../backend_interop/types";
+import {Packet, PacketStructureViewModel} from "../backend_interop/types";
 import ErrorModal, {ErrorModalProps} from "./ErrorModal";
 import webIcon from "../assets/web.svg";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
-    packetViewModels: PacketViewModel[]
+    packetViewModels: PacketStructureViewModel[]
 };
 
 /**

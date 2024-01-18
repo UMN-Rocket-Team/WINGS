@@ -3,7 +3,7 @@ import DefaultModalLayout from "./DefaultModalLayout";
 import { For, JSX, createSignal } from "solid-js";
 import { FieldInPacket as GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
-import { PacketComponent, PacketComponentType, PacketField, PacketViewModel } from "../backend_interop/types";
+import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 
 
 /**
@@ -51,7 +51,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
             <For each={packetViewModels}>
-                {(packetViewModel: PacketViewModel) =>
+                {(packetViewModel: PacketStructureViewModel) =>
                     <div class='flex flex-col bg-neutral-200 p-2'>
                         <h3 style="text-align:center;" class="m-2">{packetViewModel.name}</h3>
                         <div class='flex flex-row bg-neutral-200 p-2'>

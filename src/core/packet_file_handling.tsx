@@ -1,5 +1,5 @@
 import { open, save } from '@tauri-apps/api/dialog';
-import { PacketViewModel, PacketComponentType } from "../backend_interop/types";
+import { PacketStructureViewModel, PacketComponentType } from "../backend_interop/types";
 import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
 import { addPacket } from "../backend_interop/api_calls";
 import { Store } from"tauri-plugin-store-api";
@@ -9,15 +9,15 @@ import { Store } from"tauri-plugin-store-api";
  * Creates File dialouge allowing the user to choose where to export the packetViewModel.
  * The function then writes to the selected file path.
  * 
- * @param {PacketViewModel} packetView the packet which will be contained in the experted file
+ * @param {PacketStructureViewModel} packetView the packet which will be contained in the experted file
  */
-export const runExportPacketWindow = async (packetView: PacketViewModel) => {
+export const runExportPacketWindow = async (packetView: PacketStructureViewModel) => {
     const selectedFilePath = await save({ title: 'Export Flight Data', defaultPath: packetView.name, filters: [{ name: 'FlightData', extensions: ['json'] }] });
     runExport(selectedFilePath, packetView);
 }
 
 
-const runExport = async (selectedFilePath: string | null, packetView: PacketViewModel) => {
+const runExport = async (selectedFilePath: string | null, packetView: PacketStructureViewModel) => {
     updatePersistentFilePaths(await exportToLocation(selectedFilePath, packetView));
 };
 
@@ -27,7 +27,7 @@ const runExport = async (selectedFilePath: string | null, packetView: PacketView
  * @param selectedFilePath location where the save file will be created
  * @param packetView packetviewmodel to save to a file
  */
-const exportToLocation = async (selectedFilePath: string | null, packetView: PacketViewModel) => {
+const exportToLocation = async (selectedFilePath: string | null, packetView: PacketStructureViewModel) => {
     if (selectedFilePath != null) {
         let data: string = JSON.stringify(packetView);
         let filePathString: string = selectedFilePath as string;
@@ -91,10 +91,10 @@ export const importPacketsfromDirectories = async (filePaths: string | string[] 
  * 
  * @param selectedFilePaths an array of strigns containing file directories
  * 
- * @return {PacketViewModel} the PacketViewModels stored at the given directories
+ * @return {PacketStructureViewModel} the PacketViewModels stored at the given directories
  */
 export const openPackets = async (selectedFilePaths: string | string[] | null) => {
-    let openedPackets: PacketViewModel[] = [];
+    let openedPackets: PacketStructureViewModel[] = [];
     if (Array.isArray(selectedFilePaths)) {
         for (const path of selectedFilePaths) {
             openedPackets.push(await readPathAsPacket(path));
@@ -111,12 +111,12 @@ export const openPackets = async (selectedFilePaths: string | string[] | null) =
  * 
  * @param path string containing the file path of a .json packet file
  * 
- * @return {PacketViewModel} the PacketViewModel stored at the given file path
+ * @return {PacketStructureViewModel} the PacketViewModel stored at the given file path
  */
 const readPathAsPacket = async (path: string) => {
     let contents: string = await readTextFile(path as string);
     
-    let parsedContents: PacketViewModel = JSON.parse(contents);
+    let parsedContents: PacketStructureViewModel = JSON.parse(contents);
     return parsedContents;
 }
 
