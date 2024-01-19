@@ -13,7 +13,7 @@ pub struct Packet {
     pub(crate) timestamp: i64,
 }
 
-#[derive(PartialEq, Serialize, Clone, Debug)]
+#[derive(PartialEq, Serialize, Clone, Debug, Copy)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketFieldValue {
     // Ensure that this enum is in sync with PacketFieldType
