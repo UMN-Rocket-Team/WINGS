@@ -10,6 +10,7 @@ pub struct CommunicationManagerState {
 pub fn use_communication_manager<ReturnType>(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     callback: &mut dyn FnMut(&mut CommunicationsManager) -> Result<ReturnType, anyhow::Error>,
-) -> Result<ReturnType, String> {
+) -> Result<ReturnType, String> 
+{
     use_state_in_mutex(&communication_manager_state.communication_manager, callback)
 }

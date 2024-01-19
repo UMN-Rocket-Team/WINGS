@@ -9,7 +9,7 @@ use crate::{
     models::packet::Packet,
     packet_parser_state::use_packet_parser, packet_parser_state::PacketParserState,
     packet_structure_manager_state::PacketStructureManagerState, communications::serial_uart::SerialPortNames,
-    communication_state::CommunicationManagerState, use_packet_structure_manager, state::communication_state::use_communication_manager
+    communication_state::CommunicationManagerState, use_packet_structure_manager, state::{communication_state::use_communication_manager, data_processor_state::{DataProcessorState, use_data_processor}},
 };
 
 pub struct TimerState {
@@ -19,12 +19,12 @@ pub struct TimerState {
 impl TimerState {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
-
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(50), move || {
             match refresh_available_ports_and_read_active_port(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
                 app_handle.state::<PacketParserState>(),
+                app_handle.state::<DataProcessorState>(),
             ) {
                 Ok(result) => {
                     //sends packets to frontend
@@ -68,6 +68,7 @@ fn refresh_available_ports_and_read_active_port(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     packet_parser_state: tauri::State<'_, PacketParserState>,
+    data_processor_state: tauri::State<'_, DataProcessorState>,
 ) -> Result<RefreshAndReadResult, String> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
@@ -89,22 +90,33 @@ fn refresh_available_ports_and_read_active_port(
         Ok(_) => {}
         Err(message) => return Err(message)
     }
-
     if !read_data.is_empty() {
+        let mut parsed_packets: Vec<Packet> = vec![];
         match use_packet_parser(packet_parser_state, &mut |packet_parser| {
             packet_parser.push_data(&read_data,false);
 
             use_packet_structure_manager::<(), &str>(
                 &packet_structure_manager_state,
                 &mut |packet_structure_manager| {
-                    Ok(result.parsed_packets =
-                        Some(packet_parser.parse_packets(&packet_structure_manager,false)))
+                    Ok(parsed_packets =
+                        packet_parser.parse_packets(&packet_structure_manager,false))
                 },
             )
         }) {
             Ok(_) => {}
             Err(message) => return Err(message),
         }
+        match use_data_processor(data_processor_state, &mut |data_processor| {
+            let mut i = 0;
+            while i < parsed_packets.len(){
+                i+=1;
+            }
+            Ok(())
+        }){
+            Ok(_) => {}
+            Err(message) => return Err(message),
+        }
+        result.parsed_packets = Some(parsed_packets);
     }
 
     Ok(result)
