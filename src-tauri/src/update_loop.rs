@@ -60,6 +60,7 @@ struct RefreshTimerData {
 pub struct RefreshAndReadResult {
     pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
     pub(crate) parsed_packets: Option<Vec<Packet>>,
+
 }
 
 /// Refreshes list of ports available
@@ -98,9 +99,10 @@ fn refresh_available_ports_and_read_active_port(
             use_packet_structure_manager::<(), &str>(
                 &packet_structure_manager_state,
                 &mut |packet_structure_manager| {
-                    Ok(parsed_packets =
-                        packet_parser.parse_packets(&packet_structure_manager,false))
-                },
+                    
+                    parsed_packets = packet_parser.parse_packets(&packet_structure_manager,false);
+                    Ok(())
+                }
             )
         }) {
             Ok(_) => {}
