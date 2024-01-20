@@ -8,7 +8,7 @@ pub struct DataProcessorState {
 }
 
 pub fn use_data_processor<ReturnType>(
-    data_processor_state: tauri::State<'_, DataProcessorState>,
+    data_processor_state: &tauri::State<'_, DataProcessorState>,
     callback: &mut dyn FnMut(&mut DataProcessor) -> Result<ReturnType, anyhow::Error>,
 ) -> Result<ReturnType, String> 
 {
