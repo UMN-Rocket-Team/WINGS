@@ -9,7 +9,7 @@ use crate::{
     models::packet::Packet,
     packet_parser_state::use_packet_parser, packet_parser_state::PacketParserState,
     packet_structure_manager_state::PacketStructureManagerState, communications::serial_uart::SerialPortNames,
-    communication_state::CommunicationManagerState, use_packet_structure_manager, state::{communication_state::use_communication_manager, data_processor_state::{DataProcessorState, use_data_processor}},
+    communication_state::CommunicationManagerState, use_packet_structure_manager, state::{communication_state::use_communication_manager, data_processor_state::{DataProcessorState, use_data_processor}}, data_processing::DisplayPacket,
 };
 
 pub struct TimerState {
@@ -60,11 +60,29 @@ struct RefreshTimerData {
 pub struct RefreshAndReadResult {
     pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
     pub(crate) parsed_packets: Option<Vec<Packet>>,
+    pub(crate) display_packets: Option<Vec<DisplayPacket>>,
 
 }
 
-/// Refreshes list of ports available
-/// reads from active ports and returns parsed data
+/// Main body of the Update loop
+/// 
+/// First makes an attempt to get new updates from the communications manager. 
+/// It then checks to see if the communications manager has read any new data. 
+/// If new data has been recieved, it parses it into packets, stores those packets in the data_processor, 
+/// and generates new display packets to be sent to the frontend.
+/// 
+/// # Input
+/// The function takes all of the state structs neccisary for it to run. 
+/// These can be derived from the app handle, and are necissary for storing data between executions of the loop.
+/// 
+/// # Error
+/// If any of the attempted state accesses or processes fail, 
+/// the function will return an error in the form of a string.
+/// 
+/// # Output
+/// If the function runs succesfully it will return a RefreshAndReadResult struct
+/// The struct contains any new ports that have connected to the groundstation, 
+/// along with new display packets for graphs, and other displays.
 fn refresh_available_ports_and_read_active_port(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
@@ -74,6 +92,7 @@ fn refresh_available_ports_and_read_active_port(
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
         parsed_packets: None,
+        display_packets: None,
     };
     let mut read_data: Vec<u8> = vec![];
 
@@ -94,27 +113,17 @@ fn refresh_available_ports_and_read_active_port(
     if !read_data.is_empty() {
         let mut parsed_packets: Vec<Packet> = vec![];
         match use_packet_parser(packet_parser_state, &mut |packet_parser| {
-            packet_parser.push_data(&read_data,false);
+            use_packet_structure_manager::<(), String>( &packet_structure_manager_state, &mut |packet_structure_manager| {
+                use_data_processor(&data_processor_state, &mut |data_processor| {
+                
+                    packet_parser.push_data(&read_data,false);
 
-            use_packet_structure_manager::<(), &str>(
-                &packet_structure_manager_state,
-                &mut |packet_structure_manager| {
-                    
                     parsed_packets = packet_parser.parse_packets(&packet_structure_manager,false);
+                    result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets,packet_structure_manager));
                     Ok(())
-                }
-            )
+                })
+            })
         }) {
-            Ok(_) => {}
-            Err(message) => return Err(message),
-        }
-        match use_data_processor(data_processor_state, &mut |data_processor| {
-            let mut i = 0;
-            while i < parsed_packets.len(){
-                i+=1;
-            }
-            Ok(())
-        }){
             Ok(_) => {}
             Err(message) => return Err(message),
         }
