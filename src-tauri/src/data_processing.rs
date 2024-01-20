@@ -34,8 +34,7 @@ impl DataProcessor{
     pub fn add_new_data(&mut self, new_data: &mut Vec<Packet>, packet_structure_manager: &mut PacketStructureManager) -> Vec<DisplayPacket>{
         self.data_list.append(new_data);
         let mut formatted_buffer = vec![];
-        let i = 0;
-        while i < new_data.len(){
+        for i in 0..new_data.len(){
             let mut curr_display_packet = DisplayPacket::default();
 
             curr_display_packet.structure_id = new_data[i].structure_id;
@@ -64,14 +63,34 @@ impl DataProcessor{
 /// The packet is where we get the field data.
 /// The display_packet where you want the data to be copied into
 fn copy_fields(packet_structure: &PacketStructure, display_packet: &mut DisplayPacket, packet: &Packet){
-    let mut j = 0;
-    while j < packet_structure.fields.len(){
+    for j in 0..packet_structure.fields.len(){
         display_packet.field_data.push(packet.field_data[j]);
         let field_name = &packet_structure.fields[j].name;
         display_packet.field_names.push(field_name.to_string());
-        j += 1;
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::models::{packet::{Packet, PacketFieldValue}, packet_structure::PacketStructure};
 
+    ///first test
+    #[test]
+    fn test_add(){
+        let mut test_vector = vec![];
+        for i in 0..4{
+            let test_packet: Packet = Packet {
+                structure_id: 0,
+                field_data: vec![PacketFieldValue::UnsignedInteger(i),
+                PacketFieldValue::SignedInteger(2),
+                PacketFieldValue::UnsignedShort(3),
+                PacketFieldValue::SignedShort(4)],
+                timestamp: 0,
+            };
+            test_vector.push(test_packet);
+        }
+        
+        assert!(test_vector[0].structure_id == 0);
+    }
+}
 
