@@ -85,8 +85,6 @@ impl PacketStructureManager {
             }
         }
 
-        let packet_structure_size = packet_structure.size();
-
         packet_structure.id = self.packet_structures.len();
 
         self.packet_structures.push(packet_structure.clone());
