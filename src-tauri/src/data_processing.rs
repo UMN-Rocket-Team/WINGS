@@ -1,13 +1,14 @@
 
 
-use crate::{models::{packet::{Packet, PacketFieldValue}, packet_structure::PacketStructure}, packet_structure_manager::PacketStructureManager};
+use crate::models::packet::{Packet, PacketFieldValue};
 
 #[derive(serde::Serialize, Default, Debug, Clone)]
 pub struct DisplayPacket{
     structure_id: usize,
     field_data: Vec<PacketFieldValue>,
+}
+pub struct DisplayPacketFieldNames{
     field_names: Vec<String>
-
 }
 #[derive(Default)]
 pub struct DataProcessor{
@@ -31,7 +32,7 @@ impl DataProcessor{
     /// 
     /// # Output
     /// All newly created DisplayPackets are provided back to the caller in a vector
-    pub fn add_new_data(&mut self, new_data: &mut Vec<Packet>, packet_structure_manager: &mut PacketStructureManager) -> Vec<DisplayPacket>{
+    pub fn add_new_data(&mut self, new_data: &mut Vec<Packet>) -> Vec<DisplayPacket>{
         self.data_list.append(new_data);
         let mut formatted_buffer = vec![];
         for i in 0..new_data.len(){
@@ -41,10 +42,8 @@ impl DataProcessor{
 
             //convert our timestamp into a regular field
             curr_display_packet.field_data.push(PacketFieldValue::SignedLong(new_data[i].timestamp));
-            curr_display_packet.field_names.push("Time Recieved".to_owned());
 
-            let packet_structure = &packet_structure_manager.packet_structures[new_data[i].structure_id];
-            copy_fields(packet_structure, &mut curr_display_packet, &new_data[i]);
+            copy_fields(&mut curr_display_packet, &new_data[i]);
 
             formatted_buffer.push(curr_display_packet);
         }
@@ -62,17 +61,14 @@ impl DataProcessor{
 /// The packet_structure is neccisary to find the names of the packets fields.
 /// The packet is where we get the field data.
 /// The display_packet where you want the data to be copied into
-fn copy_fields(packet_structure: &PacketStructure, display_packet: &mut DisplayPacket, packet: &Packet){
-    for j in 0..packet_structure.fields.len(){
+fn copy_fields(display_packet: &mut DisplayPacket, packet: &Packet){
+    for j in 0..packet.field_data.len(){
         display_packet.field_data.push(packet.field_data[j]);
-        let field_name = &packet_structure.fields[j].name;
-        display_packet.field_names.push(field_name.to_string());
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use crate::models::{packet::{Packet, PacketFieldValue}, packet_structure::PacketStructure};
+    use crate::models::packet::{Packet, PacketFieldValue};
 
     ///first test
     #[test]

@@ -28,7 +28,7 @@ impl TimerState {
             ) {
                 Ok(result) => {
                     //sends packets to frontend
-                    if result.new_available_port_names != None || result.parsed_packets != None {
+                    if result.new_available_port_names.is_some() || result.display_packets.is_some() {
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
                 }
@@ -59,7 +59,6 @@ struct RefreshTimerData {
 #[serde(rename_all = "camelCase")]
 pub struct RefreshAndReadResult {
     pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
-    pub(crate) parsed_packets: Option<Vec<Packet>>,
     pub(crate) display_packets: Option<Vec<DisplayPacket>>,
 
 }
@@ -91,7 +90,6 @@ fn refresh_available_ports_and_read_active_port(
 ) -> Result<RefreshAndReadResult, String> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
-        parsed_packets: None,
         display_packets: None,
     };
     let mut read_data: Vec<u8> = vec![];
@@ -115,11 +113,10 @@ fn refresh_available_ports_and_read_active_port(
         match use_packet_parser(packet_parser_state, &mut |packet_parser| {
             use_packet_structure_manager::<(), String>( &packet_structure_manager_state, &mut |packet_structure_manager| {
                 use_data_processor(&data_processor_state, &mut |data_processor| {
-                
                     packet_parser.push_data(&read_data,false);
 
                     parsed_packets = packet_parser.parse_packets(&packet_structure_manager,false);
-                    result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets,packet_structure_manager));
+                    result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets));
                     Ok(())
                 })
             })
@@ -127,7 +124,13 @@ fn refresh_available_ports_and_read_active_port(
             Ok(_) => {}
             Err(message) => return Err(message),
         }
-        result.parsed_packets = Some(parsed_packets);
+        match use_data_processor(&data_processor_state, &mut |data_processor| {
+            result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets));
+            Ok(())
+        }) {
+            Ok(_) => {}
+            Err(message) => return Err(message),
+        }
     }
 
     Ok(result)
