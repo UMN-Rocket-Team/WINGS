@@ -82,7 +82,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                             <label>
                                                 <input type="checkbox"
                                                     // Check this checkbox by default if the field has already been selected
-                                                    checked={props.ySelectedFields.some(selectedField => selectedField.packetId === packetViewModel.id && selectedField.fieldIndex === field.index)}
+                                                    checked={props.ySelectedFields.some(selectedField => selectedField.packetId === packetViewModel.id && selectedField.fieldIndex === field.index)} // TODO: This breaks stuff. also X axis needs to be seperated
                                                     onclick={(event) => props.handleYAxisSelect((event.target as HTMLInputElement).checked, packetViewModel.id, field.index)} />
                                                 {field.name}
                                             </label>

@@ -19,13 +19,13 @@ import { time } from "console";
 export type FieldInPacket = {
     packetId: number,
     fieldIndex: number,
-
 }
 
 export type GraphStruct = {
     graphName: String,
     x: FieldInPacket | null,
     y: FieldInPacket[],
+
 }
 
 /**
@@ -54,10 +54,10 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
     const [graphs, newGraph] = createStore<GraphStruct[]>([]);
 
 
-    const [selected, setSelected] = createStore<FieldInPacket[]>([]);
+
 
 //    const [selected, setSelected] = createStore<GraphStruct[]>([]);
-
+    const [selected, setSelected] = createStore<FieldInPacket[]>([]);
     const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
         if (isChecked) {
             setSelected([...selected, { graphName: "Graph", x: packetId, y: fieldIndex }]);
@@ -102,7 +102,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
             <div
                 class="absolute flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll"
                 style={{ "width": "90%" }}>
-                <For each={graphs}>
+                {/* <For each={graphs}>
                     {(fieldInPacket: GraphStruct) => {
                         const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
                             if (isChecked) {
@@ -113,14 +113,14 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                             }
                         }
                     }}
-                </For>
+                </For> */}
                 <For each={graphs}>
                     {(fieldInPacket: GraphStruct) => {
                         const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === fieldInPacket.packetId);
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === fieldInPacket.fieldIndex);
 
                         return (
-                            <div class="bg-gray p-2">
+                            <div class="bg-gray p-1">
                                 <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                     xSelectedField: select,
                                     ySelectedFields: selected,
