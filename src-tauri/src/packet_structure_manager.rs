@@ -3,6 +3,9 @@ use std::{
     vec,
 };
 
+
+
+
 use crate::{
     models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
@@ -497,6 +500,8 @@ impl PacketStructureManager {
 
 #[cfg(test)]
 mod tests {
+    use crate::models::packet::PacketFieldValue;
+
     use super::*;//lets the unit tests use everything in this file
     #[test]
     fn test_set_packet_name(){
@@ -512,5 +517,177 @@ mod tests {
 
         assert_eq!(packet_structure_manager.packet_structures[0].name, "Second Name"); //checks that the change we wanted actually happened
     }
+
+    #[test]
+    fn test_set_field_name() {
+        let packet_field_type = PacketFieldType::Double;
+        let packet_metadata_type = PacketMetadataType::None;
+        let packet_field = PacketField{index: 0, name: String::from("notname"), r#type: packet_field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![packet_field],
+            delimiters: vec![],
+        });
+        
+        packet_structure_manager.set_field_name(0, 0, "name");
+      
+
+        assert_eq!(packet_structure_manager.packet_structures[0].fields[0].name, "name")
+        
+    }
+
+    #[test]
+    
+    fn test_set_field_type() {
+        let packet_field_test_1 = PacketFieldType::UnsignedByte;
+        let packet_field_test_2 = PacketFieldType::SignedShort;
+        let packet_field_test_3 = PacketFieldType::Float;
+        let packet_field_test_4 = PacketFieldType::Double;
+
+        let array: [PacketFieldType;4] = [packet_field_test_1, packet_field_test_2, packet_field_test_3, packet_field_test_4];
+        for field_type in array {
+            for field_type2 in array {
+                let packet_metadata_type = PacketMetadataType::None;
+                let packet_field = PacketField{index: 0, name: String::from("name"), r#type: field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
+                let packet_field2 = PacketField{index: 1, name: String::from("name2"), r#type: field_type, offset_in_packet: field_type.size(), metadata_type: packet_metadata_type};
+                let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+                let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+                    id: 0,
+                    name: String::from("First Name"),
+                    fields: vec![packet_field, packet_field2],
+                    delimiters: vec![],
+                });
+                packet_structure_manager.set_field_type(0, 0, field_type2);
+                assert_eq!(packet_structure_manager.packet_structures[0].fields[0].r#type, field_type2);
+                assert_eq!(packet_structure_manager.packet_structures[0].fields[1].offset_in_packet, field_type2.size())
+
+            }
+            
+        }
+
+    }
+
+    #[test]
+    fn test_set_field_metadata_type() {
+        let packet_field_type = PacketFieldType::Double;
+        let packet_metadata_type = PacketMetadataType::None;
+        let packet_metadata_type2 = PacketMetadataType::Timestamp;
+        let packet_field = PacketField{index: 0, name: String::from("name"), r#type: packet_field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![packet_field],
+            delimiters: vec![],
+        });
+
+        packet_structure_manager.set_field_metadata_type(0, 0, packet_metadata_type2);
+
+        assert_eq!(packet_structure_manager.packet_structures[0].fields[0].metadata_type, packet_metadata_type2);
+    }
+
+    #[test]
+
+    fn test_set_delimiter_name() {
+        let packet_delimiter = PacketDelimiter{index: 0, name: String::from("delimiter_name"), identifier: vec![], offset_in_packet: 0};
+
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![],
+            delimiters: vec![packet_delimiter],
+        });
+
+        packet_structure_manager.set_delimiter_name(0, 0, "new_name");
+
+        assert_eq!(packet_structure_manager.packet_structures[0].delimiters[0].name, "new_name")
+    }
+
+    #[test]
+
+    fn test_set_delimiter_identifier() {
+        let packet_delimiter = PacketDelimiter{index: 0, name: String::from("delimiter_name"), identifier: vec![1,2], offset_in_packet: 0};
+        let packet_delimiter2 = PacketDelimiter{index: 1, name: String::from("delimiter_name"), identifier: vec![1], offset_in_packet: 2};
+
+
+
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![],
+            delimiters: vec![packet_delimiter, packet_delimiter2],
+        });
+
+        
+        packet_structure_manager.set_delimiter_identifier(0, 0, "1");
+        
+        assert_eq!(packet_structure_manager.packet_structures[0].delimiters[0].identifier, vec![16]);
+        assert_eq!(packet_structure_manager.packet_structures[0].delimiters[1].offset_in_packet, vec![16].len());
+    }
+    
+    #[test]
+
+    fn test_set_gap_size() {
+
+    }
+
+    #[test]
+    
+    fn test_add_field() {
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![],
+            delimiters: vec![],
+        });
+
+        packet_structure_manager.add_field(0);
+        packet_structure_manager.add_field(0);
+        packet_structure_manager.add_field(0);
+        assert_eq!(packet_structure_manager.packet_structures[0].fields.len(), 3)
+    }
+
+    #[test]
+
+    fn test_add_delimiter() {
+        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+            id: 0,
+            name: String::from("First Name"),
+            fields: vec![],
+            delimiters: vec![],
+        });
+
+        packet_structure_manager.add_delimiter(0);
+        packet_structure_manager.add_delimiter(0);
+        packet_structure_manager.add_delimiter(0);
+
+        assert_eq!(packet_structure_manager.packet_structures[0].delimiters.len(), 3)
+
+    }
+
+    #[test]
+
+    fn test_add_gap_after() {
+
+    }
+
+    #[test]
+    
+    fn test_delete_packet_structure_component() {
+
+    }
+
+    #[test]
+
+    fn test_delete_packet_structure() {
+
+    }
+
 
 }
