@@ -23,7 +23,7 @@ export type FieldInPacket = {
 
 export type GraphStruct = {
     graphName: String,
-    x: FieldInPacket | null,
+    x: FieldInPacket,
     y: FieldInPacket[],
 
 }
@@ -58,17 +58,17 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
 //    const [selected, setSelected] = createStore<GraphStruct[]>([]);
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
-    const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
-        if (isChecked) {
-            setSelected([...selected, { graphName: "Graph", x: packetId, y: fieldIndex }]);
-        } else {
-            setSelected(selected.filter(
-                fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
-        }
-    }
+    // const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
+    //     if (isChecked) {
+    //         setSelected([...selected, { graphName: "Graph", x: packetId, y: fieldIndex }]);
+    //     } else {
+    //         setSelected(selected.filter(
+    //             fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
+    //     }
+    // }
 
-    const initialSelected: GraphStruct = {graphName: "Graph", x: null, y: [{packetId: 1, fieldIndex: -1}]};
-    const [select, setSelect] = createStore<GraphStruct>(initialSelected);
+    // const initialSelected: GraphStruct = {graphName: "Graph", x: null, y: [{packetId: 1, fieldIndex: -1}]};
+    // const [select, setSelect] = createStore<GraphStruct>(initialSelected);
 
     const handleXAxisSelect = (packetId: number, fieldIndex: number) => {
         
@@ -77,18 +77,18 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => newGraph([...graphs, {graphName: "Graph", x: null, y: []}])}>
+            <button onClick={() => newGraph([...graphs, {graphName: "Graph", x: {packetId: 0, fieldIndex: 0}, y: []}])}>
                 New Graph
             </button>
 
             {/*Expand button*/}
-            {/* <button class="absolute top-1 right-1 w-5 h-5 p-0"
+            <button class="absolute top-1 right-1 w-5 h-5 p-0"
                 onClick={() => showModal<ExpandedFieldsModalProps, {}>(ExpandedFieldsModal, {
                     selectedFields: selected,
                     number: props.number
                 })}>
                 <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" draggable={false} />
-            </button> */}
+            </button>
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
@@ -115,17 +115,14 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                     }}
                 </For> */}
                 <For each={graphs}>
-                    {(fieldInPacket: GraphStruct) => {
-                        const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === fieldInPacket.packetId);
-                        const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === fieldInPacket.fieldIndex);
+                    {(graph: GraphStruct) => {
+                        const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x.packetId);
+                        const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
                         return (
                             <div class="bg-gray p-1">
                                 <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
-                                    xSelectedField: select,
-                                    ySelectedFields: selected,
-                                    handleXAxisSelect: handleXAxisSelect,
-                                    handleYAxisSelect: handleYAxisSelect
+                                    graph
                                 })}>
                                     <h3>{packetViewModel?.name}</h3>
                                     <p>{(field?.data as PacketField)?.name}</p>

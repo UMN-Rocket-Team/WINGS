@@ -1,7 +1,7 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { For, JSX, createSignal } from "solid-js";
-import { FieldInPacket as GraphStruct } from "./FieldsScreen";
+import { FieldInPacket, GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 
@@ -13,12 +13,12 @@ export type FieldSelectModalProps = {
     // /**
     //  * The currently selected field for x-axis
     //  */
-    // xSelectedField: GraphStruct,
-
+    //xSelectedField: FieldInPacket,
+    graph: GraphStruct
     // /**
     //  * The list of currently selected fields for the y-axis
     //  */
-    // ySelectedFields: GraphStruct[],
+    //ySelectedFields: FieldInPacket[],
 
     /**
      * A function that toggles the inclusion of the X-Axis field with the given packet id and field index in the current screen.
@@ -26,18 +26,16 @@ export type FieldSelectModalProps = {
      * @param packetId the id of the packet containing the field to toggle the selection of
      * @param fieldIndex the index of the field in the packet to toggle the selection of
      */
-    handleXAxisSelect: (packetId: number, fieldIndex: number) => void
-    /**
-     * A function that toggles the inclusion of the Y-Axis field with the given packet id and field index in the current screen.
-     * 
-     * @param isChecked `true` if the checkbox is checked, `false` otherwise
-     * @param packetId the id of the packet containing the field to toggle the selection of
-     * @param fieldIndex the index of the field in the packet to toggle the selection of
-     */
-    handleYAxisSelect: (isChecked: boolean, packetId: number, fieldIndex: number) => void
+    // handleXAxisSelect: (packetId: number, fieldIndex: number) => void
+    // /**
+    //  * A function that toggles the inclusion of the Y-Axis field with the given packet id and field index in the current screen.
+    //  * 
+    //  * @param isChecked `true` if the checkbox is checked, `false` otherwise
+    //  * @param packetId the id of the packet containing the field to toggle the selection of
+    //  * @param fieldIndex the index of the field in the packet to toggle the selection of
+    //  */
+    // handleYAxisSelect: (isChecked: boolean, packetId: number, fieldIndex: number) => void
 }
-
-const [selectedRadio, setSelectedRadio] = createSignal<number>(-1);
 
 /**
  * A modal component that allows a user to modify the fields contained in a screen.
@@ -46,7 +44,6 @@ const [selectedRadio, setSelectedRadio] = createSignal<number>(-1);
  */
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
     const { packetViewModels } = useBackend();
-
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -64,8 +61,8 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                         return (
                                             <label>
                                                 <input type="radio"
-                                                    checked={selectedRadio() === field.index} // Check based on the state
-                                                    onclick={() => setSelectedRadio(field.index)}
+                                                    checked={props.graph.x.fieldIndex === field.index} // Check based on the state
+                                                    onclick={() => props.graph.x.fieldIndex = (field.index)}
                                                 />
                                                 {field.name}
                                             </label>
@@ -82,8 +79,14 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                             <label>
                                                 <input type="checkbox"
                                                     // Check this checkbox by default if the field has already been selected
-                                                    checked={props.ySelectedFields.some(selectedField => selectedField.packetId === packetViewModel.id && selectedField.fieldIndex === field.index)} // TODO: This breaks stuff. also X axis needs to be seperated
-                                                    onclick={(event) => props.handleYAxisSelect((event.target as HTMLInputElement).checked, packetViewModel.id, field.index)} />
+                                                    checked={props.graph.y.some(selectedField => selectedField.packetId === packetViewModel.id && selectedField.fieldIndex === field.index)} 
+                                                    onclick={(event) => 
+                                                        props.graph.y.some((event.target as HTMLInputElement).checked, 
+                                                        packetViewModel.id, 
+                                                        field.index
+                                                    
+                                                    
+                                                    )} />
                                                 {field.name}
                                             </label>
                                         );
