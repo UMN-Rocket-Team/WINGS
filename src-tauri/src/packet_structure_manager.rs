@@ -500,8 +500,6 @@ impl PacketStructureManager {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::packet::PacketFieldValue;
-
     use super::*;//lets the unit tests use everything in this file
     #[test]
     fn test_set_packet_name(){
