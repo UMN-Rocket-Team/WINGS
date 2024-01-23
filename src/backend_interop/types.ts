@@ -9,7 +9,7 @@ export type SerialUpdateResult = {
     /**
      * The list of new parsed packets
      */
-    parsedPackets: Packet[] | null,
+    displayPackets: DisplayPacket[] | null,
 }
 
 /**
@@ -35,7 +35,7 @@ export type SerialPortNames = {
 /**
  * The type of a unit of identified radio data
  */
-export type Packet = PacketData & {
+export type DisplayPacket = PacketData & {
     structureId: number,
 };
 
@@ -44,7 +44,6 @@ export type Packet = PacketData & {
  */
 export type PacketData = {
     fieldData: PacketFieldValue[],
-    timestamp: number,
 };
 
 /**
