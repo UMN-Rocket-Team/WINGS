@@ -3,7 +3,6 @@ import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {
     PacketStructureViewModel,
-    Packet, //for inserting fake packets when testing graphs
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames,
     PacketViewModelUpdate,
