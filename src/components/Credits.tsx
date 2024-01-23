@@ -19,6 +19,8 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                     <h2>Developers</h2>
                     <span>Jeffrey Hu</span>
                     <span>Thomas Weber</span>
+                    <span>Aadit Munjal</span>
+                    <span>Pranshu Panda</span>
                     <h2>UI Designer</h2>
                     <span>Ashlyn Pietrowski</span>
                 </section>
