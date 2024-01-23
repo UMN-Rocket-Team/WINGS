@@ -83,9 +83,9 @@ export const BackendProvider: ParentComponent = (props) => {
                 if (result.newAvailablePortNames) {
                     setAvailablePortNames(result.newAvailablePortNames);
                 }
-                if (result.parsedPackets) {
-                    pushParsedPackets(result.parsedPackets);
-                    setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
+                if (result.displayPackets) {
+                    pushParsedPackets(result.displayPackets);
+                    setParsedPacketCount(parsedPacketCount() + result.displayPackets.length);
                 }
             }),
             await listen<PacketViewModelUpdate[]>("packet-structures-update", event => {
