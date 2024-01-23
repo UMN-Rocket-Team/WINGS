@@ -37,7 +37,7 @@ pub enum PacketFieldValue {
     Float(f32),
     Double(f64),
 }
-
+#[allow(dead_code)]
 impl PacketFieldValue {
     /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
     pub fn to_le_bytes(&self) -> Vec<u8> {

@@ -621,7 +621,7 @@ mod tests {
         });
 
         
-        packet_structure_manager.set_delimiter_identifier(0, 0, "1");
+        let _ = packet_structure_manager.set_delimiter_identifier(0, 0, "1");
         
         assert_eq!(packet_structure_manager.packet_structures[0].delimiters[0].identifier, vec![16]);
         assert_eq!(packet_structure_manager.packet_structures[0].delimiters[1].offset_in_packet, vec![16].len());
