@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::models::packet_structure::PacketFieldType;
 
 #[derive(PartialEq, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 /// Represents a packet of data
 /// 
 /// This includes all of the variables that have been recieved within a packet of data and its timestamp
@@ -15,16 +16,61 @@ pub struct Packet {
 #[derive(PartialEq, Serialize, Clone, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketFieldValue {
+    // Ensure that this enum is in sync with PacketFieldType
+
+    #[serde(rename = "Unsigned Byte")]
     UnsignedByte(u8),
+    #[serde(rename = "Signed Byte")]
     SignedByte(i8),
+    #[serde(rename = "Unsigned Short")]
     UnsignedShort(u16),
+    #[serde(rename = "Signed Short")]
     SignedShort(i16),
+    #[serde(rename = "Unsigned Integer")]
     UnsignedInteger(u32),
+    #[serde(rename = "Signed Integer")]
     SignedInteger(i32),
+    #[serde(rename = "Unsigned Long")]
     UnsignedLong(u64),
+    #[serde(rename = "Signed Long")]
     SignedLong(i64),
     Float(f32),
     Double(f64),
+}
+
+impl PacketFieldValue {
+    /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
+    pub fn to_le_bytes(&self) -> Vec<u8> {
+        // Need to return a vec here instead of a [u8] as the size is not constant
+        match self {
+            PacketFieldValue::UnsignedByte(i) => u8::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedByte(i) => i8::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::UnsignedShort(i) => u16::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedShort(i) => i16::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::UnsignedInteger(i) => u32::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedInteger(i) => i32::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::UnsignedLong(i) => u64::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::SignedLong(i) => i64::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::Float(i) => f32::to_le_bytes(*i).to_vec(),
+            PacketFieldValue::Double(i) => f64::to_le_bytes(*i).to_vec()
+        }
+    }
+
+    /// Returns the matching PacketFieldType for this parsed value.
+    pub fn get_field_type(&self) -> PacketFieldType {
+        match self {
+            PacketFieldValue::UnsignedByte(_) => PacketFieldType::UnsignedByte,
+            PacketFieldValue::SignedByte(_) => PacketFieldType::SignedByte,
+            PacketFieldValue::UnsignedShort(_) => PacketFieldType::UnsignedShort,
+            PacketFieldValue::SignedShort(_) => PacketFieldType::SignedShort,
+            PacketFieldValue::UnsignedInteger(_) => PacketFieldType::UnsignedInteger,
+            PacketFieldValue::SignedInteger(_) => PacketFieldType::SignedInteger,
+            PacketFieldValue::UnsignedLong(_) => PacketFieldType::UnsignedLong,
+            PacketFieldValue::SignedLong(_) => PacketFieldType::SignedLong,
+            PacketFieldValue::Float(_) => PacketFieldType::Float,
+            PacketFieldValue::Double(_) => PacketFieldType::Double,
+        }
+    }
 }
 
 impl PacketFieldType {
@@ -43,9 +89,9 @@ impl PacketFieldType {
             PacketFieldType::SignedShort => {
                 PacketFieldValue::SignedShort(i16::from_le_bytes(slice_to_fixed_size::<2>(bytes)))
             }
-            PacketFieldType::UnsignedInteger => PacketFieldValue::UnsignedInteger(
-                u32::from_le_bytes(slice_to_fixed_size::<4>(bytes)),
-            ),
+            PacketFieldType::UnsignedInteger => {
+                PacketFieldValue::UnsignedInteger(u32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
+            }
             PacketFieldType::SignedInteger => {
                 PacketFieldValue::SignedInteger(i32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
             }

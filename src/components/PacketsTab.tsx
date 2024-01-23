@@ -2,10 +2,12 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { runImportPacketWindow, runExportPacketWindow} from "../core/packet_file_handling";
+import { runImportPacketWindow, runExportPacketWindow, importPacketsfromDirectories} from "../core/packet_file_handling";
 import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
+import FileModal, { FileModalProps } from "./FilePathSelectModal";
+import { Store } from "tauri-plugin-store-api";
 
 /**
  * A component that allows the user to manage packet structures. Changes on the frontend are synchronized with the Rust
@@ -49,12 +51,13 @@ const PacketsTab: Component = () => {
 
     const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureIndex, selectedPacketStructureComponent, showModal);
 
-    async function showErrorModalOnError(func: () => Promise<void | string>, errorTitle: string): Promise<void> {
-        const result = await func();
-        if (typeof result === 'string') {
+    async function showErrorModalOnError(func: () => Promise<unknown>, errorTitle: string): Promise<void> {
+        try {
+            await func();
+        } catch (error) {
             showModal(ErrorModal, {
                 error: errorTitle,
-                description: result
+                description: `${error}`
             });
         }
     }
@@ -76,7 +79,15 @@ const PacketsTab: Component = () => {
                         )}
                     </For>
                 </div>
-                <button class="externalButton" onClick={async () => await runImportPacketWindow()}>Import Packet...</button>
+                <button class="externalButton" onClick={async () => {
+                    const store = new Store("persistent.dat");
+                    const recentPaths = (await store.get("recentSaves") || []) as string[];
+                    showModal(FileModal, {
+                        pathStrings: recentPaths,
+                        callBack: importPacketsfromDirectories
+                    })
+                    }}>Import Packet</button>
+                {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
                 <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket())}>Export Packet...</button>
                 <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>

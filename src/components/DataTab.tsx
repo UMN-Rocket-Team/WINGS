@@ -52,14 +52,14 @@ const DataTab: Component = () => {
             }));
     };
 
-    async function applyNewSelectedPort(newSelectedPort: string): Promise<string> {
+    async function applyNewSelectedPort(newSelectedPort: string) {
         // Apply the change in selected port name to the backend
-        let errorMessage = await setActivePort(selectedPort()!);
-        if (errorMessage !== null) {
-            showModal(ErrorModal, {error: 'Failed to set the active serial port', description: errorMessage});
+        try {
+            setSelectedPort(newSelectedPort);
+            await setActivePort(newSelectedPort);
+        } catch (error) {
+            showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
         }
-
-        return setSelectedPort(newSelectedPort);
     }
 
     return (
@@ -76,8 +76,9 @@ const DataTab: Component = () => {
                     </button>
                     {/* Active serial port combobox */}
                     <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>
-                    <input list="dataSerialPorts" name="Serial Port" id="serialPortInput"
-                        onInput={async event => await applyNewSelectedPort((event.target as HTMLInputElement).value)} value={selectedPort() ?? ""}/>
+                    <input name="Serial Port" id="serialPortInput" class="w-50"
+                        list="dataSerialPorts" value={selectedPort() ?? ""}
+                        onInput={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
                     <datalist id="dataSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name}/>}

@@ -1,80 +1,41 @@
 use std::sync::Mutex;
 
 use crate::{
-    models::packet_structure::{
-        PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
-    },
-    mutex_utils::use_state_in_mutex,
+    models::packet_structure::{PacketStructure, PacketMetadataType},
+    state::mutex_utils::use_state_in_mutex,
     packet_structure_manager::PacketStructureManager,
 };
 
 pub struct PacketStructureManagerState {
     pub(crate) packet_structure_manager: Mutex<PacketStructureManager>,
+    pub sending_loop_structure: PacketStructure
 }
 
 impl Default for PacketStructureManagerState {
     ///The default configuration for a packetStructureManager(the test packet you see when creating a new flight)
     fn default() -> Self {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let default_packet_structures = [PacketStructure {
+        // Used for testing the packet editor.
+        let mut example_structure = PacketStructure {
             id: 0,
             name: String::from("Official Test"),
-            fields: vec![
-                PacketField {
-                    index: 0,
-                    name: String::from("var8"),
-                    r#type: PacketFieldType::UnsignedByte,
-                    offset_in_packet: 12,
-                    metadata_type: PacketMetadataType::None,
-                },
-                PacketField {
-                    index: 1,
-                    name: String::from("var82"),
-                    r#type: PacketFieldType::UnsignedByte,
-                    offset_in_packet: 13,
-                    metadata_type: PacketMetadataType::None,
-                },
-                PacketField {
-                    index: 2,
-                    name: String::from("var16"),
-                    r#type: PacketFieldType::UnsignedShort,
-                    offset_in_packet: 14,
-                    metadata_type: PacketMetadataType::None,
-                },
-                PacketField {
-                    index: 3,
-                    name: String::from("var162"),
-                    r#type: PacketFieldType::UnsignedShort,
-                    offset_in_packet: 16,
-                    metadata_type: PacketMetadataType::None,
-                },
-            ],
-            delimiters: vec![
-                PacketDelimiter {
-                    index: 0,
-                    name: String::from("start"),
-                    offset_in_packet: 0,
-                    identifier: 0xE15AADD0u32.to_le_bytes().to_vec(),
-                },
-                PacketDelimiter {
-                    index: 1,
-                    name: String::from("end"),
-                    offset_in_packet: 18,
-                    identifier: 0xFFFFFFFFu32.to_le_bytes().to_vec(),
-                },
-            ],
-        }];
+            fields: vec![],
+            delimiters: vec![],
+        };
 
-        for mut default_packet_structure in default_packet_structures {
-            match packet_structure_manager.register_packet_structure(&mut default_packet_structure)
-            {
-                Ok(_) => {}
-                Err(_) => panic!("Failed to register default packet structures!"),
-            }
-        }
+        example_structure.ez_make("ba5eba11 _4 i64 u16 u16 u8 u8 _6 ca11ab1e");
+        example_structure.fields[0].metadata_type = PacketMetadataType::Timestamp;
+        example_structure.fields[0].name = "Timestamp".to_owned();
+        example_structure.fields[1].name = "rkt_speed".to_owned();
+        example_structure.fields[2].name = "rkt_speed_also".to_owned();
+        example_structure.fields[3].name = "rkt_budget".to_owned();
+        example_structure.fields[4].name = "var8".to_owned();
 
+        let mut packet_structure_manager = PacketStructureManager::default();
+        packet_structure_manager.register_packet_structure(&mut example_structure)
+            .expect("Failed to register example packet");
         Self {
             packet_structure_manager: Mutex::new(packet_structure_manager),
+            sending_loop_structure: example_structure
         }
     }
 }

@@ -1,37 +1,31 @@
-import { batch, Component, createEffect, createSignal, For, onCleanup, onMount, Show, untrack } from "solid-js";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { BackendContextValue, useBackend } from "./BackendProvider";
+import { batch, Component, createSignal, For, Show } from "solid-js";
+import { useBackend } from "./BackendProvider";
 import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
-import { startRadioTest, stopRadioTest } from "../backend_interop/api_calls";
-import { RadioTestReceivingState, RadioTestSendingState } from "../backend_interop/types";
+import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 
 /**
- * A component that allows the user to test two radios to ensure they can send and receive data.
+ * A component that allows the user to send test packets over a radio.
  */
 const RadioTestingTab: Component = () => {
-    const {availablePortNames}: BackendContextValue = useBackend();
+    const {availablePortNames, parsedPacketCount, sendingLoopState} = useBackend();
     const {showModal} = useModal();
+
+    let initialPacketCount = parsedPacketCount();
 
     const [isSimulating, setSimulating] = createSignal(false);
     const [sendPort, setSendPort] = createSignal('');
-    const [receivePort, setReceivePort] = createSignal('');
     const [sendInterval, setSendInterval] = createSignal(500);
-    const [sendingState, setSendingState] = createSignal<RadioTestSendingState | null>(null);
-    const [receivingState, setReceivingState] = createSignal<RadioTestReceivingState | null>(null);
 
     const startSimulating = async () => {
         batch(() => {
+            initialPacketCount = parsedPacketCount();
             setSimulating(true);
-            setReceivingState(null);
-            setSendingState(null);
         });
+
         try {
-            await startRadioTest(
-                sendPort(),
-                receivePort(),
-                sendInterval()
-            );
+            await setTestPort(sendPort());
+            await startSendingLoop(sendInterval());
         } catch (error) {
             setSimulating(false);
             showModal(ErrorModal, {
@@ -42,26 +36,10 @@ const RadioTestingTab: Component = () => {
     };
 
     const stopSimulating = async () => {
-        await stopRadioTest();
+        await stopSendingLoop();
+        await setTestPort('');
         setSimulating(false);
     };
-
-    let unlistenFunctions: UnlistenFn[];
-    onMount(async () => {
-        unlistenFunctions = [
-            await listen<RadioTestSendingState>("radio-test-send-update", ({payload}) => {
-                setSendingState(payload);
-            }),
-            await listen<RadioTestReceivingState>("radio-test-receive-update", ({payload}) => {
-                setReceivingState(payload);
-            })
-        ];
-        onCleanup(() => {
-            for (const fn of unlistenFunctions) {
-                fn();
-            }
-        });
-    });
 
     return (
         <div class="flex gap-4 flex-grow">
@@ -104,14 +82,6 @@ const RadioTestingTab: Component = () => {
                     <span>ms</span>
                 </label>
 
-                <label class="flex gap-1">
-                    <span>Receiving radio port:</span>
-                    <input class="dark:border-gray-4 border-1 border-rounded flex-grow" list="radioTestAvailablePorts"
-                        value={receivePort() ?? ""}
-                        onChange={event => setReceivePort((event.target as HTMLInputElement).value)}
-                        disabled={isSimulating()} />
-                </label>
-
                 <button
                     class="py-2 px-8 border-rounded border-0"
                     classList={{
@@ -119,17 +89,14 @@ const RadioTestingTab: Component = () => {
                         "bg-green": !isSimulating()
                     }}
                     onClick={() => isSimulating() ? stopSimulating() : startSimulating()}
-                    disabled={!sendPort() && !receivePort()}
+                    disabled={!sendPort()}
                 >
                     {isSimulating() ? "Stop Test" : "Start Test"}
                 </button>
 
-                <Show when={receivingState() !== null}>
-                    <div>Read {receivingState()?.packetsRead} packets</div>
-                </Show>
-
-                <Show when={sendingState() !== null}>
-                    <div>Sent {sendingState()?.packetsSent} packets</div>
+                <Show when={sendingLoopState() !== null}>
+                    <div>Sent {sendingLoopState()?.packetsSent} packets</div>
+                    <div>Received {parsedPacketCount() - initialPacketCount} packets</div>
                 </Show>
             </div>
         </div>

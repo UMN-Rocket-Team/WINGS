@@ -1,13 +1,14 @@
 use crate::{
-    models::packet_structure::{
+    models::{packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
+    },
+    packet_view_model::{PacketComponentType, PacketViewModel},
     },
     packet_structure_events::update_packet_structures,
     packet_structure_manager::{
         self, DeletePacketStructureComponentError, SetDelimiterIdentifierError,
     },
     packet_structure_manager_state::PacketStructureManagerState,
-    packet_view_model::{PacketComponentType, PacketViewModel},
 };
 // # packet_structure_manager_commands
 // 

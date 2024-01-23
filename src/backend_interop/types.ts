@@ -43,8 +43,16 @@ export type Packet = PacketData & {
  * The type of unidentified radio data
  */
 export type PacketData = {
-    fieldData: number[],
+    fieldData: PacketFieldValue[],
     timestamp: number,
+};
+
+/**
+ * The type of each field value inside of a parsed packet.
+ */
+export type PacketFieldValue = {
+    type: PacketFieldType,
+    data: number
 };
 
 /**
@@ -202,21 +210,11 @@ export type PacketGap = {
 };
 
 /**
- * State sent from backend for radio test status updates.
+ * State sent from backend by the sending loop.
  */
-export type RadioTestSendingState = {
+export type SendingLoopState = {
     /**
      * Number of test packets that have been sent.
      */
     packetsSent: number,
-};
-
-/**
- * State sent from backend for radio test status updates.
- */
-export type RadioTestReceivingState = {
-    /**
-     * Number of valid test packets that have been detected.
-     */
-    packetsRead: number,
 };

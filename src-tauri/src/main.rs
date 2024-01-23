@@ -5,21 +5,23 @@
 
 mod commands;
 mod models;
-mod mutex_utils;
 mod packet_parser;
+mod packet_generator;
 mod packet_structure_events;
 mod packet_structure_manager;
-mod packet_view_model;
-mod serial;
+mod communications;
 mod state;
 mod update_loop;
+mod sending_loop;
+mod communications_manager;
 
+use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use packet_structure_events::send_initial_packet_structure_update_event;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
-use serial_manager_state::SerialManagerState;
+use communication_state::CommunicationManagerState;
 use packet_parser_state::PacketParserState;
 
-use state::{packet_parser_state, packet_structure_manager_state, serial_manager_state};
+use state::{packet_parser_state, packet_structure_manager_state, communication_state, sending_loop_state::SendingLoopState};
 use tauri::Manager;
 use update_loop::TimerState;
 
@@ -30,15 +32,16 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    serial_commands::{set_active_port, start_radio_test, stop_radio_test}
+    communication_commands::{set_active_port, set_test_port}
 };
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             set_active_port,
-            start_radio_test,
-            stop_radio_test,
+            set_test_port,
+            start_sending_loop,
+            stop_sending_loop,
             set_field_name,
             set_field_type,
             set_field_metadata_type,
@@ -55,8 +58,9 @@ fn main() {
             delete_packet_structure
         ])
         .manage(PacketStructureManagerState::default())
-        .manage(SerialManagerState::default())
+        .manage(CommunicationManagerState::default())
         .manage(PacketParserState::default())
+        .manage(SendingLoopState::default())
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
@@ -81,6 +85,7 @@ fn main() {
             }
             _ => {}
         })
+        .plugin(tauri_plugin_store::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

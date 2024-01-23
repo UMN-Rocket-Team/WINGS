@@ -1,6 +1,6 @@
 [package]
 name = "wings"
-version = "0.0.0"
+version = "0.4.1"
 description = "The Ground Station of the University of Minnesota Twin Cities Rocket Team"
 authors = ["University of Minnesota Twin Cities Rocket Team: Avionics Sub-Team Contributors"]
 license = "AGPL-3.0"
@@ -17,12 +17,19 @@ tauri-build = { version = "1.0.0", features = [] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.0.0", features = ["dialog-all", "fs-all", "shell-open"] }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 timer = "0.2.0"
 chrono = "0.4.22"
-serialport = "4.2.0"
+serialport = "4.2.2"
 readonly = "0.2"
 anyhow = "1.0"
 hex = "0.4"
+
+[dependencies.libftd2xx]
+version = "0.32.3"
+# statically link the vendor library, defaults to dynamic if not set
+# this will make things "just work" on Linux and Windows
+features = ["static"]
 
 [features]
 # by default Tauri runs in production mode

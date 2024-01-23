@@ -37,7 +37,7 @@ impl PacketParser {
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
 
-                // println!("At index {}, matching structure {}", i, j);
+                println!("At index {}, matching structure {}", i, j);
 
                 if !is_delimiter_match(
                     &self.unparsed_data,
@@ -56,7 +56,9 @@ impl PacketParser {
                 let packet_start_index = i - packet_structure.delimiters[0].offset_in_packet;
 
                 if let Some(last_successful_match_end_index) = last_successful_match_end_index {
-                    if packet_start_index <= last_successful_match_end_index {
+                    // Use < instead of <= as the "last index" points to the byte *after*
+                    // the packet ended.
+                    if packet_start_index < last_successful_match_end_index {
                         // The current packet cannot overlap with a previous one
                         println!("- Overlaps with previous packet");
                         continue;
@@ -78,7 +80,7 @@ impl PacketParser {
                 }
 
                 if !is_remaining_delimiters_matched {
-                    println!("- Remaining delimiters did not match");
+                    //println!("- Remaining delimiters did not match");
                     continue;
                 }
 
@@ -103,7 +105,7 @@ impl PacketParser {
                     }
                 }
 
-                println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
+                //println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
 
                 packets.push(Packet {
                     structure_id: packet_structure.id,
@@ -111,6 +113,7 @@ impl PacketParser {
                     timestamp: timestamp.unwrap_or(chrono::offset::Utc::now().timestamp_millis()),
                 });
 
+                // This points to the index *after* the packet ends.
                 last_successful_match_end_index =
                     Some(packet_start_index + packet_structure.size());
             }
@@ -121,7 +124,7 @@ impl PacketParser {
             self.unparsed_data.len().checked_sub(packet_structure_manager.maximum_packet_structure_size).unwrap_or(0),
             last_successful_match_end_index.unwrap_or(0),
         );
-        println!("LPI: {}", last_parsed_index);
+        //println!("LPI: {}", last_parsed_index);
         self.unparsed_data.drain(0..last_parsed_index);
 
         packets
