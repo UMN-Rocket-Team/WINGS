@@ -78,6 +78,33 @@ pub struct SendingLoop {
     task: Option<BackgroundTask>
 }
 
+trait ToU64 {
+    fn to_u64(&self) -> u64;
+}
+
+impl ToU64 for bool {
+    fn to_u64(&self) -> u64 {
+        if *self {
+            1
+        } else {
+            0
+        }
+    }
+}
+
+impl ToU64 for u32 {
+    fn to_u64(&self) -> u64 {
+        // no range concerns, so can just convert directly
+        *self as u64
+    }
+}
+
+impl ToU64 for i64 {
+    fn to_u64(&self) -> u64 {
+        u64::from_le_bytes(i64::to_le_bytes(*self))
+    }
+}
+
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
@@ -91,7 +118,7 @@ impl SendingLoop {
             thread::sleep(interval);
         };
 
-        let mut flipper: u8 = 1;
+        let mut flipper: bool = true;
         // let mut millis_to_send: f64 = 10.0;
         let mut packets_sent: u32 = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
@@ -100,13 +127,12 @@ impl SendingLoop {
             flipper = !flipper;
 
             let packet = match generate_packet(&packet_structure, &vec![
-                PacketFieldValue::SignedLong(current_time),
-                PacketFieldValue::UnsignedShort(packets_sent as u16),
-                PacketFieldValue::UnsignedShort(packets_sent as u16),
-                PacketFieldValue::UnsignedByte(flipper),
-                PacketFieldValue::UnsignedByte(!flipper),
-                PacketFieldValue::UnsignedShort(0),
-                // PacketFieldValue::SignedLong(((millis_to_send.round() as i64)* 1000) + 10000),
+                current_time.to_u64(),
+                packets_sent.to_u64(),
+                packets_sent.to_u64(),
+                flipper.to_u64(),
+                (!flipper).to_u64(),
+                0
             ]) {
                 Ok(packet) => packet,
                 Err(err) => {

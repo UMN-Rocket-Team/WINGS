@@ -1,20 +1,22 @@
-use crate::models::{packet_structure::{PacketStructure, PacketMetadataType, PacketFieldType}, packet::PacketFieldValue};
+use crate::models::packet_structure::{PacketFieldType, PacketMetadataType, PacketStructure};
 
 /// Generate bytes from a packet structure and a list of values.
-/// The items in field_data correspond with the `index` property for each field in the packet
-/// structure.
+///
+/// The items in field_data are converted to little endian bytes. Only the needed
+/// bytes will actually be used. For example, 0x12345678 becomes LE-bytes:
+///     [0x78, 0x56, 0x34, 0x12, 0x00, 0x00, 0x00, 0x00]]
+/// if used in a signed or unsigned short field, only [0x78, 0x56] are used.
 /// 
 /// # Errors
 /// 
 /// Some mistakes will be caught and an Err will be returned:
 /// 
 ///  - field.index out-of-bounds
-///  - field.index points to a value of a different type
 ///  - fields marked as timestamp metadata that aren't signed longs
 /// 
 /// However some errors will not be caught such as packets overlapping each other, so please
 /// make sure your structures are valid first :)
-pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<PacketFieldValue>) -> Result<Vec<u8>, String> {
+pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>) -> Result<Vec<u8>, String> {
     // Don't grow this after making it. It's already the exact right size.
     let mut result = vec![0; packet_structure.size()];
 
@@ -32,10 +34,6 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<Pack
             None => return Err(format!("Field {} refers to missing index: {}", field.name, field.index))
         };
 
-        if field.r#type != given_value.get_field_type() {
-            return Err(format!("Field {} has type {:?} but the given value is {:?}", field.name, field.r#type, given_value));
-        }
-
         match (field.metadata_type, field.r#type) {
             (PacketMetadataType::Timestamp, PacketFieldType::SignedLong) => {
                 // Only valid type for Timestamp
@@ -49,7 +47,7 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<Pack
         }
 
         let bytes = given_value.to_le_bytes();
-        for i in 0..bytes.len() {
+        for i in 0..field.r#type.size() {
             // guaranteed to not panic due to buffer size calculation previously
             result[field.offset_in_packet + i] = bytes[i];
         }
@@ -60,7 +58,7 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<Pack
 
 #[cfg(test)]
 mod tests {
-    use crate::models::{packet_structure::{PacketStructure, PacketDelimiter, PacketField, PacketMetadataType, PacketFieldType}, packet::PacketFieldValue};
+    use crate::models::packet_structure::{PacketStructure, PacketDelimiter, PacketField, PacketMetadataType, PacketFieldType};
 
     use super::generate_packet;
 
@@ -112,7 +110,7 @@ mod tests {
             ]
         };
         let packet = generate_packet(&structure, &vec![
-            PacketFieldValue::UnsignedInteger(0x12345678)
+            0x12345678
         ]).unwrap();
         assert_eq!(packet, [
             // padding bytes
@@ -144,29 +142,6 @@ mod tests {
     }
 
     #[test]
-    fn field_type_and_value_mismatch() {
-        let structure = PacketStructure {
-            id: 0,
-            name: "Test Packet".to_string(),
-            delimiters: vec![],
-            fields: vec![
-                PacketField {
-                    index: 0,
-                    name: "Test Field".to_string(),
-                    offset_in_packet: 0,
-                    metadata_type: PacketMetadataType::None,
-                    r#type: PacketFieldType::UnsignedByte
-                }
-            ]
-        };
-        let packet = generate_packet(&structure, &vec![
-            // SignedByte != UnsignedByte
-            PacketFieldValue::SignedByte(16)
-        ]);
-        assert_eq!(packet.unwrap_err(), "Field Test Field has type UnsignedByte but the given value is SignedByte(16)");
-    }
-
-    #[test]
     fn timestamp_metadata() {
         let bad_structure = PacketStructure {
             id: 0,
@@ -183,7 +158,7 @@ mod tests {
             ]
         };
         let bad_packet = generate_packet(&bad_structure, &vec![
-            PacketFieldValue::SignedByte(101)
+            101
         ]);
         assert_eq!(bad_packet.unwrap_err(), "Field Test Field 1 is marked as timestamp but is type SignedByte");
 
@@ -202,7 +177,7 @@ mod tests {
             ]
         };
         let good_packet = generate_packet(&good_structure, &vec![
-            PacketFieldValue::SignedLong(1699481341632)
+            1699481341632
         ]);
         assert_eq!(good_packet.unwrap(), u64::to_le_bytes(1699481341632));
     }
@@ -243,18 +218,28 @@ mod tests {
                 }
             ]
         };
+
+        let float = f32::to_le_bytes(3.0);
         let packet = generate_packet(&structure, &vec![
-            PacketFieldValue::Float(3.0),
-            PacketFieldValue::Double(6.0), // should be unused
-            PacketFieldValue::SignedLong(0x1234),
+            u64::from_le_bytes([float[0], float[1], float[2], float[3], 0, 0, 0, 0]),
+            u64::from_le_bytes(f64::to_le_bytes(6.0)),
+            u64::from_le_bytes(i64::to_le_bytes(-0x1234))
         ]).unwrap();
         assert_eq!(packet, [
             // Delimiter 1
             1, 2, 3,
             // Test Field 1 value, little-endian
             0, 0, 64, 64,
-            // Test Field 2 value, little-endian
-            0x34, 0x12, 0, 0, 0, 0, 0, 0,
+            // Test Field 2 value, little-endian. Verified using this C program in an Intel computer:
+            // #include <stdio.h>
+            // int main () {
+            //     long test = -0x1234;
+            //     unsigned char *ptr = (void*) &test;
+            //     for (int i = 0; i < sizeof(test); i++) {
+            //         printf("%d - %d\n", i, ptr[i]);
+            //     }
+            // }
+            204, 237, 255, 255, 255, 255, 255, 255,
             // Delimiter 2
             4, 5, 6
         ]);
