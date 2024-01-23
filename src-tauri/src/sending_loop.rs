@@ -2,7 +2,7 @@ use std::{time::{Duration, SystemTime, UNIX_EPOCH}, sync::mpsc, thread};
 use serde::Serialize;
 use tauri::Manager;
 
-use crate::{state::{packet_structure_manager_state::PacketStructureManagerState, communication_state::{use_communication_manager, CommunicationManagerState}}, packet_generator::generate_packet, models::packet::PacketFieldValue};
+use crate::{state::{packet_structure_manager_state::PacketStructureManagerState, communication_state::{use_communication_manager, CommunicationManagerState}}, packet_generator::generate_packet};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -82,29 +82,6 @@ trait ToU64 {
     fn to_u64(&self) -> u64;
 }
 
-impl ToU64 for bool {
-    fn to_u64(&self) -> u64 {
-        if *self {
-            1
-        } else {
-            0
-        }
-    }
-}
-
-impl ToU64 for u32 {
-    fn to_u64(&self) -> u64 {
-        // no range concerns, so can just convert directly
-        *self as u64
-    }
-}
-
-impl ToU64 for i64 {
-    fn to_u64(&self) -> u64 {
-        u64::from_le_bytes(i64::to_le_bytes(*self))
-    }
-}
-
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
@@ -120,18 +97,18 @@ impl SendingLoop {
 
         let mut flipper: bool = true;
         // let mut millis_to_send: f64 = 10.0;
-        let mut packets_sent: u32 = 0;
+        let mut packets_sent: u64 = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
             let current_time = unix_time();
 
             flipper = !flipper;
 
             let packet = match generate_packet(&packet_structure, &vec![
-                current_time.to_u64(),
-                packets_sent.to_u64(),
-                packets_sent.to_u64(),
-                flipper.to_u64(),
-                (!flipper).to_u64(),
+                current_time as u64,
+                packets_sent,
+                packets_sent,
+                flipper as u64,
+                (!flipper)  as u64,
                 0
             ]) {
                 Ok(packet) => packet,
@@ -149,7 +126,7 @@ impl SendingLoop {
                     packets_sent = packets_sent.wrapping_add(1);
                     //println!("Sent packet {}: {:?}", packets_sent, packet);
 
-                    let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
+                    let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent as u32));
                 },
                 Err(err) => {
                     println!("Failed to write to test port: {}", err);
