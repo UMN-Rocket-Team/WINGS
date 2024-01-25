@@ -57,19 +57,23 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 //    const [selected, setSelected] = createStore<GraphStruct[]>([]);
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
     const handleSelectY = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
-        if (isChecked) {
-            setGraph([...graphs, { graphName: "Graph", x: graph.x, y: [fieldIndex] }]);
+        if (!isChecked) {
+            let newGraphsY = graph.y
+            newGraphsY.push(fieldIndex)
+            setGraph([...graphs, { graphName: "Graph", x: graph.x, y: newGraphsY }]);
         } else {
             setGraph(graphs.filter(
-                fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
+                fieldInPacket => fieldInPacket.y.forEach(element => {
+                    
+                element !== fieldIndex})));
         }
     }
     const handleSelectX = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
-        if (isChecked) {
-            setGraph([...graphs, { graphName: "Graph", x: , y: fieldIndex }]);
+        if (!isChecked) {
+            setGraph([...graphs, { graphName: "Graph", x: fieldIndex, y: graph.y }]);
         } else {
             setGraph(graphs.filter(
-                fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
+                fieldInPacket => fieldInPacket.x !== fieldIndex));
         }
     }
     return (
