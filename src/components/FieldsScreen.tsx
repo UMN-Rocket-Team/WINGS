@@ -57,7 +57,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 //    const [selected, setSelected] = createStore<GraphStruct[]>([]);
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
     const handleSelectY = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
-        if (!isChecked) {
+        if (isChecked) {
             let newGraphsY = graph.y
             newGraphsY.push(fieldIndex)
             setGraph([...graphs, { graphName: "Graph", x: graph.x, y: newGraphsY }]);
@@ -69,7 +69,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
         }
     }
     const handleSelectX = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
-        if (!isChecked) {
+        if (isChecked) {
             setGraph([...graphs, { graphName: "Graph", x: fieldIndex, y: graph.y }]);
         } else {
             setGraph(graphs.filter(
