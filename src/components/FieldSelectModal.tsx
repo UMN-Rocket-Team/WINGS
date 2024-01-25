@@ -4,7 +4,8 @@ import { For, JSX, createSignal } from "solid-js";
 import { FieldInPacket, GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
-
+import handleSelectY from "./FieldsScreen";
+import handleSelectX from "./FieldsScreen";
 
 /**
  * The properties required for the {@link FieldSelectModal} component.
@@ -61,8 +62,11 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                         return (
                                             <label>
                                                 <input type="radio"
-                                                    checked={props.graph.x.fieldIndex === field.index} // Check based on the state
-                                                    onclick={() => props.graph.x.fieldIndex = (field.index)}
+                                                    checked={props.graph.x === field.index} // Check based on the state
+                                                    // onclick={(event) => 
+                                                    //     // props.graph.x.some((event.target as HTMLInputElement).checked, 
+                                                    //     // packetViewModel.id 
+                                                    // }
                                                 />
                                                 {field.name}
                                             </label>
@@ -79,14 +83,16 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                             <label>
                                                 <input type="checkbox"
                                                     // Check this checkbox by default if the field has already been selected
-                                                    checked={props.graph.y.some(selectedField => selectedField.packetId === packetViewModel.id && selectedField.fieldIndex === field.index)} 
-                                                    onclick={(event) => 
-                                                        props.graph.y.some((event.target as HTMLInputElement).checked, 
-                                                        packetViewModel.id, 
-                                                        field.index
+                                                    checked={props.graph.y.some(selectedField => selectedField === field.index)} 
+                                                    onclick={() => {
+                                                        //props.graph.y.some((event.target as HTMLInputElement).checked, 
+                                                        //props.graph.y.push(field.index)
+                                                        handleSelectY(true, field.index, props.graph)
+                                                        
+                                                        // packetViewModel.id
+                                                        //)
                                                     
-                                                    
-                                                    )} />
+                                                    }} />
                                                 {field.name}
                                             </label>
                                         );
