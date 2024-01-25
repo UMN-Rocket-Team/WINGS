@@ -64,7 +64,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
         }
     }
-    const handleSelectX = (isChecked: boolean, fieldIndex: number) => {
+    const handleSelectX = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
         if (isChecked) {
             setGraph([...graphs, { graphName: "Graph", x: , y: fieldIndex }]);
         } else {
@@ -120,7 +120,9 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                         return (
                             <div class="bg-gray p-1">
                                 <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
-                                    graph
+                                    graph,
+                                    handleSelectY,
+                                    handleSelectX
                                 })}>
                                     <h3>{packetViewModel?.name}</h3>
                                     <p>{(field?.data as PacketField)?.name}</p>
