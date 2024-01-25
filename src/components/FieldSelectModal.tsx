@@ -4,8 +4,6 @@ import { For, JSX, createSignal } from "solid-js";
 import { FieldInPacket, GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
-import handleSelectY from "./FieldsScreen";
-import handleSelectX from "./FieldsScreen";
 
 /**
  * The properties required for the {@link FieldSelectModal} component.
@@ -16,6 +14,8 @@ export type FieldSelectModalProps = {
     //  */
     //xSelectedField: FieldInPacket,
     graph: GraphStruct
+    handleSelectY: (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => void
+    handleSelectX: (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => void
     // /**
     //  * The list of currently selected fields for the y-axis
     //  */
