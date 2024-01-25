@@ -23,9 +23,8 @@ export type FieldInPacket = {
 
 export type GraphStruct = {
     graphName: String,
-    x: FieldInPacket,
-    y: FieldInPacket[],
-
+    x: number, //fieldIndex
+    y: number[],
 }
 
 /**
@@ -51,33 +50,32 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
-    const [graphs, newGraph] = createStore<GraphStruct[]>([]);
-
+    const [graphs, setGraph] = createStore<GraphStruct[]>([]);
 
 
 
 //    const [selected, setSelected] = createStore<GraphStruct[]>([]);
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
-    // const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
-    //     if (isChecked) {
-    //         setSelected([...selected, { graphName: "Graph", x: packetId, y: fieldIndex }]);
-    //     } else {
-    //         setSelected(selected.filter(
-    //             fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
-    //     }
-    // }
-
-    // const initialSelected: GraphStruct = {graphName: "Graph", x: null, y: [{packetId: 1, fieldIndex: -1}]};
-    // const [select, setSelect] = createStore<GraphStruct>(initialSelected);
-
-    const handleXAxisSelect = (packetId: number, fieldIndex: number) => {
-        
+    const handleSelectY = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
+        if (isChecked) {
+            setGraph([...graphs, { graphName: "Graph", x: graph.x, y: [fieldIndex] }]);
+        } else {
+            setGraph(graphs.filter(
+                fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
+        }
     }
-
+    const handleSelectX = (isChecked: boolean, fieldIndex: number) => {
+        if (isChecked) {
+            setGraph([...graphs, { graphName: "Graph", x: , y: fieldIndex }]);
+        } else {
+            setGraph(graphs.filter(
+                fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
+        }
+    }
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => newGraph([...graphs, {graphName: "Graph", x: {packetId: 0, fieldIndex: 0}, y: []}])}>
+            <button onClick={() => setGraph([...graphs, {graphName: "Graph", x: 0, y: []}])}>
                 New Graph
             </button>
 
@@ -116,7 +114,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                 </For> */}
                 <For each={graphs}>
                     {(graph: GraphStruct) => {
-                        const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x.packetId);
+                        const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x);
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
                         return (
