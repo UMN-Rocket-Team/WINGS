@@ -63,10 +63,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                             <label>
                                                 <input type="radio"
                                                     checked={props.graph.x === field.index} // Check based on the state
-                                                    // onclick={(event) => 
-                                                    //     // props.graph.x.some((event.target as HTMLInputElement).checked, 
-                                                    //     // packetViewModel.id 
-                                                    // }
+                                                    onclick={(event) => 
+                                                        props.handleSelectX((event.target as HTMLInputElement).checked, field.index, props.graph)
+                                                    }
                                                 />
                                                 {field.name}
                                             </label>
@@ -84,10 +83,10 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                                 <input type="checkbox"
                                                     // Check this checkbox by default if the field has already been selected
                                                     checked={props.graph.y.some(selectedField => selectedField === field.index)} 
-                                                    onclick={() => {
+                                                    onclick={(event) => {
                                                         //props.graph.y.some((event.target as HTMLInputElement).checked, 
                                                         //props.graph.y.push(field.index)
-                                                        handleSelectY(true, field.index, props.graph)
+                                                        props.handleSelectY((event.target as HTMLInputElement).checked, field.index, props.graph)
                                                         
                                                         // packetViewModel.id
                                                         //)
