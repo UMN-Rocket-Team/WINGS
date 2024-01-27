@@ -21,7 +21,7 @@ impl PacketParser {
         }
     }
 
-    /// processes the raw data queue, returning a Vector(aka. array) of the proccessesed packets
+    /// processes the raw data queue, returning a Vector(aka. array) of the proccessed packets
     pub fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
@@ -385,6 +385,64 @@ mod tests {
     }
 
     // test parsing with mulitiple ps's that have the same first delimiter
+    #[test]
+    fn same_first_delim(){
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
+        let _ = packet_structure_manager.register_packet_structure(&mut p_structure);
+        let mut wacky_structure = PacketStructure {
+            id: 1,
+            name: String::from("Test Structure Variation"),
+            fields: vec![],
+            delimiters: vec![],
+        };
+        wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef");
+        let _ = packet_structure_manager.register_packet_structure(&mut wacky_structure);
+        let mut packet_parser = PacketParser::default();
+        let data = [0x11,0xBA,0x5E,0xBA,
+                    0x20,0x00,
+                    0x08,0x00,
+                    0x05,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x00,0x00,0x01,0x00,
+                    0x03,
+                    0x00,0x00,0x00,
+                    0x00,0x00,0x00,0x00,
+                    0xEF,0xBE,0xAD,0xDE];
+        packet_parser.push_data(&data,false);
+        let data2 = [0x11,0xBA,0x5E,0xBA,
+                    0x10,0x00,
+                    0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x01,0x00,
+                    0x02,0x00,
+                    0x03,
+                    0x04,
+                    0x00,0x00,
+                    0x00,0x00,0x00,0x00,
+                    0x1E,0xAB,0x11,0xCA,
+                    0xBA,0xBB,0xE1];
+        packet_parser.push_data(&data2,true);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,true);
+        assert_eq!(parsed.len(),2); // are packets parsed?
+        assert_eq!(parsed[0].structure_id,1);//does the packet have the right ID?
+        assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(5));//does the data parse correctly?
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedInteger(0x10000));
+        assert_eq!(parsed[0].field_data[2],PacketFieldValue::SignedByte(3));
+        assert_eq!(parsed[1].structure_id,0);//does the packet have the right ID?
+        assert_eq!(parsed[1].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
+        assert_eq!(parsed[1].field_data[1],PacketFieldValue::UnsignedShort(1));
+        assert_eq!(parsed[1].field_data[2],PacketFieldValue::UnsignedShort(2));
+        assert_eq!(parsed[1].field_data[3],PacketFieldValue::UnsignedByte(3));
+        assert_eq!(parsed[1].field_data[4],PacketFieldValue::UnsignedByte(4));
+    }
+
+    //todo:
     // test packet structures that dont start/end with delimiters
     // test for when packets just barely make, or dont make it into the pushed data state
     // check for value edge cases(like stuff that causes unsafe subtraction)
