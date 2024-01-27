@@ -33,11 +33,16 @@ export type SerialPortNames = {
 };
 
 /**
- * The type of a unit of identified radio data
+ * DataPackets formatted to be used by graphs and other forms of display
  */
 export type DisplayPacket = PacketData & {
     structureId: number,
 };
+
+export type DisplayPacketFieldNames = {
+    structureId: number,
+    fields: string[],
+}
 
 /**
  * The type of unidentified radio data

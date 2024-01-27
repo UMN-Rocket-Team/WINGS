@@ -1,4 +1,4 @@
-use crate::{use_packet_structure_manager, models::packet_view_model::PacketStructureViewModel};
+use crate::{models::packet_view_model::PacketStructureViewModel, state::data_processor_state::{use_data_processor, DataProcessorState}, use_packet_structure_manager};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
@@ -42,6 +42,7 @@ fn emit_packet_structure_update_event(
 pub fn update_packet_structures(
     app_handle: tauri::AppHandle,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    data_processor_state: tauri::State<'_, DataProcessorState>,
     callback: &mut dyn FnMut(
         &mut PacketStructureManager,
     ) -> Result<(Vec<usize>, Option<Vec<usize>>), (Vec<usize>, Option<Vec<usize>>, String)>,
@@ -58,7 +59,6 @@ pub fn update_packet_structures(
                         deleted_packet_view_model_ids,
                         packet_structure_manager,
                     );
-                    Ok(())
                 }
                 Err((modified_packet_view_model_ids, deleted_packet_view_model_ids, message)) => {
                     emit_packet_structure_update_event(
@@ -67,9 +67,29 @@ pub fn update_packet_structures(
                         deleted_packet_view_model_ids,
                         packet_structure_manager,
                     );
-                    Err(message)
+                    return Err(message);
                 }
             }
+            use_data_processor(
+                &data_processor_state, 
+                &mut |data_processor| {
+                    match data_processor.generate_display_field_names(packet_structure_manager) {
+                        Ok(new_fields) => {
+                            app_handle
+                                .emit_all("display-fields-update", new_fields)
+                                .unwrap();
+                            Ok(())
+                        }
+                        Err((new_fields,message)) => {
+                            app_handle
+                                .emit_all("display-fields-update", new_fields)
+                                .unwrap();
+                            Err(message)
+                        }
+                    }
+
+                }
+            )
         },
     )
 }

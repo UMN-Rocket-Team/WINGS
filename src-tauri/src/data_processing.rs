@@ -1,30 +1,45 @@
 
 
-use crate::models::packet::{Packet, PacketFieldValue};
+use crate::{models::packet::{Packet, PacketFieldValue}, packet_structure_manager::PacketStructureManager};
 
 #[derive(serde::Serialize, Default, Debug, Clone)]
 pub struct DisplayPacket{
     structure_id: usize,
     field_data: Vec<PacketFieldValue>,
 }
+#[derive(serde::Serialize, Default)]
 pub struct DisplayPacketFieldNames{
+    structure_id: usize,
     field_names: Vec<String>
 }
 #[derive(Default)]
 pub struct DataProcessor{
     pub data_list: Vec<Packet>,
     pub formatted_list: Vec<DisplayPacket>,
+    pub name_list: Vec<DisplayPacketFieldNames>,
 }
 impl DataProcessor{
-
-
-    /// Adds give data to the data, list then formats the data and returns it
+    /// Iterates through the packet_structure_manager and generates a list of names for all the fields
+    /// 
+    /// Handles the special treatment of timestamps
+    pub fn generate_display_field_names(&mut self, packet_structure_manager: &PacketStructureManager) -> Result<&Vec<DisplayPacketFieldNames>,(&Vec<DisplayPacketFieldNames>,String)>{
+        self.name_list = vec![];
+        for i in 0..packet_structure_manager.packet_structures.len(){
+            self.name_list.push(DisplayPacketFieldNames::default());
+            self.name_list[i].field_names.push("Time Recieved".to_owned());
+            for j in 0..packet_structure_manager.packet_structures[i].fields.len(){
+                self.name_list[i].field_names.push(packet_structure_manager.packet_structures[i].fields[j].name.clone());
+            }
+        }
+        Ok(&self.name_list)
+    }
+    /// Adds given data to the internal Packetlist then formats the data and returns it
     /// 
     /// Immediately appends the given packets to the data list, 
     /// Then goes through the packets and converts them into display packets. 
     /// The timestamp from the regular packets gets added onto the display packet as a field, 
     /// timestamp will always be the first field in the display packet.
-    /// the display apckets get both returned and added to the "formatted_list" in case they are needed in the future
+    /// the display packets both get returned and added to the "formatted_list" in case they are needed in the future
     /// 
     /// # Input
     /// The new_data vector contains all new packets to be processed. 

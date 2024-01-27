@@ -124,7 +124,8 @@ fn refresh_available_ports_and_read_active_port(
             Ok(_) => {}
             Err(message) => return Err(message),
         }
-        match use_data_processor(&data_processor_state, &mut |data_processor| {
+        
+        match use_data_processor::<(), String>(&data_processor_state, &mut |data_processor| {
             result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets));
             Ok(())
         }) {
