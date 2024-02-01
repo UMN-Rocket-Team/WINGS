@@ -16,6 +16,7 @@ export type FieldSelectModalProps = {
     graph: GraphStruct
     handleSelectY: (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => void
     handleSelectX: (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => void
+    index: number
     // /**
     //  * The list of currently selected fields for the y-axis
     //  */
@@ -64,7 +65,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                                 <input type="radio"
                                                     checked={props.graph.x === field.index} // Check based on the state
                                                     onclick={(event) => 
-                                                        props.handleSelectX((event.target as HTMLInputElement).checked, field.index, props.graph)
+                                                        props.handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index)
                                                     }
                                                 />
                                                 {field.name}
@@ -86,7 +87,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                                     onclick={(event) => {
                                                         //props.graph.y.some((event.target as HTMLInputElement).checked, 
                                                         //props.graph.y.push(field.index)
-                                                        props.handleSelectY((event.target as HTMLInputElement).checked, field.index, props.graph)
+                                                        props.handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index)
                                                         
                                                         // packetViewModel.id
                                                         //)

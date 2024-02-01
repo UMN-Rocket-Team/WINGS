@@ -1,7 +1,7 @@
 import { Component, For, createSignal } from "solid-js";
 import { useModal } from "./ModalProvider";
 import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
-import { createStore } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
 import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
@@ -54,26 +54,24 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
 
 
-//    const [selected, setSelected] = createStore<GraphStruct[]>([]);
+
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
-    const handleSelectY = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
+    const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
         if (isChecked) {
-            let newGraphsY = graph.y
-            newGraphsY.push(fieldIndex)
-            setGraph([...graphs, { graphName: "Graph", x: graph.x, y: newGraphsY }]);
+            setGraph( produce((s) => {
+                s[index].y.push(fieldIndex)}))
         } else {
-            setGraph(graphs.filter(
-                fieldInPacket => fieldInPacket.y.forEach(element => {
-                    
-                element !== fieldIndex})));
+            setGraph( produce((s) => 
+                s[index].y = s[index].y.filter(ind => ind != fieldIndex)));
         }
     }
-    const handleSelectX = (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => {
+    const handleSelectX = (isChecked: boolean, fieldIndex: number, index: number) => {
         if (isChecked) {
-            setGraph([...graphs, { graphName: "Graph", x: fieldIndex, y: graph.y }]);
+            setGraph( produce((s) => 
+                s[index].x = fieldIndex));
         } else {
-            setGraph(graphs.filter(
-                fieldInPacket => fieldInPacket.x !== fieldIndex));
+            setGraph( produce((s) => 
+                s[index].x = 0));
         }
     }
     return (
@@ -117,7 +115,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                     }}
                 </For> */}
                 <For each={graphs}>
-                    {(graph: GraphStruct) => {
+                    {(graph: GraphStruct, index) => {
                         const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x);
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
@@ -126,7 +124,8 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
                                 <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                     graph,
                                     handleSelectY,
-                                    handleSelectX
+                                    handleSelectX,
+                                    index:index()
                                 })}>
                                     <h3>{packetViewModel?.name}</h3>
                                     <p>{(field?.data as PacketField)?.name}</p>
