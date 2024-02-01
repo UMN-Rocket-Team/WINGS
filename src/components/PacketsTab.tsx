@@ -38,18 +38,18 @@ const PacketsTab: Component = () => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
-    const [selectedPacketStructureIndex, setSelectedPacketStructureIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
+    const [selectedPacketStructureID, setSelectedPacketStructureID] = createSignal<number | null>(packetViewModels.length === 0 ? null : 1);
     const [selectedPacketComponentIndex, setSelectedPacketComponentIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
 
     // Cache (memoize) revelent information about the selected packet
-    const selectedPacket = createMemo(() => packetViewModels[selectedPacketStructureIndex()!]);
-    const selectedPacketStructureComponents = createMemo(() => selectedPacketStructureIndex() === null ? [] : selectedPacket().components);
+    const selectedPacket = createMemo(() => packetViewModels.find(i => i.id === selectedPacketStructureID())!);
+    const selectedPacketStructureComponents = createMemo(() => selectedPacketStructureID() === null ? [] : selectedPacket().components);
     const selectedPacketStructureComponent = createMemo(() => selectedPacketComponentIndex() === null ? null : selectedPacketStructureComponents()[selectedPacketComponentIndex()!]);
     const selectedFieldData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Field ? selectedPacketStructureComponent()?.data as PacketField : null);
     const selectedDelimiterData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Delimiter ? selectedPacketStructureComponent()?.data as PacketDelimiter : null);
     const selectedGapData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Gap ? selectedPacketStructureComponent()?.data as PacketGap : null);
 
-    const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureIndex, selectedPacketStructureComponent, showModal);
+    const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureID, selectedPacketStructureComponent, showModal);
 
     async function showErrorModalOnError(func: () => Promise<unknown>, errorTitle: string): Promise<void> {
         try {
@@ -69,9 +69,9 @@ const PacketsTab: Component = () => {
                 <div class="flex flex-col flex-grow tab">
                     <h1 class="m-0">Packets</h1>
                     <For each={packetViewModels}>
-                        {(packetStructure, i) => (
-                            <button class={`flex justify-between gap-4 ${selectedPacketStructureIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
-                                setSelectedPacketStructureIndex(i());
+                        {packetStructure => (
+                            <button class={`flex justify-between gap-4 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
+                                setSelectedPacketStructureID(packetStructure.id);
                                 setSelectedPacketComponentIndex(0);
                             })}>
                                 <span class="" style={{ "white-space": "nowrap" }}>{packetStructure.name}</span>
@@ -94,7 +94,7 @@ const PacketsTab: Component = () => {
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col justify-between flex-grow tab">
-                    <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
+                    <Show when={selectedPacketStructureID() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
                         <div class="flex flex-col flex-grow gap-2 dark:text-white">
                             <h2 class="m-0">{selectedPacket()!.name}</h2>
                             <label class='flex flex-col'>
@@ -128,15 +128,15 @@ const PacketsTab: Component = () => {
                             await deletePacketStructure(selectedPacket().id);
                             // Select the previous packet structure if the last packet structure was deleted, select no packet structure
                             // if none are left
-                            setSelectedPacketStructureIndex(packetViewModels.length === 0 ? null : selectedPacketStructureIndex()! + (selectedPacketStructureIndex()! >= packetViewModels.length ? -1 : 0));
+                            setSelectedPacketStructureID(packetViewModels.length === 0 ? null : packetViewModels[0].id);
                         }, 'Faled to delete packet structure!')}>
                             Delete {selectedPacket()!.name}
                         </button>
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureIndex()!), 'Failed to add field')}>Add Field</button>
-                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureIndex()!), 'Failed to add delimiter')}>Add Delimeter</button>
+                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureID()!), 'Failed to add field')}>Add Field</button>
+                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimeter</button>
                     <button class="externalButton" onClick={async () => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
@@ -153,13 +153,13 @@ const PacketsTab: Component = () => {
                             default:
                                 throw new Error("Cannot add a gap after a gap!");
                         }
-                        await showErrorModalOnError(async () => await addGapAfter(selectedPacketStructureIndex()!, isField, index), 'Failed to add gap');
+                        await showErrorModalOnError(async () => await addGapAfter(selectedPacketStructureID()!, isField, index), 'Failed to add gap');
                     }}>Add Gap</button>
                 </div>
             </div>
             {/* Packet structure component editor */}
             <div class="flex flex-col justify-between tab">
-                <Show when={selectedPacketStructureIndex() !== null} fallback={<h2 class="m-0 dark:text-white">No component selected</h2>}>
+                <Show when={selectedPacketStructureID() !== null} fallback={<h2 class="m-0 dark:text-white">No component selected</h2>}>
                     <div class="flex flex-col dark:text-white">
                         <Switch>
                             <Match when={selectedPacketComponentIndex() === null}>
