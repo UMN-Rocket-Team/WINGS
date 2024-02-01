@@ -350,11 +350,12 @@ pub fn register_empty_packet_structure(
                 id: 0,
                 name: format!("New Packet {largest_new_packet_number}"),
                 fields: vec![
-                    PacketField { index: 0, name: String::from("Field 1"), r#type: PacketFieldType::SignedInteger, offset_in_packet: 0, metadata_type: PacketMetadataType::None }
+                    PacketField { index: 0, name: String::from("Field 1"), r#type: PacketFieldType::SignedInteger, offset_in_packet: 0}
                 ],
                 delimiters: vec![
                     PacketDelimiter { index: 0, name: String::from("Delimiter 1"), identifier: smallest_delimiter, offset_in_packet: PacketFieldType::SignedInteger.size() }
                 ],
+                metafields: vec![],
             }) {
                 Ok(new_id) => Ok((vec![new_id], None)),
                 Err(error) => Err((vec![], None, error.to_string()))

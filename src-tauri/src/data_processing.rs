@@ -48,7 +48,6 @@ impl DataProcessor{
     /// # Output
     /// All newly created DisplayPackets are provided back to the caller in a vector
     pub fn add_new_data(&mut self, new_data: &mut Vec<Packet>) -> Vec<DisplayPacket>{
-        self.data_list.append(new_data);
         let mut formatted_buffer = vec![];
         for i in 0..new_data.len(){
             let mut curr_display_packet = DisplayPacket::default();
@@ -62,7 +61,8 @@ impl DataProcessor{
 
             formatted_buffer.push(curr_display_packet);
         }
-        self.formatted_list.append(&mut formatted_buffer);
+        self.formatted_list.append(&mut formatted_buffer.clone());
+        self.data_list.append(new_data);
         return formatted_buffer;
     }
 }

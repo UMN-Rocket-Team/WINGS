@@ -12,6 +12,7 @@ pub struct PacketStructure {
     pub(crate) name: String,
     pub(crate) fields: Vec<PacketField>,
     pub(crate) delimiters: Vec<PacketDelimiter>,
+    pub(crate) metafields: Vec<PacketMetaDataFields>,
 }
 
 impl PacketStructure {
@@ -97,7 +98,6 @@ impl PacketStructure {
                     name:"test field ".to_string()  + &(self.fields.len()).to_string(),
                     r#type: t,
                     offset_in_packet: curr_offset,
-                    metadata_type: PacketMetadataType::None,
                 };
                 self.fields.push(new_field);
                 curr_offset += offset;
@@ -106,6 +106,15 @@ impl PacketStructure {
     }
 }
 
+#[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
+/// Used to represent the 
+pub struct PacketMetaDataFields {
+    pub(crate) index: usize,
+    pub(crate) name: String,
+    pub(crate) r#type: PacketFieldType,
+    pub(crate) metadata_type: PacketMetadataType,
+    pub(crate) link_index: usize,
+}
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 
@@ -118,7 +127,6 @@ pub struct PacketField {
     pub(crate) name: String,
     pub(crate) r#type: PacketFieldType,
     pub(crate) offset_in_packet: usize,
-    pub(crate) metadata_type: PacketMetadataType,
 }
 
 #[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
