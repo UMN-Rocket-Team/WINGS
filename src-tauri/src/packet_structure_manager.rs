@@ -446,7 +446,6 @@ impl PacketStructureManager {
             .fields
             .push(PacketField {
                 index: packet_field_count,
-                metadata_type: PacketMetadataType::None,
                 name: format!("Field {}", (packet_field_count + 1)),
                 offset_in_packet: end_of_packet,
                 r#type: PacketFieldType::UnsignedInteger,
@@ -801,6 +800,7 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         }).unwrap();
 
         packet_structure_manager.add_delimiter(id).unwrap();

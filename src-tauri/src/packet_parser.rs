@@ -2,7 +2,6 @@ use std::cmp::max;
 
 use crate::{
     models::packet::{Packet, PacketFieldValue},
-    models::packet_structure::PacketMetadataType,
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -95,7 +94,7 @@ impl PacketParser {
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
                     vec![PacketFieldValue::UnsignedByte(0); packet_structure.fields.len()];
-                let mut timestamp: Option<i64> = None;
+                let timestamp: Option<i64> = None;
 
                 for k in 0..packet_structure.fields.len() {
                     let field = &packet_structure.fields[k];
@@ -105,12 +104,6 @@ impl PacketParser {
                         &self.unparsed_data
                             [field_start_index..(field_start_index + field.r#type.size())],
                     );
-
-                    if field.metadata_type == PacketMetadataType::Timestamp {
-                        if let PacketFieldValue::SignedLong(given_timestamp) = field_data[k] {
-                            timestamp = Some(given_timestamp);
-                        }
-                    }
                 }
                 if printflag {
                     println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);

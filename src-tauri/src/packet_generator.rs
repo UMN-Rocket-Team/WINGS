@@ -34,16 +34,8 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>
             None => return Err(format!("Field {} refers to missing index: {}", field.name, field.index))
         };
 
-        match (field.metadata_type, field.r#type) {
-            (PacketMetadataType::Timestamp, PacketFieldType::SignedLong) => {
-                // Only valid type for Timestamp
-            },
-            (PacketMetadataType::Timestamp, _) => {
-                return Err(format!("Field {} is marked as timestamp but is type {:?}", field.name, field.r#type));
-            },
-            (_, _) => {
-                // No other illegal combinations
-            }
+        if field.r#type != given_value.get_field_type() {
+            return Err(format!("Field {} has type {:?} but the given value is {:?}", field.name, field.r#type, given_value));
         }
 
         let bytes = given_value.to_le_bytes();
@@ -58,7 +50,7 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>
 
 #[cfg(test)]
 mod tests {
-    use crate::models::packet_structure::{PacketStructure, PacketDelimiter, PacketField, PacketMetadataType, PacketFieldType};
+    use crate::models::packet_structure::{PacketStructure, PacketDelimiter, PacketField, PacketFieldType};
 
     use super::generate_packet;
 
@@ -68,7 +60,8 @@ mod tests {
             id: 0,
             name: "Empty Packet".to_string(),
             delimiters: vec![],
-            fields: vec![]
+            fields: vec![],
+            metafields: vec![],
         };
         let packet = generate_packet(&structure, &vec![]).unwrap();
         assert_eq!(packet.len(), 0);
@@ -87,7 +80,8 @@ mod tests {
                     identifier: vec![42, 43, 45]
                 }
             ],
-            fields: vec![]
+            fields: vec![],
+            metafields: vec![],
         };
         let packet = generate_packet(&structure, &vec![]).unwrap();
         assert_eq!(packet, [0, 42, 43, 45]);
@@ -104,10 +98,10 @@ mod tests {
                     index: 0,
                     name: "Test Field".to_string(),
                     offset_in_packet: 5,
-                    metadata_type: PacketMetadataType::None,
                     r#type: PacketFieldType::UnsignedInteger
                 }
-            ]
+            ],
+            metafields: vec![],
         };
         let packet = generate_packet(&structure, &vec![
             0x12345678
@@ -131,14 +125,37 @@ mod tests {
                     index: 0,
                     name: "Test Field".to_string(),
                     offset_in_packet: 0,
-                    metadata_type: PacketMetadataType::None,
                     r#type: PacketFieldType::UnsignedByte
                 }
-            ]
+            ],
+            metafields: vec![],
         };
         // notice that we provide no packet values when we should provide some
         let packet = generate_packet(&structure, &vec![]);
         assert_eq!(packet.unwrap_err(), "Field Test Field refers to missing index: 0");
+    }
+
+    #[test]
+    fn field_type_and_value_mismatch() {
+        let structure = PacketStructure {
+            id: 0,
+            name: "Test Packet".to_string(),
+            delimiters: vec![],
+            fields: vec![
+                PacketField {
+                    index: 0,
+                    name: "Test Field".to_string(),
+                    offset_in_packet: 0,
+                    r#type: PacketFieldType::UnsignedByte
+                }
+            ],
+            metafields: vec![],
+        };
+        let packet = generate_packet(&structure, &vec![
+            // SignedByte != UnsignedByte
+            PacketFieldValue::SignedByte(16)
+        ]);
+        assert_eq!(packet.unwrap_err(), "Field Test Field has type UnsignedByte but the given value is SignedByte(16)");
     }
 
     #[test]
@@ -152,10 +169,10 @@ mod tests {
                     index: 0,
                     name: "Test Field 1".to_string(),
                     offset_in_packet: 0,
-                    metadata_type: PacketMetadataType::Timestamp,
                     r#type: PacketFieldType::SignedByte
                 }
-            ]
+            ],
+            metafields: vec![],
         };
         let bad_packet = generate_packet(&bad_structure, &vec![
             101
@@ -171,10 +188,10 @@ mod tests {
                     index: 0,
                     name: "Test Field 2".to_string(),
                     offset_in_packet: 0,
-                    metadata_type: PacketMetadataType::Timestamp,
                     r#type: PacketFieldType::SignedLong
                 }
-            ]
+            ],
+            metafields: vec![],
         };
         let good_packet = generate_packet(&good_structure, &vec![
             1699481341632
@@ -206,17 +223,16 @@ mod tests {
                     index: 0,
                     name: "Test Field 1".to_string(),
                     offset_in_packet: 3,
-                    metadata_type: PacketMetadataType::None,
                     r#type: PacketFieldType::Float
                 },
                 PacketField {
                     index: 2,
                     name: "Test Field 2".to_string(),
                     offset_in_packet: 7,
-                    metadata_type: PacketMetadataType::Timestamp,
                     r#type: PacketFieldType::SignedLong
                 }
-            ]
+            ],
+            metafields: vec![],
         };
 
         let float = f32::to_le_bytes(3.0);

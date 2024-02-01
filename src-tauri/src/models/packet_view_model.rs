@@ -37,6 +37,7 @@ impl PacketStructureViewModel {
             name: self.name.clone(),
             fields: packet_fields,
             delimiters: packet_delimiters,
+            metafields: vec![],
         };
     }
 }
