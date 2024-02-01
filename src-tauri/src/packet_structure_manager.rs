@@ -3,9 +3,6 @@ use std::{
     vec,
 };
 
-
-
-
 use crate::{
     models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
@@ -13,30 +10,30 @@ use crate::{
     models::packet_view_model::PacketComponentType,
 };
 
-//A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
-#[readonly::make]
-pub struct PacketStructureManager {
-    pub(crate) packet_structures: Vec<PacketStructure>, 
-    pub(crate) minimum_packet_structure_size: usize, // These variables are used in situations when matching packets to bits
-    pub(crate) maximum_packet_structure_size: usize,
-    pub(crate) maximum_first_delimiter: usize,
-}
-
-impl Default for PacketStructureManager {
-    fn default() -> Self {
-        Self {
-            packet_structures: Default::default(),
-            minimum_packet_structure_size: usize::MAX,
-            maximum_packet_structure_size: 0,
-            maximum_first_delimiter: 0,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum PacketStructureRegistrationError {
+/// Represents all possible errors that can be encountered when managing packet structures.
+#[derive(Debug, Clone)]
+pub enum Error {
+    /// Contains the ID that was asked for
+    PacketDoesNotExist(usize),
+    /// Contains the ID of the packet that already uses the name
     NameAlreadyRegistered(usize),
+    /// Contains the ID of the packet that already uses these delimiters
     DelimitersAlreadyRegistered(usize),
+    FieldOffsetOverflow,
+    DelimiterOffsetOverflow,
+    /// Contains the character that was invalid
+    InvalidHexCharacter(char),
+    EmptyDelimiterIdentifier,
+    /// Contains a list of packet IDs that collide
+    DelimiterIdentifierCollision(Vec<usize>),
+    CannotDeleteLastField,
+    CannotDeleteLastDelimiter
+}
+
+impl Error {
+    pub fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
 }
 
 #[derive(Clone)]
@@ -56,99 +53,154 @@ impl PacketFieldOrDelimiter {
     }
 }
 
-pub enum SetDelimiterIdentifierError {
-    InvalidHexadecimalString(String),
-    IdentifierCollision(Vec<usize>),
+/// A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
+#[readonly::make]
+pub struct PacketStructureManager {
+    pub(crate) packet_structures: Vec<PacketStructure>,
+
+    // These variables are used in situations when matching packets to bits
+    pub(crate) minimum_packet_structure_size: usize,
+    pub(crate) maximum_packet_structure_size: usize,
+
+    // Every packet structure is given a monotonically increasing ID
+    next_packet_id: usize,
 }
 
-pub enum DeletePacketStructureComponentError {
-    LastField,
-    LastDelimiter,
-    DelimiterIdentifierCollision(Vec<usize>),
+impl Default for PacketStructureManager {
+    fn default() -> Self {
+        Self {
+            packet_structures: Default::default(),
+            minimum_packet_structure_size: usize::MAX,
+            maximum_packet_structure_size: 0,
+
+            // We can start IDs from anywhere, but we start from 1 so that any code that
+            // accidentally assumes IDs are an array index will be more likely to break
+            // early.
+            next_packet_id: 1
+        }
+    }
 }
 
 impl PacketStructureManager {
-
-    ///takes the given PacketStructure and makes a copy within the manager for future use
-    ///Note: this also needs to be unit tested
+    /// Takes the given PacketStructure and makes a copy within the manager for future use
+    /// Note: this also needs to be unit tested
     pub fn register_packet_structure(
         &mut self,
         packet_structure: &mut PacketStructure,
-    ) -> Result<usize, PacketStructureRegistrationError> {
-        for (index, registered_packet_structure) in self.packet_structures.iter().enumerate() {
+    ) -> Result<usize, Error> {
+        for registered_packet_structure in self.packet_structures.iter() {
             if *registered_packet_structure.name == packet_structure.name {
-                return Err(PacketStructureRegistrationError::NameAlreadyRegistered(
-                    index,
-                ));
+                return Err(Error::NameAlreadyRegistered(registered_packet_structure.id));
             } else if registered_packet_structure.delimiters == packet_structure.delimiters {
-                return Err(PacketStructureRegistrationError::DelimitersAlreadyRegistered(index));
+                return Err(Error::DelimitersAlreadyRegistered(registered_packet_structure.id));
             }
         }
 
-        packet_structure.id = self.packet_structures.len();
+        let packet_structure_size = packet_structure.size();
+
+        packet_structure.id = self.next_packet_id;
+        self.next_packet_id += 1;
 
         self.packet_structures.push(packet_structure.clone());
         self.update_tracked_values();
         Ok(packet_structure.id)
     }
 
-    ///sets a packet structures name, uses the id in order to find the packet structure within the 
-    pub fn set_packet_name(&mut self, packet_structure_id: usize, name: &str) {
-        self.packet_structures[packet_structure_id].name = String::from(name);
-    }
-    ///sets the name of a specific field within a specific packet structure
-    ///packet_structure_id is used to find the packet_structure within the manager
-    ///field_index is used to find the field within the packetstructure
-    pub fn set_field_name(&mut self, packet_structure_id: usize, field_index: usize, name: &str) {
-        self.packet_structures[packet_structure_id].fields[field_index].name = String::from(name);
+    /// Get a immutable borrow to a packet structure by its ID.
+    /// This is necessary because the IDs are **not** list indexes.
+    pub fn get_packet_structure(
+        &self,
+        packet_structure_id: usize
+    ) -> Result<&PacketStructure, Error> {
+        for packet_structure in self.packet_structures.iter() {
+            if packet_structure.id == packet_structure_id {
+                return Ok(packet_structure);
+            }
+        }
+        return Err(Error::PacketDoesNotExist(packet_structure_id));
     }
 
-    ///shifts components all componets after a specified point in the packet structure
-    ///ex:
-    ///before:
-    ///[][][][][][][]
-    ///after:
-    ///[][][]  [][][][]
+    /// Get a mutable borrow to a packet structure by its ID.
+    /// This is necessary because the IDs are **not** list indexes.
+    pub fn get_packet_structure_mut(
+        &mut self,
+        packet_structure_id: usize
+    ) -> Result<&mut PacketStructure, Error> {
+        for packet_structure in self.packet_structures.iter_mut() {
+            if packet_structure.id == packet_structure_id {
+                return Ok(packet_structure);
+            }
+        }
+        return Err(Error::PacketDoesNotExist(packet_structure_id));
+    }
+
+    /// Sets the name of a specific packet structure
+    pub fn set_packet_name(&mut self, packet_structure_id: usize, name: &str) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
+        packet_structure.name = String::from(name);
+        Ok(())
+    }
+
+    /// Sets the name of a specific field within a packet structure
+    pub fn set_field_name(&mut self, packet_structure_id: usize, field_index: usize, name: &str) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
+        packet_structure.fields[field_index].name = String::from(name);
+        Ok(())
+    }
+
+    /// Shifts all components after a specified point in the packet structure
+    /// For example:
+    /// Before:
+    /// [][][][][][][]
+    /// After:
+    /// [][][]  [][][][]
     ///
-    ///offset_diff is the size we want to shift by
-    ///minimum_offset is where the shifting will start
+    /// offset_diff is the size we want to shift by
+    /// minimum_offset is where the shifting will start
     fn shift_components_after(
         packet_structure: &mut PacketStructure,
         offset_diff: isize,
         minimum_offset: usize,
-    ) {
+    ) -> Result<(), Error> {
         for field in &mut packet_structure.fields {
             if field.offset_in_packet > minimum_offset {
-                field.offset_in_packet = field
-                    .offset_in_packet
-                    .checked_add_signed(offset_diff)//checking for overflow
-                    .expect("Packet component offset calculation failed!");
+                field.offset_in_packet = match field.offset_in_packet.checked_add_signed(offset_diff) {
+                    Some(n) => n,
+                    None => {
+                        return Err(Error::FieldOffsetOverflow);
+                    }
+                };
             }
         }
 
         for delimiter in &mut packet_structure.delimiters {
             if delimiter.offset_in_packet > minimum_offset {
-                delimiter.offset_in_packet = delimiter
-                    .offset_in_packet
-                    .checked_add_signed(offset_diff)
-                    .expect("Packet component offset calculation failed!");
+                delimiter.offset_in_packet = match delimiter.offset_in_packet.checked_add_signed(offset_diff) {
+                    Some(n) => n,
+                    None => {
+                        return Err(Error::DelimiterOffsetOverflow);
+                    }
+                };
             }
         }
+
+        Ok(())
     }
-    /// sets the data type we can expect for a field, and adjusts all following packets to make room for the new data
+
+    /// Sets the data type to expect for a field, and adjusts all following packets to make
+    /// room for the new data if needed.
     pub fn set_field_type(
         &mut self,
         packet_structure_id: usize,
         field_index: usize,
         r#type: PacketFieldType,
-    ) {
-        let packet_structure = &mut self.packet_structures[packet_structure_id];
-        let packet_structure_fields = &mut packet_structure.fields;
+    ) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
         let minimum_offset: usize;
         let offset_diff: isize;
         {
-            let field_to_modify = &mut packet_structure_fields[field_index];
+            let field_to_modify = &mut packet_structure.fields[field_index];
 
             minimum_offset = field_to_modify.offset_in_packet;
             offset_diff = (r#type.size() as isize) - (field_to_modify.r#type.size() as isize);
@@ -156,28 +208,33 @@ impl PacketStructureManager {
             field_to_modify.r#type = r#type;
         }
 
-        Self::shift_components_after(packet_structure, offset_diff, minimum_offset);
-        self.update_tracked_values();
+        Self::shift_components_after(packet_structure, offset_diff, minimum_offset)?;
+
+        Ok(())
     }
 
+    /// Set the metadata type for a field of a packet structure.
     pub fn set_field_metadata_type(
         &mut self,
         packet_structure_id: usize,
         field_index: usize,
         metadata_type: PacketMetadataType,
-    ) {
-        self.packet_structures[packet_structure_id].fields[field_index].metadata_type =
-            metadata_type;
+    ) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
+        packet_structure.fields[field_index].metadata_type = metadata_type;
+        Ok(())
     }
 
+    /// Set the name of a delimiter.
     pub fn set_delimiter_name(
         &mut self,
         packet_structure_id: usize,
         delimtier_index: usize,
         name: &str,
-    ) {
-        self.packet_structures[packet_structure_id].delimiters[delimtier_index].name =
-            String::from(name);
+    ) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
+        packet_structure.delimiters[delimtier_index].name = String::from(name);
+        Ok(())
     }
 
     /// Adapted from https://codereview.stackexchange.com/a/201699
@@ -190,9 +247,9 @@ impl PacketStructureManager {
         }
     }
 
-    ///takes a hexadeximal string and returns its binary equivilant
-    ///(currently used primarly to decode the user input for delimiter identifiers)
-    fn parse_hex(hex_string: &str) -> Result<Vec<u8>, &str> {
+    /// Takes a hexadeximal string and returns its binary equivilant
+    /// (currently used primarily to decode the user input for delimiter identifiers)
+    fn parse_hex(hex_string: &str) -> Result<Vec<u8>, Error> {
         let mut bytes = Vec::with_capacity((hex_string.len() + 1) / 2);
 
         let hex_string_bytes = hex_string.as_bytes();
@@ -200,12 +257,12 @@ impl PacketStructureManager {
         for i in (0..hex_string_bytes.len()).step_by(2) {
             let first_hex_value = Self::get_hex_char_value(hex_string_bytes[i]);
             if first_hex_value.is_none() {
-                return Err("Invalid hex character!");
+                return Err(Error::InvalidHexCharacter(hex_string_bytes[i] as char));
             }
             let next_hex_value = if i + 1 < hex_string_bytes.len() {
                 let next_hex_value = Self::get_hex_char_value(hex_string_bytes[i + 1]);
                 if next_hex_value.is_none() {
-                    return Err("Invalid hex character!");
+                    return Err(Error::InvalidHexCharacter(hex_string_bytes[i + 1] as char));
                 }
                 next_hex_value
             } else {
@@ -218,12 +275,13 @@ impl PacketStructureManager {
         Ok(bytes)
     }
 
-    ///checks if a packet structure in packets structures(Specified by id) has the same delimiters as another packet structure in packet structures
+    /// Checks if a a given set of delimiters conflicts with an existing packet
+    /// The given ID will be ignored (presumably this is the packet being edited)
     fn check_for_identifier_collisions(
         packet_structures: &Vec<PacketStructure>,
         packet_structure_id: usize,
         delimiters: &Vec<PacketDelimiter>,
-    ) -> Result<(), Vec<usize>> {
+    ) -> Option<Vec<usize>> {
         let mut identifier_collisions = Vec::new();
 
         for other_packet_structure in packet_structures {
@@ -231,90 +289,79 @@ impl PacketStructureManager {
                 continue;
             }
 
-            if other_packet_structure.delimiters == *delimiters {// this feels like it could miss some problematic delimiters(make sure to unit test extensively)
+            // This will break on some problematic delimiters, eg. ones that break up one
+            // delimiter into multiple smaller ones.
+            if other_packet_structure.delimiters == *delimiters {
                 identifier_collisions.push(other_packet_structure.id);
             }
         }
 
-        if !identifier_collisions.is_empty() {
-            return Err(identifier_collisions);
+        if identifier_collisions.is_empty() {
+            return None
         }
-        Ok(())
+        return Some(identifier_collisions);
     }
 
-    ///takes a delimiter and changes its identifier, it then shifts all other packets as neccisary to keep offset relative to new identifier
+    /// Takes a delimiter and changes its identifier, then shifts all other fields as necessary to keep offset relative to new identifier
     pub fn set_delimiter_identifier(
         &mut self,
         packet_structure_id: usize,
-        delimtier_index: usize,
+        delimiter_index: usize,
         identifier: &str,
-    ) -> Result<(), SetDelimiterIdentifierError> {
+    ) -> Result<(), Error> {
         // Ensure new identifier is not empty
         if identifier.len() == 0 {
-            return Err(SetDelimiterIdentifierError::InvalidHexadecimalString(
-                String::from("Identifier must not be empty!"),
-            ));
+            return Err(Error::EmptyDelimiterIdentifier);
         }
 
         // Get array of bytes from the given string
-        let hex_array = Self::parse_hex(identifier);
-        // Ensure the given string is valid a hexadecimal string
-        if hex_array.is_err() {
-            return Err(SetDelimiterIdentifierError::InvalidHexadecimalString(
-                String::from(hex_array.unwrap_err()),
-            ));
-        }
+        let hex_array = Self::parse_hex(identifier)?;
 
-        let mut delimiters: Vec<PacketDelimiter>;
-        let delimiter_offset: usize;
-        let offset_diff: isize;
-        {
-            let packet_structure = &mut self.packet_structures[packet_structure_id];
-            // Clone the delimiters so that the change to the packet structure is not immediately applied;
-            // this makes handling an identifier collision easier later
-            delimiters = packet_structure.delimiters.clone();
+        let packet_structures = self.packet_structures.clone();
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
-            let delimiter = &mut delimiters[delimtier_index];
-            // Calculate the change in offset the following packet fields and delimiters will have
-            offset_diff =
-                hex_array.as_ref().unwrap().len() as isize - delimiter.identifier.len() as isize;
-            delimiter.identifier = hex_array.unwrap();
-            delimiter_offset = delimiter.offset_in_packet;
-        }
+        // Clone the delimiters so that the change to the packet structure is not immediately applied;
+        // this makes handling an identifier collision easier later
+        let mut delimiters = packet_structure.delimiters.clone();
+
+        let delimiter = &mut delimiters[delimiter_index];
+        // Calculate the change in offset the following packet fields and delimiters will have
+        let offset_diff = hex_array.len() as isize - delimiter.identifier.len() as isize;
+        delimiter.identifier = hex_array;
+        let delimiter_offset = delimiter.offset_in_packet;
 
         // Check for collisions with other packet structure identifiers
-        if let Err(colliding_ids) = Self::check_for_identifier_collisions(
-            &self.packet_structures,
+        if let Some(colliding_ids) = Self::check_for_identifier_collisions(
+            &packet_structures,
             packet_structure_id,
-            &delimiters,
+            &delimiters
         ) {
-            return Err(SetDelimiterIdentifierError::IdentifierCollision(
-                colliding_ids,
-            ));
+            return Err(Error::DelimiterIdentifierCollision(colliding_ids));
         }
 
         // Apply the change
-        let packet_structure = &mut self.packet_structures[packet_structure_id];
         packet_structure.delimiters = delimiters;
 
-        Self::shift_components_after(packet_structure, offset_diff, delimiter_offset);
-        self.update_tracked_values();
+        Self::shift_components_after(packet_structure, offset_diff, delimiter_offset)?;
+
         Ok(())
     }
 
-    ///looks for a field or delimiter with the given offset
+    /// Looks for a field or delimiter with the given offset
     fn find_field_or_delimiter_with_offset(
         &self,
         packet_structure_id: usize,
         offset_in_packet: usize,
     ) -> Option<PacketFieldOrDelimiter> {
-        for field in &self.packet_structures[packet_structure_id].fields {
+        let packet_structure = self.get_packet_structure(packet_structure_id).ok()?;
+
+        for field in packet_structure.fields.iter() {
             if field.offset_in_packet == offset_in_packet {
                 return Some(PacketFieldOrDelimiter::Field(field.clone()));
             }
         }
 
-        for delimiter in &self.packet_structures[packet_structure_id].delimiters {
+        for delimiter in packet_structure.delimiters.iter() {
             if delimiter.offset_in_packet == offset_in_packet {
                 return Some(PacketFieldOrDelimiter::Delimiter(delimiter.clone()));
             }
@@ -323,11 +370,16 @@ impl PacketStructureManager {
         return None;
     }
 
-    ///changes the size of a gap between two items inside a packet
+    /// Changes the size of a gap between two items inside a packet
     /// gap_index is the marking of the gaps location in the packet based off of the number of gaps before it(nth gap)
     /// gap_size is the size we want to set the gap to
     /// should probably be rewritten to use gap offset rather than index
-    pub fn set_gap_size(&mut self, packet_structure_id: usize, gap_index: usize, gap_size: usize) {
+    pub fn set_gap_size(
+        &mut self,
+        packet_structure_id: usize,
+        gap_index: usize,
+        gap_size: usize
+    ) -> Result<(), Error> {
         // Find the gap with the given index
         let mut found_gap_index: usize = 0;
 
@@ -335,7 +387,7 @@ impl PacketStructureManager {
         let mut maybe_field_or_delimiter =
             self.find_field_or_delimiter_with_offset(packet_structure_id, 0);
 
-        // itterates and finds every gap in the packet until it reaches the nth gap(gap_index), it then shifts everything after the gap
+        // iterates and finds every gap in the packet until it reaches the nth gap(gap_index), it then shifts everything after the gap
         while let Some(field_or_delimiter) = maybe_field_or_delimiter {
             let previous_field_or_delimiter_end = if previous_field_or_delimiter.is_some() {
                 previous_field_or_delimiter.unwrap().end_offset()
@@ -350,12 +402,12 @@ impl PacketStructureManager {
                     let gap_delta: isize = gap_size as isize - extra_space as isize;
 
                     Self::shift_components_after(
-                        &mut self.packet_structures[packet_structure_id],
+                        self.get_packet_structure_mut(packet_structure_id)?,
                         gap_delta,
                         previous_field_or_delimiter_end,
-                    );
+                    )?;
 
-                    return;
+                    return Ok(());
                 }
 
                 found_gap_index += 1;
@@ -365,18 +417,21 @@ impl PacketStructureManager {
             maybe_field_or_delimiter = self.find_field_or_delimiter_with_offset(
                 packet_structure_id,
                 field_or_delimiter.end_offset(),
-            )
+            );
         }
-        self.update_tracked_values();
+
+        return Ok(());
     }
 
-    ///creates a new field inside the end of the packet
-    //needs to be reworked to add to a user-specified location
-    pub fn add_field(&mut self, packet_structure_id: usize) {
-        let packet_field_count = self.packet_structures[packet_structure_id].fields.len();
-        let end_of_packet = self.packet_structures[packet_structure_id].size();
+    /// Creates a new field inside the end of the packet
+    /// Needs to be reworked to add to a user-specified location
+    pub fn add_field(&mut self, packet_structure_id: usize) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
-        self.packet_structures[packet_structure_id]
+        let packet_field_count = packet_structure.fields.len();
+        let end_of_packet = packet_structure.size();
+
+        packet_structure
             .fields
             .push(PacketField {
                 index: packet_field_count,
@@ -385,15 +440,20 @@ impl PacketStructureManager {
                 offset_in_packet: end_of_packet,
                 r#type: PacketFieldType::UnsignedInteger,
             });
-        self.update_tracked_values();
-    }
-    ///creates a new delimeter inside the end of the packet
-    //needs to be reworked to add to a user-specified location
-    pub fn add_delimiter(&mut self, packet_structure_id: usize) {
-        let packet_delimiter_count = self.packet_structures[packet_structure_id].delimiters.len();
-        let end_of_packet = self.packet_structures[packet_structure_id].size();
 
-        self.packet_structures[packet_structure_id]
+        return Ok(());
+    }
+
+    /// Creates a new delimeter inside the end of the packet
+    /// Needs to be reworked to add to a user-specified location
+    pub fn add_delimiter(&mut self, packet_structure_id: usize) -> Result<(), Error> {
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
+
+        let packet_delimiter_count = packet_structure.delimiters.len();
+        let end_of_packet = packet_structure.size();
+
+        // TODO: check for collisions
+        packet_structure
             .delimiters
             .push(PacketDelimiter {
                 index: packet_delimiter_count,
@@ -401,18 +461,18 @@ impl PacketStructureManager {
                 identifier: vec![0xFF],
                 offset_in_packet: end_of_packet,
             });
-        self.update_tracked_values();
+
+        return Ok(());
     }
 
     /// Creates a gap after the specified component_index
-    /// 
-    /// Doesnt work when the current index is a gap
     pub fn add_gap_after(
         &mut self,
         packet_structure_id: usize,
         is_field: bool,
         component_index: usize,
-    ) {
+    ) -> Result<(), Error> {
+        // TODO: Doesnt seem to work when the current index is a gap or the end of a packet
         let packet_structure = &mut self.packet_structures[packet_structure_id];
 
         let minimum_offset = if is_field {
@@ -421,8 +481,9 @@ impl PacketStructureManager {
             packet_structure.delimiters[component_index].offset_in_packet
         };
 
-        Self::shift_components_after(packet_structure, 1, minimum_offset);
-        self.update_tracked_values();
+        Self::shift_components_after(packet_structure, 1, minimum_offset)?;
+
+        return Ok(());
     }
 
     ///deletes a component, taking its index and type as parameters
@@ -431,13 +492,15 @@ impl PacketStructureManager {
         packet_structure_id: usize,
         component_index: usize,
         component_type: PacketComponentType,
-    ) -> Result<(), DeletePacketStructureComponentError> {
+    ) -> Result<(), Error> {
+        let packet_structures = self.packet_structures.clone();
+
         match component_type {
             PacketComponentType::Field => {
-                let packet_structure = &mut self.packet_structures[packet_structure_id];
+                let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
                 if packet_structure.fields.len() == 1 {
-                    return Err(DeletePacketStructureComponentError::LastField);
+                    return Err(Error::CannotDeleteLastField);
                 }
 
                 let removed_field = packet_structure.fields.remove(component_index);
@@ -445,7 +508,8 @@ impl PacketStructureManager {
                     packet_structure,
                     -(removed_field.r#type.size() as isize),
                     removed_field.offset_in_packet,
-                );
+                )?;
+
                 for field in &mut packet_structure.fields {
                     if field.index > removed_field.index {
                         field.index -= 1;
@@ -453,33 +517,28 @@ impl PacketStructureManager {
                 }
             }
             PacketComponentType::Delimiter => {//also doesn't seem to work
-                let packet_structures = &mut self.packet_structures;
+                let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
-                if packet_structures[packet_structure_id].delimiters.len() == 1 {
-                    return Err(DeletePacketStructureComponentError::LastDelimiter);
+                if packet_structure.delimiters.len() == 1 {
+                    return Err(Error::CannotDeleteLastDelimiter);
                 }
 
-                let removed_delimiter = packet_structures[packet_structure_id].delimiters.remove(component_index);
+                let removed_delimiter = packet_structure.delimiters.remove(component_index);
 
-                if let Err(colliding_ids) = Self::check_for_identifier_collisions(
-                    packet_structures,
+                if let Some(colliding_ids) = Self::check_for_identifier_collisions(
+                    &packet_structures,
                     packet_structure_id,
-                    &packet_structures[packet_structure_id].delimiters,
+                    &packet_structure.delimiters,
                 ) {
-                    return Err(
-                        DeletePacketStructureComponentError::DelimiterIdentifierCollision(
-                            colliding_ids,
-                        ),
-                    );
+                    return Err(Error::DelimiterIdentifierCollision(colliding_ids));
                 }
 
-                let packet_structure = &mut self.packet_structures[packet_structure_id];
-
+                let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
                 Self::shift_components_after(
                     packet_structure,
                     -(removed_delimiter.identifier.len() as isize),
                     removed_delimiter.offset_in_packet,
-                );
+                )?;
                 for delimiter in &mut packet_structure.delimiters {
                     if delimiter.index > removed_delimiter.index {
                         delimiter.index -= 1;
@@ -487,15 +546,16 @@ impl PacketStructureManager {
                 }
             }
             PacketComponentType::Gap => {
-                Self::set_gap_size(self, packet_structure_id, component_index, 0)//not working
+                // TODO: not working
+                Self::set_gap_size(self, packet_structure_id, component_index, 0)?;
             }
-        }
-        self.update_tracked_values();
+        };
+
         Ok(())
     }
 
-    ///Deletes the packet structure with the given packet structure id
-    pub fn delete_packet_structure(&mut self, packet_structure_id: usize){
+    /// Deletes the packet structure with the given packet structure id
+    pub fn delete_packet_structure(&mut self, packet_structure_id: usize) {
         self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
         self.update_tracked_values();
     }
@@ -526,11 +586,11 @@ impl PacketStructureManager {
 
 #[cfg(test)]
 mod tests {
-    use super::*;//lets the unit tests use everything in this file
+    use super::*; // lets the unit tests use everything in this file
     #[test]
     fn test_set_packet_name(){
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
@@ -548,22 +608,22 @@ mod tests {
         let packet_metadata_type = PacketMetadataType::None;
         let packet_field = PacketField{index: 0, name: String::from("notname"), r#type: packet_field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![packet_field],
             delimiters: vec![],
         });
-        
+
         packet_structure_manager.set_field_name(0, 0, "name");
-      
+
 
         assert_eq!(packet_structure_manager.packet_structures[0].fields[0].name, "name")
-        
+
     }
 
     #[test]
-    
+
     fn test_set_field_type() {
         let packet_field_test_1 = PacketFieldType::UnsignedByte;
         let packet_field_test_2 = PacketFieldType::SignedShort;
@@ -577,7 +637,7 @@ mod tests {
                 let packet_field = PacketField{index: 0, name: String::from("name"), r#type: field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
                 let packet_field2 = PacketField{index: 1, name: String::from("name2"), r#type: field_type, offset_in_packet: field_type.size(), metadata_type: packet_metadata_type};
                 let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-                let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+                let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
                     id: 0,
                     name: String::from("First Name"),
                     fields: vec![packet_field, packet_field2],
@@ -588,7 +648,7 @@ mod tests {
                 assert_eq!(packet_structure_manager.packet_structures[0].fields[1].offset_in_packet, field_type2.size())
 
             }
-            
+
         }
 
     }
@@ -600,7 +660,7 @@ mod tests {
         let packet_metadata_type2 = PacketMetadataType::Timestamp;
         let packet_field = PacketField{index: 0, name: String::from("name"), r#type: packet_field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![packet_field],
@@ -618,7 +678,7 @@ mod tests {
         let packet_delimiter = PacketDelimiter{index: 0, name: String::from("delimiter_name"), identifier: vec![], offset_in_packet: 0};
 
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
@@ -639,20 +699,20 @@ mod tests {
 
 
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![packet_delimiter, packet_delimiter2],
         });
 
-        
+
         let _ = packet_structure_manager.set_delimiter_identifier(0, 0, "1");
-        
+
         assert_eq!(packet_structure_manager.packet_structures[0].delimiters[0].identifier, vec![16]);
         assert_eq!(packet_structure_manager.packet_structures[0].delimiters[1].offset_in_packet, vec![16].len());
     }
-    
+
     #[test]
 
     fn test_set_gap_size() {
@@ -660,10 +720,10 @@ mod tests {
     }
 
     #[test]
-    
+
     fn test_add_field() {
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
@@ -680,7 +740,7 @@ mod tests {
 
     fn test_add_delimiter() {
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object 
+        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
@@ -702,7 +762,7 @@ mod tests {
     }
 
     #[test]
-    
+
     fn test_delete_packet_structure_component() {
 
     }
