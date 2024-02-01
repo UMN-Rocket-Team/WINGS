@@ -94,7 +94,6 @@ impl PacketParser {
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
                     vec![PacketFieldValue::UnsignedByte(0); packet_structure.fields.len()];
-                let timestamp: Option<i64> = None;
 
                 for k in 0..packet_structure.fields.len() {
                     let field = &packet_structure.fields[k];
@@ -111,7 +110,7 @@ impl PacketParser {
                 packets.push(Packet {
                     structure_id: packet_structure.id,
                     field_data,
-                    timestamp: timestamp.unwrap_or(chrono::offset::Utc::now().timestamp_millis()),
+                    field_meta_data: vec![],
                 });
 
                 // This points to the index *after* the packet ends.

@@ -10,7 +10,7 @@ use crate::models::packet_structure::PacketFieldType;
 pub struct Packet {
     pub(crate) structure_id: usize,
     pub(crate) field_data: Vec<PacketFieldValue>,
-    pub(crate) timestamp: i64,
+    pub(crate) field_meta_data: Vec<PacketFieldValue>,
 }
 
 #[derive(PartialEq, Serialize, Clone, Debug, Copy)]
