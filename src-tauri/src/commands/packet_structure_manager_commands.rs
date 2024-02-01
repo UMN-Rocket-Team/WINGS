@@ -3,12 +3,7 @@ use crate::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
     packet_view_model::{PacketComponentType, PacketViewModel},
-    },
-    packet_structure_events::update_packet_structures,
-    packet_structure_manager::{
-        self, DeletePacketStructureComponentError, SetDelimiterIdentifierError,
-    },
-    packet_structure_manager_state::PacketStructureManagerState,
+    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, packet_structure_manager_state::PacketStructureManagerState
 };
 // # packet_structure_manager_commands
 // 
@@ -126,16 +121,11 @@ pub fn set_delimiter_identifier(
             identifier,
         ) {
             Ok(_) => Ok((vec![packet_structure_id], None)),
-            Err(SetDelimiterIdentifierError::InvalidHexadecimalString(message)) => {
-                Err((vec![packet_structure_id], None, message))
+            Err(error) => match error.clone() {
+                Error::InvalidHexCharacter(_) => Err((vec![packet_structure_id], None, error.to_string())),
+                Error::DelimiterIdentifierCollision(ids) => Err((ids, None, error.to_string())),
+                _ => Err((vec![], None, error.to_string()))
             }
-            Err(SetDelimiterIdentifierError::IdentifierCollision(
-                colliding_packet_structure_ids,
-            )) => Err((
-                colliding_packet_structure_ids,
-                None,
-                String::from("Identifiers must be unique between packet structures!"),
-            )),
         },
     )
 }
@@ -226,17 +216,13 @@ pub fn delete_packet_structure_component(
                 component_type,
             ) {
                 Ok(_) => {}
-                Err(error) => {
-                    return match error {
-                        DeletePacketStructureComponentError::LastField => {
-                            Err((vec![], None, String::from("Last Field")))
-                        }
-                        DeletePacketStructureComponentError::LastDelimiter => {
-                            Err((vec![], None, String::from("Last Delimiter")))
-                        }
-                        DeletePacketStructureComponentError::DelimiterIdentifierCollision(
-                            identifiers,
-                        ) => Err((identifiers, None, String::from("Identifier collision"))),
+                Err(error) => match error {
+                    // no idea why it needs ref here but that's what the compiler suggested and it works
+                    Error::DelimiterIdentifierCollision(ref ids) => {
+                        return Err((ids.to_vec(), None, error.to_string()));
+                    }
+                    _ => {
+                        return Err((vec![], None, error.to_string()));
                     }
                 }
             }
@@ -325,10 +311,7 @@ pub fn register_empty_packet_structure(
                 ],
             }) {
                 Ok(new_id) => Ok((vec![new_id], None)),
-                Err(error) => match error {
-                    packet_structure_manager::PacketStructureRegistrationError::NameAlreadyRegistered(_) => Err((vec![], None, String::from("Unique name finding error: name collision!"))),
-                    packet_structure_manager::PacketStructureRegistrationError::DelimitersAlreadyRegistered(_) => Err((vec![], None, String::from("Unique delimiter finding error: delimiter collision!"))),
-                }
+                Err(error) => Err((vec![], None, error.to_string()))
             }
         },
     )

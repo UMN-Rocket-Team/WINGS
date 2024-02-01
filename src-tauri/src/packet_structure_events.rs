@@ -24,7 +24,7 @@ fn emit_packet_structure_update_event(
     let mut packet_view_model_updates = Vec::with_capacity(created_or_updated_packet_view_model_indices.len());
     for packet_view_model_index in created_or_updated_packet_view_model_indices {
         packet_view_model_updates.push(PacketStructureViewModelUpdate::CreateOrUpdate(create_packet_view_model(
-            &packet_structure_manager.packet_structures[packet_view_model_index],
+            &packet_structure_manager.get_packet_structure(packet_view_model_index).unwrap(),
         )));
     }
 
