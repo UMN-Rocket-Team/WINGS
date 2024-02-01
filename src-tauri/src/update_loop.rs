@@ -9,7 +9,7 @@ use crate::{
     models::packet::Packet,
     packet_parser_state::use_packet_parser, packet_parser_state::PacketParserState,
     packet_structure_manager_state::PacketStructureManagerState, communications::serial_uart::SerialPortNames,
-    communication_state::CommunicationManagerState, use_packet_structure_manager, state::{communication_state::use_communication_manager, data_processor_state::{DataProcessorState, use_data_processor}}, data_processing::DisplayPacket,
+    communication_state::CommunicationManagerState, use_packet_structure_manager, state::communication_state::use_communication_manager,
 };
 
 pub struct TimerState {
@@ -24,11 +24,10 @@ impl TimerState {
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
                 app_handle.state::<PacketParserState>(),
-                app_handle.state::<DataProcessorState>(),
             ) {
                 Ok(result) => {
                     //sends packets to frontend
-                    if result.new_available_port_names.is_some() || result.display_packets.is_some() {
+                    if result.new_available_port_names.is_some() || result.parsed_packets.is_some() {
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
                 }
@@ -59,7 +58,7 @@ struct RefreshTimerData {
 #[serde(rename_all = "camelCase")]
 pub struct RefreshAndReadResult {
     pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
-    pub(crate) display_packets: Option<Vec<DisplayPacket>>,
+    pub(crate) parsed_packets: Option<Vec<Packet>>,
 
 }
 
@@ -86,11 +85,10 @@ fn refresh_available_ports_and_read_active_port(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     packet_parser_state: tauri::State<'_, PacketParserState>,
-    data_processor_state: tauri::State<'_, DataProcessorState>,
 ) -> Result<RefreshAndReadResult, String> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
-        display_packets: None,
+        parsed_packets: None,
     };
     let mut read_data: Vec<u8> = vec![];
 
@@ -109,7 +107,6 @@ fn refresh_available_ports_and_read_active_port(
         Err(message) => return Err(message)
     }
     if !read_data.is_empty() {
-        let mut parsed_packets: Vec<Packet> = vec![];
         match use_packet_parser(packet_parser_state, &mut |packet_parser| {
             use_packet_structure_manager::<(), String>( &packet_structure_manager_state, &mut |packet_structure_manager| {
                 use_data_processor(&data_processor_state, &mut |data_processor| {
@@ -128,6 +125,15 @@ fn refresh_available_ports_and_read_active_port(
         match use_data_processor::<(), String>(&data_processor_state, &mut |data_processor| {
             result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets));
             Ok(())
+            packet_parser.push_data(&read_data);
+
+            use_packet_structure_manager::<(), &str>(
+                &packet_structure_manager_state,
+                &mut |packet_structure_manager| {
+                    Ok(result.parsed_packets =
+                        Some(packet_parser.parse_packets(&packet_structure_manager)))
+                },
+            )
         }) {
             Ok(_) => {}
             Err(message) => return Err(message),
