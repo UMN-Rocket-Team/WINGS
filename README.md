@@ -1,3 +1,13 @@
+# links to external materials
+
+new member training:
+https://github.umn.edu/Rocket-Team/UFC-2/wiki/Software-Training
+coding practices:
+https://github.umn.edu/Rocket-Team/UFC-2/wiki/Software-Coding-Practices
+Wiki:
+https://github.umn.edu/Rocket-Team/UFC-2/wiki/Wings-Reference
+# old README below
+
 # wings
 
 The Ground Station of the University of Minnesota Twin Cities Rocket Team.
