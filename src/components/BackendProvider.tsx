@@ -7,8 +7,7 @@ import {
     SerialPortNames,
     PacketViewModelUpdate,
     PacketViewModelUpdateType,
-    SendingLoopState,
-    DisplayPacketFieldNames
+    SendingLoopState
 } from "../backend_interop/types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
@@ -83,9 +82,9 @@ export const BackendProvider: ParentComponent = (props) => {
                 if (result.newAvailablePortNames) {
                     setAvailablePortNames(result.newAvailablePortNames);
                 }
-                if (result.displayPackets) {
-                    pushParsedPackets(result.displayPackets);
-                    setParsedPacketCount(parsedPacketCount() + result.displayPackets.length);
+                if (result.parsedPackets) {
+                    pushParsedPackets(result.parsedPackets);
+                    setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }
             }),
             await listen<PacketViewModelUpdate[]>("packet-structures-update", event => {
@@ -118,9 +117,6 @@ export const BackendProvider: ParentComponent = (props) => {
                     }
                     
                 }
-            }),
-            await listen<DisplayPacketFieldNames[]>("display-fields-update", event => {
-                
             }),
             await listen<SendingLoopState>("sending-loop-update", ({payload}) => {
                 setSendingLoopState(payload);
