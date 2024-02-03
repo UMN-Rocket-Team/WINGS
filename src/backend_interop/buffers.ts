@@ -1,4 +1,4 @@
-import { DisplayPacket, PacketData } from "./types";
+import { Packet, PacketData } from "./types";
 
 /**
  * The global map between packet ids and the list of received packet data for the packet with that id
@@ -10,14 +10,17 @@ export const parsedPackets: Record<number, PacketData[]> = [];
  * 
  * @param packets the newly parsed packets to insert into the global map
  */
-export const pushParsedPackets = (packets: DisplayPacket[]): void => {
+export const pushParsedPackets = (packets: Packet[]): void => {
     let sortedNewParsedPackets: Record<number, PacketData[]> = [];
 
     for (const packet of packets) {
         if (sortedNewParsedPackets[packet.structureId] === undefined) {
             sortedNewParsedPackets[packet.structureId] = [];
         }
-        const packetData: PacketData = { fieldData: packet.fieldData};
+        const packetData: PacketData = {
+            fieldData: packet.fieldData,
+            metaData: packet.metaData
+        };
         sortedNewParsedPackets[packet.structureId].push(packetData);
     }
 
@@ -35,7 +38,7 @@ const clearParsedPackets = (): void => {
     }
 }
 
-export const setParsedPackets = (packets: DisplayPacket[]): void => {
+export const setParsedPackets = (packets: Packet[]): void => {
     clearParsedPackets();
     pushParsedPackets(packets);
 }

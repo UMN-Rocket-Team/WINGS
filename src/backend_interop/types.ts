@@ -9,7 +9,7 @@ export type SerialUpdateResult = {
     /**
      * The list of new parsed packets
      */
-    displayPackets: DisplayPacket[] | null,
+    parsedPackets: Packet[] | null,
 }
 
 /**
@@ -35,20 +35,16 @@ export type SerialPortNames = {
 /**
  * DataPackets formatted to be used by graphs and other forms of display
  */
-export type DisplayPacket = PacketData & {
+export type Packet = PacketData & {
     structureId: number,
 };
-
-export type DisplayPacketFieldNames = {
-    structureId: number,
-    fields: string[],
-}
 
 /**
  * The type of unidentified radio data
  */
 export type PacketData = {
     fieldData: PacketFieldValue[],
+    metaData: PacketFieldValue[]
 };
 
 /**
