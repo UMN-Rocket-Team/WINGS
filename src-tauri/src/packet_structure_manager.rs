@@ -473,7 +473,7 @@ impl PacketStructureManager {
         component_index: usize,
     ) -> Result<(), Error> {
         // TODO: Doesnt seem to work when the current index is a gap or the end of a packet
-        let packet_structure = &mut self.packet_structures[packet_structure_id];
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
         let minimum_offset = if is_field {
             packet_structure.fields[component_index].offset_in_packet
@@ -555,32 +555,9 @@ impl PacketStructureManager {
     }
 
     /// Deletes the packet structure with the given packet structure id
-    pub fn delete_packet_structure(&mut self, packet_structure_id: usize) {
+    pub fn delete_packet_structure(&mut self, packet_structure_id: usize) -> Result<(), Error> {
         self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
-        self.update_tracked_values();
-    }
-
-    /// Updates all of the universal values in the manager 
-    /// 
-    /// this isnt the most efficient way of doing this since 
-    /// not all of these values need to be updated every time the function is called.
-    /// choose to write it this way since its more general and can be reused alot in the code
-    /// keep in mind that the packet structure manager does not need to be super fast since its not done while the groundstation is running
-    /// 
-    /// call this function whenever a packet structures length is changed, or a delimiters location is changed
-    fn update_tracked_values(&mut self){
-        let mut min_ps = usize::MAX;
-        let mut max_ps = 0;
-        let mut max_delim = 0;
-        for ps in &self.packet_structures {
-            let packet_size = ps.size();
-            min_ps = min(self.minimum_packet_structure_size, packet_size);
-            max_ps = max(self.maximum_packet_structure_size, packet_size);
-            max_delim = max(self.maximum_first_delimiter,ps.delimiters[0].offset_in_packet);
-        }
-        self.minimum_packet_structure_size = min_ps;
-        self.maximum_packet_structure_size = max_ps;
-        self.maximum_first_delimiter = max_delim;
+        Ok(())
     }
 }
 

@@ -22,8 +22,10 @@ pub fn set_packet_name(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.set_packet_name(packet_structure_id, name);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.set_packet_name(packet_structure_id, name) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -40,8 +42,10 @@ pub fn set_field_name(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.set_field_name(packet_structure_id, field_index, name);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.set_field_name(packet_structure_id, field_index, name) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -58,8 +62,10 @@ pub fn set_field_type(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.set_field_type(packet_structure_id, field_index, r#type);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.set_field_type(packet_structure_id, field_index, r#type) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -76,12 +82,14 @@ pub fn set_field_metadata_type(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.set_field_metadata_type(
+            match packet_structure_manager.set_field_metadata_type(
                 packet_structure_id,
                 field_index,
                 metadata_type,
-            );
-            Ok((vec![packet_structure_id], None))
+            ) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -98,8 +106,10 @@ pub fn set_delimiter_name(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.set_delimiter_name(packet_structure_id, delimiter_index, name);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.set_delimiter_name(packet_structure_id, delimiter_index, name) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -142,8 +152,10 @@ pub fn set_gap_size(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.set_gap_size(packet_structure_id, gap_index, size);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.set_gap_size(packet_structure_id, gap_index, size) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -158,8 +170,10 @@ pub fn add_field(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.add_field(packet_structure_id);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.add_field(packet_structure_id) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -174,8 +188,10 @@ pub fn add_delimiter(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.add_delimiter(packet_structure_id);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.add_delimiter(packet_structure_id) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -192,8 +208,10 @@ pub fn add_gap_after(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.add_gap_after(packet_structure_id, is_field, component_index);
-            Ok((vec![packet_structure_id], None))
+            match packet_structure_manager.add_gap_after(packet_structure_id, is_field, component_index) {
+                Ok(()) => Ok((vec![packet_structure_id], None)),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
@@ -327,8 +345,10 @@ pub fn delete_packet_structure(
         app_handle,
         packet_structure_manager_state,
         &mut |packet_structure_manager| {
-            packet_structure_manager.delete_packet_structure(packet_structure_id);
-            Ok((vec![], Some(vec![packet_structure_id])))
+            match packet_structure_manager.delete_packet_structure(packet_structure_id) {
+                Ok(()) => Ok((vec![], Some(vec![packet_structure_id]))),
+                Err(err) => Err((vec![], None, err.to_string()))
+            }
         },
     )
 }
