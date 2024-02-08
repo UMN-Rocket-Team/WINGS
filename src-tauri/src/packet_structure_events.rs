@@ -17,20 +17,20 @@ pub enum PacketStructureViewModelUpdate {
 
 fn emit_packet_structure_update_event(
     app_handle: &tauri::AppHandle,
-    created_or_updated_packet_view_model_indices: Vec<usize>,
-    deleted_packet_view_model_indices: Option<Vec<usize>>,
+    created_or_updated_packet_view_model_ids: Vec<usize>,
+    deleted_packet_view_model_ids: Option<Vec<usize>>,
     packet_structure_manager: &PacketStructureManager,
 ) {
-    let mut packet_view_model_updates = Vec::with_capacity(created_or_updated_packet_view_model_indices.len());
-    for packet_view_model_index in created_or_updated_packet_view_model_indices {
+    let mut packet_view_model_updates = Vec::with_capacity(created_or_updated_packet_view_model_ids.len());
+    for packet_view_model_id in created_or_updated_packet_view_model_ids {
         packet_view_model_updates.push(PacketStructureViewModelUpdate::CreateOrUpdate(create_packet_view_model(
-            &packet_structure_manager.get_packet_structure(packet_view_model_index).unwrap(),
+            &packet_structure_manager.get_packet_structure(packet_view_model_id).unwrap(),
         )));
     }
 
-    if let Some(deleted_packet_view_model_indices) = deleted_packet_view_model_indices {
-        for packet_view_model_index in deleted_packet_view_model_indices {
-            packet_view_model_updates.push(PacketStructureViewModelUpdate::Delete(packet_view_model_index));
+    if let Some(deleted_packet_view_model_ids) = deleted_packet_view_model_ids {
+        for packet_view_model_id in deleted_packet_view_model_ids {
+            packet_view_model_updates.push(PacketStructureViewModelUpdate::Delete(packet_view_model_id));
         }
     }
 
@@ -51,20 +51,20 @@ pub fn update_packet_structures(
         &mut |packet_structure_manager| {
             let result = callback(packet_structure_manager);
             match result {
-                Ok((modified_packet_view_model_indices, deleted_packet_view_model_indices)) => {
+                Ok((modified_packet_view_model_ids, deleted_packet_view_model_ids)) => {
                     emit_packet_structure_update_event(
                         &app_handle,
-                        modified_packet_view_model_indices,
-                        deleted_packet_view_model_indices,
+                        modified_packet_view_model_ids,
+                        deleted_packet_view_model_ids,
                         packet_structure_manager,
                     );
                     Ok(())
                 }
-                Err((modified_packet_view_model_indices, deleted_packet_view_model_indices, message)) => {
+                Err((modified_packet_view_model_ids, deleted_packet_view_model_ids, message)) => {
                     emit_packet_structure_update_event(
                         &app_handle,
-                        modified_packet_view_model_indices,
-                        deleted_packet_view_model_indices,
+                        modified_packet_view_model_ids,
+                        deleted_packet_view_model_ids,
                         packet_structure_manager,
                     );
                     Err(message)
