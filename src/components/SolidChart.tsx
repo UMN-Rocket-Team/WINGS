@@ -56,7 +56,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
         type: "line",
-        data: data,
+        data: data, //MAYBE WRONG
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -105,8 +105,10 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;
         }
+        for (let i = 0; i < datasets.length; i++) {
+            config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })));
+        }
 
-        config.data.datasets[0].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[0]] })));
 
         lastPacketCount = packetData.length;
 
@@ -121,10 +123,13 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             return;
         }
 
-        config.data.datasets[0].data.push(...packetData.map(packetData => ({
-            x: packetData.fieldData[props.graph.x],
-            y: packetData.fieldData[props.graph.y[0]]
-        })));
+        for (let i = 0; i < datasets.length; i++) {
+            config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })));
+        }
+        // config.data.datasets[0].data.push(...packetData.map(packetData => ({
+        //     x: packetData.fieldData[props.graph.x],
+        //     y: packetData.fieldData[props.graph.y[0]]
+        // })));
         lastPacketCount = packetData.length;
         chart.update();
     });
