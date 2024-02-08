@@ -7,7 +7,8 @@ import {
     SerialPortNames,
     PacketViewModelUpdate,
     PacketViewModelUpdateType,
-    SendingLoopState
+    SendingLoopState,
+    Packet
 } from "../backend_interop/types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
@@ -130,15 +131,15 @@ export const BackendProvider: ParentComponent = (props) => {
 
     // TODO: remove once live telemetry is confirmed to work
     // Push test data to graphs once per second
-    // setInterval(() => {
+    setInterval(() => {
         
-    //     const parsedPackets: Packet[] = [
-    //         {fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now()}
-    //     ];
+        const parsedPackets: Packet[] = [
+            {fieldData: [Date.now(), 20, 30, 40], metaData: [], structureId: 0}
+        ];
     
-    //     pushParsedPackets(parsedPackets);
-    //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
-    // }, 1000);
+        pushParsedPackets(parsedPackets);
+        setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
+    }, 1000);
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted

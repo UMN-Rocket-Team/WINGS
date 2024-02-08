@@ -24,18 +24,35 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    const initialParsedPackets = parsedPackets[props.graph.packetId];
-
-    const data = {
-        datasets: [{
+    const initialParsedPackets = parsedPackets[props.graph.x];
+    let datasets = []
+    for (let i = 0; i < props.graph.y.length; i++) {
+        const dataName = `data${i + 1}`;
+        const dataValue = {
             label: props.graph.graphName,
-            // TODO BELOW: MAKE DATA INITIALIZED CORRECTLY
-            data: initialParsedPackets?.map(packetData => ({ x: props.graph.x packetData.timestamp, y: {packetData.fieldData[props.graph.y]} })) ?? [],
-            backgroundColor: 'dark-blue',
-            borderColor: 'blue',
+            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })) ?? [],
+            backgroundColor: 'black',
+            borderColor: 'black',
             spanGaps: true,
-        }]
-    };
+        }
+        datasets.push({dataName: dataValue})
+    }
+    const data = {datasets};
+    //                                                  TODO: Ask Kuba how exactly I am extracting the data set for each single variable
+    //                                                  I plan to just extract the data for each variable whenever GraphTab is clicked
+    //                                                  and save the data for each separate var so that I save space and time complexity
+    //                                                  by not wastefully reallocating the data for each graph that needs to use it yk
+
+    // const data = {
+    //     datasets: [{
+    //         label: props.graph.graphName,
+    //         // TODO BELOW: MAKE DATA INITIALIZED CORRECTLY
+    //         data: initialParsedPackets?.map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[0]] })) ?? [],
+    //         backgroundColor: 'dark-blue',
+    //         borderColor: 'blue',
+    //         spanGaps: true,
+    //     }]
+    // };
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
         type: "line",
@@ -78,18 +95,18 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
 
     let lastPacketCount = initialParsedPackets?.length ?? 0;
 
-    // Add new data to the chart whenever new data is parsed by the packet parser
+    // // Add new data to the chart whenever new data is parsed by the packet parser
     createEffect(() => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
-        const packetData = parsedPackets[props.graph.packetId];
+        const packetData = parsedPackets[props.graph.x];
 
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;
         }
 
-        config.data.datasets[0].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })));
+        config.data.datasets[0].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[0]] })));
 
         lastPacketCount = packetData.length;
 
@@ -97,16 +114,16 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     }, { defer: true });
 
     onMount(() => {
-        console.log("here")
+        console.log("In onMount");
         chart = new Chart(canvas, config);
-        const packetData = parsedPackets[props.graph.packetId];
+        const packetData = parsedPackets[props.graph.x];
         if (packetData === undefined) {
             return;
         }
 
         config.data.datasets[0].data.push(...packetData.map(packetData => ({
-            x: packetData.timestamp,
-            y: packetData.fieldData[props.graph.fieldIndex].data
+            x: packetData.fieldData[props.graph.x],
+            y: packetData.fieldData[props.graph.y[0]]
         })));
         lastPacketCount = packetData.length;
         chart.update();
