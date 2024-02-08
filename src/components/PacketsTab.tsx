@@ -87,7 +87,7 @@ const PacketsTab: Component = () => {
                     })
                     }}>Import Packet</button>
                 {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
-                <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket())}>Export Packet...</button>
+                <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket()!)}>Export Packet...</button>
                 <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
@@ -99,7 +99,7 @@ const PacketsTab: Component = () => {
                             <label class='flex flex-col'>
                                 <span>Name</span>
                                 <input class="inputBox" type='text' value={selectedPacket()!.name}
-                                    onInput={async e => await showErrorModalOnError(async () => await setPacketName(selectedPacket().id, (e.target as HTMLInputElement).value), 'Failed to change packet name')} />
+                                    onInput={async e => await showErrorModalOnError(async () => await setPacketName(selectedPacket()!.id, (e.target as HTMLInputElement).value), 'Failed to change packet name')} />
                             </label>
                             <span>Components</span>
                             <For each={selectedPacketStructureComponents()}>
@@ -124,7 +124,7 @@ const PacketsTab: Component = () => {
                             </For>
                         </div>
                         <button class="redButton" onClick={async () => await showErrorModalOnError(async () => {
-                            await deletePacketStructure(selectedPacket().id);
+                            await deletePacketStructure(selectedPacket()!.id);
                             // Select the previous packet structure if the last packet structure was deleted, select no packet structure
                             // if none are left
                             setSelectedPacketStructureID(packetViewModels.length === 0 ? null : packetViewModels[0].id);
