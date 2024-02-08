@@ -32,7 +32,18 @@ pub enum Error {
 
 impl Error {
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        match self {
+            Error::PacketDoesNotExist(id) => format!("Packet {id} does not exist"),
+            Error::NameAlreadyRegistered(name) => format!("Packet with name {name} already exists"),
+            Error::DelimitersAlreadyRegistered(id) => format!("Delimiters are already registered by packet ID {id}"),
+            Error::FieldOffsetOverflow => "Field offset overflow".to_string(),
+            Error::DelimiterOffsetOverflow => "Delimiter offset overflow".to_string(),
+            Error::InvalidHexCharacter(char) => format!("{char} is an invalid hex character"),
+            Error::EmptyDelimiterIdentifier => format!("Delimiter identifier cannot be empty"),
+            Error::DelimiterIdentifierCollision(ids) => format!("Delimiter identifiers collides with packet IDs {:?}", ids),
+            Error::CannotDeleteLastField => "Cannot delete last field".to_string(),
+            Error::CannotDeleteLastDelimiter => "Cannot delete last delimiter".to_string(),
+        }
     }
 }
 
