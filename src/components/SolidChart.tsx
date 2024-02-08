@@ -10,7 +10,7 @@ import { parsedPackets } from "../backend_interop/buffers";
 Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
 
 type SolidChartProps = {
-    fieldInPacket: GraphStruct;
+    graph: GraphStruct;
 };
 
 /**
@@ -24,12 +24,13 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    const initialParsedPackets = parsedPackets[props.fieldInPacket.packetId];
+    const initialParsedPackets = parsedPackets[props.graph.packetId];
 
     const data = {
         datasets: [{
-            label: props.fieldInPacket.name,
-            data: initialParsedPackets?.map(packetData => ({ x: packetData.timestamp, y: packetData.fieldData[props.fieldInPacket.fieldIndex] })) ?? [],
+            label: props.graph.graphName,
+            // TODO BELOW: MAKE DATA INITIALIZED CORRECTLY
+            data: initialParsedPackets?.map(packetData => ({ x: props.graph.x packetData.timestamp, y: {packetData.fieldData[props.graph.y]} })) ?? [],
             backgroundColor: 'dark-blue',
             borderColor: 'blue',
             spanGaps: true,
@@ -57,7 +58,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
                 },
                 title: {
                     display: true,
-                    text: props.fieldInPacket.name,
+                    text: props.graph.graphName,
                 }
             },
             scales: {
@@ -82,7 +83,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
-        const packetData = parsedPackets[props.fieldInPacket.packetId];
+        const packetData = parsedPackets[props.graph.packetId];
 
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;
@@ -98,14 +99,14 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     onMount(() => {
         console.log("here")
         chart = new Chart(canvas, config);
-        const packetData = parsedPackets[props.fieldInPacket.packetId];
+        const packetData = parsedPackets[props.graph.packetId];
         if (packetData === undefined) {
             return;
         }
 
         config.data.datasets[0].data.push(...packetData.map(packetData => ({
             x: packetData.timestamp,
-            y: packetData.fieldData[props.fieldInPacket.fieldIndex].data
+            y: packetData.fieldData[props.graph.fieldIndex].data
         })));
         lastPacketCount = packetData.length;
         chart.update();
