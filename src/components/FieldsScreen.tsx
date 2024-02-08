@@ -54,7 +54,6 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 
 
 
-
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
     const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
         if (isChecked) {
@@ -93,7 +92,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
                 onClick={() => {
-                    setSelected([])
+                    setGraph([])
                 }}>
                 <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
@@ -102,18 +101,6 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
             <div
                 class="absolute flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll"
                 style={{ "width": "90%" }}>
-                {/* <For each={graphs}>
-                    {(fieldInPacket: GraphStruct) => {
-                        const handleYAxisSelect = (isChecked: boolean, packetId: number, fieldIndex: number) => {
-                            if (isChecked) {
-                                setSelected([...selected, { packetId: packetId, fieldIndex: fieldIndex }]);
-                            } else {
-                                setSelected(selected.filter(
-                                    fieldInPacket => fieldInPacket.packetId !== packetId || fieldInPacket.fieldIndex !== fieldIndex));
-                            }
-                        }
-                    }}
-                </For> */}
                 <For each={graphs}>
                     {(graph: GraphStruct, index) => {
                         const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x);
@@ -140,3 +127,7 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 }
 
 export default FieldsScreen;
+
+export const getGraphs = () => {
+    return graphs;
+}

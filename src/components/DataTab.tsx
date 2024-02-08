@@ -1,5 +1,6 @@
 import {Component, createSignal, For} from "solid-js";
 import FieldsScreenContainer from "./FieldsScreenContainer";
+import FieldsScreen from "./FieldsScreen";
 import logo from "../assets/logo.png";
 import {useBackend} from "./BackendProvider";
 import {setActivePort} from "../backend_interop/api_calls";
@@ -64,7 +65,12 @@ const DataTab: Component = () => {
 
     return (
         <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
-            <FieldsScreenContainer />
+            <div class="flex flex-grow h-0">
+                {/*Views*/}
+                <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                    <FieldsScreen number={1} />
+                </div>
+            </div>
 
             {/*Actions bar*/}
             <footer class="flex p-2 items-center justify-between drop-shadow-lightgray dark:drop-shadow-gray">

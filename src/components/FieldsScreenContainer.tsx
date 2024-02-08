@@ -20,3 +20,10 @@ const FieldsScreenContainer: Component = () => {
 }
 
 export default FieldsScreenContainer;
+
+
+
+
+// TODO: Get rid of this and make all calls go directly to FieldsScreen
+
+// DONE! Can Delete this!!!
