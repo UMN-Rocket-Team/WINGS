@@ -570,75 +570,132 @@ impl PacketStructureManager {
         self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
         Ok(())
     }
+
+
+    /// Updates all of the universal values in the manager 
+    /// 
+    /// this isnt the most efficient way of doing this since 
+    /// not all of these values need to be updated every time the function is called.
+    /// choose to write it this way since its more general and can be reused alot in the code
+    /// keep in mind that the packet structure manager does not need to be super fast since its not done while the groundstation is running
+    /// 
+    /// call this function whenever a packet structures length is changed, or a delimiters location is changed
+    fn update_tracked_values(&mut self){
+        let mut min_ps = usize::MAX;
+        let mut max_ps = 0;
+        let mut max_delim = 0;
+        for ps in &self.packet_structures {
+            let packet_size = ps.size();
+            min_ps = min(self.minimum_packet_structure_size, packet_size);
+            max_ps = max(self.maximum_packet_structure_size, packet_size);
+
+            // in tests, we can have packets with no delimiters
+            match ps.delimiters.get(0) {
+                Some(delimiter) => {
+                    max_delim = max(self.maximum_first_delimiter, delimiter.offset_in_packet)
+                },
+                None => {}
+            }
+        }
+        self.minimum_packet_structure_size = min_ps;
+        self.maximum_packet_structure_size = max_ps;
+        self.maximum_first_delimiter = max_delim;
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*; // lets the unit tests use everything in this file
+
     #[test]
     fn test_set_packet_name(){
-        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
-            id: 0,
+        // create a manager object so we can test its behavior
+        let mut packet_structure_manager = PacketStructureManager::default();
+
+        // add a test packet
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure {
+            id: 0, // id is overridden
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![],
-        });
+        }).unwrap();
 
-        packet_structure_manager.set_packet_name(0, "Second Name"); //calls the function we are testing on the manager
+        // run the manager function we are trying to test on the test packet
+        packet_structure_manager.set_packet_name(id, "Second Name").unwrap();
 
-        assert_eq!(packet_structure_manager.packet_structures[0].name, "Second Name"); //checks that the change we wanted actually happened
+        // checks that the change we wanted actually happened
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().name, "Second Name");
     }
-    //add a unit test that checks for updated minimum and maximum trackers
+
+    // add a unit test that checks for updated minimum and maximum trackers
     #[test]
     fn test_set_field_name() {
         let packet_field_type = PacketFieldType::Double;
         let packet_metadata_type = PacketMetadataType::None;
-        let packet_field = PacketField{index: 0, name: String::from("notname"), r#type: packet_field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
-        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
-            id: 0,
+        let packet_field = PacketField {
+            index: 0,
+            name: String::from("notname"),
+            r#type: packet_field_type,
+            offset_in_packet: 0,
+            metadata_type: packet_metadata_type
+        };
+
+        // add our test packet
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure {
+            id: 0, // gets overridden
             name: String::from("First Name"),
             fields: vec![packet_field],
             delimiters: vec![],
-        });
+        }).unwrap();
 
-        packet_structure_manager.set_field_name(0, 0, "name");
+        packet_structure_manager.set_field_name(id, 0, "name").unwrap();
 
-
-        assert_eq!(packet_structure_manager.packet_structures[0].fields[0].name, "name")
-
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields[0].name, "name")
     }
 
     #[test]
 
     fn test_set_field_type() {
-        let packet_field_test_1 = PacketFieldType::UnsignedByte;
-        let packet_field_test_2 = PacketFieldType::SignedShort;
-        let packet_field_test_3 = PacketFieldType::Float;
-        let packet_field_test_4 = PacketFieldType::Double;
+        let array: [PacketFieldType; 4] = [
+            PacketFieldType::UnsignedByte,
+            PacketFieldType::SignedShort,
+            PacketFieldType::Float,
+            PacketFieldType::Double
+        ];
 
-        let array: [PacketFieldType;4] = [packet_field_test_1, packet_field_test_2, packet_field_test_3, packet_field_test_4];
         for field_type in array {
             for field_type2 in array {
                 let packet_metadata_type = PacketMetadataType::None;
-                let packet_field = PacketField{index: 0, name: String::from("name"), r#type: field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
-                let packet_field2 = PacketField{index: 1, name: String::from("name2"), r#type: field_type, offset_in_packet: field_type.size(), metadata_type: packet_metadata_type};
-                let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-                let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
-                    id: 0,
+                let packet_field = PacketField {
+                    index: 0,
+                    name: String::from("name"),
+                    r#type: field_type,
+                    offset_in_packet: 0,
+                    metadata_type: packet_metadata_type
+                };
+                let packet_field2 = PacketField {
+                    index: 1,
+                    name: String::from("name2"),
+                    r#type: field_type,
+                    offset_in_packet: field_type.size(),
+                    metadata_type: packet_metadata_type
+                };
+
+                // create a test packet
+                let mut packet_structure_manager = PacketStructureManager::default();
+                let id = packet_structure_manager.register_packet_structure(&mut PacketStructure {
+                    id: 0, // gets overridden
                     name: String::from("First Name"),
                     fields: vec![packet_field, packet_field2],
                     delimiters: vec![],
-                });
-                packet_structure_manager.set_field_type(0, 0, field_type2);
-                assert_eq!(packet_structure_manager.packet_structures[0].fields[0].r#type, field_type2);
-                assert_eq!(packet_structure_manager.packet_structures[0].fields[1].offset_in_packet, field_type2.size())
+                }).unwrap();
 
+                packet_structure_manager.set_field_type(id, 0, field_type2).unwrap();
+                assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields[0].r#type, field_type2);
+                assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields[1].offset_in_packet, field_type2.size())
             }
-
         }
-
     }
 
     #[test]
@@ -646,120 +703,119 @@ mod tests {
         let packet_field_type = PacketFieldType::Double;
         let packet_metadata_type = PacketMetadataType::None;
         let packet_metadata_type2 = PacketMetadataType::Timestamp;
-        let packet_field = PacketField{index: 0, name: String::from("name"), r#type: packet_field_type, offset_in_packet: 0, metadata_type: packet_metadata_type};
-        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
-            id: 0,
+        let packet_field = PacketField {
+            index: 0,
+            name: String::from("name"),
+            r#type: packet_field_type,
+            offset_in_packet: 0,
+            metadata_type: packet_metadata_type
+        };
+
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure {
+            id: 0, // gets overridden
             name: String::from("First Name"),
             fields: vec![packet_field],
             delimiters: vec![],
-        });
+        }).unwrap();
 
-        packet_structure_manager.set_field_metadata_type(0, 0, packet_metadata_type2);
+        packet_structure_manager.set_field_metadata_type(id, 0, packet_metadata_type2).unwrap();
 
-        assert_eq!(packet_structure_manager.packet_structures[0].fields[0].metadata_type, packet_metadata_type2);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields[0].metadata_type, packet_metadata_type2);
     }
 
     #[test]
 
     fn test_set_delimiter_name() {
-        let packet_delimiter = PacketDelimiter{index: 0, name: String::from("delimiter_name"), identifier: vec![], offset_in_packet: 0};
+        let packet_delimiter = PacketDelimiter {
+            index: 0,
+            name: String::from("delimiter_name"),
+            identifier: vec![],
+            offset_in_packet: 0
+        };
 
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
-            id: 0,
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
+            id: 0, // gets overridden
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![packet_delimiter],
-        });
+        }).unwrap();
 
-        packet_structure_manager.set_delimiter_name(0, 0, "new_name");
+        packet_structure_manager.set_delimiter_name(id, 0, "new_name").unwrap();
 
-        assert_eq!(packet_structure_manager.packet_structures[0].delimiters[0].name, "new_name")
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].name, "new_name")
     }
 
     #[test]
-
     fn test_set_delimiter_identifier() {
         let packet_delimiter = PacketDelimiter{index: 0, name: String::from("delimiter_name"), identifier: vec![1,2], offset_in_packet: 0};
         let packet_delimiter2 = PacketDelimiter{index: 1, name: String::from("delimiter_name"), identifier: vec![1], offset_in_packet: 2};
 
-
-
-        let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
-            id: 0,
+        let mut packet_structure_manager = PacketStructureManager::default(); // initializes a manager object
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure { // inserts empty packet into the manager object
+            id: 0, // gets overidden
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![packet_delimiter, packet_delimiter2],
-        });
+        }).unwrap();
 
+        packet_structure_manager.set_delimiter_identifier(id, 0, "1").unwrap();
 
-        let _ = packet_structure_manager.set_delimiter_identifier(0, 0, "1");
-
-        assert_eq!(packet_structure_manager.packet_structures[0].delimiters[0].identifier, vec![16]);
-        assert_eq!(packet_structure_manager.packet_structures[0].delimiters[1].offset_in_packet, vec![16].len());
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].identifier, vec![16]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].offset_in_packet, vec![16].len());
     }
 
+    // #[test]
+    // fn test_set_gap_size() {
+    //     todo!();
+    // }
+
     #[test]
-
-    fn test_set_gap_size() {
-
-    }
-
-    #[test]
-
     fn test_add_field() {
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![],
-        });
+        }).unwrap();
 
-        packet_structure_manager.add_field(0);
-        packet_structure_manager.add_field(0);
-        packet_structure_manager.add_field(0);
-        assert_eq!(packet_structure_manager.packet_structures[0].fields.len(), 3)
+        packet_structure_manager.add_field(id).unwrap();
+        packet_structure_manager.add_field(id).unwrap();
+        packet_structure_manager.add_field(id).unwrap();
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields.len(), 3)
     }
 
     #[test]
-
     fn test_add_delimiter() {
         let mut packet_structure_manager = PacketStructureManager::default(); //initializes a manager object
-        let _ = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
             id: 0,
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![],
-        });
+        }).unwrap();
 
-        packet_structure_manager.add_delimiter(0);
-        packet_structure_manager.add_delimiter(0);
-        packet_structure_manager.add_delimiter(0);
+        packet_structure_manager.add_delimiter(id).unwrap();
+        packet_structure_manager.add_delimiter(id).unwrap();
+        packet_structure_manager.add_delimiter(id).unwrap();
 
-        assert_eq!(packet_structure_manager.packet_structures[0].delimiters.len(), 3)
-
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters.len(), 3)
     }
 
-    #[test]
+    // #[test]
+    // fn test_add_gap_after() {
 
-    fn test_add_gap_after() {
+    // }
 
-    }
+    // #[test]
+    // fn test_delete_packet_structure_component() {
 
-    #[test]
+    // }
 
-    fn test_delete_packet_structure_component() {
+    // #[test]
+    // fn test_delete_packet_structure() {
 
-    }
-
-    #[test]
-
-    fn test_delete_packet_structure() {
-
-    }
-
-
+    // }
 }
