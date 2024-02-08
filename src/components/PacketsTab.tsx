@@ -41,9 +41,8 @@ const PacketsTab: Component = () => {
     const [selectedPacketStructureID, setSelectedPacketStructureID] = createSignal<number | null>(packetViewModels.length === 0 ? null : 1);
     const [selectedPacketComponentIndex, setSelectedPacketComponentIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
 
-    // Cache (memoize) revelent information about the selected packet
-    const selectedPacket = createMemo(() => packetViewModels.find(i => i.id === selectedPacketStructureID())!);
-    const selectedPacketStructureComponents = createMemo(() => selectedPacketStructureID() === null ? [] : selectedPacket().components);
+    const selectedPacket = createMemo(() => packetViewModels.find(i => i.id === selectedPacketStructureID()) || null);
+    const selectedPacketStructureComponents = createMemo(() => selectedPacket() ? selectedPacket()!.components : []);
     const selectedPacketStructureComponent = createMemo(() => selectedPacketComponentIndex() === null ? null : selectedPacketStructureComponents()[selectedPacketComponentIndex()!]);
     const selectedFieldData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Field ? selectedPacketStructureComponent()?.data as PacketField : null);
     const selectedDelimiterData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Delimiter ? selectedPacketStructureComponent()?.data as PacketDelimiter : null);
@@ -94,7 +93,7 @@ const PacketsTab: Component = () => {
             {/* Packet structure component list */}
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col justify-between flex-grow tab">
-                    <Show when={selectedPacketStructureID() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
+                    <Show when={selectedPacket() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
                         <div class="flex flex-col flex-grow gap-2 dark:text-white">
                             <h2 class="m-0">{selectedPacket()!.name}</h2>
                             <label class='flex flex-col'>
@@ -235,7 +234,7 @@ const PacketsTab: Component = () => {
                         </Switch>
                     </div>
                     <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
-                        Delete {(selectedPacketStructureComponent()?.data as any).name ?? "Gap"}
+                        Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
                     </button>
                 </Show>
             </div>
