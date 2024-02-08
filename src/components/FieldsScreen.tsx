@@ -40,8 +40,6 @@ const FieldsScreen: Component = () => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
-    
-
 
 
     const [selected, setSelected] = createStore<FieldInPacket[]>([]);
@@ -69,7 +67,6 @@ const FieldsScreen: Component = () => {
             <button onClick={() => setGraph([...graphs, {graphName: "Graph", x: 0, y: []}])}>
                 New Graph
             </button>
-
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
                 onClick={() => {

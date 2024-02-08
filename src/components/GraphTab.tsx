@@ -22,7 +22,7 @@ const GraphTab : Component = (): JSX.Element => {
                     <For each={graphs}>
                         {(fieldInPacket: GraphStruct) =>
                             <div class="relative">
-                                <SolidChart fieldInPacket={fieldInPacket} />
+                                <SolidChart graph = {fieldInPacket} />
                             </div>
                         }
                     </For>
