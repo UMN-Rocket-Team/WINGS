@@ -14,11 +14,9 @@ import SolidChart from "./SolidChart";
 
 const GraphTab : Component = (): JSX.Element => {
     return (
-        
         <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
-            <div class="flex flex-grow h-0">
                 {/*Views*/}
-                <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, graphs.length)}, 1fr)`}}>
                     <For each={graphs}>
                         {(fieldInPacket: GraphStruct) =>
                             <div class="relative">
@@ -27,11 +25,7 @@ const GraphTab : Component = (): JSX.Element => {
                         }
                     </For>
                 </div>
-            </div>
-
         </div>
     );
-
-
 };
 export default GraphTab;
