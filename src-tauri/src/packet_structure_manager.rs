@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// Represents all possible errors that can be encountered when managing packet structures.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Error {
     /// Contains the ID that was asked for
     PacketDoesNotExist(usize),
@@ -608,6 +608,14 @@ mod tests {
     use super::*; // lets the unit tests use everything in this file
 
     #[test]
+    fn get_unknown_packet() {
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let fake_id = 0xdeadbeef;
+        assert_eq!(packet_structure_manager.get_packet_structure(fake_id), Err(Error::PacketDoesNotExist(fake_id)));
+        assert_eq!(packet_structure_manager.get_packet_structure_mut(fake_id), Err(Error::PacketDoesNotExist(fake_id)));
+    }
+
+    #[test]
     fn test_set_packet_name(){
         // create a manager object so we can test its behavior
         let mut packet_structure_manager = PacketStructureManager::default();
@@ -655,7 +663,6 @@ mod tests {
     }
 
     #[test]
-
     fn test_set_field_type() {
         let array: [PacketFieldType; 4] = [
             PacketFieldType::UnsignedByte,
@@ -725,7 +732,6 @@ mod tests {
     }
 
     #[test]
-
     fn test_set_delimiter_name() {
         let packet_delimiter = PacketDelimiter {
             index: 0,
