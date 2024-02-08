@@ -124,7 +124,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         }
 
         for (let i = 0; i < datasets.length; i++) {
-            config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })));
+            config.data.datasets[i].data.push(...packetData.map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })));
         }
         // config.data.datasets[0].data.push(...packetData.map(packetData => ({
         //     x: packetData.fieldData[props.graph.x],
