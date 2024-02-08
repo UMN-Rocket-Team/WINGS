@@ -1,5 +1,4 @@
 import {Component, createSignal, For} from "solid-js";
-import FieldsScreenContainer from "./FieldsScreenContainer";
 import FieldsScreen from "./FieldsScreen";
 import logo from "../assets/logo.png";
 import {useBackend} from "./BackendProvider";
@@ -68,7 +67,7 @@ const DataTab: Component = () => {
             <div class="flex flex-grow h-0">
                 {/*Views*/}
                 <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
-                    <FieldsScreen number={1} />
+                    <FieldsScreen/>
                 </div>
             </div>
 

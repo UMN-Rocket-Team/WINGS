@@ -27,15 +27,6 @@ export type GraphStruct = {
     y: number[],
 }
 
-/**
- * The properties required for the {@link FieldsScreen} component.
- */
-export type FieldsScreenProps = {
-    /**
-     * The user-displayable number of this screen
-     */
-    number: number;
-};
 
 /**
  * A component that:
@@ -46,7 +37,7 @@ export type FieldsScreenProps = {
  *
  * @param props an object that contains the number of this screen
  */
-const FieldsScreen: Component<FieldsScreenProps> = (props) => {
+const FieldsScreen: Component = () => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
@@ -81,13 +72,13 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
             </button>
 
             {/*Expand button*/}
-            <button class="absolute top-1 right-1 w-5 h-5 p-0"
+            {/* <button class="absolute top-1 right-1 w-5 h-5 p-0"
                 onClick={() => showModal<ExpandedFieldsModalProps, {}>(ExpandedFieldsModal, {
                     selectedFields: selected,
                     number: props.number
                 })}>
                 <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" draggable={false} />
-            </button>
+            </button> */}
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
@@ -129,5 +120,6 @@ const FieldsScreen: Component<FieldsScreenProps> = (props) => {
 export default FieldsScreen;
 
 export const getGraphs = () => {
-    return graphs;
+    // return graphs;
+    return
 }
