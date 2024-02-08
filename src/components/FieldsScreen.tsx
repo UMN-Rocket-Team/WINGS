@@ -1,13 +1,11 @@
 import { Component, For, createSignal } from "solid-js";
 import { useModal } from "./ModalProvider";
-import ExpandedFieldsModal, { ExpandedFieldsModalProps } from "./ExpandedFieldsModal";
 import { createStore, produce } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
 import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
 import expandIcon from "../assets/expand.svg";
 import closeIcon from "../assets/close.svg";
-import { SolidChartProps } from "./SolidChart";
 import { time } from "console";
 
 
@@ -27,6 +25,7 @@ export type GraphStruct = {
     y: number[],
 }
 
+export const [graphs, setGraph] = createStore<GraphStruct[]>([]);
 
 /**
  * A component that:
@@ -41,7 +40,7 @@ const FieldsScreen: Component = () => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
-    const [graphs, setGraph] = createStore<GraphStruct[]>([]);
+    
 
 
 
@@ -70,15 +69,6 @@ const FieldsScreen: Component = () => {
             <button onClick={() => setGraph([...graphs, {graphName: "Graph", x: 0, y: []}])}>
                 New Graph
             </button>
-
-            {/*Expand button*/}
-            {/* <button class="absolute top-1 right-1 w-5 h-5 p-0"
-                onClick={() => showModal<ExpandedFieldsModalProps, {}>(ExpandedFieldsModal, {
-                    selectedFields: selected,
-                    number: props.number
-                })}>
-                <img alt="Expand" src={expandIcon} class="w-full h-full dark:invert" draggable={false} />
-            </button> */}
 
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
@@ -118,8 +108,3 @@ const FieldsScreen: Component = () => {
 }
 
 export default FieldsScreen;
-
-export const getGraphs = () => {
-    // return graphs;
-    return
-}
