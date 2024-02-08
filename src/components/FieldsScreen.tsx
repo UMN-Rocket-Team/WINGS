@@ -64,7 +64,7 @@ const FieldsScreen: Component = () => {
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => setGraph([...graphs, {graphName: "Graph", x: 0, y: []}])}>
+            <button onClick={() => setGraph([...graphs, {graphName: "Graph", x: 0, y: [0]}])}>
                 New Graph
             </button>
             {/*Delete button*/}
