@@ -5,6 +5,7 @@ import TabView from "./TabView";
 import TestingTab from "./TestingTab";
 import ThemeSwitcher from "./ThemeSwitcher";
 import SendingTab from "./SendingTab";
+import GraphTab from "./GraphTab";
 
 /**
  * A list of components that are the tabs to display inside the flight viewer 
@@ -13,7 +14,8 @@ const tabs: Component[] = [
     DataTab,
     PacketsTab,
     TestingTab,
-    SendingTab
+    SendingTab,
+    GraphTab
 ];
 
 /**
@@ -23,7 +25,8 @@ const tabNames: string[] = [
     "Data",
     "Packets",
     "Testing",
-    "Sending"
+    "Sending",
+    "Graphs"
 ];
 
 /**
