@@ -4,10 +4,12 @@ import { For, JSX, createSignal } from "solid-js";
 import { FieldInPacket, GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
-import edit from "../assets/edit.png";
+import closeIcon from "../assets/close.svg";
 
 /**
  * The properties required for the {@link FieldSelectModal} component.
+ * Technically because of recent changes, we can implement all of these functions locally and access the graphStruct
+ * but for readibility we will leave it as is for now -Adit
  */
 export type FieldSelectModalProps = {
     /** Graph that is being passed */
@@ -20,6 +22,8 @@ export type FieldSelectModalProps = {
     index: number
     /** Function to update name of the given graph */
     setGraphName: (newName: string, index: number) => void
+    /** Deletes a graph */
+    deleteGraph: (index: number) => void
 }
 
 /**
@@ -110,6 +114,17 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                             Settings
                             {/* TODO!!! Allow for changing color of the graph object and  */}
                         </h3>
+                        <div class = "relative items-center justify-center" style={"text-align:center;"}>
+                            <button 
+                                class = " w-[10%] h-[10%] rounded-5 border-none justify-center"
+                                onClick={() => {
+                                    props.deleteGraph(props.index);
+                                    props.closeModal({})
+                                }}>
+                                <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert justify-center" draggable={false} />
+                            </button>
+                            
+                        </div>
                     </div>                  
                     
                 }
