@@ -105,7 +105,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                     }}
                                 </For>
                             </div>
-                        </div>  
+                        </div>
                     </div>                  
                     
                 }
