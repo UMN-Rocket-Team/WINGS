@@ -72,7 +72,7 @@ const FieldsScreen: Component = () => {
                 New Graph
             </button>
             
-            {/*Delete button*/}
+            {/* Delete button  */}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
                 onClick={() => {
                     setGraph([])
@@ -88,16 +88,22 @@ const FieldsScreen: Component = () => {
                 <For each={graphs}>
                     {(graph: GraphStruct, index) => {
                         const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x);
+
+                        //Absolutely no clue why this is needed or what it does, but if it is used in a <p> tag inside of the button below and if I remove that the code only displays 1 graph.
+                        //Again, no clue why, but it isn't breaking anything as it is right now so This can be something we come back to in the future.
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
                         return (
-                            <div class="bg-gray p-1">
-                                <button onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
-                                    graph,
-                                    handleSelectY,
-                                    handleSelectX,
-                                    index:index()
-                                })}>
+                            <div class="bg-black flex justify-center items-center w-[10%] h-[10%] p-1.5 overflow-hidden rounded-20 ">
+                                <button 
+                                    class = "bg-white w-[100%] h-[100%] rounded-20 border-none justify-center"
+                                    onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
+                                        graph,
+                                        handleSelectY,
+                                        handleSelectX,
+                                        index:index()
+                                    })
+                                }>
                                     <h3>{graph.graphName}</h3>
                                     <p>{(field?.data as PacketField)?.name}</p>
                                 </button>
