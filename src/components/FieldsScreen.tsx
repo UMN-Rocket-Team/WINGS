@@ -64,8 +64,14 @@ const FieldsScreen: Component = () => {
                 s[index].graphName = newName))
     }
 
-    const getGraphName = (index: number) => {
-        return graphs[index].graphName;
+    const deleteGraph = (index: number) => {
+        let newGraphs: GraphStruct[] = [];
+        for (let i = 0; i < graphs.length; i++) {
+            if (index !== i) {
+                newGraphs.push(graphs[i]);
+            }
+        }
+        setGraph(newGraphs);
     }
 
     let counter = 1;
@@ -110,7 +116,7 @@ const FieldsScreen: Component = () => {
                                         handleSelectX,
                                         index:index(),
                                         setGraphName,
-                                        getGraphName
+                                        deleteGraph
                                     })
                                 }>
                                     <h3>{graph.graphName}</h3>

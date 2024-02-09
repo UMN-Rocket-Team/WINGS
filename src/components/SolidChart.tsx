@@ -36,7 +36,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             borderColor: colors[i],
             spanGaps: true,
         }
-        datasets.push({dataName: dataValue})
+        datasets.push({dataValue})
     }
     const data = {datasets};
 
