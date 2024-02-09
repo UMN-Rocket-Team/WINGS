@@ -40,9 +40,6 @@ const FieldsScreen: Component = () => {
     const { packetViewModels } = useBackend();
     const { showModal } = useModal();
 
-
-
-    const [selected, setSelected] = createStore<FieldInPacket[]>([]);
     const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
         if (isChecked) {
             setGraph( produce((s) => {
@@ -61,13 +58,23 @@ const FieldsScreen: Component = () => {
                 s[index].x = 0));
         }
     }
+
+    const setGraphName = (newName: string, index: number) => {
+        setGraph( produce((s) => 
+                s[index].graphName = newName))
+    }
+
+    const getGraphName = (index: number) => {
+        return graphs[index].graphName;
+    }
+
     let counter = 1;
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
             <button onClick={() => 
             {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0]}]);
-            {counter = counter + 1};
+                {counter = counter + 1};
             }}>
                 New Graph
             </button>
@@ -94,14 +101,16 @@ const FieldsScreen: Component = () => {
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
                         return (
-                            <div class="bg-black flex justify-center items-center w-[10%] h-[10%] p-1.5 overflow-hidden rounded-20 ">
+                            <div class="bg-black flex justify-center items-center w-[100px] h-[100px] p-1.5 overflow-hidden rounded-6 ">
                                 <button 
-                                    class = "bg-white w-[100%] h-[100%] rounded-20 border-none justify-center"
+                                    class = "bg-white w-[100%] h-[100%] rounded-5 border-none justify-center"
                                     onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                         graph,
                                         handleSelectY,
                                         handleSelectX,
-                                        index:index()
+                                        index:index(),
+                                        setGraphName,
+                                        getGraphName
                                     })
                                 }>
                                     <h3>{graph.graphName}</h3>
