@@ -15,8 +15,8 @@ export type FieldSelectModalProps = {
     //  */
     //xSelectedField: FieldInPacket,
     graph: GraphStruct
-    handleSelectY: (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => void
-    handleSelectX: (isChecked: boolean, fieldIndex: number, graph: GraphStruct) => void
+    handleSelectY: (isChecked: boolean, fieldIndex: number, index: number) => void
+    handleSelectX: (isChecked: boolean, fieldIndex: number, index: number) => void
     index: number
     // /**
     //  * The list of currently selected fields for the y-axis
@@ -52,16 +52,16 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
             <For each={packetViewModels}>
                 {(packetViewModel: PacketStructureViewModel) =>
-                    <div class='flex flex-col bg-neutral-200 p-2'>
+                    <div class='flex flex-col bg-neutral-200 p-2 rounded-10'>
                         <h3 style="text-align:center;" class="m-2">
                             {props.graph.graphName}
                             {/* <button style = "absolute p-2">
                                 <img src={edit} alt="wrong" height={10} draggable={false} />
                             </button> */}
                         </h3>
-                        <div class='flex flex-row bg-neutral-200 p-2'>
+                        <div class='flex flex-row bg-neutral-200 p-2 rounded-10'>
 
-                            <div class='flex flex-col bg-neutral-200 p-2'>
+                            <div class='flex flex-col bg-neutral-200 p-2 rounded-10'>
                                 <h2>X-Axis</h2>
                                 <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                     {(packetComponent: PacketComponent) => {
