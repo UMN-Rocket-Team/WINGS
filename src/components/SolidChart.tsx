@@ -24,6 +24,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
+    const colors: string[] = ["#FFD700", "black", "blue", "red"];
     const initialParsedPackets = parsedPackets[0];
     let datasets = []
     for (let i = 0; i < props.graph.y.length; i++) {
@@ -31,8 +32,8 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         const dataValue = {
             label: props.graph.graphName,
             data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })) ?? [],
-            backgroundColor: 'black',
-            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: colors[i],
+            borderColor: colors[i],
             spanGaps: true,
         }
         datasets.push({dataName: dataValue})
@@ -137,5 +138,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         <canvas ref={canvas!} />
     );
 };
+
+// TODO WORK ON ADDING A LEGEND AND BETTER AXIS NAMING AND COLOR CHANGING!
 
 export default SolidChart;

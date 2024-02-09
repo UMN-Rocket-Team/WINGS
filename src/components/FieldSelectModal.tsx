@@ -10,34 +10,16 @@ import edit from "../assets/edit.png";
  * The properties required for the {@link FieldSelectModal} component.
  */
 export type FieldSelectModalProps = {
-    // /**
-    //  * The currently selected field for x-axis
-    //  */
-    //xSelectedField: FieldInPacket,
+    /** Graph that is being passed */
     graph: GraphStruct
+    /* HandleSelectY function to update the y axis of the given graph */
     handleSelectY: (isChecked: boolean, fieldIndex: number, index: number) => void
+    /** HandleSelectY function to update the y axis of the given graph */
     handleSelectX: (isChecked: boolean, fieldIndex: number, index: number) => void
+    /** Index of graph so that handleSelect[Y/X] can be called correctly! */
     index: number
-    // /**
-    //  * The list of currently selected fields for the y-axis
-    //  */
-    //ySelectedFields: FieldInPacket[],
-
-    /**
-     * A function that toggles the inclusion of the X-Axis field with the given packet id and field index in the current screen.
-     * 
-     * @param packetId the id of the packet containing the field to toggle the selection of
-     * @param fieldIndex the index of the field in the packet to toggle the selection of
-     */
-    // handleXAxisSelect: (packetId: number, fieldIndex: number) => void
-    // /**
-    //  * A function that toggles the inclusion of the Y-Axis field with the given packet id and field index in the current screen.
-    //  * 
-    //  * @param isChecked `true` if the checkbox is checked, `false` otherwise
-    //  * @param packetId the id of the packet containing the field to toggle the selection of
-    //  * @param fieldIndex the index of the field in the packet to toggle the selection of
-    //  */
-    // handleYAxisSelect: (isChecked: boolean, packetId: number, fieldIndex: number) => void
+    /** Function to update name of the given graph */
+    setGraphName: (newName: string, index: number) => void
 }
 
 /**
@@ -48,16 +30,34 @@ export type FieldSelectModalProps = {
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
     const { packetViewModels } = useBackend();
 
+    /** Signal used to help handleInput revert from blank inputs to most recent name */
+    const [graphCurrName, setName] = createSignal(props.graph.graphName);
+
+    /** handleInput will handle updating the graphs name and also catches blank inputs and reverts to previous name */
+    const handleInput = (event: Event) => {
+        const newName = (event.target as HTMLElement).textContent || '';
+        if (newName.trim() !== '') {
+            props.setGraphName(newName.trim(), props.index);
+            setName(newName.trim());
+        }  else {
+            (event.target as HTMLElement).textContent = graphCurrName();
+        }
+    };
+
+    /* handleKeyDown helps handle updating the graphName by preventing enters(newlines) */
+    const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+        }
+    };
+
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
             <For each={packetViewModels}>
                 {(packetViewModel: PacketStructureViewModel) =>
                     <div class='flex flex-col bg-neutral-200 p-2 rounded-10'>
-                        <h3 style="text-align:center;" class="m-2">
-                            {props.graph.graphName}
-                            {/* <button style = "absolute p-2">
-                                <img src={edit} alt="wrong" height={10} draggable={false} />
-                            </button> */}
+                        <h3 contenteditable={true}  style="text-align:center;" class="m-2" onBlur={handleInput} onKeyDown={handleKeyDown}>
+                            {graphCurrName()}
                         </h3>
                         <div class='flex flex-row bg-neutral-200 p-2 rounded-10'>
 
@@ -106,6 +106,10 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                 </For>
                             </div>
                         </div>
+                        <h3 style="text-align:center;" class="m-2">
+                            Settings
+                            {/* TODO!!! Allow for changing color of the graph object and  */}
+                        </h3>
                     </div>                  
                     
                 }
