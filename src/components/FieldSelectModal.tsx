@@ -4,6 +4,7 @@ import { For, JSX, createSignal } from "solid-js";
 import { FieldInPacket, GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
+import edit from "../assets/edit.png";
 
 /**
  * The properties required for the {@link FieldSelectModal} component.
@@ -52,7 +53,12 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
             <For each={packetViewModels}>
                 {(packetViewModel: PacketStructureViewModel) =>
                     <div class='flex flex-col bg-neutral-200 p-2'>
-                        <h3 style="text-align:center;" class="m-2">{packetViewModel.name}</h3>
+                        <h3 style="text-align:center;" class="m-2">
+                            {packetViewModel.name}
+                            <button style = "absolute p-2">
+                                <img src={edit} alt="wrong" height={10} draggable={false} />
+                            </button>
+                        </h3>
                         <div class='flex flex-row bg-neutral-200 p-2'>
 
                             <div class='flex flex-col bg-neutral-200 p-2'>
