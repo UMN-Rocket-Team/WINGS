@@ -20,7 +20,7 @@ export type FieldInPacket = {
 }
 
 export type GraphStruct = {
-    graphName: String,
+    graphName: string,
     x: number, //fieldIndex
     y: number[],
 }
@@ -61,16 +61,22 @@ const FieldsScreen: Component = () => {
                 s[index].x = 0));
         }
     }
+    let counter = 1;
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => setGraph([...graphs, {graphName: "Graph", x: 0, y: [0]}])}>
+            <button onClick={() => 
+            {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0]}]);
+            {counter = counter + 1};
+            }}>
                 New Graph
             </button>
+            
             {/*Delete button*/}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
                 onClick={() => {
                     setGraph([])
+                    counter = 1
                 }}>
                 <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
             </button>
@@ -92,7 +98,7 @@ const FieldsScreen: Component = () => {
                                     handleSelectX,
                                     index:index()
                                 })}>
-                                    <h3>{packetViewModel?.name}</h3>
+                                    <h3>{graph.graphName}</h3>
                                     <p>{(field?.data as PacketField)?.name}</p>
                                 </button>
                             </div>
