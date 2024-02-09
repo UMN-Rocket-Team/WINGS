@@ -107,9 +107,9 @@ const FieldsScreen: Component = () => {
                         const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
                         return (
-                            <div class="bg-black flex justify-center items-center w-[100px] h-[100px] p-1.5 overflow-hidden rounded-6 ">
+                            <div class="bg-stone-400 dark:bg-dark-900 flex justify-center items-center w-[100px] h-[100px] p-1.5 overflow-hidden rounded-7 ">
                                 <button 
-                                    class = "bg-white w-[100%] h-[100%] rounded-5 border-none justify-center"
+                                    class = "bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
                                     onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                         graph,
                                         handleSelectY,
@@ -119,7 +119,7 @@ const FieldsScreen: Component = () => {
                                         deleteGraph
                                     })
                                 }>
-                                    <h3>{graph.graphName}</h3>
+                                    <h3 class="text-black dark:text-white">{graph.graphName}</h3>
                                     <p>{(field?.data as PacketField)?.name}</p>
                                 </button>
                             </div>
