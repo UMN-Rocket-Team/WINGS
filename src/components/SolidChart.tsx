@@ -24,7 +24,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    const initialParsedPackets = parsedPackets[props.graph.x];
+    const initialParsedPackets = parsedPackets[0];
     let datasets = []
     for (let i = 0; i < props.graph.y.length; i++) {
         const dataName = `data${i + 1}`;
@@ -32,16 +32,12 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             label: props.graph.graphName,
             data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })) ?? [],
             backgroundColor: 'black',
-            borderColor: 'black',
+            borderColor: 'rgba(255, 99, 132, 1)',
             spanGaps: true,
         }
         datasets.push({dataName: dataValue})
     }
     const data = {datasets};
-    //                                                  TODO: Ask Kuba how exactly I am extracting the data set for each single variable
-    //                                                  I plan to just extract the data for each variable whenever GraphTab is clicked
-    //                                                  and save the data for each separate var so that I save space and time complexity
-    //                                                  by not wastefully reallocating the data for each graph that needs to use it yk
 
     // const data = {
     //     datasets: [{
@@ -56,7 +52,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
         type: "line",
-        data: data, //MAYBE WRONG
+        data: data,
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -100,7 +96,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
-        const packetData = parsedPackets[props.graph.x];
+        const packetData = parsedPackets[0];
 
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;
@@ -116,9 +112,8 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     }, { defer: true });
 
     onMount(() => {
-        console.log("In onMount");
         chart = new Chart(canvas, config);
-        const packetData = parsedPackets[props.graph.x];
+        const packetData = parsedPackets[0];
         if (packetData === undefined) {
             return;
         }

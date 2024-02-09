@@ -55,9 +55,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                     <div class='flex flex-col bg-neutral-200 p-2'>
                         <h3 style="text-align:center;" class="m-2">
                             {packetViewModel.name}
-                            <button style = "absolute p-2">
+                            {/* <button style = "absolute p-2">
                                 <img src={edit} alt="wrong" height={10} draggable={false} />
-                            </button>
+                            </button> */}
                         </h3>
                         <div class='flex flex-row bg-neutral-200 p-2'>
 
