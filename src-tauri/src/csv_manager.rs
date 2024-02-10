@@ -30,7 +30,12 @@ impl CSVManager{
     pub fn write_packet(&mut self, packet: Packet)-> Result<(),Error> {
         match self.writer.serialize(packet.field_data){
             Err(_) => bail!("Unable to write packet"),
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                match self.writer.flush() {
+                    Err(_) => bail!("Unable to flush packet writer"),
+                    Ok(_) => Ok(()),
+                }
+            },
         }  
     }
 }
