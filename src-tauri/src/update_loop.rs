@@ -114,8 +114,11 @@ fn refresh_available_ports_and_read_active_port(
                     use_csv_manager(&csv_manager_state, &mut |csv_manager| {
                         result.parsed_packets = Some(packet_parser.parse_packets(&packet_structure_manager, false));
                         for packet in result.parsed_packets.clone().unwrap(){
-                            match csv_manager.write_packet(packet.clone()) {
-                                Err(err) => return Err(err),
+                            match csv_manager.write_packet(packet) {
+                                Err(err) => {
+                                    println!("- Overlaps with previous packet");
+                                    return Err(err)
+                                },
                                 Ok(_) => {},
                             };
                         }
@@ -128,6 +131,8 @@ fn refresh_available_ports_and_read_active_port(
             Err(message) => return Err(message),
         }
     }
+
+    
 
     Ok(result)
 }
