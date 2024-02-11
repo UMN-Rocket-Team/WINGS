@@ -94,6 +94,18 @@ fn refresh_available_ports_and_read_active_port(
     match use_communication_manager(communication_manager_state, &mut |communication_manager| {
         match communication_manager.get_data() {
             Ok(data) => {
+                match use_csv_manager(&csv_manager_state, &mut |csv_manager| {
+                    match csv_manager.write_bytes(data.data_read.clone()) {
+                        Err(err) => {
+                            return Err(err)
+                        },
+                        Ok(ok) => Ok(ok),
+                    }
+                }){
+                    Ok(_) => {},
+                    Err(err) => return Err(anyhow!(err.to_string())),
+                }
+            
                 read_data.extend(data.data_read);
                 result.new_available_port_names = data.new_ports;
             },
@@ -116,7 +128,7 @@ fn refresh_available_ports_and_read_active_port(
                         for packet in result.parsed_packets.clone().unwrap(){
                             match csv_manager.write_packet(packet) {
                                 Err(err) => {
-                                    println!("- Overlaps with previous packet");
+                                    println!("Somethings wrong with the csv ):");
                                     return Err(err)
                                 },
                                 Ok(_) => {},
