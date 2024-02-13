@@ -1,7 +1,7 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { For, JSX, createSignal } from "solid-js";
-import { FieldInPacket, GraphStruct } from "./FieldsScreen";
+import { GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
@@ -92,16 +92,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                         return (
                                             <label>
                                                 <input type="checkbox"
-                                                    // Check this checkbox by default if the field has already been selected
                                                     checked={props.graph.y.some(selectedField => selectedField === field.index)} 
                                                     onclick={(event) => {
-                                                        //props.graph.y.some((event.target as HTMLInputElement).checked, 
-                                                        //props.graph.y.push(field.index)
-                                                        props.handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index)
-                                                        
-                                                        // packetViewModel.id
-                                                        //)
-                                                    
+                                                        props.handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index);
                                                     }} />
                                                 {field.name}
                                             </label>
@@ -112,7 +105,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                         </div>
                         <h3 style="text-align:center;" class="m-2">
                             Settings
-                            {/* TODO!!! Allow for changing color of the graph object and  */}
+                            {/* TODO!!! Allow for changing color of the graph object and variables */}
                         </h3>
                         <div class = "relative items-center justify-center" style={"text-align:center;"}>
                             <button 
