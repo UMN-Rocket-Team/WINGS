@@ -15,7 +15,7 @@ mod update_loop;
 mod sending_loop;
 mod communications_manager;
 mod data_processing;
-mod csv_manager;
+mod file_handling;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use packet_structure_events::send_initial_packet_structure_update_event;
@@ -25,7 +25,7 @@ use packet_parser_state::PacketParserState;
 use data_processor_state::DataProcessorState;
 use sending_loop_state::SendingLoopState;
 
-use state::{communication_state, csv_manager_state::CSVManagerState, packet_parser_state, packet_structure_manager_state, sending_loop_state,data_processor_state};
+use state::{communication_state, file_handling_state::FileHandlingState, packet_parser_state, packet_structure_manager_state, sending_loop_state,data_processor_state};
 use tauri::Manager;
 use update_loop::TimerState;
 
@@ -66,7 +66,7 @@ fn main() {
         .manage(PacketParserState::default())
         .manage(SendingLoopState::default())
         .manage(DataProcessorState::default())
-        .manage(CSVManagerState::default())
+        .manage(FileHandlingState::default())
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
