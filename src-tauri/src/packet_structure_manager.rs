@@ -72,6 +72,7 @@ pub struct PacketStructureManager {
     // These variables are used in situations when matching packets to bits
     pub(crate) minimum_packet_structure_size: usize,
     pub(crate) maximum_packet_structure_size: usize,
+    pub(crate) maximum_first_delimiter: usize,
 
     // Every packet structure is given a monotonically increasing ID
     next_packet_id: usize,
@@ -83,6 +84,7 @@ impl Default for PacketStructureManager {
             packet_structures: Default::default(),
             minimum_packet_structure_size: usize::MAX,
             maximum_packet_structure_size: 0,
+            maximum_first_delimiter: 0,
 
             // We can start IDs from anywhere, but we start from 1 so that any code that
             // accidentally assumes IDs are an array index will be more likely to break
@@ -106,8 +108,6 @@ impl PacketStructureManager {
                 return Err(Error::DelimitersAlreadyRegistered(registered_packet_structure.id));
             }
         }
-
-        let packet_structure_size = packet_structure.size();
 
         packet_structure.id = self.next_packet_id;
         self.next_packet_id += 1;
