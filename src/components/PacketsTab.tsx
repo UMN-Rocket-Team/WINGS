@@ -206,10 +206,10 @@ const PacketsTab: Component = () => {
                                     <div>
                                         <label for="delimiterIdentifier">Identifier:</label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
-                                            onInput={async e => {
-                                                (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\da-f]/g, '');
-
-                                                await invokeApiSetter(setDelimiterIdentifier, (e.target as HTMLInputElement).value);
+                                            onChange={async e => {
+                                                const el = e.target as HTMLInputElement;
+                                                el.value = el.value.replace(/[^\da-f]/g, '');
+                                                await invokeApiSetter(setDelimiterIdentifier, el.value);
                                             }} />
                                     </div>
                                     <span>Offset in Packet: {selectedDelimiterData()!.offsetInPacket} byte{selectedDelimiterData()!.offsetInPacket == 1 ? "" : "s"}</span>
