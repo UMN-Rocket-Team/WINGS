@@ -1,12 +1,10 @@
-import { Component, For, createSignal } from "solid-js";
+import { Component, For } from "solid-js";
 import { useModal } from "./ModalProvider";
 import { createStore, produce } from "solid-js/store";
 import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
 import { useBackend } from "./BackendProvider";
-import { PacketComponentType, PacketData, PacketField } from "../backend_interop/types";
-import expandIcon from "../assets/expand.svg";
+import { PacketComponentType, PacketField } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
-import { time } from "console";
 
 
 /**

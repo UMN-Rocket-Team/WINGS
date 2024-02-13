@@ -14,11 +14,11 @@ type SolidChartProps = {
 };
 
 /**
- * A component that displays the parsed data for a given packet field in a line chart
+ * A component that displays the parsed data for a given graphStruct in a line chart
  * 
- * @param props an object containing the packet field to display data for
+ * @param graph a graphStruct that is the graph that is being created
  */
-const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
+const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     const { parsedPacketCount } = useBackend();
 
     let canvas: HTMLCanvasElement;
@@ -27,11 +27,11 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     const colors: string[] = ["#FFD700", "black", "blue", "red"];
     const initialParsedPackets = parsedPackets[0];
     let datasets = []
-    for (let i = 0; i < props.graph.y.length; i++) {
+    for (let i = 0; i < graph.y.length; i++) {
         const dataName = `data${i + 1}`;
         const dataValue = {
-            label: props.graph.graphName,
-            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })) ?? [],
+            label: graph.graphName,
+            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
             backgroundColor: colors[i],
             borderColor: colors[i],
             spanGaps: true,
@@ -40,16 +40,6 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
     }
     const data = {datasets};
 
-    // const data = {
-    //     datasets: [{
-    //         label: props.graph.graphName,
-    //         // TODO BELOW: MAKE DATA INITIALIZED CORRECTLY
-    //         data: initialParsedPackets?.map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[0]] })) ?? [],
-    //         backgroundColor: 'dark-blue',
-    //         borderColor: 'blue',
-    //         spanGaps: true,
-    //     }]
-    // };
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
         type: "line",
@@ -72,7 +62,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
                 },
                 title: {
                     display: true,
-                    text: props.graph.graphName,
+                    text: graph.graphName,
                 }
             },
             scales: {
@@ -103,7 +93,7 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             return;
         }
         for (let i = 0; i < datasets.length; i++) {
-            config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })));
+            config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
         }
 
 
@@ -119,13 +109,10 @@ const SolidChart: Component<SolidChartProps> = (props: SolidChartProps) => {
             return;
         }
 
+        // Adds previous data
         for (let i = 0; i < datasets.length; i++) {
-            config.data.datasets[i].data.push(...packetData.map(packetData => ({ x: packetData.fieldData[props.graph.x], y: packetData.fieldData[props.graph.y[i]] })));
+            config.data.datasets[i].data.push(...packetData.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
         }
-        // config.data.datasets[0].data.push(...packetData.map(packetData => ({
-        //     x: packetData.fieldData[props.graph.x],
-        //     y: packetData.fieldData[props.graph.y[0]]
-        // })));
         lastPacketCount = packetData.length;
         chart.update();
     });
