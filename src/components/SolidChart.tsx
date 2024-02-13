@@ -31,11 +31,11 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
         const dataValue = {
             label: graph.graphName,
             data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
-            backgroundColor: 'dark-blue',
-            borderColor: 'blue',
+            backgroundColor: colors[i % colors.length],
+            borderColor: colors[i % colors.length],
             spanGaps: true,
-        }
-        datasets.push({dataValue})
+        };
+        datasets.push(dataValue);
     }
     const data = {datasets};
 
