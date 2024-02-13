@@ -4,4 +4,4 @@ pub mod communication_state;
 pub mod sending_loop_state;
 pub mod mutex_utils;
 pub mod data_processor_state;
-pub mod csv_manager_state;
+pub mod file_handling_state;
