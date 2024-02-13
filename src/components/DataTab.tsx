@@ -78,7 +78,7 @@ const DataTab: Component = () => {
                     <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>
                     <input name="Serial Port" id="serialPortInput" class="w-50"
                         list="dataSerialPorts" value={selectedPort() ?? ""}
-                        onInput={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
+                        onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
                     <datalist id="dataSerialPorts">
                         <For each={availablePortNames()}>
                             {(serialPort) => <option value={serialPort.name}/>}
