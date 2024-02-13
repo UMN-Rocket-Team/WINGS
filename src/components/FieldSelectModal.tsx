@@ -59,13 +59,13 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
             <For each={packetViewModels}>
                 {(packetViewModel: PacketStructureViewModel) =>
-                    <div class='flex flex-col bg-neutral-200 p-2 rounded-10'>
+                    <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
                         <h3 contenteditable={true}  style="text-align:center;" class="m-2" onBlur={handleInput} onKeyDown={handleKeyDown}>
                             {graphCurrName()}
                         </h3>
-                        <div class='flex flex-row bg-neutral-200 p-2 rounded-10'>
+                        <div class='flex flex-row bg-neutral-200 dark:bg-gray p-2 rounded-10'>
 
-                            <div class='flex flex-col bg-neutral-200 p-2 rounded-10'>
+                            <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
                                 <h2>X-Axis</h2>
                                 <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                     {(packetComponent: PacketComponent) => {
@@ -84,7 +84,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                     }}
                                 </For>
                             </div>
-                            <div class='flex flex-col bg-neutral-200 p-2'>
+                            <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2'>
                                 <h2>Y-Axis</h2>
                                 <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                     {(packetComponent: PacketComponent) => {
@@ -107,6 +107,21 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                             Settings
                             {/* TODO!!! Allow for changing color of the graph object and variables */}
                         </h3>
+                        
+                        {/* Below is the set up to create a color picker for each var, in progress still. */}
+                        {/* <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
+                            <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
+                                {(packetComponent: PacketComponent) => {
+                                    const field = packetComponent.data as PacketField;
+                                    return (
+                                        <label>
+                                            
+                                            {field.name}
+                                        </label>
+                                    );
+                                }}
+                            </For>
+                        </div> */}
                         <div class = "relative items-center justify-center" style={"text-align:center;"}>
                             <button 
                                 class = " w-[10%] h-[10%] rounded-5 border-none justify-center"
