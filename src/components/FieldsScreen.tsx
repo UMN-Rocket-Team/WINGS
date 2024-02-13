@@ -11,16 +11,11 @@ import closeIcon from "../assets/close.svg";
  * An object that identifies a field in a packet by its packet id and field index and contains the name of the packet and field.
  */
 
-
-export type FieldInPacket = {
-    packetId: number,
-    fieldIndex: number,
-}
-
 export type GraphStruct = {
     graphName: string,
     x: number, //fieldIndex
     y: number[],
+    colors: string[];
 }
 
 export const [graphs, setGraph] = createStore<GraphStruct[]>([]);
@@ -77,7 +72,7 @@ const FieldsScreen: Component = () => {
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
             <button onClick={() => 
-            {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0]}]);
+            {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0], colors: ["#FFD700", "black", "blue", "red"]}]);
                 {counter = counter + 1};
             }}>
                 New Graph

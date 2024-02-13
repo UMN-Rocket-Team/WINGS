@@ -9,10 +9,6 @@ import { parsedPackets } from "../backend_interop/buffers";
 // Note: any components that are not registered here will act like no-ops if they are attempted to be used later!
 Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
 
-type SolidChartProps = {
-    graph: GraphStruct;
-};
-
 /**
  * A component that displays the parsed data for a given graphStruct in a line chart
  * 
