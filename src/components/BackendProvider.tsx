@@ -2,13 +2,13 @@ import {Accessor, createContext, createSignal, onCleanup, onMount, ParentCompone
 import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {
-    PacketStructureViewModel,
+    PacketViewModel,
+    Packet, //for inserting fake packets when testing graphs
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames,
     PacketViewModelUpdate,
     PacketViewModelUpdateType,
-    SendingLoopState,
-    Packet
+    SendingLoopState
 } from "../backend_interop/types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
@@ -25,11 +25,11 @@ export type BackendContextValue = {
      */
     parsedPacketCount: Accessor<number>,
     /**
-     * The list of registered {@link PacketStructureViewModel}s for each `PacketStructure`.
+     * The list of registered {@link PacketViewModel}s for each `PacketStructure`.
      */
-    packetViewModels: PacketStructureViewModel[],
+    packetViewModels: PacketViewModel[],
 
-    setPacketViewModels: SetStoreFunction<PacketStructureViewModel[]>,
+    setPacketViewModels: SetStoreFunction<PacketViewModel[]>,
 
     /**
      * Information about the current or most recent sending loop task.
@@ -63,7 +63,7 @@ const BackendContext = createContext<BackendContextValue>({
 export const BackendProvider: ParentComponent = (props) => {
     const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
     const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
-    const [packetViewModels, setPacketViewModels] = createStore<PacketStructureViewModel[]>([]);
+    const [packetViewModels, setPacketViewModels] = createStore<PacketViewModel[]>([]);
     const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
 
     let unlistenFunctions: UnlistenFn[];
@@ -94,7 +94,7 @@ export const BackendProvider: ParentComponent = (props) => {
                 for (const packetViewModelUpdate of event.payload) {
                     switch (packetViewModelUpdate.type) {
                         case PacketViewModelUpdateType.CreateOrUpdate:
-                            const packetViewModel = packetViewModelUpdate.data as PacketStructureViewModel;
+                            const packetViewModel = packetViewModelUpdate.data as PacketViewModel;
                             if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
                                 // Update the existing view model
                                 setPacketViewModels(
@@ -131,15 +131,15 @@ export const BackendProvider: ParentComponent = (props) => {
 
     // TODO: remove once live telemetry is confirmed to work
     // Push test data to graphs once per second
-    setInterval(() => {
+    // setInterval(() => {
         
-        const parsedPackets: Packet[] = [
-            {fieldData: [Date.now(), 20, 30, 40], metaData: [], structureId: 0}
-        ];
+    //     const parsedPackets: Packet[] = [
+    //         {fieldData: [10, 20, 30, 40], structureId: 0, timestamp: Date.now()}
+    //     ];
     
-        pushParsedPackets(parsedPackets);
-        setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
-    }, 1000);
+    //     pushParsedPackets(parsedPackets);
+    //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
+    // }, 1000);
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted
