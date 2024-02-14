@@ -1,6 +1,6 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import { For, JSX, createSignal } from "solid-js";
+import { Accessor, For, JSX, createSignal } from "solid-js";
 import { GraphStruct } from "./FieldsScreen";
 import { useBackend } from "./BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
@@ -24,6 +24,8 @@ export type FieldSelectModalProps = {
     setGraphName: (newName: string, index: number) => void
     /** Deletes a graph */
     deleteGraph: (index: number) => void
+    /** Updates color */
+    updateColor: (color: string, colorIndex: number, graphIndex: number) => void
 }
 
 /**
@@ -109,19 +111,21 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                         </h3>
                         
                         {/* Below is the set up to create a color picker for each var, in progress still. */}
-                        {/* <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
+                        <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
                             <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
-                                {(packetComponent: PacketComponent) => {
+                                {(packetComponent: PacketComponent, i) => {
                                     const field = packetComponent.data as PacketField;
                                     return (
                                         <label>
-                                            
                                             {field.name}
+                                            <input type="color" style={"rounded-full"} value={props.graph.colors[i() % props.graph.colors.length]} onInput={(event) => {
+                                                props.updateColor((event.target as HTMLInputElement).value, i(), props.index);
+                                            }}/>
                                         </label>
                                     );
                                 }}
                             </For>
-                        </div> */}
+                        </div>
                         <div class = "relative items-center justify-center" style={"text-align:center;"}>
                             <button 
                                 class = " w-[10%] h-[10%] rounded-5 border-none justify-center"

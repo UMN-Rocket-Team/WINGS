@@ -67,12 +67,17 @@ const FieldsScreen: Component = () => {
         setGraph(newGraphs);
     }
 
+    const updateColor = (color: string, colorIndex: number, graphIndex: number) => {
+        setGraph( produce((s) => 
+            s[graphIndex].colors[colorIndex] = color))
+    }
+
     let counter = 1;
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
             <button onClick={() => 
-            {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0], colors: ["#FFD700", "black", "blue", "red"]}]);
+            {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0], colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"]}]);
                 {counter = counter + 1};
             }}>
                 New Graph
@@ -109,7 +114,8 @@ const FieldsScreen: Component = () => {
                                         handleSelectX,
                                         index:index(),
                                         setGraphName,
-                                        deleteGraph
+                                        deleteGraph,
+                                        updateColor
                                     })
                                 }>
                                     <h3 class="text-black dark:text-white">{graph.graphName}</h3>
