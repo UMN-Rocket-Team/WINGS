@@ -112,6 +112,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                         
                         {/* Below is the set up to create a color picker for each var, in progress still. */}
                         <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
+                            <h2>Graph Colors</h2>
                             <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                 {(packetComponent: PacketComponent, i) => {
                                     const field = packetComponent.data as PacketField;
