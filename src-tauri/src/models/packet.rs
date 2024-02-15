@@ -14,7 +14,7 @@ pub struct Packet {
 }
 
 #[derive(PartialEq, Serialize, Clone, Debug, Copy)]
-#[serde(tag = "type", content = "data")]
+#[serde(untagged)]
 pub enum PacketFieldValue {
     // Ensure that this enum is in sync with PacketFieldType
 
