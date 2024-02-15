@@ -4,6 +4,10 @@ import { useModal } from "./ModalProvider";
 import ErrorModal from "./ErrorModal";
 import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 
+const [isSimulating, setSimulating] = createSignal(false);
+const [sendPort, setSendPort] = createSignal('');
+const [sendInterval, setSendInterval] = createSignal(500);
+
 /**
  * A component that allows the user to send test packets over a radio.
  */
@@ -12,10 +16,6 @@ const RadioTestingTab: Component = () => {
     const {showModal} = useModal();
 
     let initialPacketCount = parsedPacketCount();
-
-    const [isSimulating, setSimulating] = createSignal(false);
-    const [sendPort, setSendPort] = createSignal('');
-    const [sendInterval, setSendInterval] = createSignal(500);
 
     const startSimulating = async () => {
         batch(() => {

@@ -11,6 +11,8 @@ import {save} from "@tauri-apps/api/dialog";
 import ErrorModal, {ErrorModalProps} from "./ErrorModal";
 import {useModal} from "./ModalProvider";
 
+const [selectedPort, setSelectedPort] = createSignal<string | null>();
+
 /**
  * A component that allows the user to:
  *  - Customize four screens with different packet fields
@@ -25,7 +27,6 @@ const DataTab: Component = () => {
     const { availablePortNames, packetViewModels, parsedPacketCount } = useBackend();
     const { showModal } = useModal();
     const navigate = useNavigate();
-    const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
     const saveFlight = async () => {
         const selectedFilePath = await save({
