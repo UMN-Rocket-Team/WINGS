@@ -131,13 +131,13 @@ export const BackendProvider: ParentComponent = (props) => {
 
     // TODO: remove once live telemetry is confirmed to work
     // Push test data to graphs once per second
-    
+
     // setInterval(() => {
-        
+
     //     const parsedPackets: Packet[] = [
     //         {fieldData: [Date.now(), 20, 30, 40], metaData: [], structureId: 0}
     //     ];
-    
+
     //     pushParsedPackets(parsedPackets);
     //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
     // }, 1000);
