@@ -4,16 +4,16 @@ import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_inter
 import ErrorModal from "./ErrorModal";
 import { useModal } from "./ModalProvider";
 
+const [sendPort, setSendPort] = createSignal('');
+const [sendInterval, setSendInterval] = createSignal(500);
+
+const [isSimulating1, setSimulating1] = createSignal(false);
+const [isSimulating2, setSimulating2] = createSignal(false);
+const [isSimulating3, setSimulating3] = createSignal(false);
+
 const SendingTab: Component = () => {
     const { availablePortNames, parsedPacketCount, sendingLoopState } = useBackend();
     const { showModal } = useModal();
-    const [sendInterval, setSendInterval] = createSignal(500);
-    const [sendPort, setSendPort] = createSignal('');
-
-    const [isSimulating1, setSimulating1] = createSignal(false);
-    const [isSimulating2, setSimulating2] = createSignal(false);
-    const [isSimulating3, setSimulating3] = createSignal(false);
-
 
     const startSimulating = async (setSimulating: (value: boolean) => void) => {
         debugger;
