@@ -1,5 +1,5 @@
 use anyhow::{bail, Error};
-use csv::Writer;
+use csv::{Reader, StringRecord, Writer};
 use std::{
     fs::{self, File},
     io::Write,
@@ -10,6 +10,7 @@ use crate::models::packet::Packet;
 
 pub struct FileHandler {
     csv_writer: Writer<File>,
+    csv_reader: Reader<File>,
     byte_writer: File,
 }
 
@@ -19,6 +20,9 @@ impl Default for FileHandler {
         //add logic to set up .wings
         Self {
             csv_writer: csv::Writer::from_path(Path::new("../packetslog.csv")).unwrap(),
+            csv_reader: csv::ReaderBuilder::new()
+                .has_headers(false)
+                .from_path("../input.csv").unwrap(),
             byte_writer: fs::OpenOptions::new()
                 .append(true)
                 .create(true)
@@ -45,6 +49,15 @@ impl FileHandler {
             Err(err) => bail!("Unable to write packet and got error: {}", err),
             Ok(_) => match self.csv_writer.flush() {
                 Err(err) => bail!("Unable to flush packet writer and got error: {}", err),
+                Ok(ok) => Ok(ok),
+            },
+        }
+    }
+    pub fn read_packet(&mut self) -> Result<StringRecord, Error> {
+        match self.csv_reader.records().next() {
+            None => bail!("nothing read from csv"),
+            Some(ok) => match ok {
+                Err(err) => bail!("Failed to read from csv: {}", err),
                 Ok(ok) => Ok(ok),
             },
         }
