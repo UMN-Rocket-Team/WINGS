@@ -35,13 +35,13 @@ import { Store } from "tauri-plugin-store-api";
  * - Delete a packet structure
  */
 const PacketsTab: Component = () => {
-    const { packetViewModels } = useBackend();
+    const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
-    const [selectedPacketStructureID, setSelectedPacketStructureID] = createSignal<number | null>(packetViewModels.length === 0 ? null : 1);
-    const [selectedPacketComponentIndex, setSelectedPacketComponentIndex] = createSignal<number | null>(packetViewModels.length === 0 ? null : 0);
+    const [selectedPacketStructureID, setSelectedPacketStructureID] = createSignal<number | null>(PacketStructureViewModels.length === 0 ? null : 1);
+    const [selectedPacketComponentIndex, setSelectedPacketComponentIndex] = createSignal<number | null>(PacketStructureViewModels.length === 0 ? null : 0);
 
-    const selectedPacket = createMemo(() => packetViewModels.find(i => i.id === selectedPacketStructureID()) || null);
+    const selectedPacket = createMemo(() => PacketStructureViewModels.find(i => i.id === selectedPacketStructureID()) || null);
     const selectedPacketStructureComponents = createMemo(() => selectedPacket() ? selectedPacket()!.components : []);
     const selectedPacketStructureComponent = createMemo(() => selectedPacketComponentIndex() === null ? null : selectedPacketStructureComponents()[selectedPacketComponentIndex()!]);
     const selectedFieldData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Field ? selectedPacketStructureComponent()?.data as PacketField : null);
@@ -67,7 +67,7 @@ const PacketsTab: Component = () => {
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col flex-grow tab">
                     <h1 class="m-0">Packets</h1>
-                    <For each={packetViewModels}>
+                    <For each={PacketStructureViewModels}>
                         {packetStructure => (
                             <button class={`flex justify-between gap-4 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
                                 setSelectedPacketStructureID(packetStructure.id);
@@ -127,7 +127,7 @@ const PacketsTab: Component = () => {
                             await deletePacketStructure(selectedPacket()!.id);
                             // Select the previous packet structure if the last packet structure was deleted, select no packet structure
                             // if none are left
-                            setSelectedPacketStructureID(packetViewModels.length === 0 ? null : packetViewModels[0].id);
+                            setSelectedPacketStructureID(PacketStructureViewModels.length === 0 ? null : PacketStructureViewModels[0].id);
                         }, 'Faled to delete packet structure!')}>
                             Delete {selectedPacket()!.name}
                         </button>

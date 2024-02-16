@@ -78,9 +78,9 @@ export enum PacketFieldType {
 };
 
 /**
- * An enumeration of all the supported types for {@link PacketViewModelUpdate}s
+ * An enumeration of all the supported types for {@link PacketStructureViewModelUpdate}s
  */
-export enum PacketViewModelUpdateType {
+export enum PacketStructureViewModelUpdateType {
     CreateOrUpdate = "CreateOrUpdate",
     Delete = "Delete"
 };
@@ -88,11 +88,11 @@ export enum PacketViewModelUpdateType {
 /**
  * A "tagged union" containing updated data for this packet view model
  */
-export type PacketViewModelUpdate = {
+export type PacketStructureViewModelUpdate = {
     /**
      * The type of this packet view model update
      */
-    type: PacketViewModelUpdateType,
+    type: PacketStructureViewModelUpdateType,
     /**
      * If this packet view model update is for a created or modified packet view model, the new packet view model.
      * If this packet view model update is for a deleted packet view model, the id of the deleted packet view model.

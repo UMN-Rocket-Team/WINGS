@@ -15,7 +15,7 @@ import webIcon from "../assets/web.svg";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
-    packetViewModels: PacketStructureViewModel[]
+    PacketStructureViewModels: PacketStructureViewModel[]
 };
 
 /**
@@ -29,7 +29,7 @@ export type PacketBundle = {
  * - View the credits for this application
  */
 const Homepage: Component = () => {
-    const {setPacketViewModels} = useBackend();
+    const {setPacketStructureViewModels} = useBackend();
     const navigate = useNavigate();
     const {showModal} = useModal();
 
@@ -50,7 +50,7 @@ const Homepage: Component = () => {
             .then((contents) => {
                 const contentsJSON = JSON.parse(contents) as PacketBundle;
                 setParsedPackets(contentsJSON.parsedPacketsArray);
-                setPacketViewModels(contentsJSON.packetViewModels);
+                setPacketStructureViewModels(contentsJSON.PacketStructureViewModels);
 
                 navigate("/savedFlight");
             })

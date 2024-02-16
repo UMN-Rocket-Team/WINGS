@@ -4,9 +4,9 @@ import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
 import { addPacket } from "../backend_interop/api_calls";
 import { Store } from"tauri-plugin-store-api";
 /**
- * Exports the given PacketViewModel as a .json file via a dialouge window.
+ * Exports the given PacketStructureViewModel as a .json file via a dialouge window.
  * 
- * Creates File dialouge allowing the user to choose where to export the packetViewModel.
+ * Creates File dialouge allowing the user to choose where to export the PacketStructureViewModel.
  * The function then writes to the selected file path.
  * 
  * @param {PacketStructureViewModel} packetView the packet which will be contained in the experted file
@@ -22,10 +22,10 @@ const runExport = async (selectedFilePath: string | null, packetView: PacketStru
 };
 
 /**
- * Writes a given packetViewModel to a selected File directory
+ * Writes a given PacketStructureViewModel to a selected File directory
  * 
  * @param selectedFilePath location where the save file will be created
- * @param packetView packetviewmodel to save to a file
+ * @param packetView PacketStructureViewModel to save to a file
  */
 const exportToLocation = async (selectedFilePath: string | null, packetView: PacketStructureViewModel) => {
     if (selectedFilePath != null) {
@@ -87,11 +87,11 @@ export const importPacketsfromDirectories = async (filePaths: string | string[] 
 /**
  * Imports from selected file path/paths.
  * 
- * Converts json files to packetViewModels using readPathAsPacket().
+ * Converts json files to PacketStructureViewModels using readPathAsPacket().
  * 
  * @param selectedFilePaths an array of strigns containing file directories
  * 
- * @return {PacketStructureViewModel} the PacketViewModels stored at the given directories
+ * @return {PacketStructureViewModel} the PacketStructureViewModels stored at the given directories
  */
 export const openPackets = async (selectedFilePaths: string | string[] | null) => {
     let openedPackets: PacketStructureViewModel[] = [];
@@ -111,7 +111,7 @@ export const openPackets = async (selectedFilePaths: string | string[] | null) =
  * 
  * @param path string containing the file path of a .json packet file
  * 
- * @return {PacketStructureViewModel} the PacketViewModel stored at the given file path
+ * @return {PacketStructureViewModel} the PacketStructureViewModel stored at the given file path
  */
 const readPathAsPacket = async (path: string) => {
     let contents: string = await readTextFile(path as string);

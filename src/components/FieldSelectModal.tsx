@@ -34,7 +34,7 @@ export type FieldSelectModalProps = {
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
 const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
-    const { packetViewModels } = useBackend();
+    const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
     const [graphCurrName, setName] = createSignal(props.graph.graphName);
@@ -59,8 +59,8 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
-            <For each={packetViewModels}>
-                {(packetViewModel: PacketStructureViewModel) =>
+            <For each={PacketStructureViewModels}>
+                {(PacketStructureViewModel: PacketStructureViewModel) =>
                     <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
                         <h3 contenteditable={true}  style="text-align:center;" class="m-2" onBlur={handleInput} onKeyDown={handleKeyDown}>
                             {graphCurrName()}
@@ -69,7 +69,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
 
                             <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
                                 <h2>X-Axis</h2>
-                                <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
+                                <For each={PacketStructureViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                     {(packetComponent: PacketComponent) => {
                                         const field = packetComponent.data as PacketField;
                                         return (
@@ -88,7 +88,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                             </div>
                             <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2'>
                                 <h2>Y-Axis</h2>
-                                <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
+                                <For each={PacketStructureViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                     {(packetComponent: PacketComponent) => {
                                         const field = packetComponent.data as PacketField;
                                         return (
@@ -113,7 +113,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                         {/* Below is the set up to create a color picker for each var, in progress still. */}
                         <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
                             <h2>Graph Colors</h2>
-                            <For each={packetViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
+                            <For each={PacketStructureViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
                                 {(packetComponent: PacketComponent, i) => {
                                     const field = packetComponent.data as PacketField;
                                     return (

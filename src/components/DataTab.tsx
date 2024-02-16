@@ -24,7 +24,7 @@ const [selectedPort, setSelectedPort] = createSignal<string | null>();
  *  - Save flight data
  */
 const DataTab: Component = () => {
-    const { availablePortNames, packetViewModels, parsedPacketCount } = useBackend();
+    const { availablePortNames, PacketStructureViewModels, parsedPacketCount } = useBackend();
     const { showModal } = useModal();
     const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ const DataTab: Component = () => {
             ))
         ).flat();
 
-        writeFile(selectedFilePath as string, JSON.stringify({parsedPacketsArray, packetViewModels}))
+        writeFile(selectedFilePath as string, JSON.stringify({parsedPacketsArray, PacketStructureViewModels}))
             .catch((err) => showModal<ErrorModalProps, {}>(ErrorModal, {
                 error: "Failed to Save Flight File",
                 description: err
