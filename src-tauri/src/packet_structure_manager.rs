@@ -232,7 +232,6 @@ impl PacketStructureManager {
         metadata_type: PacketMetadataType,
     ) -> Result<(), Error> {
         let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
-        packet_structure.fields[field_index].metadata_type = metadata_type;
         Ok(())
     }
 
@@ -625,6 +624,7 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         }).unwrap();
 
         // run the manager function we are trying to test on the test packet
@@ -643,8 +643,7 @@ mod tests {
             index: 0,
             name: String::from("notname"),
             r#type: packet_field_type,
-            offset_in_packet: 0,
-            metadata_type: packet_metadata_type
+            offset_in_packet: 0
         };
 
         // add our test packet
@@ -654,6 +653,7 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![packet_field],
             delimiters: vec![],
+            metafields: vec![],
         }).unwrap();
 
         packet_structure_manager.set_field_name(id, 0, "name").unwrap();
@@ -678,14 +678,12 @@ mod tests {
                     name: String::from("name"),
                     r#type: field_type,
                     offset_in_packet: 0,
-                    metadata_type: packet_metadata_type
                 };
                 let packet_field2 = PacketField {
                     index: 1,
                     name: String::from("name2"),
                     r#type: field_type,
                     offset_in_packet: field_type.size(),
-                    metadata_type: packet_metadata_type
                 };
 
                 // create a test packet
@@ -695,6 +693,7 @@ mod tests {
                     name: String::from("First Name"),
                     fields: vec![packet_field, packet_field2],
                     delimiters: vec![],
+                    metafields: vec![],
                 }).unwrap();
 
                 packet_structure_manager.set_field_type(id, 0, field_type2).unwrap();
@@ -714,7 +713,6 @@ mod tests {
             name: String::from("name"),
             r#type: packet_field_type,
             offset_in_packet: 0,
-            metadata_type: packet_metadata_type
         };
 
         let mut packet_structure_manager = PacketStructureManager::default();
@@ -723,11 +721,10 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![packet_field],
             delimiters: vec![],
+            metafields: vec![],
         }).unwrap();
 
         packet_structure_manager.set_field_metadata_type(id, 0, packet_metadata_type2).unwrap();
-
-        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields[0].metadata_type, packet_metadata_type2);
     }
 
     #[test]
@@ -745,6 +742,7 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![packet_delimiter],
+            metafields: vec![],
         }).unwrap();
 
         packet_structure_manager.set_delimiter_name(id, 0, "new_name").unwrap();
@@ -763,6 +761,7 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![packet_delimiter, packet_delimiter2],
+            metafields: vec![],
         }).unwrap();
 
         packet_structure_manager.set_delimiter_identifier(id, 0, "1").unwrap();
@@ -784,6 +783,7 @@ mod tests {
             name: String::from("First Name"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         }).unwrap();
 
         packet_structure_manager.add_field(id).unwrap();

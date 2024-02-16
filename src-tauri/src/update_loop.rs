@@ -109,31 +109,10 @@ fn refresh_available_ports_and_read_active_port(
     if !read_data.is_empty() {
         match use_packet_parser(packet_parser_state, &mut |packet_parser| {
             use_packet_structure_manager::<(), String>( &packet_structure_manager_state, &mut |packet_structure_manager| {
-                use_data_processor(&data_processor_state, &mut |data_processor| {
-                    packet_parser.push_data(&read_data,false);
-
-                    parsed_packets = packet_parser.parse_packets(&packet_structure_manager,false);
-                    result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets));
-                    Ok(())
-                })
+                packet_parser.push_data(&read_data,false);
+                result.parsed_packets = Some(packet_parser.parse_packets(&packet_structure_manager,false));
+                Ok(())
             })
-        }) {
-            Ok(_) => {}
-            Err(message) => return Err(message),
-        }
-        
-        match use_data_processor::<(), String>(&data_processor_state, &mut |data_processor| {
-            result.display_packets = Some(data_processor.add_new_data(&mut parsed_packets));
-            Ok(())
-            packet_parser.push_data(&read_data);
-
-            use_packet_structure_manager::<(), &str>(
-                &packet_structure_manager_state,
-                &mut |packet_structure_manager| {
-                    Ok(result.parsed_packets =
-                        Some(packet_parser.parse_packets(&packet_structure_manager)))
-                },
-            )
         }) {
             Ok(_) => {}
             Err(message) => return Err(message),

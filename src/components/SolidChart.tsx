@@ -21,7 +21,7 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     let chart: Chart;
 
     const colors: string[] = ["#FFD700", "black", "blue", "red"];
-    const initialParsedPackets = parsedPackets[0] ?? [];
+    const initialParsedPackets = parsedPackets[1];
     let datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
@@ -82,7 +82,7 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
-        const packetData = parsedPackets[0] ?? [];
+        const packetData = parsedPackets[1];
 
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;

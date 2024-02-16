@@ -3,9 +3,7 @@ use crate::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
     packet_view_model::{PacketComponentType, PacketStructureViewModel},
-    }, packet_structure_events::update_packet_structures, packet_structure_manager::{
-        self, DeletePacketStructureComponentError, SetDelimiterIdentifierError,
-    }, packet_structure_manager_state::PacketStructureManagerState, state::data_processor_state::DataProcessorState
+    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, packet_structure_manager_state::PacketStructureManagerState, state::data_processor_state::DataProcessorState
 };
 // # packet_structure_manager_commands
 // 
@@ -273,10 +271,10 @@ pub fn delete_packet_structure_component(
     )
 }
 
-/// Takes PacketViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
+/// Takes PacketStructureViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
 ///
 /// ### Arguments
-/// * 'view' - PacketViewModel containing the packet that will be added to the packet structure
+/// * 'view' - PacketStructureViewModel containing the packet that will be added to the packet structure
 #[tauri::command]
 pub fn add_packet_structure(
     app_handle: tauri::AppHandle,

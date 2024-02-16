@@ -166,6 +166,7 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
@@ -200,6 +201,7 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
@@ -236,6 +238,7 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
@@ -276,6 +279,7 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
@@ -330,6 +334,7 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
@@ -338,6 +343,7 @@ mod tests {
             name: String::from("Wacky Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         wacky_structure.ez_make("i16 fa1a1a1a u8 u64");
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
@@ -385,6 +391,7 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e");
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
@@ -393,6 +400,7 @@ mod tests {
             name: String::from("Test Structure Variation"),
             fields: vec![],
             delimiters: vec![],
+            metafields: vec![],
         };
         wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef");
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();

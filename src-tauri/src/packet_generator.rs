@@ -1,4 +1,4 @@
-use crate::models::packet_structure::{PacketFieldType, PacketMetadataType, PacketStructure};
+use crate::models::packet_structure::PacketStructure;
 
 /// Generate bytes from a packet structure and a list of values.
 ///
@@ -34,10 +34,6 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>
             None => return Err(format!("Field {} refers to missing index: {}", field.name, field.index))
         };
 
-        if field.r#type != given_value.get_field_type() {
-            return Err(format!("Field {} has type {:?} but the given value is {:?}", field.name, field.r#type, given_value));
-        }
-
         let bytes = given_value.to_le_bytes();
         for i in 0..field.r#type.size() {
             // guaranteed to not panic due to buffer size calculation previously
@@ -50,7 +46,7 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>
 
 #[cfg(test)]
 mod tests {
-    use crate::models::packet_structure::{PacketStructure, PacketDelimiter, PacketField, PacketFieldType};
+    use crate::models::packet_structure::{PacketDelimiter, PacketField, PacketFieldType, PacketStructure};
 
     use super::generate_packet;
 
@@ -153,7 +149,7 @@ mod tests {
         };
         let packet = generate_packet(&structure, &vec![
             // SignedByte != UnsignedByte
-            PacketFieldValue::SignedByte(16)
+            16
         ]);
         assert_eq!(packet.unwrap_err(), "Field Test Field has type UnsignedByte but the given value is SignedByte(16)");
     }

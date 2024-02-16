@@ -12,10 +12,10 @@ pub struct PacketStructureViewModel {
 
 impl PacketStructureViewModel {
 
-    /// Takes current PacketViewModel and parses it into a packetStructure which is then returned
+    /// Takes current PacketStructureViewModel and parses it into a packetStructure which is then returned
     ///
     /// ### Output
-    /// * 'PacketStructure' - contains all data from the PacketViewModel, repackaged as a PacketStructure
+    /// * 'PacketStructure' - contains all data from the PacketStructureViewModel, repackaged as a PacketStructure
     pub fn to_packet_structure(&self) -> PacketStructure {
         let mut packet_fields: Vec<PacketField> = Vec::new();
         let mut packet_delimiters: Vec<PacketDelimiter> = Vec::new();
@@ -97,7 +97,7 @@ pub struct PacketGap {
     /// ### Arguments
     /// * 'packet_structure' - contains a packet structure that needs to be put into a displayable format
     /// ### Output
-    /// * 'PacketViewModel' contains the packet structure that was given in a new format
+    /// * 'PacketStructureViewModel' contains the packet structure that was given in a new format
     pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStructureViewModel {
     let mut components: Vec<PacketComponent> =
         Vec::with_capacity(packet_structure.delimiters.len() + packet_structure.fields.len());

@@ -2,12 +2,12 @@ import {Accessor, createContext, createSignal, onCleanup, onMount, ParentCompone
 import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "../backend_interop/buffers";
 import {
-    PacketViewModel,
+    PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
     SerialUpdateResult as SerialUpdateResult,
     SerialPortNames,
-    PacketViewModelUpdate,
-    PacketViewModelUpdateType,
+    PacketStructureViewModelUpdate,
+    PacketStructureViewModelUpdateType,
     SendingLoopState
 } from "../backend_interop/types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
@@ -25,11 +25,11 @@ export type BackendContextValue = {
      */
     parsedPacketCount: Accessor<number>,
     /**
-     * The list of registered {@link PacketViewModel}s for each `PacketStructure`.
+     * The list of registered {@link PacketStructureViewModel}s for each `PacketStructure`.
      */
-    packetViewModels: PacketViewModel[],
+    PacketStructureViewModels: PacketStructureViewModel[],
 
-    setPacketViewModels: SetStoreFunction<PacketViewModel[]>,
+    setPacketStructureViewModels: SetStoreFunction<PacketStructureViewModel[]>,
 
     /**
      * Information about the current or most recent sending loop task.
@@ -44,8 +44,8 @@ export type BackendContextValue = {
 const BackendContext = createContext<BackendContextValue>({
     availablePortNames: (): SerialPortNames[] => [],
     parsedPacketCount: () => 0,
-    packetViewModels: [],
-    setPacketViewModels: () => {},
+    PacketStructureViewModels: [],
+    setPacketStructureViewModels: () => {},
     sendingLoopState: () => null
 });
 
@@ -63,7 +63,7 @@ const BackendContext = createContext<BackendContextValue>({
 export const BackendProvider: ParentComponent = (props) => {
     const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
     const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
-    const [packetViewModels, setPacketViewModels] = createStore<PacketViewModel[]>([]);
+    const [PacketStructureViewModels, setPacketStructureViewModels] = createStore<PacketStructureViewModel[]>([]);
     const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
 
     let unlistenFunctions: UnlistenFn[];
@@ -76,10 +76,10 @@ export const BackendProvider: ParentComponent = (props) => {
         unlistenFunctions = [
             await listen<string>("error", ({payload: message}) => {
                 // Log informative errors reported by the Rust backend for debugging purposes
-                console.error(message);
+                //console.error(message);
             }),
             await listen<SerialUpdateResult>("serial-update", ({payload: result}) => {
-                console.log(result);
+                //console.log(result);
                 if (result.newAvailablePortNames) {
                     setAvailablePortNames(result.newAvailablePortNames);
                 }
@@ -88,31 +88,31 @@ export const BackendProvider: ParentComponent = (props) => {
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }
             }),
-            await listen<PacketViewModelUpdate[]>("packet-structures-update", event => {
-                console.log(event);
+            await listen<PacketStructureViewModelUpdate[]>("packet-structures-update", event => {
+                //console.log(event);
 
-                for (const packetViewModelUpdate of event.payload) {
-                    switch (packetViewModelUpdate.type) {
-                        case PacketViewModelUpdateType.CreateOrUpdate:
-                            const packetViewModel = packetViewModelUpdate.data as PacketViewModel;
-                            if (packetViewModels.some(oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id)) {
+                for (const PacketStructureViewModelUpdate of event.payload) {
+                    switch (PacketStructureViewModelUpdate.type) {
+                        case PacketStructureViewModelUpdateType.CreateOrUpdate:
+                            const PacketStructureViewModel = PacketStructureViewModelUpdate.data as PacketStructureViewModel;
+                            if (PacketStructureViewModels.some(oldPacketStructureViewModel => oldPacketStructureViewModel.id === PacketStructureViewModel.id)) {
                                 // Update the existing view model
-                                setPacketViewModels(
-                                    oldPacketViewModel => oldPacketViewModel.id === packetViewModel.id,
-                                    packetViewModel
+                                setPacketStructureViewModels(
+                                    oldPacketStructureViewModel => oldPacketStructureViewModel.id === PacketStructureViewModel.id,
+                                    PacketStructureViewModel
                                 );
                             } else {
                                 // Add the new view model
-                                setPacketViewModels(
-                                    packetViewModels.length,
-                                    packetViewModel
+                                setPacketStructureViewModels(
+                                    PacketStructureViewModels.length,
+                                    PacketStructureViewModel
                                 );
                             }
                             break;
-                        case PacketViewModelUpdateType.Delete:
-                            const deletedPacketViewModelId = packetViewModelUpdate.data as number;
-                            setPacketViewModels(
-                                packetViewModels.filter(packetViewModel => packetViewModel.id !== deletedPacketViewModelId),
+                        case PacketStructureViewModelUpdateType.Delete:
+                            const deletedPacketStructureViewModelId = PacketStructureViewModelUpdate.data as number;
+                            setPacketStructureViewModels(
+                                PacketStructureViewModels.filter(PacketStructureViewModel => PacketStructureViewModel.id !== deletedPacketStructureViewModelId),
                             );
                             break;
                     }
@@ -152,8 +152,8 @@ export const BackendProvider: ParentComponent = (props) => {
     const context = {
         availablePortNames: availablePortNames,
         parsedPacketCount: parsedPacketCount,
-        packetViewModels: packetViewModels,
-        setPacketViewModels: setPacketViewModels,
+        PacketStructureViewModels: PacketStructureViewModels,
+        setPacketStructureViewModels: setPacketStructureViewModels,
         sendingLoopState: sendingLoopState
     };
 

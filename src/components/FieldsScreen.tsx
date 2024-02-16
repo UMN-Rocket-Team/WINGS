@@ -30,7 +30,7 @@ export const [graphs, setGraph] = createStore<GraphStruct[]>([]);
  * @param props an object that contains the number of this screen
  */
 const FieldsScreen: Component = () => {
-    const { packetViewModels } = useBackend();
+    const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
     const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
@@ -98,11 +98,11 @@ const FieldsScreen: Component = () => {
                 style={{ "width": "90%" }}>
                 <For each={graphs}>
                     {(graph: GraphStruct, index) => {
-                        const packetViewModel = packetViewModels.find(packetViewModel => packetViewModel.id === graph.x);
+                        const PacketStructureViewModel = PacketStructureViewModels.find(PacketStructureViewModel => PacketStructureViewModel.id === graph.x);
 
                         //Absolutely no clue why this is needed or what it does, but if it is used in a <p> tag inside of the button below and if I remove that the code only displays 1 graph.
                         //Again, no clue why, but it isn't breaking anything as it is right now so This can be something we come back to in the future.
-                        const field = packetViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
+                        const field = PacketStructureViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
 
                         return (
                             <div class="bg-stone-400 dark:bg-dark-900 flex justify-center items-center w-[100px] h-[100px] p-1.5 overflow-hidden rounded-7 ">

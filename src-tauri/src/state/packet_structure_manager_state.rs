@@ -17,7 +17,6 @@ impl Default for PacketStructureManagerState {
         // Used for testing the packet editor.
         let mut example_structure = PacketStructure::default();
         example_structure.ez_make("ba5eba11 _4 i64 u16 u16 u8 u8 _4 ca11ab1e");
-        example_structure.fields[0].metadata_type = PacketMetadataType::Timestamp;
         example_structure.fields[0].name = "Timestamp".to_owned();
         example_structure.fields[1].name = "rkt_speed".to_owned();
         example_structure.fields[2].name = "rkt_speed_also".to_owned();
