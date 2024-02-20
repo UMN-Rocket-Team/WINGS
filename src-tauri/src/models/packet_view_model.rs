@@ -118,6 +118,19 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
 
     let mut gap_index: usize = 0;
 
+    if let Some(first_component) = components.get(0) {
+        if first_component.get_offset_in_packet() != 0 {
+            components.insert(0, PacketComponent::Gap(PacketGap {
+                index: gap_index,
+                size: first_component.get_offset_in_packet(),
+                offset_in_packet: 0
+            }));
+            gap_index += 1;
+        }
+    }
+
+    // This loop checks for a gap *after* each component it iterates over.
+    // (Except the last one, which by definition can't have a gap afterwards)
     for i in 0..(components.len() - 1) {
         let component = &components[i];
 
@@ -145,7 +158,7 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
 }
 
 mod tests {
-    use crate::models::{packet_structure::{PacketDelimiter, PacketField, PacketStructure}, packet_view_model::{PacketComponent, PacketDelimiterViewModel, PacketStructureViewModel}};
+    use crate::models::{packet_structure::{PacketDelimiter, PacketField, PacketStructure}, packet_view_model::{PacketComponent, PacketDelimiterViewModel, PacketGap, PacketStructureViewModel}};
 
     use super::create_packet_view_model;
 
@@ -179,5 +192,61 @@ mod tests {
             ]
         });
         assert_eq!(view_model.components[0].len(), 4); // 4 bytes long
+    }
+
+    #[test]
+    fn starts_with_gap() {
+        let packet_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test packet"),
+            fields: vec![],
+            delimiters: vec![
+                // There is a gap before the first field/delimiter
+                PacketDelimiter {
+                    index: 0,
+                    name: String::from("Test delimiter 1"),
+                    identifier: vec![0x34],
+                    offset_in_packet: 10
+                },
+                // There is also a gap between these, which we will use to test that the
+                // gap index is updated correctly
+                PacketDelimiter {
+                    index: 1,
+                    name: String::from("Test delimiter 2"),
+                    identifier: vec![0x56],
+                    offset_in_packet: 12
+                }
+            ],
+            metafields: vec![],
+        };
+        let view_model = create_packet_view_model(&packet_structure);
+        assert_eq!(view_model, PacketStructureViewModel {
+            id: 0,
+            name: String::from("Test packet"),
+            components: vec![
+                PacketComponent::Gap(PacketGap {
+                    index: 0,
+                    size: 10,
+                    offset_in_packet: 0
+                }),
+                PacketComponent::Delimiter(PacketDelimiterViewModel {
+                    index: 0,
+                    name: String::from("Test delimiter 1"),
+                    identifier: String::from("34"),
+                    offset_in_packet: 10
+                }),
+                PacketComponent::Gap(PacketGap {
+                    index: 1,
+                    size: 1,
+                    offset_in_packet: 11
+                }),
+                PacketComponent::Delimiter(PacketDelimiterViewModel {
+                    index: 1,
+                    name: String::from("Test delimiter 2"),
+                    identifier: String::from("56"),
+                    offset_in_packet: 12
+                })
+            ]
+        });
     }
 }
