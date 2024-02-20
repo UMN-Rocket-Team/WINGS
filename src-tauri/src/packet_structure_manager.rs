@@ -752,22 +752,51 @@ mod tests {
 
     #[test]
     fn test_set_delimiter_identifier() {
-        let packet_delimiter = PacketDelimiter{index: 0, name: String::from("delimiter_name"), identifier: vec![1,2], offset_in_packet: 0};
-        let packet_delimiter2 = PacketDelimiter{index: 1, name: String::from("delimiter_name"), identifier: vec![1], offset_in_packet: 2};
-
-        let mut packet_structure_manager = PacketStructureManager::default(); // initializes a manager object
-        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure { // inserts empty packet into the manager object
-            id: 0, // gets overidden
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure { //inserts empty packet into the manager object
+            id: 0, // ignored
             name: String::from("First Name"),
             fields: vec![],
-            delimiters: vec![packet_delimiter, packet_delimiter2],
+            delimiters: vec![
+                PacketDelimiter {
+                    index: 0,
+                    name: String::from("Delimiter 1"),
+                    identifier: vec![0x12, 0x34],
+                    offset_in_packet: 1
+                },
+                PacketDelimiter {
+                    index: 1,
+                    name: String::from("Delimiter 2"),
+                    identifier: vec![0xab, 0xcd],
+                    offset_in_packet: 3
+                },
+            ],
             metafields: vec![],
         }).unwrap();
 
-        packet_structure_manager.set_delimiter_identifier(id, 0, "1").unwrap();
+        // First we test just changing the identifier to something with the same size
+        // Expecting no change in offsets
+        packet_structure_manager.set_delimiter_identifier(id, 0, "7856").unwrap();
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].identifier, vec![0x78, 0x56]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].offset_in_packet, 1);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].identifier, vec![0xab, 0xcd]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].offset_in_packet, 3);
 
-        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].identifier, vec![16]);
-        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].offset_in_packet, vec![16].len());
+        // Now we try making the delimiter smaller
+        // Second delimiter should move forward
+        packet_structure_manager.set_delimiter_identifier(id, 0, "f5").unwrap();
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].identifier, vec![0xf5]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].offset_in_packet, 1);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].identifier, vec![0xab, 0xcd]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].offset_in_packet, 2);
+
+        // Then we try making the delimiter bigger
+        // Second delimiter should move backward
+        packet_structure_manager.set_delimiter_identifier(id, 0, "0a1b2c3d4e5f6e7d8c9b0a").unwrap();
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].identifier, vec![0x0a, 0x1b, 0x2c, 0x3d, 0x4e, 0x5f, 0x6e, 0x7d, 0x8c, 0x9b, 0x0a]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[0].offset_in_packet, 1);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].identifier, vec![0xab, 0xcd]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].offset_in_packet, 12);
     }
 
     // #[test]
