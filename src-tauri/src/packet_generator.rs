@@ -12,7 +12,6 @@ use crate::models::packet_structure::PacketStructure;
 /// Some mistakes will be caught and an Err will be returned:
 /// 
 ///  - field.index out-of-bounds
-///  - fields marked as timestamp metadata that aren't signed longs
 /// 
 /// However some errors will not be caught such as packets overlapping each other, so please
 /// make sure your structures are valid first :)
@@ -129,70 +128,6 @@ mod tests {
         // notice that we provide no packet values when we should provide some
         let packet = generate_packet(&structure, &vec![]);
         assert_eq!(packet.unwrap_err(), "Field Test Field refers to missing index: 0");
-    }
-
-    #[test]
-    fn field_type_and_value_mismatch() {
-        let structure = PacketStructure {
-            id: 0,
-            name: "Test Packet".to_string(),
-            delimiters: vec![],
-            fields: vec![
-                PacketField {
-                    index: 0,
-                    name: "Test Field".to_string(),
-                    offset_in_packet: 0,
-                    r#type: PacketFieldType::UnsignedByte
-                }
-            ],
-            metafields: vec![],
-        };
-        let packet = generate_packet(&structure, &vec![
-            // SignedByte != UnsignedByte
-            16
-        ]);
-        assert_eq!(packet.unwrap_err(), "Field Test Field has type UnsignedByte but the given value is SignedByte(16)");
-    }
-
-    #[test]
-    fn timestamp_metadata() {
-        let bad_structure = PacketStructure {
-            id: 0,
-            name: "Test Packet 1".to_string(),
-            delimiters: vec![],
-            fields: vec![
-                PacketField {
-                    index: 0,
-                    name: "Test Field 1".to_string(),
-                    offset_in_packet: 0,
-                    r#type: PacketFieldType::SignedByte
-                }
-            ],
-            metafields: vec![],
-        };
-        let bad_packet = generate_packet(&bad_structure, &vec![
-            101
-        ]);
-        assert_eq!(bad_packet.unwrap_err(), "Field Test Field 1 is marked as timestamp but is type SignedByte");
-
-        let good_structure = PacketStructure {
-            id: 0,
-            name: "Test Packet 2".to_string(),
-            delimiters: vec![],
-            fields: vec![
-                PacketField {
-                    index: 0,
-                    name: "Test Field 2".to_string(),
-                    offset_in_packet: 0,
-                    r#type: PacketFieldType::SignedLong
-                }
-            ],
-            metafields: vec![],
-        };
-        let good_packet = generate_packet(&good_structure, &vec![
-            1699481341632
-        ]);
-        assert_eq!(good_packet.unwrap(), u64::to_le_bytes(1699481341632));
     }
 
     #[test]
