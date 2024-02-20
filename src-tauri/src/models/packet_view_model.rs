@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::packet_structure::{PacketDelimiter, PacketField, PacketStructure};
 
-#[derive(Serialize, Clone, Deserialize)]
+#[derive(Serialize, Clone, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketStructureViewModel {
     id: usize,
@@ -48,7 +48,7 @@ pub enum PacketComponentType {
     Gap,
 }
 
-#[derive(Serialize, Clone, Deserialize)]
+#[derive(Serialize, Clone, Deserialize, Debug, PartialEq)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketComponent {
     Field(PacketField),
@@ -68,13 +68,13 @@ impl PacketComponent {
     fn len(&self) -> usize {
         match self {
             PacketComponent::Field(field) => field.r#type.size(),
-            PacketComponent::Delimiter(delimiter) => delimiter.identifier.len(),
+            PacketComponent::Delimiter(delimiter) => delimiter.identifier.len() / 2,
             PacketComponent::Gap(gap) => gap.size,
         }
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketDelimiterViewModel {
     pub(crate) index: usize,
@@ -83,7 +83,7 @@ pub struct PacketDelimiterViewModel {
     pub(crate) offset_in_packet: usize,
 }
 
-#[derive(Serialize, Clone, Deserialize, Copy)]
+#[derive(Serialize, Clone, Deserialize, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketGap {
     index: usize,
@@ -142,4 +142,42 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         name: packet_structure.name.clone(),
         components,
     };
+}
+
+mod tests {
+    use crate::models::{packet_structure::{PacketDelimiter, PacketField, PacketStructure}, packet_view_model::{PacketComponent, PacketDelimiterViewModel, PacketStructureViewModel}};
+
+    use super::create_packet_view_model;
+
+    #[test]
+    fn delimiter() {
+        let packet_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test packet"),
+            fields: vec![],
+            delimiters: vec![
+                PacketDelimiter {
+                    index: 0,
+                    name: String::from("Test delimiter"),
+                    identifier: vec![0xde, 0xad, 0xbe, 0xef],
+                    offset_in_packet: 0
+                }
+            ],
+            metafields: vec![],
+        };
+        let view_model = create_packet_view_model(&packet_structure);
+        assert_eq!(view_model, PacketStructureViewModel {
+            id: 0,
+            name: String::from("Test packet"),
+            components: vec![
+                PacketComponent::Delimiter(PacketDelimiterViewModel {
+                    index: 0,
+                    name: String::from("Test delimiter"),
+                    identifier: String::from("deadbeef"),
+                    offset_in_packet: 0
+                })
+            ]
+        });
+        assert_eq!(view_model.components[0].len(), 4); // 4 bytes long
+    }
 }
