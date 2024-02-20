@@ -22,7 +22,6 @@ impl PacketStructureViewModel {
         for component in &self.components {
             match component {
                 PacketComponent::Field(field) => packet_fields.push(field.clone()),
-
                 PacketComponent::Delimiter(delimiter) => packet_delimiters.push(PacketDelimiter {
                     index: delimiter.index,
                     name: delimiter.name.to_string(),
@@ -92,13 +91,13 @@ pub struct PacketGap {
     offset_in_packet: usize,
 }
 
-    /// Takes a Packet Structure and parses it and returns it as a Packet View Model
-    /// 
-    /// ### Arguments
-    /// * 'packet_structure' - contains a packet structure that needs to be put into a displayable format
-    /// ### Output
-    /// * 'PacketStructureViewModel' contains the packet structure that was given in a new format
-    pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStructureViewModel {
+/// Takes a Packet Structure and parses it and returns it as a Packet View Model
+/// 
+/// ### Arguments
+/// * 'packet_structure' - contains a packet structure that needs to be put into a displayable format
+/// ### Output
+/// * 'PacketStructureViewModel' contains the packet structure that was given in a new format
+pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStructureViewModel {
     let mut components: Vec<PacketComponent> =
         Vec::with_capacity(packet_structure.delimiters.len() + packet_structure.fields.len());
 
