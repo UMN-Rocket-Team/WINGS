@@ -143,11 +143,7 @@ pub fn set_delimiter_identifier(
             identifier,
         ) {
             Ok(_) => Ok((vec![packet_structure_id], None)),
-            Err(error) => match error.clone() {
-                Error::InvalidHexCharacter(_) => Err((vec![packet_structure_id], None, error.to_string())),
-                Error::DelimiterIdentifierCollision(ids) => Err((ids, None, error.to_string())),
-                _ => Err((vec![], None, error.to_string()))
-            }
+            Err(error) => Err((vec![packet_structure_id], None, error.to_string()))
         },
     )
 }
