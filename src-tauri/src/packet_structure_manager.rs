@@ -227,11 +227,11 @@ impl PacketStructureManager {
     /// Set the metadata type for a field of a packet structure.
     pub fn set_field_metadata_type(
         &mut self,
-        packet_structure_id: usize,
-        field_index: usize,
-        metadata_type: PacketMetadataType,
+        _packet_structure_id: usize,
+        _field_index: usize,
+        _metadata_type: PacketMetadataType,
     ) -> Result<(), Error> {
-        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
+        // Deprecated old method; to be replaced
         Ok(())
     }
 
@@ -638,7 +638,6 @@ mod tests {
     #[test]
     fn test_set_field_name() {
         let packet_field_type = PacketFieldType::Double;
-        let packet_metadata_type = PacketMetadataType::None;
         let packet_field = PacketField {
             index: 0,
             name: String::from("notname"),
@@ -672,7 +671,6 @@ mod tests {
 
         for field_type in array {
             for field_type2 in array {
-                let packet_metadata_type = PacketMetadataType::None;
                 let packet_field = PacketField {
                     index: 0,
                     name: String::from("name"),
@@ -706,7 +704,6 @@ mod tests {
     #[test]
     fn test_set_field_metadata_type() {
         let packet_field_type = PacketFieldType::Double;
-        let packet_metadata_type = PacketMetadataType::None;
         let packet_metadata_type2 = PacketMetadataType::Timestamp;
         let packet_field = PacketField {
             index: 0,
