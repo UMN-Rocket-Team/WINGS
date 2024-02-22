@@ -86,7 +86,6 @@ pub struct PacketDelimiterViewModel {
 #[derive(Serialize, Clone, Deserialize, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketGap {
-    index: usize,
     size: usize,
     offset_in_packet: usize,
 }
@@ -116,16 +115,12 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
 
     components.sort_by(|lhs, rhs| lhs.get_offset_in_packet().cmp(&rhs.get_offset_in_packet()));
 
-    let mut gap_index: usize = 0;
-
     if let Some(first_component) = components.get(0) {
         if first_component.get_offset_in_packet() != 0 {
             components.insert(0, PacketComponent::Gap(PacketGap {
-                index: gap_index,
                 size: first_component.get_offset_in_packet(),
                 offset_in_packet: 0
             }));
-            gap_index += 1;
         }
     }
 
@@ -141,12 +136,10 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
             components.insert(
                 i + 1,
                 PacketComponent::Gap(PacketGap {
-                    index: gap_index,
                     size: next_offset - current_component_end,
                     offset_in_packet: current_component_end,
                 }),
             );
-            gap_index += 1;
         }
     }
 
@@ -157,8 +150,9 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
     };
 }
 
+#[cfg(test)]
 mod tests {
-    use crate::models::{packet_structure::{PacketDelimiter, PacketField, PacketStructure}, packet_view_model::{PacketComponent, PacketDelimiterViewModel, PacketGap, PacketStructureViewModel}};
+    use crate::models::{packet_structure::{PacketDelimiter, PacketStructure}, packet_view_model::{PacketComponent, PacketDelimiterViewModel, PacketGap, PacketStructureViewModel}};
 
     use super::create_packet_view_model;
 
@@ -225,7 +219,6 @@ mod tests {
             name: String::from("Test packet"),
             components: vec![
                 PacketComponent::Gap(PacketGap {
-                    index: 0,
                     size: 10,
                     offset_in_packet: 0
                 }),
@@ -236,7 +229,6 @@ mod tests {
                     offset_in_packet: 10
                 }),
                 PacketComponent::Gap(PacketGap {
-                    index: 1,
                     size: 1,
                     offset_in_packet: 11
                 }),

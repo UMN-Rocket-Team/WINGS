@@ -27,22 +27,26 @@ pub enum Error {
     /// Contains a list of packet IDs that collide
     DelimiterIdentifierCollision(Vec<usize>),
     CannotDeleteLastField,
-    CannotDeleteLastDelimiter
+    CannotDeleteLastDelimiter,
+    NoComponents,
+    GapEndOverflow
 }
 
 impl Error {
     pub fn to_string(&self) -> String {
         match self {
-            Error::PacketDoesNotExist(id) => format!("Packet {id} does not exist"),
-            Error::NameAlreadyRegistered(name) => format!("Packet with name {name} already exists"),
-            Error::DelimitersAlreadyRegistered(id) => format!("Delimiters are already registered by packet ID {id}"),
-            Error::FieldOffsetOverflow => "Field offset overflow".to_string(),
-            Error::DelimiterOffsetOverflow => "Delimiter offset overflow".to_string(),
-            Error::InvalidHexCharacter(char) => format!("{char} is an invalid hex character"),
-            Error::EmptyDelimiterIdentifier => format!("Delimiter identifier cannot be empty"),
-            Error::DelimiterIdentifierCollision(ids) => format!("Delimiter identifiers collides with packet IDs {:?}", ids),
-            Error::CannotDeleteLastField => "Cannot delete last field".to_string(),
-            Error::CannotDeleteLastDelimiter => "Cannot delete last delimiter".to_string(),
+            Self::PacketDoesNotExist(id) => format!("Packet {id} does not exist"),
+            Self::NameAlreadyRegistered(name) => format!("Packet with name {name} already exists"),
+            Self::DelimitersAlreadyRegistered(id) => format!("Delimiters are already registered by packet ID {id}"),
+            Self::FieldOffsetOverflow => "Field offset overflow".to_string(),
+            Self::DelimiterOffsetOverflow => "Delimiter offset overflow".to_string(),
+            Self::InvalidHexCharacter(char) => format!("{char} is an invalid hex character"),
+            Self::EmptyDelimiterIdentifier => format!("Delimiter identifier cannot be empty"),
+            Self::DelimiterIdentifierCollision(ids) => format!("Delimiter identifiers collides with packet IDs {:?}", ids),
+            Self::CannotDeleteLastField => "Cannot delete last field".to_string(),
+            Self::CannotDeleteLastDelimiter => "Cannot delete last delimiter".to_string(),
+            Self::NoComponents => "No components".to_string(),
+            Self::GapEndOverflow => "Gap end overflow".to_string()
         }
     }
 }
@@ -357,80 +361,31 @@ impl PacketStructureManager {
         Ok(())
     }
 
-    /// Looks for a field or delimiter with the given offset
-    fn find_field_or_delimiter_with_offset(
-        &self,
-        packet_structure_id: usize,
-        offset_in_packet: usize,
-    ) -> Option<PacketFieldOrDelimiter> {
-        let packet_structure = self.get_packet_structure(packet_structure_id).ok()?;
-
-        for field in packet_structure.fields.iter() {
-            if field.offset_in_packet == offset_in_packet {
-                return Some(PacketFieldOrDelimiter::Field(field.clone()));
-            }
-        }
-
-        for delimiter in packet_structure.delimiters.iter() {
-            if delimiter.offset_in_packet == offset_in_packet {
-                return Some(PacketFieldOrDelimiter::Delimiter(delimiter.clone()));
-            }
-        }
-
-        return None;
-    }
-
-    /// Changes the size of a gap between two items inside a packet
-    /// gap_index is the marking of the gaps location in the packet based off of the number of gaps before it(nth gap)
-    /// gap_size is the size we want to set the gap to
-    /// should probably be rewritten to use gap offset rather than index
+    /// Changes the size of a gap inside a packet
     pub fn set_gap_size(
         &mut self,
         packet_structure_id: usize,
-        gap_index: usize,
-        gap_size: usize
+        gap_start: usize,
+        new_gap_size: isize
     ) -> Result<(), Error> {
-        // Find the gap with the given index
-        let mut found_gap_index: usize = 0;
+        let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
-        let mut previous_field_or_delimiter: Option<PacketFieldOrDelimiter> = None;
-        let mut maybe_field_or_delimiter =
-            self.find_field_or_delimiter_with_offset(packet_structure_id, 0);
+        let field_offsets = packet_structure.fields.iter().map(|f| f.offset_in_packet);
+        let delimiter_offsets = packet_structure.delimiters.iter().map(|d| d.offset_in_packet);
+        let gap_end: usize = field_offsets
+            .chain(delimiter_offsets)
+            .filter(|offset| *offset >= gap_start)
+            .min()
+            .ok_or(Error::NoComponents)?
+            .try_into()
+            .map_err(|_| Error::GapEndOverflow)?;
 
-        // iterates and finds every gap in the packet until it reaches the nth gap(gap_index), it then shifts everything after the gap
-        while let Some(field_or_delimiter) = maybe_field_or_delimiter {
-            let previous_field_or_delimiter_end = if previous_field_or_delimiter.is_some() {
-                previous_field_or_delimiter.unwrap().end_offset()
-            } else {
-                0
-            };
-            let extra_space = field_or_delimiter.end_offset() - previous_field_or_delimiter_end;
+        let gap_size: isize = (gap_end - gap_start)
+            .try_into()
+            .map_err(|_| Error::GapEndOverflow)?;
 
-            if extra_space > 0 {
-                if gap_index == found_gap_index {
-                    // Shift all packet components after the current one by the change in the gap size
-                    let gap_delta: isize = gap_size as isize - extra_space as isize;
-
-                    Self::shift_components_after(
-                        self.get_packet_structure_mut(packet_structure_id)?,
-                        gap_delta,
-                        previous_field_or_delimiter_end,
-                    )?;
-
-                    return Ok(());
-                }
-
-                found_gap_index += 1;
-            }
-
-            previous_field_or_delimiter = Some(field_or_delimiter.clone());
-            maybe_field_or_delimiter = self.find_field_or_delimiter_with_offset(
-                packet_structure_id,
-                field_or_delimiter.end_offset(),
-            );
-        }
-
-        return Ok(());
+        Self::shift_components_after(packet_structure, new_gap_size - gap_size, gap_start)?;
+        Ok(())
     }
 
     /// Creates a new field inside the end of the packet
@@ -796,10 +751,117 @@ mod tests {
         assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters[1].offset_in_packet, 12);
     }
 
-    // #[test]
-    // fn test_set_gap_size() {
-    //     todo!();
-    // }
+    #[test]
+    fn test_set_gap_size() {
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let id = packet_structure_manager.register_packet_structure(&mut PacketStructure {
+            id: 0, // overwritten
+            name: String::from("Test Packet"),
+            fields: vec![
+                // 1 byte gap at offset 0
+                PacketField {
+                    index: 0,
+                    name: String::from("Field 1"),
+                    r#type: PacketFieldType::SignedByte,
+                    offset_in_packet: 1
+                },
+                // 2 byte gap at offset 2
+                PacketField {
+                    index: 1,
+                    name: String::from("Field 2"),
+                    r#type: PacketFieldType::SignedByte,
+                    offset_in_packet: 4
+                }
+            ],
+            delimiters: vec![
+                // 1 byte gap at offset 5
+                PacketDelimiter {
+                    index: 0,
+                    name: String::from("Delimiter 1"),
+                    identifier: vec![0x12],
+                    offset_in_packet: 6
+                },
+                // 5 byte gap at offset 7
+                PacketDelimiter {
+                    index: 1,
+                    name: String::from("Delimiter 2"),
+                    identifier: vec![0x34],
+                    offset_in_packet: 12
+                },
+            ],
+            metafields: vec![],
+        }).unwrap();
+
+        // This should move everything back by 1 byte
+        packet_structure_manager.set_gap_size(id, 0, 2).unwrap();
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields, vec![
+            // 2 byte gap at offset 0
+            PacketField {
+                index: 0,
+                name: String::from("Field 1"),
+                r#type: PacketFieldType::SignedByte,
+                offset_in_packet: 2
+            },
+            // 2 byte gap at offset 4
+            PacketField {
+                index: 1,
+                name: String::from("Field 2"),
+                r#type: PacketFieldType::SignedByte,
+                offset_in_packet: 5
+            }
+        ]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters, vec![
+            // 1 byte gap at offset 6
+            PacketDelimiter {
+                index: 0,
+                name: String::from("Delimiter 1"),
+                identifier: vec![0x12],
+                offset_in_packet: 7
+            },
+            // 5 byte gap at offset 8
+            PacketDelimiter {
+                index: 1,
+                name: String::from("Delimiter 2"),
+                identifier: vec![0x34],
+                offset_in_packet: 13
+            },
+        ]);
+
+        // This should move just the last delimiter up by 4 bytes
+        packet_structure_manager.set_gap_size(id, 8, 1).unwrap();
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().fields, vec![
+            // 2 byte gap at offset 0
+            PacketField {
+                index: 0,
+                name: String::from("Field 1"),
+                r#type: PacketFieldType::SignedByte,
+                offset_in_packet: 2
+            },
+            // 2 byte gap at offset 4
+            PacketField {
+                index: 1,
+                name: String::from("Field 2"),
+                r#type: PacketFieldType::SignedByte,
+                offset_in_packet: 5
+            }
+        ]);
+        assert_eq!(packet_structure_manager.get_packet_structure(id).unwrap().delimiters, vec![
+            // 1 byte gap at offset 6
+            PacketDelimiter {
+                index: 0,
+                name: String::from("Delimiter 1"),
+                identifier: vec![0x12],
+                offset_in_packet: 7
+            },
+            // 1 byte gap at offset 8
+            PacketDelimiter {
+                index: 1,
+                name: String::from("Delimiter 2"),
+                identifier: vec![0x34],
+                offset_in_packet: 9
+            },
+        ]);
+    }
 
     #[test]
     fn test_add_field() {
