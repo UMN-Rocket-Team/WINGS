@@ -124,9 +124,10 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         }
     }
 
-    // This loop checks for a gap *after* each component it iterates over.
-    // (Except the last one, which by definition can't have a gap afterwards)
-    for i in 0..(components.len() - 1) {
+    // This loop checks for a gap *after* the component at index `i`.
+    // The last component by definition can't have a gap after it.
+    // Must iterate backwards because we are adding items as we loop.
+    for i in (0..(components.len() - 1)).rev() {
         let component = &components[i];
 
         let current_component_end = component.get_offset_in_packet() + component.len();
@@ -238,6 +239,67 @@ mod tests {
                     identifier: String::from("56"),
                     offset_in_packet: 12
                 })
+            ]
+        });
+    }
+
+    #[test]
+    pub fn a_lot_of_gaps() {
+        // There used to be a bug where when there were a ton of gaps, the last few packets
+        // would not be checked for gaps.
+        let make_structure_delimiter = |i: u8| PacketDelimiter {
+            index: i as usize,
+            name: i.to_string(),
+            identifier: vec![i],
+            offset_in_packet: i as usize
+        };
+        let packet_structure = PacketStructure {
+            id: 0,
+            name: String::from("Test packet"),
+            fields: vec![],
+            delimiters: vec![
+                make_structure_delimiter(0),
+                make_structure_delimiter(2),
+                make_structure_delimiter(4),
+                make_structure_delimiter(6),
+                make_structure_delimiter(8),
+                make_structure_delimiter(10),
+                make_structure_delimiter(12),
+                make_structure_delimiter(14),
+            ],
+            metafields: vec![],
+        };
+
+        let view_model = create_packet_view_model(&packet_structure);
+        let make_view_gap = |i: u8| PacketComponent::Gap(PacketGap {
+            size: 1,
+            offset_in_packet: i as usize
+        });
+        let make_view_delimiter = |i: u8| PacketComponent::Delimiter(PacketDelimiterViewModel {
+            index: i as usize,
+            name: i.to_string(),
+            identifier: hex::encode(vec![i]),
+            offset_in_packet: i as usize
+        });
+        assert_eq!(view_model, PacketStructureViewModel {
+            id: 0,
+            name: String::from("Test packet"),
+            components: vec![
+                make_view_delimiter(0),
+                make_view_gap(1),
+                make_view_delimiter(2),
+                make_view_gap(3),
+                make_view_delimiter(4),
+                make_view_gap(5),
+                make_view_delimiter(6),
+                make_view_gap(7),
+                make_view_delimiter(8),
+                make_view_gap(9),
+                make_view_delimiter(10),
+                make_view_gap(11),
+                make_view_delimiter(12),
+                make_view_gap(13),
+                make_view_delimiter(14),
             ]
         });
     }
