@@ -98,18 +98,18 @@ impl SendingLoop {
 
         let mut flipper: bool = true;
         // let mut millis_to_send: f64 = 10.0;
-        let mut packets_sent: f64 = 0.0;
+        let mut packets_sent: u16 = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
             let current_time = unix_time();
 
             flipper = !flipper;
 
             let packet = match generate_packet(&packet_structure, StringRecord::from(vec![
-                current_time.to_string(),
+                (current_time as u64).to_string(),
                 packets_sent.to_string(),
                 packets_sent.to_string(),
-                ((packets_sent as f64).sin() * 1000.0 + 1000.0).to_string(),
-                ((packets_sent as f64).cos() * 1000.0 + 1000.0).to_string(),
+                (flipper as u8).to_string(),
+                (!flipper as u8).to_string(),
                 0.to_string()
             ])) {
                 Ok(packet) => packet,
@@ -124,7 +124,7 @@ impl SendingLoop {
                 communication_manager.write_data(&packet)
             }) {
                 Ok(_) => {
-                    packets_sent = packets_sent + 0.01;
+                    packets_sent = packets_sent + 1;
                     //println!("Sent packet {}: {:?}", packets_sent, packet);
 
                     let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent as u32));
