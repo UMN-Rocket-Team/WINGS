@@ -1,4 +1,7 @@
-use crate::models::packet_structure::PacketStructure;
+use csv::StringRecord;
+
+
+use crate::models::{packet::PacketFieldValue, packet_structure::PacketStructure};
 
 /// Generate bytes from a packet structure and a list of values.
 ///
@@ -15,7 +18,7 @@ use crate::models::packet_structure::PacketStructure;
 /// 
 /// However some errors will not be caught such as packets overlapping each other, so please
 /// make sure your structures are valid first :)
-pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>) -> Result<Vec<u8>, String> {
+pub fn generate_packet(packet_structure: &PacketStructure, field_data: StringRecord) -> Result<Vec<u8>, String> {
     // Don't grow this after making it. It's already the exact right size.
     let mut result = vec![0; packet_structure.size()];
 
@@ -32,8 +35,11 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>
             Some(value) => value,
             None => return Err(format!("Field {} refers to missing index: {}", field.name, field.index))
         };
-
-        let bytes = given_value.to_le_bytes();
+        let parsed_value: PacketFieldValue = match field.r#type.make_from_string(given_value){
+            Ok(value) => value,
+            Err(_)=> return Err(format!("Field {} refers to missing index: {}", field.name, field.index)),
+        };
+        let bytes = parsed_value.to_le_bytes();
         for i in 0..field.r#type.size() {
             // guaranteed to not panic due to buffer size calculation previously
             result[field.offset_in_packet + i] = bytes[i];
@@ -45,6 +51,8 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: &Vec<u64>
 
 #[cfg(test)]
 mod tests {
+    use csv::StringRecord;
+
     use crate::models::packet_structure::{PacketDelimiter, PacketField, PacketFieldType, PacketStructure};
 
     use super::generate_packet;
@@ -58,7 +66,7 @@ mod tests {
             fields: vec![],
             metafields: vec![],
         };
-        let packet = generate_packet(&structure, &vec![]).unwrap();
+        let packet = generate_packet(&structure, StringRecord::from(vec![""])).unwrap();
         assert_eq!(packet.len(), 0);
     }
 
@@ -78,7 +86,7 @@ mod tests {
             fields: vec![],
             metafields: vec![],
         };
-        let packet = generate_packet(&structure, &vec![]).unwrap();
+        let packet = generate_packet(&structure, StringRecord::from(vec![""])).unwrap();
         assert_eq!(packet, [0, 42, 43, 45]);
     }
 
@@ -98,9 +106,7 @@ mod tests {
             ],
             metafields: vec![],
         };
-        let packet = generate_packet(&structure, &vec![
-            0x12345678
-        ]).unwrap();
+        let packet = generate_packet(&structure, StringRecord::from(vec!["305419896"])).unwrap();
         assert_eq!(packet, [
             // padding bytes
             0, 0, 0, 0, 0,
@@ -126,7 +132,7 @@ mod tests {
             metafields: vec![],
         };
         // notice that we provide no packet values when we should provide some
-        let packet = generate_packet(&structure, &vec![]);
+        let packet = generate_packet(&structure, StringRecord::from(vec![""]));
         assert_eq!(packet.unwrap_err(), "Field Test Field refers to missing index: 0");
     }
 
@@ -166,12 +172,11 @@ mod tests {
             metafields: vec![],
         };
 
-        let float = f32::to_le_bytes(3.0);
-        let packet = generate_packet(&structure, &vec![
-            u64::from_le_bytes([float[0], float[1], float[2], float[3], 0, 0, 0, 0]),
-            u64::from_le_bytes(f64::to_le_bytes(6.0)),
-            u64::from_le_bytes(i64::to_le_bytes(-0x1234))
-        ]).unwrap();
+        let packet = generate_packet(&structure, StringRecord::from(vec![
+            "3.0",
+            "6.0",
+            "-4660"
+        ])).unwrap();
         assert_eq!(packet, [
             // Delimiter 1
             1, 2, 3,

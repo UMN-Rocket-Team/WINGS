@@ -1,3 +1,4 @@
+use anyhow::Error;
 use serde::Serialize;
 
 use crate::models::packet_structure::PacketFieldType;
@@ -112,6 +113,22 @@ impl PacketFieldType {
         }
     }
 
+    pub fn make_from_string(&self, input: &str) -> Result<PacketFieldValue,Error>{
+        Ok(
+            match self{
+                PacketFieldType::UnsignedByte =>PacketFieldValue::UnsignedByte(input.parse::<u8>()?),
+                PacketFieldType::SignedByte => PacketFieldValue::SignedByte(input.parse::<i8>()?),
+                PacketFieldType::UnsignedShort => PacketFieldValue::UnsignedShort(input.parse::<u16>()?),
+                PacketFieldType::SignedShort => PacketFieldValue::SignedShort(input.parse::<i16>()?),
+                PacketFieldType::UnsignedInteger => PacketFieldValue::UnsignedInteger(input.parse::<u32>()?),
+                PacketFieldType::SignedInteger => PacketFieldValue::SignedInteger(input.parse::<i32>()?),
+                PacketFieldType::UnsignedLong => PacketFieldValue::UnsignedLong(input.parse::<u64>()?),
+                PacketFieldType::SignedLong => PacketFieldValue::SignedLong(input.parse::<i64>()?),
+                PacketFieldType::Float => PacketFieldValue::Float(input.parse::<f32>()?),
+                PacketFieldType::Double => PacketFieldValue::Double(input.parse::<f64>()?),
+            }
+        )
+    }
     /// returns the size of the data included within the packetFieldType
     pub fn size(&self) -> usize {
         match self {
