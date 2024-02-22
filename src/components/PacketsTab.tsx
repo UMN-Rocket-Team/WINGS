@@ -220,15 +220,18 @@ const PacketsTab: Component = () => {
                                 <h2 class="m-0">Gap Information</h2>
                                 <div class="flex flex-col">
                                     <label for="gapSize">Size</label>
-                                    <input class="inputBox" type="number" value={selectedGapData()!.size} min={1} id="gapSize" onChange={(e) => {
-                                        const value = e.currentTarget.value;
-
-                                        if (value.match('^[0-9]*$')) {
-                                            selectedGapData()!.size = +value;
-                                            return value;
-                                        }
-                                        return selectedGapData()!.size;
-                                    }} onInput={async e => await invokeApiSetter(setGapSize, +(e.target as HTMLInputElement).value)} />
+                                    <input class="inputBox" type="number" value={selectedGapData()!.size} min={1} id="gapSize"
+                                        onInput={async e => {
+                                            const el = e.target as HTMLInputElement;
+                                            el.value = el.value.replace(/[^\d]/g, '');
+                                            if (+el.value < 1) {
+                                                el.value = '1';
+                                            }
+                                            await showErrorModalOnError(
+                                                async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, +el.value),
+                                                'Failed to change gap size'
+                                            );
+                                        }} />
                                 </div>
                             </Match>
                         </Switch>

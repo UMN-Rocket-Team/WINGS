@@ -193,17 +193,13 @@ export type PacketDelimiter = {
  */
 export type PacketGap = {
     /**
-     * The index of this gap inside its packet structure
-     */
-    index: number,
-    /**
      * The size in bytes of this gap
      */
     size: number,
     /**
      * The byte offset of this delimiter inside its packet structure
      */
-    offset: number,
+    offsetInPacket: number,
 };
 
 /**

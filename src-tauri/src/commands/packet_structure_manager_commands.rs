@@ -154,15 +154,15 @@ pub fn set_gap_size(
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
-    gap_index: usize,
-    size: usize,
+    gap_offset: usize,
+    new_gap_size: isize,
 ) -> Result<(), String> {
     update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
         &mut |packet_structure_manager| {
-            match packet_structure_manager.set_gap_size(packet_structure_id, gap_index, size) {
+            match packet_structure_manager.set_gap_size(packet_structure_id, gap_offset, new_gap_size) {
                 Ok(()) => Ok((vec![packet_structure_id], None)),
                 Err(err) => Err((vec![], None, err.to_string()))
             }

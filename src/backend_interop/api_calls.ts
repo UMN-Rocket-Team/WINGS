@@ -26,7 +26,7 @@ export const setDelimiterName = async (packetStructureId: number, delimiterIndex
 
 export const setDelimiterIdentifier = async (packetStructureId: number, delimiterIndex: number, identifier: string) => await invoke("set_delimiter_identifier", { packetStructureId, delimiterIndex, identifier });
 
-export const setGapSize = async (packetStructureId: number, gapIndex: number, size: number) => await invoke<void>("set_gap_size", { packetStructureId, gapIndex, size });
+export const setGapSize = async (packetStructureId: number, gapOffset: number, newGapSize: number) => await invoke<void>("set_gap_size", { packetStructureId, gapOffset, newGapSize });
 
 export const addField = async (packetStructureId: number) => await invoke<void>("add_field", { packetStructureId: packetStructureId });
 
