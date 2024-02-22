@@ -1,4 +1,5 @@
 use std::{time::{Duration, SystemTime, UNIX_EPOCH}, sync::mpsc, thread};
+use csv::StringRecord;
 use serde::Serialize;
 use tauri::Manager;
 
@@ -103,14 +104,14 @@ impl SendingLoop {
 
             flipper = !flipper;
 
-            let packet = match generate_packet(&packet_structure, &vec![
-                current_time as u64,
-                packets_sent  as u64,
-                packets_sent as u64,
-                ((packets_sent as f64).sin() * 1000.0 + 1000.0) as u64,
-                ((packets_sent as f64).cos() * 1000.0 + 1000.0)  as u64,
-                0
-            ]) {
+            let packet = match generate_packet(&packet_structure, StringRecord::from(vec![
+                current_time.to_string(),
+                packets_sent.to_string(),
+                packets_sent.to_string(),
+                ((packets_sent as f64).sin() * 1000.0 + 1000.0).to_string(),
+                ((packets_sent as f64).cos() * 1000.0 + 1000.0).to_string(),
+                0.to_string()
+            ])) {
                 Ok(packet) => packet,
                 Err(err) => {
                     println!("Failed to generate test packet: {}", err);

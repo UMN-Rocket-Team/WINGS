@@ -2,6 +2,8 @@ use std::cmp::max;
 
 use serde::{Deserialize, Serialize};
 
+
+
 #[derive(PartialEq, Deserialize, Clone, Debug, Default)]
 
 /// Represents an entire "Data Packet Structure" 
@@ -128,7 +130,6 @@ pub struct PacketField {
     pub(crate) r#type: PacketFieldType,
     pub(crate) offset_in_packet: usize,
 }
-
 #[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
 ///Represents the different types that can be recieved in a packetField
 pub enum PacketFieldType {
@@ -153,7 +154,6 @@ pub enum PacketFieldType {
     Float,
     Double,
 }
-
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum PacketMetadataType {
     None,

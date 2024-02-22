@@ -7,14 +7,14 @@ use std::{
 };
 
 use crate::models::packet::Packet;
-
+/// Acts as a general data structure to store all files that the ground station is currently interacting with
 pub struct FileHandler {
     csv_writer: Writer<File>,
     csv_reader: Reader<File>,
     byte_writer: File,
 }
 
-///The default write path of the CSVManager is ./packetslog.csv, the program should crash if it can't write to that directory
+/// The default write path of the CSVManager is ./packetslog.csv, the program should crash if it can't write to that directory
 impl Default for FileHandler {
     fn default() -> Self {
         //add logic to set up .wings
@@ -33,7 +33,9 @@ impl Default for FileHandler {
 }
 
 impl FileHandler {
-    ///Sets the filepath that the CSVManager writes to. returns an error if it cant write to that path
+    /// Sets the filepath that the FileHandler writes csvs to. returns an error if it can't write to that path
+    ///
+    /// path: the path that we want to write csv 
     pub fn set_write(&mut self, path: String) -> Result<(), Error> {
         match csv::Writer::from_path(Path::new(&path)) {
             Err(err) => bail!("unable to load from path {}, error: {}", path, err),
@@ -44,6 +46,9 @@ impl FileHandler {
         }
     }
 
+    /// Write a packet to the csv currently loaded
+    ///
+    /// packet: the packet which has the data we want to write
     pub fn write_packet(&mut self, packet: Packet) -> Result<(), Error> {
         match self.csv_writer.serialize(packet.field_data) {
             Err(err) => bail!("Unable to write packet and got error: {}", err),
@@ -53,6 +58,22 @@ impl FileHandler {
             },
         }
     }
+
+    
+    /// Sets the filepath that the FileHandler reads csvs from. returns an error if it can't write to that path
+    ///
+    /// path: the path that we want to read csv data from
+    pub fn set_read(&mut self, path: String) -> Result<(), Error> {
+        match csv::ReaderBuilder::new().has_headers(false).from_path(Path::new(&path)) {
+            Err(err) => bail!("unable to load from path {}, error: {}", path, err),
+            Ok(reader) => {
+                self.csv_reader = reader;
+                Ok(())
+            }
+        }
+    }
+
+    /// Read a packet from the csv currently loaded
     pub fn read_packet(&mut self) -> Result<StringRecord, Error> {
         match self.csv_reader.records().next() {
             None => bail!("nothing read from csv"),
@@ -63,6 +84,9 @@ impl FileHandler {
         }
     }
 
+    /// Write a packet to the byte file currently loaded
+    ///
+    /// bytes: raw bytes to write into the file
     pub fn write_bytes(&mut self, data: Vec<u8>) -> Result<usize, Error> {
         match self.byte_writer.write(&data) {
             Err(err) => bail!("Unable to write packet and got error:{}", err),
