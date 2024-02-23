@@ -83,7 +83,7 @@ fn refresh_available_ports_and_read_active_port(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     packet_parser_state: tauri::State<'_, PacketParserState>,
-    csv_manager_state: tauri::State<'_, FileHandlingState>
+    file_handler_state: tauri::State<'_, FileHandlingState>
 ) -> Result<RefreshAndReadResult, String> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
@@ -94,8 +94,8 @@ fn refresh_available_ports_and_read_active_port(
     match use_communication_manager(communication_manager_state, &mut |communication_manager| {
         match communication_manager.get_data() {
             Ok(data) => {
-                match use_file_handler(&csv_manager_state, &mut |csv_manager| {
-                    match csv_manager.write_bytes(data.data_read.clone()) {
+                match use_file_handler(&file_handler_state, &mut |file_handler| {
+                    match file_handler.write_bytes(data.data_read.clone()) {
                         Err(err) => {
                             return Err(err)
                         },
@@ -123,10 +123,10 @@ fn refresh_available_ports_and_read_active_port(
             use_packet_structure_manager::<(), String>(
                 &packet_structure_manager_state,
                 &mut |packet_structure_manager| {
-                    use_file_handler(&csv_manager_state, &mut |csv_manager| {
+                    use_file_handler(&file_handler_state, &mut |file_handler| {
                         result.parsed_packets = Some(packet_parser.parse_packets(&packet_structure_manager, false));
                         for packet in result.parsed_packets.clone().unwrap(){
-                            match csv_manager.write_packet(packet) {
+                            match file_handler.write_packet(packet) {
                                 Err(err) => {
                                     println!("Somethings wrong with the csv ):");
                                     return Err(err)

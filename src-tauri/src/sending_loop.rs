@@ -1,9 +1,9 @@
 use std::{time::{Duration, SystemTime, UNIX_EPOCH}, sync::mpsc, thread};
-use csv::StringRecord;
+
 use serde::Serialize;
 use tauri::Manager;
 
-use crate::{state::{packet_structure_manager_state::PacketStructureManagerState, communication_state::{use_communication_manager, CommunicationManagerState}}, packet_generator::generate_packet};
+use crate::{packet_generator::generate_packet, state::{communication_state::{use_communication_manager, CommunicationManagerState}, file_handling_state::{use_file_handler, FileHandlingState}, packet_structure_manager_state::PacketStructureManagerState}};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -79,10 +79,6 @@ pub struct SendingLoop {
     task: Option<BackgroundTask>
 }
 
-trait ToU64 {
-    fn to_u64(&self) -> u64;
-}
-
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
@@ -100,25 +96,28 @@ impl SendingLoop {
         // let mut millis_to_send: f64 = 10.0;
         let mut packets_sent: u16 = 0;
         self.task = Some(BackgroundTask::run_repeatedly(move || {
-            let current_time = unix_time();
+            let file_handling_state = app_handle.state::<FileHandlingState>();
 
             flipper = !flipper;
-
-            let packet = match generate_packet(&packet_structure, StringRecord::from(vec![
-                (current_time as u64).to_string(),
-                packets_sent.to_string(),
-                packets_sent.to_string(),
-                (flipper as u8).to_string(),
-                (!flipper as u8).to_string(),
-                0.to_string()
-            ])) {
-                Ok(packet) => packet,
-                Err(err) => {
-                    println!("Failed to generate test packet: {}", err);
-                    sleep();
-                    return;
+            let packet_to_send;
+            match use_file_handler(&file_handling_state, &mut |file_handler|{
+                match file_handler.read_packet(){
+                    Ok(packet) =>  Ok(packet),
+                    Err(err) => Err(err),
                 }
+            }){
+                Ok(packet) => {packet_to_send = Some(packet);},
+                Err(_) => return,
             };
+                let packet = match generate_packet(&packet_structure, packet_to_send.unwrap())
+                {
+                    Ok(packet) => packet,
+                    Err(err) => {
+                        println!("Failed to generate test packet: {}", err);
+                        sleep();
+                        return
+                    }
+                };
             //println!("{:#?}", packet);
             match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
                 communication_manager.write_data(&packet)
