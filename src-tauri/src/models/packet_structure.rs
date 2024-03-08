@@ -57,7 +57,7 @@ impl PacketStructure {
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
-            if first_char.is_digit(16) && first_char.is_lowercase(){
+            if first_char.is_digit(16) && (first_char.is_lowercase() || first_char.is_ascii_digit()){
 
                 let mut new_identifier = hex::decode(substr).unwrap();
                 new_identifier.reverse();//this is the way firmware brodcasts the identifiers

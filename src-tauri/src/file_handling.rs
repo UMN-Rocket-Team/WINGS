@@ -17,16 +17,23 @@ pub struct FileHandler {
 /// The default write path of the CSVManager is ./packetslog.csv, the program should crash if it can't write to that directory
 impl Default for FileHandler {
     fn default() -> Self {
+        let mut taken = true;
+        let mut i = 0;
+        while taken{
+            i = i + 1;
+            taken = taken && Path::new(&format!("../logs/packetslog{i}.csv")).exists();
+            taken = taken && Path::new(&format!("../logs/rawbytes{i}.wings")).exists();
+        }
         //add logic to set up .wings
         Self {
-            csv_writer: csv::Writer::from_path(Path::new("../packetslog.csv")).unwrap(),
+            csv_writer: csv::Writer::from_path(Path::new(&format!("../logs/packetslog{i}.csv"))).unwrap(),
             csv_reader: csv::ReaderBuilder::new()
                 .has_headers(false)
                 .from_path("../input.csv").unwrap(),
             byte_writer: fs::OpenOptions::new()
                 .append(true)
                 .create(true)
-                .open("../rawbytes.wings")
+                .open(&format!("../logs/rawbytes{i}.wings"))
                 .unwrap(),
         }
     }
