@@ -34,7 +34,7 @@ impl PacketParser {
         let mut last_successful_match_end_index: Option<usize> = None;
 
         let mut maximum_index = self.unparsed_data.len();
-        maximum_index = maximum_index.checked_sub(packet_structure_manager.minimum_packet_structure_size).unwrap_or(maximum_index); //don't look for packets that cany be completely inside the buffwer
+        maximum_index = maximum_index.checked_sub(packet_structure_manager.minimum_packet_structure_size).unwrap_or(maximum_index); //don't look for packets that cant be completely inside the buffer
         maximum_index += packet_structure_manager.maximum_first_delimiter + 1; //look at the furthest point where a first delimiter could appear
         for i in 0..maximum_index {
             // Try to find a matching packet for the data
@@ -42,6 +42,12 @@ impl PacketParser {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
                 if printflag {
                     println!("At index {}, matching structure {}", i, j);
+                }
+                if i + packet_structure.size() > (self.unparsed_data.len() + (packet_structure.delimiters[0].offset_in_packet)){
+                    if printflag {
+                        println!("Packet out of bounds");
+                    }
+                    continue;
                 }
                 if !is_delimiter_match(
                     &self.unparsed_data,
@@ -94,11 +100,15 @@ impl PacketParser {
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
                     vec![PacketFieldValue::UnsignedByte(0); packet_structure.fields.len()];
-
                 for k in 0..packet_structure.fields.len() {
                     let field = &packet_structure.fields[k];
                     let field_start_index = packet_start_index + field.offset_in_packet;
-
+                    println!("field_data:{:#?}",field_data);
+                    println!("k: {:#?}",k);
+                    println!("field: {:#?}",field);
+                    println!("expected packet length: {:#?}",packet_structure.size());
+                    println!("unparsed length: {:#?}",self.unparsed_data.len());
+                    println!("parsing range: {:#?}",field_start_index..(field_start_index + field.r#type.size()));
                     field_data[k] = field.r#type.parse(
                         &self.unparsed_data
                             [field_start_index..(field_start_index + field.r#type.size())],
@@ -156,7 +166,6 @@ mod tests {
     use crate::models::packet_structure::PacketStructure;
 
     use super::*;//lets the unit tests use everything in this file
-
     /// test for basic packet recognision and parsing
     #[test]
     fn test_basic_parsing(){
@@ -442,8 +451,33 @@ mod tests {
         assert_eq!(parsed[1].field_data[4],PacketFieldValue::UnsignedByte(4));
     }
 
+    // test for when packets dont make it into the pushed data state
+    #[test]
+    fn delimeter_led_packet_half_in_buffer(){
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0, // gets overridden
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+            metafields: vec![],
+        };
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8");
+        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
+        let mut packet_parser = PacketParser::default();
+        let data = [0x11,0xBA,0x5E,0xBA,
+                    0x10,0x00,
+                    0x08,0x00,
+                    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                    0x01,0x00,
+                    0x02,0x00,
+                    0x03];
+        packet_parser.push_data(&data,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        assert_eq!(parsed,vec![]);//did we not parse anything?
+    }
+
     //todo:
     // test packet structures that dont start/end with delimiters
-    // test for when packets just barely make, or dont make it into the pushed data state
     // check for value edge cases(like stuff that causes unsafe subtraction)
 }
