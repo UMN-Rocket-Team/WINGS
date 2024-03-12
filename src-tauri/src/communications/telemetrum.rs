@@ -2,7 +2,7 @@ use std::str::from_utf8;
 
 use anyhow::bail;
 
-use super::serial_uart::SerialPortNames;
+use crate::communications_manager::{Communicatable,SerialPortNames};
 
 #[derive(Default)]
 pub struct TeleManager {
@@ -10,10 +10,9 @@ pub struct TeleManager {
     port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32
 }
-
 impl TeleManager {
     /// Returns a list of all accessible serial ports
-    pub fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
+    fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
         let ports = serialport::available_ports()?
             .into_iter()
             .filter_map(|port| match port.port_type {
@@ -39,9 +38,11 @@ impl TeleManager {
             .collect();
         Ok(ports)
     }
+}
+impl Communicatable for TeleManager {
 
     /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
-    pub fn get_new_available_ports(&mut self) -> Option<Vec<SerialPortNames>> {
+    fn get_new_available_ports(&mut self) -> Option<Vec<SerialPortNames>> {
         match self.get_available_ports() {
             Ok(new_ports) => {
                 if new_ports == self.previous_available_ports {
@@ -57,16 +58,18 @@ impl TeleManager {
 
     /// Set the path of the active port
     /// If path is empty, any active port is closed
-    pub fn set_port(&mut self, port_name: &str) -> anyhow::Result<()> {
+    fn set_port(&mut self, port_name: &str) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
             self.baud = 9600;
-            let mut port = serialport::new(port_name, self.baud).flow_control(serialport::FlowControl::None).open()?;
+            let mut new_port = serialport::new(port_name, self.baud).flow_control(serialport::FlowControl::None).open()?;
             // Short non-zero timeout is needed to receive data from the serialport when
             // the buffer isn't full yet.
-            port.set_timeout(std::time::Duration::from_millis(1))?;
-            self.port = Some(port);
+            new_port.set_timeout(std::time::Duration::from_millis(1))?;
+            self.port = Some(new_port);
+
+            //setup commands for the radio
             self.write_port(&vec![0x7E, 0x0A, 0x45,0x20,0x30,0x0A,0x6D,0x20,0x30,0x0A])?;
             self.read_port(&mut vec![])?;
             self.write_port(&vec![0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x30,0x0A,0x63,0x20,0x73,0x0A,0x66,0x0A,0x76,0x0A])?;
@@ -77,7 +80,7 @@ impl TeleManager {
     }
 
     /// Returns true if there is an active port
-    pub fn has_port(&self) -> bool {
+    fn has_port(&mut self) -> bool {
         self.port.is_some()
     }
 
@@ -88,7 +91,7 @@ impl TeleManager {
     /// returns an empty set when the function runs successfully, 
     /// bails and returns an error if there is no active port
     ///
-    pub fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
+    fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
         let active_port = match self.port.as_mut() {
             Some(port) => port,
             None => bail!("No read port has been set")
@@ -111,7 +114,7 @@ impl TeleManager {
     }
 
     /// Attempt to write bytes to the radio test port
-    pub fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()> {
+    fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()> {
         let port = match self.port.as_mut() {
             Some(port) => port,
             None => bail!("No active test port")

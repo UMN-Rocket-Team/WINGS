@@ -1,4 +1,4 @@
-use std::{time::{Duration, SystemTime, UNIX_EPOCH}, sync::mpsc, thread};
+use std::{fs, sync::mpsc, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use serde::Serialize;
 use tauri::Manager;
@@ -109,26 +109,19 @@ impl SendingLoop {
                 Ok(packet) => {packet_to_send = Some(packet);},
                 Err(_) => return,
             };
-                let packet = match generate_packet(&packet_structure, packet_to_send.unwrap())
-                {
-                    Ok(packet) => packet,
-                    Err(err) => {
-                        println!("Failed to generate test packet: {}", err);
-                        sleep();
-                        return
-                    }
-                };
+
+            let packet = match generate_packet(&packet_structure, packet_to_send.unwrap())
+            {
+                Ok(packet) => packet,
+                Err(err) => {
+                    println!("Failed to generate test packet: {}", err);
+                    sleep();
+                    return
+                }
+            };
             //println!("{:#?}", packet);
             match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
-                // 7E 0A 45 20 30 0A 6D 20 30 0A                     ~.E 0.m 0.
-                // let mut output= vec![];
-                // if packets_sent == 0{
-                //     output = vec![0x7E, 0x0A, 0x45,0x20,0x30,0x0A,0x6D,0x20,0x30,0x0A];
-                // }
-                // else if packets_sent == 20{
-                //     output = vec![0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x30,0x0A,0x63,0x20,0x73,0x0A,0x66,0x0A,0x76,0x0A];
-                // }
-                communication_manager.write_data(&packet)
+                communication_manager.write_data(&packet, 1)
             }) {
                 Ok(_) => {
                     packets_sent = packets_sent + 1;

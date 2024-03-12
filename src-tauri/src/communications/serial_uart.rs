@@ -1,22 +1,85 @@
 use anyhow::bail;
-use serde::Serialize;
 
-#[derive(PartialEq, Serialize, Clone, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct SerialPortNames {
-    pub name: String,
-    pub manufacturer_name: Option<String>,
-    pub product_name: Option<String>,
-}
+use crate::communications_manager::{Communicatable, SerialPortNames};
 
 #[derive(Default)]
 pub struct SerialPortManager {
     previous_available_ports: Vec<SerialPortNames>,
-    recieving_port: Option<Box<dyn serialport::SerialPort>>,
-    sending_port: Option<Box<dyn serialport::SerialPort>>,
+    port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32
 }
+impl Communicatable for SerialPortManager{
+    /// Set the path of the active port
+    /// If path is empty, any active port is closed
+    fn set_port(&mut self, port_name: &str)  -> anyhow::Result<()> {
+        if port_name.is_empty() {
+            self.port = None;
+        } else {
+            self.baud = 57600;
+            let mut new_port = serialport::new(port_name, self.baud).open()?;
+            new_port.clear(serialport::ClearBuffer::All)?;
+            // Short non-zero timeout is needed to receive data from the serialport when
+            // the buffer isn't full yet.
+            new_port.set_timeout(std::time::Duration::from_millis(1))?;
+            self.port = Some(new_port);
+        }
+        Ok(())
+    }
 
+    /// Attempt to write bytes to the radio test port
+    fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()> {
+        let test_port = match self.port.as_mut() {
+            Some(some_port) => some_port,
+            None => bail!("No active test port")
+        };
+
+        test_port.write(packet)?;
+
+        Ok(())
+    }
+
+    /// Reads bytes from the active port and adds new bytes to the write_buffer
+    /// 
+    /// # Results
+    /// 
+    /// returns an empty set when the function runs successfully, 
+    /// bails and returns an error if there is no active port
+    ///
+    fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
+        let active_port = match self.port.as_mut() {
+            Some(port) => port,
+            None => bail!("No read port has been set")
+        };
+
+        let mut buffer = [0; 4096];
+        let bytes_read = active_port.read(&mut buffer)?;
+
+        // Clone to a vec so we can return it easily, especially as we don't
+        // know how large it will end up being at compile time.
+        write_buffer.extend(buffer[..bytes_read].to_vec());
+        Ok(())
+    }
+
+    /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
+    fn get_new_available_ports(&mut self) -> Option<Vec<SerialPortNames>> {
+        match self.get_available_ports() {
+            Ok(new_ports) => {
+                if new_ports == self.previous_available_ports {
+                    None
+                } else {
+                    self.previous_available_ports = new_ports.clone();
+                    Some(new_ports)
+                }
+            },
+            Err(_) => None
+        }
+    }
+
+    /// Returns true if there is an active port
+    fn has_port(&mut self) -> bool {
+        self.port.is_some()
+    }
+}
 impl SerialPortManager {
     /// Returns a list of all accessible serial ports
     pub fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
@@ -46,87 +109,4 @@ impl SerialPortManager {
         Ok(ports)
     }
 
-    /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
-    pub fn get_new_available_ports(&mut self) -> Option<Vec<SerialPortNames>> {
-        match self.get_available_ports() {
-            Ok(new_ports) => {
-                if new_ports == self.previous_available_ports {
-                    None
-                } else {
-                    self.previous_available_ports = new_ports.clone();
-                    Some(new_ports)
-                }
-            },
-            Err(_) => None
-        }
-    }
-
-    /// Set the path of the active port
-    /// If path is empty, any active port is closed
-    pub fn set_active_port(&mut self, port_name: &str) -> anyhow::Result<()> {
-        if port_name.is_empty() {
-            self.recieving_port = None;
-        } else {
-            self.baud = 57600;
-            let mut port = serialport::new(port_name, self.baud).open()?;
-            port.clear(serialport::ClearBuffer::All)?;
-            // Short non-zero timeout is needed to receive data from the serialport when
-            // the buffer isn't full yet.
-            port.set_timeout(std::time::Duration::from_millis(1))?;
-            self.recieving_port = Some(port);
-        }
-        Ok(())
-    }
-
-    /// Returns true if there is an active port
-    pub fn has_active_port(&self) -> bool {
-        self.recieving_port.is_some()
-    }
-
-    /// Reads bytes from the active port and adds new bytes to the write_buffer
-    /// 
-    /// # Results
-    /// 
-    /// returns an empty set when the function runs successfully, 
-    /// bails and returns an error if there is no active port
-    ///
-    pub fn read_active_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
-        let active_port = match self.recieving_port.as_mut() {
-            Some(port) => port,
-            None => bail!("No read port has been set")
-        };
-
-        let mut buffer = [0; 4096];
-        let bytes_read = active_port.read(&mut buffer)?;
-
-        // Clone to a vec so we can return it easily, especially as we don't
-        // know how large it will end up being at compile time.
-        write_buffer.extend(buffer[..bytes_read].to_vec());
-        Ok(())
-    }
-
-    /// Set the path of the test radio port
-    /// If path is empty, any existing port is closed
-    pub fn set_test_port(&mut self, port_name: &str) -> anyhow::Result<()> {
-        if port_name.is_empty() {
-            self.sending_port = None;
-        } else {
-            let port = serialport::new(port_name, self.baud).open()?;
-            port.clear(serialport::ClearBuffer::All)?;
-            self.sending_port = Some(port);
-        }
-        Ok(())
-    }
-
-    /// Attempt to write bytes to the radio test port
-    pub fn write_test_port(&mut self, packet: &[u8]) -> anyhow::Result<()> {
-        let test_port = match self.sending_port.as_mut() {
-            Some(port) => port,
-            None => bail!("No active test port")
-        };
-
-        test_port.write(packet)?;
-
-        Ok(())
-    }
 }

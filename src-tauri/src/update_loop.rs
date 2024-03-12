@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_state::CommunicationManagerState, communications::serial_uart::SerialPortNames, models::packet::Packet, packet_parser_state::{use_packet_parser, PacketParserState}, packet_structure_manager_state::PacketStructureManagerState, state::{communication_state::use_communication_manager, file_handling_state::{use_file_handler, FileHandlingState}}, use_packet_structure_manager,
+    communication_state::CommunicationManagerState, communications_manager::SerialPortNames, models::packet::Packet, packet_parser_state::{use_packet_parser, PacketParserState}, packet_structure_manager_state::PacketStructureManagerState, state::{communication_state::use_communication_manager, file_handling_state::{use_file_handler, FileHandlingState}}, use_packet_structure_manager
 };
 
 pub struct TimerState {
@@ -92,7 +92,7 @@ fn refresh_available_ports_and_read_active_port(
     let mut read_data: Vec<u8> = vec![];
 
     match use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        match communication_manager.get_data() {
+        match communication_manager.get_data(0) {
             Ok(data) => {
                 match use_file_handler(&file_handler_state, &mut |file_handler| {
                     match file_handler.write_bytes(data.data_read.clone()) {
