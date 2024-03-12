@@ -10,7 +10,7 @@ pub fn set_active_port(
     port_name: &str,
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        communication_manager.set_read_port(port_name)
+        communication_manager.set_port(port_name, 0)
     })
 }
 
@@ -20,6 +20,6 @@ pub fn set_test_port(
     port_name: &str,
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        communication_manager.set_write_port(port_name)
+        communication_manager.set_port(port_name, 1)
     })
 }

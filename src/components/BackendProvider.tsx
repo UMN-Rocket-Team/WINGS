@@ -1,6 +1,6 @@
 import {Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext} from "solid-js";
 import {createStore, SetStoreFunction} from "solid-js/store";
-import {pushParsedPackets} from "../backend_interop/buffers";
+import {parsedPackets, pushParsedPackets} from "../backend_interop/buffers";
 import {
     PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
@@ -84,6 +84,7 @@ export const BackendProvider: ParentComponent = (props) => {
                     setAvailablePortNames(result.newAvailablePortNames);
                 }
                 if (result.parsedPackets) {
+                    console.log(result.parsedPackets);
                     pushParsedPackets(result.parsedPackets);
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }

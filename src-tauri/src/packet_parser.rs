@@ -71,7 +71,7 @@ impl PacketParser {
                     // Use < instead of <= as the "last index" points to the byte *after*
                     // the packet ended.
                     if packet_start_index < last_successful_match_end_index {
-                        // The current packet cannot overlap with a previous one
+                        // The current packet cannot overlap with a previous one``
                         println!("- Overlaps with previous packet");
                         continue;
                     }
@@ -103,12 +103,6 @@ impl PacketParser {
                 for k in 0..packet_structure.fields.len() {
                     let field = &packet_structure.fields[k];
                     let field_start_index = packet_start_index + field.offset_in_packet;
-                    println!("field_data:{:#?}",field_data);
-                    println!("k: {:#?}",k);
-                    println!("field: {:#?}",field);
-                    println!("expected packet length: {:#?}",packet_structure.size());
-                    println!("unparsed length: {:#?}",self.unparsed_data.len());
-                    println!("parsing range: {:#?}",field_start_index..(field_start_index + field.r#type.size()));
                     field_data[k] = field.r#type.parse(
                         &self.unparsed_data
                             [field_start_index..(field_start_index + field.r#type.size())],
@@ -454,7 +448,7 @@ mod tests {
     // test for when packets dont make it into the pushed data state
     #[test]
     fn delimeter_led_packet_half_in_buffer(){
-        let mut packet_structure_manager = PacketStructureManager::default();
+        let packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure {
             id: 0, // gets overridden
             name: String::from("Test Structure"),
@@ -463,7 +457,6 @@ mod tests {
             metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8");
-        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
