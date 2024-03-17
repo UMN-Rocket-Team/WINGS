@@ -2,16 +2,20 @@ use std::str::from_utf8;
 
 use anyhow::bail;
 
-use crate::communications_manager::{Communicatable,SerialPortNames};
+use crate::communication_manager::{CommsIF,SerialPortNames};
 
 #[derive(Default)]
-pub struct TeleManager {
+pub struct TeleDongleDriver {
     previous_available_ports: Vec<SerialPortNames>,
     port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32
 }
-impl TeleManager {
+impl TeleDongleDriver {
     /// Returns a list of all accessible serial ports
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if no ports were successfully found, 
     fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
         let ports = serialport::available_ports()?
             .into_iter()
@@ -39,7 +43,7 @@ impl TeleManager {
         Ok(ports)
     }
 }
-impl Communicatable for TeleManager {
+impl CommsIF for TeleDongleDriver {
 
     /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
     fn get_new_available_ports(&mut self) -> Option<Vec<SerialPortNames>> {
@@ -58,7 +62,11 @@ impl Communicatable for TeleManager {
 
     /// Set the path of the active port
     /// If path is empty, any active port is closed
-    fn set_port(&mut self, port_name: &str) -> anyhow::Result<()> {
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if port_name is invalid, or if unable to clear the device buffer
+    fn init_device(&mut self, port_name: &str) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -85,12 +93,10 @@ impl Communicatable for TeleManager {
     }
 
     /// Reads bytes from the active port and adds new bytes to the write_buffer
-    /// 
-    /// # Results
-    /// 
     /// returns an empty set when the function runs successfully, 
+    /// 
+    /// # Errors
     /// bails and returns an error if there is no active port
-    ///
     fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
         let active_port = match self.port.as_mut() {
             Some(port) => port,
@@ -100,13 +106,13 @@ impl Communicatable for TeleManager {
         let mut buffer = [0; 4096];
         let _bytes_read = active_port.read(&mut buffer)?;
         let str = from_utf8(&buffer)?;
-        let mut parsedstr = "".to_owned();
+        let mut parsed_str = "".to_owned();
         for c in str.chars() {
             if c.is_ascii_hexdigit() {
-                parsedstr.push(c);
+                parsed_str.push(c);
             }
         }
-        let decoded = hex::decode(parsedstr)?;
+        let decoded = hex::decode(parsed_str)?;
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
         write_buffer.extend(decoded);
@@ -114,6 +120,10 @@ impl Communicatable for TeleManager {
     }
 
     /// Attempt to write bytes to the radio test port
+    /// 
+    /// # Errors
+    /// 
+    /// returns an error if there is no active port
     fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()> {
         let port = match self.port.as_mut() {
             Some(port) => port,

@@ -1,17 +1,22 @@
 use anyhow::bail;
 
-use crate::communications_manager::{Communicatable, SerialPortNames};
+use crate::communication_manager::{CommsIF, SerialPortNames};
 
 #[derive(Default)]
-pub struct SerialPortManager {
+pub struct SerialPortDriver {
     previous_available_ports: Vec<SerialPortNames>,
     port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32
 }
-impl Communicatable for SerialPortManager{
-    /// Set the path of the active port
-    /// If path is empty, any active port is closed
-    fn set_port(&mut self, port_name: &str)  -> anyhow::Result<()> {
+impl CommsIF for SerialPortDriver{
+    
+    /// Attempts to set the port for comms with the rfd driver
+    /// 
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if port_name is invalid, or if unable to clear the device buffer
+    fn init_device(&mut self, port_name: &str)  -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -27,6 +32,10 @@ impl Communicatable for SerialPortManager{
     }
 
     /// Attempt to write bytes to the radio test port
+    /// 
+    /// # Errors
+    /// 
+    /// returns an error if the device isn't initialized 
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()> {
         let test_port = match self.port.as_mut() {
             Some(some_port) => some_port,
@@ -40,11 +49,9 @@ impl Communicatable for SerialPortManager{
 
     /// Reads bytes from the active port and adds new bytes to the write_buffer
     /// 
-    /// # Results
+    /// # Errors
     /// 
-    /// returns an empty set when the function runs successfully, 
     /// bails and returns an error if there is no active port
-    ///
     fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
         let active_port = match self.port.as_mut() {
             Some(port) => port,
@@ -80,8 +87,13 @@ impl Communicatable for SerialPortManager{
         self.port.is_some()
     }
 }
-impl SerialPortManager {
+impl SerialPortDriver {
+
     /// Returns a list of all accessible serial ports
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if no ports were successfully found, 
     pub fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
         let ports = serialport::available_ports()?
             .into_iter()

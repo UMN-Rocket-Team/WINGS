@@ -51,23 +51,6 @@ impl Error {
     }
 }
 
-#[derive(Clone)]
-enum PacketFieldOrDelimiter {
-    Field(PacketField),
-    Delimiter(PacketDelimiter),
-}
-
-impl PacketFieldOrDelimiter {
-    pub fn end_offset(&self) -> usize {
-        match self {
-            PacketFieldOrDelimiter::Field(field) => field.offset_in_packet + field.r#type.size(),
-            PacketFieldOrDelimiter::Delimiter(delimiter) => {
-                delimiter.offset_in_packet + delimiter.identifier.len()
-            }
-        }
-    }
-}
-
 /// A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
 #[readonly::make]
 pub struct PacketStructureManager {
@@ -243,11 +226,11 @@ impl PacketStructureManager {
     pub fn set_delimiter_name(
         &mut self,
         packet_structure_id: usize,
-        delimtier_index: usize,
+        delimiter_index: usize,
         name: &str,
     ) -> Result<(), Error> {
         let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
-        packet_structure.delimiters[delimtier_index].name = String::from(name);
+        packet_structure.delimiters[delimiter_index].name = String::from(name);
         Ok(())
     }
 
@@ -261,7 +244,7 @@ impl PacketStructureManager {
         }
     }
 
-    /// Takes a hexadeximal string and returns its binary equivilant
+    /// Takes a hexadecimal string and returns its binary equivalent
     /// (currently used primarily to decode the user input for delimiter identifiers)
     fn parse_hex(hex_string: &str) -> Result<Vec<u8>, Error> {
         let mut bytes = Vec::with_capacity((hex_string.len() + 1) / 2);
@@ -408,7 +391,7 @@ impl PacketStructureManager {
         return Ok(());
     }
 
-    /// Creates a new delimeter inside the end of the packet
+    /// Creates a new delimiter inside the end of the packet
     /// Needs to be reworked to add to a user-specified location
     pub fn add_delimiter(&mut self, packet_structure_id: usize) -> Result<(), Error> {
         let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
@@ -436,7 +419,7 @@ impl PacketStructureManager {
         is_field: bool,
         component_index: usize,
     ) -> Result<(), Error> {
-        // TODO: Doesnt seem to work when the current index is a gap or the end of a packet
+        // TODO: Doesn't seem to work when the current index is a gap or the end of a packet
         let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
 
         let minimum_offset = if is_field {
@@ -451,7 +434,7 @@ impl PacketStructureManager {
     }
 
     ///deletes a component, taking its index and type as parameters
-    pub fn delete_packet_structure_component(//probably could be reworked to not take the type(maybe split this into three diferent functions)
+    pub fn delete_packet_structure_component(//probably could be reworked to not take the type(maybe split this into three different functions)
         &mut self,
         packet_structure_id: usize,
         component_index: usize,
@@ -527,9 +510,9 @@ impl PacketStructureManager {
 
     /// Updates all of the universal values in the manager 
     /// 
-    /// this isnt the most efficient way of doing this since 
+    /// this isn't the most efficient way of doing this since 
     /// not all of these values need to be updated every time the function is called.
-    /// choose to write it this way since its more general and can be reused alot in the code
+    /// choose to write it this way since its more general and can be reused a lot in the code
     /// keep in mind that the packet structure manager does not need to be super fast since its not done while the groundstation is running
     /// 
     /// call this function whenever a packet structures length is changed, or a delimiters location is changed
@@ -595,7 +578,7 @@ mod tests {
         let packet_field_type = PacketFieldType::Double;
         let packet_field = PacketField {
             index: 0,
-            name: String::from("notname"),
+            name: String::from("not name"),
             r#type: packet_field_type,
             offset_in_packet: 0
         };

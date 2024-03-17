@@ -7,7 +7,7 @@ use crate::models::packet_structure::PacketFieldType;
 #[serde(rename_all = "camelCase")]
 /// Represents a packet of data
 /// 
-/// This includes all of the variables that have been recieved within a packet of data and its timestamp
+/// This includes all of the variables that have been received within a packet of data and its timestamp
 pub struct Packet {
     pub(crate) structure_id: usize,
     pub(crate) field_data: Vec<PacketFieldValue>,
@@ -17,7 +17,7 @@ pub struct Packet {
 #[derive(PartialEq, Serialize, Clone, Debug, Copy)]
 #[serde(untagged)]
 pub enum PacketFieldValue {
-    // Ensure that this enum is in sync with PacketFieldType
+    /// Ensure that this enum is in sync with PacketFieldType
 
     #[serde(rename = "Unsigned Byte")]
     UnsignedByte(u8),
@@ -113,6 +113,11 @@ impl PacketFieldType {
         }
     }
 
+    ///parses the given string into the field
+    /// 
+    /// # Errors
+    /// 
+    /// errors if the input cant be parsed
     pub fn make_from_string(&self, input: &str) -> Result<PacketFieldValue,Error>{
         Ok(
             match self{
@@ -144,4 +149,48 @@ impl PacketFieldType {
 
 fn slice_to_fixed_size<const N: usize>(slice: &[u8]) -> [u8; N] {
     slice.try_into().expect("Given slice has incorrect length!")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    //tests that ints can be made
+    #[test]
+    fn make_0_uint() {
+        let unsigned_integer_type = PacketFieldType::SignedInteger;
+        let parsed = unsigned_integer_type.make_from_string("0").unwrap();
+        assert_eq!(parsed,PacketFieldValue::SignedInteger(0));
+    }
+
+    //tests that signed ints can be made
+    #[test]
+    fn make_negative_int() {
+        let unsigned_integer_type = PacketFieldType::SignedInteger;
+        let parsed = unsigned_integer_type.make_from_string("-1").unwrap();
+        assert_eq!(parsed,PacketFieldValue::SignedInteger(-1));
+    }
+
+    //test that floats can be made
+    #[test]
+    fn make_00_float() {
+        let unsigned_integer_type = PacketFieldType::Float;
+        let parsed = unsigned_integer_type.make_from_string("0.0").unwrap();
+        assert_eq!(parsed,PacketFieldValue::Float(0.0));
+    }
+
+    //test that floats can be made from non decimal input
+    #[test]
+    fn make_0_float() {
+        let unsigned_integer_type = PacketFieldType::Float;
+        let parsed = unsigned_integer_type.make_from_string("0").unwrap();
+        assert_eq!(parsed,PacketFieldValue::Float(0.0));
+    }
+
+    //test that negative floats can be made
+    #[test]
+    fn make_negative_float() {
+        let unsigned_integer_type = PacketFieldType::Float;
+        let parsed = unsigned_integer_type.make_from_string("-1").unwrap();
+        assert_eq!(parsed,PacketFieldValue::Float(-1.0));
+    }
 }
