@@ -78,7 +78,7 @@ mod tests {
             delimiters: vec![
                 PacketDelimiter {
                     index: 0,
-                    name: "Test Delimter".to_string(),
+                    name: "Test Delimiter".to_string(),
                     offset_in_packet: 1,
                     identifier: vec![42, 43, 45]
                 }

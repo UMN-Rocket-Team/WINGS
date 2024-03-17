@@ -1,6 +1,6 @@
 #[derive(Default)]
 #[allow(dead_code)]
-pub struct SerialFTDIManager {
+pub struct FtdiSpiDriver {
     communciation_protocol: u8,
     is_syncronous: bool
 }

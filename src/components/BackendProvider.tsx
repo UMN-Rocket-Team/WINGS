@@ -1,6 +1,6 @@
 import {Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext} from "solid-js";
 import {createStore, SetStoreFunction} from "solid-js/store";
-import {parsedPackets, pushParsedPackets} from "../backend_interop/buffers";
+import {pushParsedPackets} from "../backend_interop/buffers";
 import {
     PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
@@ -49,9 +49,6 @@ const BackendContext = createContext<BackendContextValue>({
     sendingLoopState: () => null
 });
 
-//for inserting fake packets
-//let iterator = 1;
-
 /**
  * A component that abstracts interactions with the Rust backend by providing a context containing a view into
  * backend-managed state.
@@ -84,7 +81,6 @@ export const BackendProvider: ParentComponent = (props) => {
                     setAvailablePortNames(result.newAvailablePortNames);
                 }
                 if (result.parsedPackets) {
-                    console.log(result.parsedPackets);
                     pushParsedPackets(result.parsedPackets);
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }
@@ -149,7 +145,7 @@ export const BackendProvider: ParentComponent = (props) => {
             unlistenFunction();
         }
     });
-
+    
     const context = {
         availablePortNames: availablePortNames,
         parsedPacketCount: parsedPacketCount,

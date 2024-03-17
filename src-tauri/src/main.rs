@@ -9,23 +9,24 @@ mod packet_parser;
 mod packet_generator;
 mod packet_structure_events;
 mod packet_structure_manager;
-mod communications;
+mod communication_drivers;
 mod state;
 mod update_loop;
 mod sending_loop;
-mod communications_manager;
+mod communication_manager;
 mod data_processing;
 mod file_handling;
+mod testing;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use packet_structure_events::send_initial_packet_structure_update_event;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
-use communication_state::CommunicationManagerState;
+use communication_manager_state::CommunicationManagerState;
 use packet_parser_state::PacketParserState;
 use data_processor_state::DataProcessorState;
 use sending_loop_state::SendingLoopState;
 
-use state::{communication_state, file_handling_state::FileHandlingState, packet_parser_state, packet_structure_manager_state, sending_loop_state,data_processor_state};
+use state::{communication_manager_state, file_handling_state::FileHandlingState, packet_parser_state, packet_structure_manager_state, sending_loop_state,data_processor_state};
 use tauri::Manager;
 use update_loop::TimerState;
 
@@ -36,7 +37,8 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    communication_commands::{set_active_port, set_test_port}
+    communication_commands::{set_active_port, set_test_port,add_altus_metrum,add_rfd},
+    file_commands::{set_read,set_write}
 };
 
 fn main() {
@@ -59,7 +61,11 @@ fn main() {
             delete_packet_structure_component,
             add_packet_structure,
             register_empty_packet_structure,
-            delete_packet_structure
+            delete_packet_structure,
+            add_altus_metrum,
+            add_rfd,
+            set_read,
+            set_write,
         ])
         .manage(PacketStructureManagerState::default())
         .manage(CommunicationManagerState::default())
@@ -76,7 +82,7 @@ fn main() {
 
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
-                // program and accessed upon temination
+                // program and accessed upon termination
                 if app_handle_2.try_state::<TimerState>().is_none() {
                     app_handle_2.manage(TimerState::new(app_handle_2.clone()));
                 }
