@@ -2,7 +2,7 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { runImportPacketWindow, runExportPacketWindow, importPacketsfromDirectories} from "../core/packet_file_handling";
+import { runImportPacketWindow, runExportPacketWindow, importPacketsFromDirectories} from "../core/packet_file_handling";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { useModal } from "../modals/ModalProvider";
 import ErrorModal from "../modals/ErrorModal";
@@ -83,7 +83,7 @@ const PacketsTab: Component = () => {
                     const recentPaths = (await store.get("recentSaves") || []) as string[];
                     showModal(FileModal, {
                         pathStrings: recentPaths,
-                        callBack: importPacketsfromDirectories
+                        callBack: importPacketsFromDirectories
                     })
                     }}>Import Packet</button>
                 {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
@@ -128,14 +128,14 @@ const PacketsTab: Component = () => {
                             // Select the previous packet structure if the last packet structure was deleted, select no packet structure
                             // if none are left
                             setSelectedPacketStructureID(PacketStructureViewModels.length === 0 ? null : PacketStructureViewModels[0].id);
-                        }, 'Faled to delete packet structure!')}>
+                        }, 'Failed to delete packet structure!')}>
                             Delete {selectedPacket()!.name}
                         </button>
                     </Show>
                 </div>
                 <div class="flex gap-2">
                     <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureID()!), 'Failed to add field')}>Add Field</button>
-                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimeter</button>
+                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimiter</button>
                     <button class="externalButton" onClick={async () => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
@@ -162,7 +162,7 @@ const PacketsTab: Component = () => {
                     <div class="flex flex-col dark:text-white">
                         <Switch>
                             <Match when={selectedPacketComponentIndex() === null}>
-                                {/* Should not happen */}
+                                <>Error, this should never display</>
                             </Match>
                             {/* Selected packet structure field editor */}
                             <Match when={selectedFieldData() !== null}>
@@ -236,9 +236,29 @@ const PacketsTab: Component = () => {
                             </Match>
                         </Switch>
                     </div>
-                    <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
-                        Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
-                    </button>
+                    <Switch>
+                            <Match when={selectedPacketComponentIndex() === null}>
+                                <>Error, this should never display</>
+                            </Match>
+                            {/* Selected packet structure field editor */}
+                            <Match when={selectedFieldData() !== null}>
+                                <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Field"}
+                                </button>
+                            </Match>
+                            {/* Selected packet structure delimiter editor */}
+                            <Match when={selectedDelimiterData() !== null}>
+                                <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Delimiter"}
+                                </button>
+                            </Match>
+                            {/* Selected packet structure gap editor */}
+                            <Match when={selectedGapData() !== null}>
+                                <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
+                                </button>
+                            </Match>
+                    </Switch>
                 </Show>
             </div>
         </div>

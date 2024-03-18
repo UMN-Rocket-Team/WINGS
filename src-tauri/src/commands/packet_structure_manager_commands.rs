@@ -253,7 +253,6 @@ pub fn delete_packet_structure_component(
             ) {
                 Ok(_) => {}
                 Err(error) => match error {
-                    // no idea why it needs ref here but that's what the compiler suggested and it works
                     Error::DelimiterIdentifierCollision(ref ids) => {
                         return Err((ids.to_vec(), None, error.to_string()));
                     }

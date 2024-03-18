@@ -78,7 +78,7 @@ export const runImportPacketWindow = async () => {
     return selectedFilePaths;
 }
 
-export const importPacketsfromDirectories = async (filePaths: string | string[] | null)=>{
+export const importPacketsFromDirectories = async (filePaths: string | string[] | null)=>{
     const filePackets = await openPackets(filePaths);
     for (const packetView of filePackets) {
         addPacket(packetView);
@@ -151,7 +151,7 @@ if (import.meta.vitest) {
         })
 
         it('packet_file_I/O', async () => {
-            await importPacketsfromDirectories(testDirectory);
+            await importPacketsFromDirectories(testDirectory);
             expect(addPacket).toBeCalledWith(testPacketView);
             expect(addPacket).toHaveBeenCalledTimes(1);
 
