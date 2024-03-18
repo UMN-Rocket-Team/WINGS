@@ -1,8 +1,8 @@
 import { Component, For } from "solid-js";
-import { useModal } from "./ModalProvider";
+import { useModal } from "../modals/ModalProvider";
 import { createStore, produce } from "solid-js/store";
-import FieldSelectModal, { FieldSelectModalProps } from "./FieldSelectModal";
-import { useBackend } from "./BackendProvider";
+import FieldSelectModal, { FieldSelectModalProps } from "../modals/FieldSelectModal";
+import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
 
@@ -22,7 +22,7 @@ export const [graphs, setGraph] = createStore<GraphStruct[]>([]);
 
 /**
  * A component that:
- * - Fisplays a list of selected fields added to this screen
+ * - Displays a list of selected fields added to this screen
  * - Allows users to add fields to the screen
  * - Allows users to clear the screen
  * - Allows users to view the graphed data received for the selected fields
@@ -102,7 +102,7 @@ const FieldsScreen: Component = () => {
 
                         //Absolutely no clue why this is needed or what it does, but if it is used in a <p> tag inside of the button below and if I remove that the code only displays 1 graph.
                         //Again, no clue why, but it isn't breaking anything as it is right now so This can be something we come back to in the future.
-                        const field = PacketStructureViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.fieldIndex);
+                        const field = PacketStructureViewModel?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.x);
 
                         return (
                             <div class="bg-stone-400 dark:bg-dark-900 flex justify-center items-center w-[100px] h-[100px] p-1.5 overflow-hidden rounded-7 ">

@@ -1,6 +1,6 @@
 import {Component, For, JSX} from "solid-js";
-import { GraphStruct, graphs } from "./FieldsScreen";
-import SolidChart from "./SolidChart";
+import { GraphStruct, graphs } from "../components/FieldsScreen";
+import SolidChart from "../components/SolidChart";
 
 const GraphTab : Component = (): JSX.Element => {
     return (

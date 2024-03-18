@@ -1,7 +1,7 @@
 import { batch, Component, createSignal, For, Show } from "solid-js";
-import { useBackend } from "./BackendProvider";
-import { useModal } from "./ModalProvider";
-import ErrorModal from "./ErrorModal";
+import { useBackend } from "../backend_interop/BackendProvider";
+import { useModal } from "../modals/ModalProvider";
+import ErrorModal from "../modals/ErrorModal";
 import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 
 const [isSimulating, setSimulating] = createSignal(false);

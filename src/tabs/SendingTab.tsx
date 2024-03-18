@@ -1,8 +1,8 @@
 import { Component, batch, createSignal, JSX } from "solid-js";
-import { useBackend } from "./BackendProvider";
+import { useBackend } from "../backend_interop/BackendProvider";
 import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
-import ErrorModal from "./ErrorModal";
-import { useModal } from "./ModalProvider";
+import ErrorModal from "../modals/ErrorModal";
+import { useModal } from "../modals/ModalProvider";
 
 const [sendPort, setSendPort] = createSignal('');
 const [sendInterval, setSendInterval] = createSignal(500);

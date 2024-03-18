@@ -1,6 +1,6 @@
 import {Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext} from "solid-js";
 import {createStore, SetStoreFunction} from "solid-js/store";
-import {pushParsedPackets} from "../backend_interop/buffers";
+import {pushParsedPackets} from "./buffers";
 import {
     PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
@@ -9,7 +9,7 @@ import {
     PacketStructureViewModelUpdate,
     PacketStructureViewModelUpdateType,
     SendingLoopState
-} from "../backend_interop/types";
+} from "./types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
 /**

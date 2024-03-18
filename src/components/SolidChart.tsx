@@ -2,7 +2,7 @@ import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
 import 'chartjs-adapter-luxon';
 import { GraphStruct } from "./FieldsScreen";
-import { useBackend } from "./BackendProvider";
+import { useBackend } from "../backend_interop/BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
 
 // Register the necessary components with ChartJS so that they can be used later

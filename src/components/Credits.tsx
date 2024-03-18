@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
-import DefaultModalLayout from "./DefaultModalLayout";
-import { ModalProps } from "./ModalProvider";
+import DefaultModalLayout from "../modals/DefaultModalLayout";
+import { ModalProps } from "../modals/ModalProvider";
 
 /**
  * A modal component that shows the credits (contributors, attributions, and licenses) for this application.
