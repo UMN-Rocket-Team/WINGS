@@ -254,7 +254,7 @@ const PacketsTab: Component = () => {
                             </Match>
                             {/* Selected packet structure gap editor */}
                             <Match when={selectedGapData() !== null}>
-                                <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                                <button class="redButton" onClick={async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, 0)}>
                                     Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
                                 </button>
                             </Match>
