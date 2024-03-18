@@ -434,7 +434,7 @@ impl PacketStructureManager {
     }
 
     ///deletes a component, taking its index and type as parameters
-    pub fn delete_packet_structure_component(//probably could be reworked to not take the type(maybe split this into three different functions)
+    pub fn delete_packet_structure_component(
         &mut self,
         packet_structure_id: usize,
         component_index: usize,
