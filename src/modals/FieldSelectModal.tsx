@@ -1,8 +1,8 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { Accessor, For, JSX, createSignal } from "solid-js";
-import { GraphStruct } from "./FieldsScreen";
-import { useBackend } from "./BackendProvider";
+import { GraphStruct } from "../components/FieldsScreen";
+import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
 

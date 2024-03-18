@@ -1,16 +1,16 @@
 import {useNavigate} from "@solidjs/router";
 import {Component} from "solid-js";
-import Credits from "./Credits";
-import {useModal} from "./ModalProvider";
-import ThemeSwitcher from "./ThemeSwitcher";
+import Credits from "../components/Credits";
+import {useModal} from "../modals/ModalProvider";
+import ThemeSwitcher from "../components/ThemeSwitcher";
 import logo from "../assets/logo.png";
 import {open} from '@tauri-apps/api/dialog';
 import {open as openHref} from '@tauri-apps/api/shell';
 import {readTextFile} from "@tauri-apps/api/fs";
 import {setParsedPackets} from "../backend_interop/buffers";
-import {useBackend} from "./BackendProvider";
+import {useBackend} from "../backend_interop/BackendProvider";
 import {Packet, PacketStructureViewModel} from "../backend_interop/types";
-import ErrorModal, {ErrorModalProps} from "./ErrorModal";
+import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
 import webIcon from "../assets/web.svg";
 
 export type PacketBundle = {

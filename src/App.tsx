@@ -1,11 +1,10 @@
 import { JSX } from "solid-js";
-import { BackendProvider } from "./components/BackendProvider";
-import FlightViewer from "./components/FlightViewer";
-import Homepage from "./components/Homepage";
-import { ModalProvider } from "./components/ModalProvider";
+import { BackendProvider } from "./backend_interop/BackendProvider";
+import FlightViewer from "./tabs/FlightViewer";
+import Homepage from "./tabs/Homepage";
+import { ModalProvider } from "./modals/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Router, Routes, Route } from "@solidjs/router"
-import SavedFlightViewer from "./components/SavedFlightViewer";
 
 const App = (): JSX.Element => {
     return (
@@ -16,7 +15,6 @@ const App = (): JSX.Element => {
                         <Routes>
                             <Route path="/" component={Homepage} />
                             <Route path="/newFlight" component={FlightViewer} />
-                            <Route path="/savedFlight" component={SavedFlightViewer} />
                         </Routes>
                     </Router>
                 </ModalProvider>

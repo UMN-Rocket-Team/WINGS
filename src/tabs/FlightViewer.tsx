@@ -3,7 +3,7 @@ import DataTab from "./DataTab";
 import PacketsTab from "./PacketsTab";
 import TabView from "./TabView";
 import TestingTab from "./TestingTab";
-import ThemeSwitcher from "./ThemeSwitcher";
+import ThemeSwitcher from "../components/ThemeSwitcher";
 import SendingTab from "./SendingTab";
 import GraphTab from "./GraphTab";
 

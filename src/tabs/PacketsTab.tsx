@@ -3,10 +3,10 @@ import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacke
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
 import { runImportPacketWindow, runExportPacketWindow, importPacketsfromDirectories} from "../core/packet_file_handling";
-import { useBackend } from "./BackendProvider";
-import { useModal } from "./ModalProvider";
-import ErrorModal from "./ErrorModal";
-import FileModal, { FileModalProps } from "./FilePathSelectModal";
+import { useBackend } from "../backend_interop/BackendProvider";
+import { useModal } from "../modals/ModalProvider";
+import ErrorModal from "../modals/ErrorModal";
+import FileModal, { FileModalProps } from "../modals/FilePathSelectModal";
 import { Store } from "tauri-plugin-store-api";
 
 /**
