@@ -27,7 +27,7 @@ const DataTab: Component = () => {
     const { availablePortNames, PacketStructureViewModels, parsedPacketCount } = useBackend();
     const { showModal } = useModal();
     const navigate = useNavigate();
-
+    
     const saveFlight = async () => {
         const selectedFilePath = await save({
             title: "Save Flight",
@@ -39,18 +39,6 @@ const DataTab: Component = () => {
         if (selectedFilePath === null) {
             return;
         }
-
-        const parsedPacketsArray: Packet[] = Object.entries(parsedPackets).map(([structureId, packetDataArray]) =>
-            packetDataArray.map((packetData) => (
-                {structureId: +structureId, fieldData: packetData.fieldData, timestamp: packetData.timestamp}
-            ))
-        ).flat();
-
-        writeFile(selectedFilePath as string, JSON.stringify({parsedPacketsArray, PacketStructureViewModels}))
-            .catch((err) => showModal<ErrorModalProps, {}>(ErrorModal, {
-                error: "Failed to Save Flight File",
-                description: err
-            }));
     };
 
     async function applyNewSelectedPort(newSelectedPort: string) {
