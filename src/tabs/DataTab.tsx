@@ -10,6 +10,7 @@ import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
 import {useModal} from "../modals/ModalProvider";
+import PacketsTab from "./PacketsTab";
 
 const [selectedPort, setSelectedPort] = createSignal<string | null>();
 
@@ -57,6 +58,9 @@ const DataTab: Component = () => {
                 {/*Views*/}
                 <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
                     <FieldsScreen/>
+                </div>
+                <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                    <PacketsTab/>
                 </div>
             </div>
 

@@ -6,14 +6,14 @@ import TestingTab from "./TestingTab";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import SendingTab from "./SendingTab";
 import GraphTab from "./GraphTab";
+import RadioTestingTab from "./RadioTestingTab";
 
 /**
  * A list of components that are the tabs to display inside the flight viewer 
  */
 const tabs: Component[] = [
     DataTab,
-    PacketsTab,
-    TestingTab,
+    RadioTestingTab,
     SendingTab,
     GraphTab
 ];
@@ -22,11 +22,10 @@ const tabs: Component[] = [
  * A list of tab names corresponding to each tab in {@link tabs} to display inside the flight viewer 
  */
 const tabNames: string[] = [
-    "Data",
-    "Packets",
-    "Testing",
-    "Sending",
-    "Graphs"
+    "Settings",
+    "Devices",
+    "Transmission",
+    "Display",
 ];
 
 /**

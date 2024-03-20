@@ -15,7 +15,7 @@ import { ModalProps } from "../modals/ModalProvider";
 export const createInvokeApiSetterFunction = (selectedPacketStructureID: Accessor<number | null>, selectedPacketStructureComponent: Accessor<PacketComponent | null>, showModal: (component: Component<ModalProps<ErrorModalProps>>, modalProps: ErrorModalProps) => void) => {
     return async <T>(apiSetter: (packetStructureId: number, fieldIndex: number, value: T) => Promise<unknown>, value: T) => {
         try {
-            await apiSetter(selectedPacketStructureID()!, selectedPacketStructureComponent()!.data.index, value);
+            await apiSetter(selectedPacketStructureID()!, selectedPacketStructureComponent()!.data.index, value);//dont call this function with a PacketGap and it will be fine
         } catch (error) {
             showModal(ErrorModal, {
                 error: "Failed to modify value",
