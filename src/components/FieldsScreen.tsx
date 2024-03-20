@@ -18,7 +18,7 @@ export type GraphStruct = {
     colors: string[];
 }
 
-export const [graphs, setGraph] = createStore<GraphStruct[]>([]);
+export const [graphs, setGraphs] = createStore<GraphStruct[]>([]);
 
 /**
  * A component that:
@@ -33,51 +33,12 @@ const FieldsScreen: Component = () => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
-    const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
-        if (isChecked) {
-            setGraph( produce((s) => {
-                s[index].y.push(fieldIndex)}))
-        } else {
-            setGraph( produce((s) => 
-                s[index].y = s[index].y.filter(ind => ind != fieldIndex)));
-        }
-    }
-    const handleSelectX = (isChecked: boolean, fieldIndex: number, index: number) => {
-        if (isChecked) {
-            setGraph( produce((s) => 
-                s[index].x = fieldIndex));
-        } else {
-            setGraph( produce((s) => 
-                s[index].x = 0));
-        }
-    }
-
-    const setGraphName = (newName: string, index: number) => {
-        setGraph( produce((s) => 
-                s[index].graphName = newName))
-    }
-
-    const deleteGraph = (index: number) => {
-        let newGraphs: GraphStruct[] = [];
-        for (let i = 0; i < graphs.length; i++) {
-            if (index !== i) {
-                newGraphs.push(graphs[i]);
-            }
-        }
-        setGraph(newGraphs);
-    }
-
-    const updateColor = (color: string, colorIndex: number, graphIndex: number) => {
-        setGraph( produce((s) => 
-            s[graphIndex].colors[colorIndex] = color))
-    }
-
     let counter = 1;
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
             <button onClick={() => 
-            {setGraph([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0], colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"]}]);
+            {setGraphs([...graphs, {graphName: `Graph ${counter}`, x: 0, y: [0], colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"]}]);
                 {counter = counter + 1};
             }}>
                 New Graph
@@ -86,7 +47,7 @@ const FieldsScreen: Component = () => {
             {/* Delete button  */}
             <button class="absolute bottom-1 right-1 w-5 h-5 p-0"
                 onClick={() => {
-                    setGraph([])
+                    setGraphs([])
                     counter = 1
                 }}>
                 <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
@@ -110,12 +71,7 @@ const FieldsScreen: Component = () => {
                                     class = "bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
                                     onClick={() => showModal<FieldSelectModalProps, {}>(FieldSelectModal, {
                                         graph,
-                                        handleSelectY,
-                                        handleSelectX,
                                         index:index(),
-                                        setGraphName,
-                                        deleteGraph,
-                                        updateColor
                                     })
                                 }>
                                     <h3 class="text-black dark:text-white">{graph.graphName}</h3>
