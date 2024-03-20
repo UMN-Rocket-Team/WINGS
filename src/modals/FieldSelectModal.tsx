@@ -1,31 +1,22 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { Accessor, For, JSX, createSignal } from "solid-js";
-import { GraphStruct } from "../components/FieldsScreen";
+import { graphs, GraphStruct, setGraphs } from "../components/FieldsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
+import { produce } from "solid-js/store";
 
 /**
  * The properties required for the {@link FieldSelectModal} component.
  * Technically because of recent changes, we can implement all of these functions locally and access the graphStruct
- * but for readibility we will leave it as is for now -Adit
+ * but for readability we will leave it as is for now -Adit
  */
 export type FieldSelectModalProps = {
     /** Graph that is being passed */
     graph: GraphStruct
-    /* HandleSelectY function to update the y axis of the given graph */
-    handleSelectY: (isChecked: boolean, fieldIndex: number, index: number) => void
-    /** HandleSelectY function to update the y axis of the given graph */
-    handleSelectX: (isChecked: boolean, fieldIndex: number, index: number) => void
     /** Index of graph so that handleSelect[Y/X] can be called correctly! */
     index: number
-    /** Function to update name of the given graph */
-    setGraphName: (newName: string, index: number) => void
-    /** Deletes a graph */
-    deleteGraph: (index: number) => void
-    /** Updates color */
-    updateColor: (color: string, colorIndex: number, graphIndex: number) => void
 }
 
 /**
@@ -43,7 +34,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
     const handleInput = (event: Event) => {
         const newName = (event.target as HTMLElement).textContent || '';
         if (newName.trim() !== '') {
-            props.setGraphName(newName.trim(), props.index);
+            setGraphName(newName.trim(), props.index);
             setName(newName.trim());
         }  else {
             (event.target as HTMLElement).textContent = graphCurrName();
@@ -57,6 +48,46 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
         }
     };
 
+    const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
+        if (isChecked) {
+            setGraphs( produce((s) => {
+                s[index].y.push(fieldIndex)}))
+        } else {
+            setGraphs( produce((s) => 
+                s[index].y = s[index].y.filter(ind => ind != fieldIndex)));
+        }
+    }
+    
+    const handleSelectX = (isChecked: boolean, fieldIndex: number, index: number) => {
+        if (isChecked) {
+            setGraphs( produce((s) => 
+                s[index].x = fieldIndex));
+        } else {
+            setGraphs( produce((s) => 
+                s[index].x = 0));
+        }
+    }
+
+    const setGraphName = (newName: string, index: number) => {
+        setGraphs( produce((s) => 
+                s[index].graphName = newName))
+    }
+
+    const deleteGraph = (index: number) => {
+        let newGraphs: GraphStruct[] = [];
+        for (let i = 0; i < graphs.length; i++) {
+            if (index !== i) {
+                newGraphs.push(graphs[i]);
+            }
+        }
+        setGraphs(newGraphs);
+    }
+
+    const updateColor = (color: string, colorIndex: number, graphIndex: number) => {
+        setGraphs( produce((s) => 
+            s[graphIndex].colors[colorIndex] = color))
+    }
+    
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
             <For each={PacketStructureViewModels}>
@@ -77,7 +108,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                                 <input type="radio"
                                                     checked={props.graph.x === field.index} // Check based on the state
                                                     onclick={(event) => 
-                                                        props.handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index)
+                                                        handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index)
                                                     }
                                                 />
                                                 {field.name}
@@ -96,7 +127,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                                 <input type="checkbox"
                                                     checked={props.graph.y.some(selectedField => selectedField === field.index)} 
                                                     onclick={(event) => {
-                                                        props.handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index);
+                                                        handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index);
                                                     }} />
                                                 {field.name}
                                             </label>
@@ -120,7 +151,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                         <label>
                                             {field.name}
                                             <input type="color" style={"rounded-full"} value={props.graph.colors[i() % props.graph.colors.length]} onInput={(event) => {
-                                                props.updateColor((event.target as HTMLInputElement).value, i(), props.index);
+                                                updateColor((event.target as HTMLInputElement).value, i(), props.index);
                                             }}/>
                                         </label>
                                     );
@@ -131,7 +162,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                             <button 
                                 class = " w-[10%] h-[10%] rounded-5 border-none justify-center"
                                 onClick={() => {
-                                    props.deleteGraph(props.index);
+                                    deleteGraph(props.index);
                                     props.closeModal({})
                                 }}>
                                 <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert justify-center" draggable={false} />
