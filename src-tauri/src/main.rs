@@ -18,7 +18,7 @@ mod data_processing;
 mod file_handling;
 mod testing;
 
-use commands::sending_commands::{start_sending_loop, stop_sending_loop};
+use commands::sending_commands::{start_sending_loop, stop_sending_loop, mode_setter};
 use packet_structure_events::send_initial_packet_structure_update_event;
 use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
 use communication_manager_state::CommunicationManagerState;
@@ -65,6 +65,8 @@ fn main() {
             add_altus_metrum,
             add_rfd,
             set_read,
+            set_write,
+            mode_setter
         ])
         .manage(PacketStructureManagerState::default())
         .manage(CommunicationManagerState::default())

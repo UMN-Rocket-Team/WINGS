@@ -1,7 +1,7 @@
 use std::{sync::mpsc, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use csv::StringRecord;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
 use crate::{packet_generator::generate_packet, state::{communication_manager_state::{use_communication_manager, CommunicationManagerState}, file_handling_state::{use_file_handler, FileHandlingState}, packet_structure_manager_state::PacketStructureManagerState}};
@@ -12,7 +12,8 @@ const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
 /// Sending Modes
 
 #[allow(dead_code)]
-enum SendingModes{
+#[derive(Deserialize, Serialize, Clone, Debug, Copy)]
+pub enum SendingModes{
     FromCSV,
     AllZeros,
     AllOnes,
@@ -24,13 +25,14 @@ enum SendingModes{
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 struct SendingState {
-    packets_sent: u32
+    packets_sent: u32,
 }
 
 impl SendingState {
     fn starting() -> Self {
         Self {
             packets_sent: 0
+          
         }
     }
 
@@ -92,7 +94,7 @@ pub struct SendingLoop {
 }
 
 impl SendingLoop {
-    pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration) -> anyhow::Result<()> {
+    pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,mode : SendingModes) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
         let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[1].clone();
 
@@ -105,8 +107,6 @@ impl SendingLoop {
             thread::sleep(interval);
         };
 
-
-        let mode = SendingModes::TimeStampAndIncreasing;
         let mut flipper: u8 = 0;
         let mut packets_sent: u32 = 0;
 
