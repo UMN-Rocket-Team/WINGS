@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketStructureViewModel } from "./types";
+import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketStructureViewModel, SendingModes } from "./types";
 
 /*
  * All direct function calls to the rust backend are sent through this file, 
@@ -10,7 +10,7 @@ export const setActivePort = async (portName: string) => await invoke<void>("set
 
 export const setTestPort = async (portName: string) => await invoke<void>("set_test_port", { portName });
 
-export const startSendingLoop = async (interval: number) => await invoke<void>("start_sending_loop", { interval });
+export const startSendingLoop = async (interval: number, mode : SendingModes) => await invoke<void>("start_sending_loop", { interval, mode});
 
 export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
 
@@ -41,3 +41,5 @@ export const addPacket = async (view: PacketStructureViewModel) => await invoke<
 export const registerEmptyPacketStructure = async () => await invoke<void>("register_empty_packet_structure");
 
 export const deletePacketStructure = async (packetStructureId: number) => await invoke<void>('delete_packet_structure', { packetStructureId: packetStructureId });
+
+export const setMode = async (mode : SendingModes) => await invoke<void> ('mode_setter', {mode : mode});

@@ -1,20 +1,19 @@
 import { Component, batch, createSignal, JSX } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { setTestPort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { setTestPort, startSendingLoop, stopSendingLoop} from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../modals/ModalProvider";
-
+import { SendingModes } from "../backend_interop/types";
 const [sendPort, setSendPort] = createSignal('');
 const [sendInterval, setSendInterval] = createSignal(500);
 
-const [isSimulating1, setSimulating1] = createSignal(false);
-const [isSimulating2, setSimulating2] = createSignal(false);
-const [isSimulating3, setSimulating3] = createSignal(false);
+const [isSimulating, setSimulating] = createSignal(false);
+
+const [settingMode, selectMode] = createSignal(SendingModes.FromCSV);
 
 const SendingTab: Component = () => {
-    const { availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState } = useBackend();
+    const { availablePortNames, parsedPacketCount, sendingLoopState} = useBackend();
     const { showModal } = useModal();
-
     const startSimulating = async (setSimulating: (value: boolean) => void) => {
         debugger;
         batch(() => {
@@ -23,7 +22,7 @@ const SendingTab: Component = () => {
 
         try {
             await setTestPort(sendPort());
-            await startSendingLoop(sendInterval());
+            await startSendingLoop(sendInterval(),settingMode());
         } catch (error) {
             setSimulating(false);
             showModal(ErrorModal, {
@@ -67,37 +66,22 @@ const SendingTab: Component = () => {
             <button
                 class="py-2 px-4 border-rounded border-0 color-black"
                 classList={{
-                    "bg-red": isSimulating1(),
-                    "bg-green": !isSimulating1(),
+                    "bg-red": isSimulating(),
+                    "bg-green": !isSimulating(),
                 }}
-                disabled={isSimulating2() || isSimulating3()}
-                onClick={() => (isSimulating1() ? stopSimulating(setSimulating1) : startSimulating(setSimulating1))}
+                onClick={() => (isSimulating() ? stopSimulating(setSimulating) : startSimulating(setSimulating))}
             >
-                {isSimulating1() ? "Random Sending" : "Start Random Sending"}
-            </button>
-            <button
-                class="py-2 px-4 border-rounded border-0 color-black"
-                classList={{
-                    "bg-red": isSimulating2(),
-                    "bg-green": !isSimulating2(),
-                }}
-                disabled={isSimulating1() || isSimulating3()}
-                onClick={() => (isSimulating2() ? stopSimulating(setSimulating2) : startSimulating(setSimulating2))}
-            >
-                {isSimulating2() ? "Random Sending" : "Start Random Sending"}
+                {isSimulating() ? "Random Sending" : "Start Random Sending"}
             </button>
 
-            <button
-                class="py-2 px-4 border-rounded border-0 color-black"
-                classList={{
-                    "bg-red": isSimulating3(),
-                    "bg-green": !isSimulating3(),
-                }}
-                disabled={isSimulating1() || isSimulating2()}
-                onClick={() => (isSimulating3() ? stopSimulating(setSimulating3) : startSimulating(setSimulating3))}
-            >
-                {isSimulating3() ? "Random Sending" : "Start Random Sending"}
-            </button>
+            <label> Select Mode:</label>
+            <select value = {settingMode()} onChange={e => selectMode((e.target as HTMLSelectElement).value as SendingModes)}>
+                <option value={SendingModes.FromCSV}>From CSV</option>
+                <option value={SendingModes.AllOnes}>All Ones</option>
+                <option value={SendingModes.AllZeroes}>All Zeroes</option>
+                <option value={SendingModes.Alternating}>Alternating</option>
+                <option value={SendingModes.TimeStampAndIncreasing}>Time Stamp and Increasing</option>
+            </select>
         </div>
     );
 };

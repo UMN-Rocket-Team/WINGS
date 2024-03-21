@@ -211,3 +211,11 @@ export type SendingLoopState = {
      */
     packetsSent: number,
 };
+
+export enum SendingModes {
+    FromCSV = "FromCSV",
+    AllZeroes = "AllZeros",
+    AllOnes = "AllOnes",
+    Alternating = "Alternating",
+    TimeStampAndIncreasing = "TimeStampAndIncreasing"
+};
