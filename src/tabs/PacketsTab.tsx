@@ -67,16 +67,16 @@ const PacketsTab: Component = () => {
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col flex-grow tab">
                     <h1 class="m-0">Packets</h1>
-                    <For each={PacketStructureViewModels}>
-                        {packetStructure => (
-                            <button class={`flex justify-between gap-4 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
-                                setSelectedPacketStructureID(packetStructure.id);
-                                setSelectedPacketComponentIndex(0);
-                            })}>
-                                <span class="" style={{ "white-space": "nowrap" }}>{packetStructure.name}</span>
-                            </button>
-                        )}
-                    </For>
+                        <For each={PacketStructureViewModels}>
+                            {packetStructure => (
+                                <button class={`flex justify-between gap-4 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
+                                    setSelectedPacketStructureID(packetStructure.id);
+                                    setSelectedPacketComponentIndex(0);
+                                })}>
+                                    <span class="" style={{ "white-space": "nowrap" }}>{packetStructure.name}</span>
+                                </button>
+                            )}
+                        </For>
                 </div>
                 <button class="externalButton" onClick={async () => {
                     const store = new Store("persistent.dat");
@@ -91,10 +91,10 @@ const PacketsTab: Component = () => {
                 <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
-            <div class="flex flex-col gap-2">
-                <div class="flex flex-col justify-between flex-grow tab">
+            <div class="flex flex-col justify-between gap-2">
+                <div class="flex flex-col flex-grow justify-between overflow-auto tab">
                     <Show when={selectedPacket() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
-                        <div class="flex flex-col flex-grow gap-2 dark:text-white">
+                        <div class="flex-col gap-2 overflow-auto dark:text-white">
                             <h2 class="m-0">{selectedPacket()!.name}</h2>
                             <label class='flex flex-col'>
                                 <span>Name</span>
@@ -102,28 +102,32 @@ const PacketsTab: Component = () => {
                                     onInput={async e => await showErrorModalOnError(async () => await setPacketName(selectedPacket()!.id, (e.target as HTMLInputElement).value), 'Failed to change packet name')} />
                             </label>
                             <span>Components</span>
-                            <For each={selectedPacketStructureComponents()}>
-                                {(component, i) => (
-                                    <button class={`flex justify-between gap-4 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>
-                                        <Switch>
-                                            <Match when={component.type === PacketComponentType.Field}>
-                                                <span>F</span>
-                                                <span>{(component.data as PacketField).name}</span>
-                                            </Match>
-                                            <Match when={component.type === PacketComponentType.Delimiter}>
-                                                <span>D</span>
-                                                <span>{(component.data as PacketDelimiter).name}</span>
-                                            </Match>
-                                            <Match when={component.type === PacketComponentType.Gap}>
-                                                <span>G</span>
-                                                <span>{(component.data as PacketGap).size} Byte Gap</span>
-                                            </Match>
-                                        </Switch>
-                                    </button>
-                                )}
-                            </For>
+                            <div class = "justify-between">
+                                <div class ="flex flex-col gap-2">
+                                    <For each={selectedPacketStructureComponents()}>
+                                        {(component, i) => (
+                                            <button class={`flex justify-between gap-4 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>
+                                                <Switch>
+                                                    <Match when={component.type === PacketComponentType.Field}>
+                                                        <span>F</span>
+                                                        <span>{(component.data as PacketField).name}</span>
+                                                    </Match>
+                                                    <Match when={component.type === PacketComponentType.Delimiter}>
+                                                        <span>D</span>
+                                                        <span>{(component.data as PacketDelimiter).name}</span>
+                                                    </Match>
+                                                    <Match when={component.type === PacketComponentType.Gap}>
+                                                        <span>G</span>
+                                                        <span>{(component.data as PacketGap).size} Byte Gap</span>
+                                                    </Match>
+                                                </Switch>
+                                            </button>
+                                        )}
+                                    </For>
+                                </div>
+                            </div>
                         </div>
-                        <button class="redButton" onClick={async () => await showErrorModalOnError(async () => {
+                        <button class="redButton relative bottom-0" onClick={async () => await showErrorModalOnError(async () => {
                             await deletePacketStructure(selectedPacket()!.id);
                             // Select the previous packet structure if the last packet structure was deleted, select no packet structure
                             // if none are left
