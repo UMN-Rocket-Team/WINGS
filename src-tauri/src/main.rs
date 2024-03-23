@@ -11,7 +11,7 @@ mod packet_structure_events;
 mod packet_structure_manager;
 mod communication_drivers;
 mod state;
-mod update_loop;
+mod receiving_loop;
 mod sending_loop;
 mod communication_manager;
 mod data_processing;
@@ -28,7 +28,7 @@ use sending_loop_state::SendingLoopState;
 
 use state::{communication_manager_state, file_handling_state::FileHandlingState, packet_parser_state, packet_structure_manager_state, sending_loop_state,data_processor_state};
 use tauri::Manager;
-use update_loop::TimerState;
+use receiving_loop::ReceivingState;
 
 use crate::commands::{
     packet_structure_manager_commands::{
@@ -83,8 +83,8 @@ fn main() {
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
                 // program and accessed upon termination
-                if app_handle_2.try_state::<TimerState>().is_none() {
-                    app_handle_2.manage(TimerState::new(app_handle_2.clone()));
+                if app_handle_2.try_state::<ReceivingState>().is_none() {
+                    app_handle_2.manage(ReceivingState::new(app_handle_2.clone()));
                 }
             });
 
@@ -93,7 +93,7 @@ fn main() {
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { .. } => {
                 // Timer internals need to manually dropped, do that here at program termination
-                event.window().app_handle().state::<TimerState>().destroy()
+                event.window().app_handle().state::<ReceivingState>().destroy()
             }
             _ => {}
         })

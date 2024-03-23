@@ -9,15 +9,15 @@ use crate::{
     communication_manager_state::CommunicationManagerState, communication_manager::SerialPortNames, models::packet::Packet, packet_parser_state::{use_packet_parser, PacketParserState}, packet_structure_manager_state::PacketStructureManagerState, state::{communication_manager_state::use_communication_manager, file_handling_state::{use_file_handler, FileHandlingState}}, use_packet_structure_manager
 };
 
-pub struct TimerState {
+pub struct ReceivingState {
     refresh_timer_data: RefreshTimerData,
 }
 
-impl TimerState {
+impl ReceivingState {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(50), move || {
-            match update_loop(
+            match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
                 app_handle.state::<PacketParserState>(),
@@ -79,7 +79,7 @@ pub struct RefreshAndReadResult {
 /// If the function runs successfully it will return a RefreshAndReadResult struct
 /// The struct contains any new ports that have connected to the groundstation, 
 /// along with new display packets for graphs, and other displays.
-fn update_loop(
+fn iterate_receiving_loop(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     ps_manager_state: tauri::State<'_, PacketStructureManagerState>,
     packet_parser_state: tauri::State<'_, PacketParserState>,
