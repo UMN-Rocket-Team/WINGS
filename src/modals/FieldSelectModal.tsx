@@ -48,23 +48,36 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
         }
     };
 
-    const handleSelectY = (isChecked: boolean, fieldIndex: number, index: number) => {
+    const handleSelectY = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
         if (isChecked) {
             setGraphs( produce((s) => {
-                s[index].y.push(fieldIndex)}))
+                if (s[graphIndex].packetID != packet_id){
+                    s[graphIndex].y = []
+                    s[graphIndex].packetID = packet_id;
+                    s[graphIndex].x = 0;//sets x back to 0 to avoid overflow problems
+                }
+                s[graphIndex].y.push(fieldIndex)
+            }));
+            // setGraphs( produce((s) => {
+            // }));
         } else {
             setGraphs( produce((s) => 
-                s[index].y = s[index].y.filter(ind => ind != fieldIndex)));
+                s[graphIndex].y = s[graphIndex].y.filter(ind => ind != fieldIndex)));
         }
     }
     
-    const handleSelectX = (isChecked: boolean, fieldIndex: number, index: number) => {
+    const handleSelectX = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
         if (isChecked) {
-            setGraphs( produce((s) => 
-                s[index].x = fieldIndex));
+            setGraphs( produce((s) => {
+                if (s[graphIndex].packetID != packet_id){
+                    s[graphIndex].y = s[graphIndex].y.filter(_ => false);//sets all y values to false
+                    s[graphIndex].packetID = packet_id;
+                }
+                s[graphIndex].x = fieldIndex
+            }));
         } else {
             setGraphs( produce((s) => 
-                s[index].x = 0));
+                s[graphIndex].x = 0));
         }
     }
 
@@ -106,9 +119,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                         return (
                                             <label>
                                                 <input type="radio"
-                                                    checked={props.graph.x === field.index} // Check based on the state
+                                                    checked={props.graph.x === field.index && props.graph.packetID === PacketStructureViewModel.id} // Check based on the state
                                                     onclick={(event) => 
-                                                        handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index)
+                                                        handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index, PacketStructureViewModel.id)
                                                     }
                                                 />
                                                 {field.name}
@@ -125,9 +138,9 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                         return (
                                             <label>
                                                 <input type="checkbox"
-                                                    checked={props.graph.y.some(selectedField => selectedField === field.index)} 
+                                                    checked={props.graph.y.some(selectedField => selectedField === field.index) && props.graph.packetID === PacketStructureViewModel.id} 
                                                     onclick={(event) => {
-                                                        handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index);
+                                                        handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index, PacketStructureViewModel.id);
                                                     }} />
                                                 {field.name}
                                             </label>

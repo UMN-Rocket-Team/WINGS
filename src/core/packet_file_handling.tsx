@@ -4,9 +4,9 @@ import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
 import { addPacket } from "../backend_interop/api_calls";
 import { Store } from"tauri-plugin-store-api";
 /**
- * Exports the given PacketStructureViewModel as a .json file via a dialouge window.
+ * Exports the given PacketStructureViewModel as a .json file via a dialogue window.
  * 
- * Creates File dialouge allowing the user to choose where to export the PacketStructureViewModel.
+ * Creates File dialogue allowing the user to choose where to export the PacketStructureViewModel.
  * The function then writes to the selected file path.
  * 
  * @param {PacketStructureViewModel} packetView the packet which will be contained in the experted file
@@ -55,7 +55,7 @@ const updatePersistentFilePaths = async (filePathString: string) => {
 
         }
 
-        //get rid of repeates by filtering for only elements that arent equal to new element
+        //get rid of repeats by filtering for only elements that aren't equal to new element
         prevSaves = prevSaves.filter((value) => value != filePathString)
 
         prevSaves.push(filePathString);
@@ -69,9 +69,9 @@ const updatePersistentFilePaths = async (filePathString: string) => {
 }
 
 /**
- * Imports a set of packets selected by the user via a dialouge window.
+ * Imports a set of packets selected by the user via a dialogue window.
  * 
- * Creates a file dialouge box, allowing user to select multiple .json packet files. returns the file directories of said packets
+ * Creates a file dialogue box, allowing user to select multiple .json packet files. returns the file directories of said packets
  */
 export const runImportPacketWindow = async () => {
     const selectedFilePaths = await open({ title: 'Import Flight Data', multiple: true, filters: [{ name: 'FlightData', extensions: ['json'] }] });
@@ -89,7 +89,7 @@ export const importPacketsFromDirectories = async (filePaths: string | string[] 
  * 
  * Converts json files to PacketStructureViewModels using readPathAsPacket().
  * 
- * @param selectedFilePaths an array of strigns containing file directories
+ * @param selectedFilePaths an array of strings containing file directories
  * 
  * @return {PacketStructureViewModel} the PacketStructureViewModels stored at the given directories
  */
@@ -139,7 +139,7 @@ if (import.meta.vitest) {
                 save: vi.fn().mockResolvedValue("fakeDirectory"),
                 open: vi.fn().mockResolvedValue("fakeDirectory")
             }))
-            //replaces functions that reachout to backend
+            //replaces functions that reach out to backend
             vi.mock('../backend_interop/api_calls',() => ({
                 addPacket: vi.fn()
             }))
