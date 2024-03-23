@@ -4,6 +4,7 @@ import 'chartjs-adapter-luxon';
 import { GraphStruct } from "./FieldsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
+import { PacketComponentType, PacketField } from "../backend_interop/types";
 
 // Register the necessary components with ChartJS so that they can be used later
 // Note: any components that are not registered here will act like no-ops if they are attempted to be used later!
@@ -15,17 +16,22 @@ Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointEleme
  * @param graph a graphStruct that is the graph that is being created
  */
 const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
-    const { parsedPacketCount } = useBackend();
+    const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
     const colors: string[] = ["#FFD700", "black", "blue", "red"];
-    const initialParsedPackets = parsedPackets[1];
+    //adds an empty array if we haven't received data in the packet type we want
+    if (parsedPackets[graph.packetID] === undefined) {
+        parsedPackets[graph.packetID] = [];
+    }
+
+    const initialParsedPackets = parsedPackets[graph.packetID];
     let datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
-            label: graph.graphName,
+            label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,
             data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
             backgroundColor: graph.colors[i % graph.colors.length],
             borderColor: graph.colors[i % graph.colors.length],
@@ -82,7 +88,10 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
-        const packetData = parsedPackets[1];
+        if (parsedPackets[graph.packetID] === undefined) {
+            parsedPackets[graph.packetID] = [];
+        }
+        const packetData = parsedPackets[graph.packetID];
 
         if (packetData === undefined || lastPacketCount == packetData.length) {
             return;
@@ -99,7 +108,11 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
 
     onMount(() => {
         chart = new Chart(canvas, config);
-        const packetData = parsedPackets[0];
+        
+        if (parsedPackets[graph.packetID] === undefined) {
+            parsedPackets[graph.packetID] = [];
+        }
+        const packetData = parsedPackets[graph.packetID];
         if (packetData === undefined) {
             return;
         }
