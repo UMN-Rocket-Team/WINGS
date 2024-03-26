@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
 import { BackendProvider } from "./backend_interop/BackendProvider";
-import FlightViewer from "./tabs/FlightViewer";
+import TabPage from "./tabs/TabPage";
 import Homepage from "./tabs/Homepage";
 import { ModalProvider } from "./modals/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -14,7 +14,7 @@ const App = (): JSX.Element => {
                     <Router>
                         <Routes>
                             <Route path="/" component={Homepage} />
-                            <Route path="/newFlight" component={FlightViewer} />
+                            <Route path="/newFlight" component={TabPage} />
                         </Routes>
                     </Router>
                 </ModalProvider>

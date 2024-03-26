@@ -1,6 +1,6 @@
 import { Component } from "solid-js";
 import RadioTestingTab from "./RadioTestingTab";
-import TabView from "./TabView";
+import TabView from "../components/TabView";
 
 /**
  * A list of components that are the tabs to display inside the testing tab

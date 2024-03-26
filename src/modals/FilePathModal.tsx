@@ -1,7 +1,7 @@
 import {ModalProps} from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import {For, JSX} from "solid-js";
-import { runImportPacketWindow } from "../core/packet_file_handling";
+import { runImportPacketWindow } from "../core/file_handling";
 
 /**
  * The properties required for the {@link ErrorModal} component.

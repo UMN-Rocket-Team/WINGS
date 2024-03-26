@@ -1,12 +1,12 @@
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
-import { createInvokeApiSetterFunction } from "../core/packet_tab_helpers";
-import { runImportPacketWindow, runExportPacketWindow, importPacketsFromDirectories} from "../core/packet_file_handling";
+import { createInvokeApiSetterFunction } from "../core/packet_editor_helpers";
+import { runImportPacketWindow, runExportPacketWindow, importPacketsFromDirectories} from "../core/file_handling";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { useModal } from "../modals/ModalProvider";
 import ErrorModal from "../modals/ErrorModal";
-import FileModal, { FileModalProps } from "../modals/FilePathSelectModal";
+import FileModal, { FileModalProps } from "../modals/FilePathModal";
 import { Store } from "tauri-plugin-store-api";
 
 /**
@@ -34,7 +34,7 @@ import { Store } from "tauri-plugin-store-api";
  *   - Changing its size
  * - Delete a packet structure
  */
-const PacketsTab: Component = () => {
+const PacketEditor: Component = () => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
@@ -269,4 +269,4 @@ const PacketsTab: Component = () => {
     );
 };
 
-export default PacketsTab;
+export default PacketEditor;

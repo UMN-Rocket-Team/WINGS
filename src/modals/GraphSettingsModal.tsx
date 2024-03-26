@@ -1,22 +1,24 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { Accessor, For, JSX, createSignal } from "solid-js";
-import { graphs, GraphStruct, setGraphs } from "../components/FieldsScreen";
+import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/GraphSettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
 import { produce } from "solid-js/store";
 
 /**
- * The properties required for the {@link FieldSelectModal} component.
- * Technically because of recent changes, we can implement all of these functions locally and access the graphStruct
- * but for readability we will leave it as is for now -Adit
+ * generic interface for all g
  */
-export type FieldSelectModalProps = {
+export interface GraphModalProps extends SettingsModalProps{
     /** Graph that is being passed */
-    graph: GraphStruct
+    graph: GraphStruct,
     /** Index of graph so that handleSelect[Y/X] can be called correctly! */
-    index: number
+}
+export interface GraphStruct extends DisplayStruct{
+    x: number, //fieldIndex
+    y: number[],
+    colors: string[];
 }
 
 /**
@@ -24,11 +26,11 @@ export type FieldSelectModalProps = {
  * 
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
-const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element => {
+const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
-    const [graphCurrName, setName] = createSignal(props.graph.graphName);
+    const [graphCurrName, setName] = createSignal(props.graph.displayName);
 
     /** handleInput will handle updating the graphs name and also catches blank inputs and reverts to previous name */
     const handleInput = (event: Event) => {
@@ -50,65 +52,65 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
 
     const handleSelectY = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
         if (isChecked) {
-            setGraphs( produce((s) => {
+            setDisplays( produce((s) => {
                 if (s[graphIndex].packetID != packet_id){
-                    s[graphIndex].y = []
+                    (s[graphIndex] as GraphStruct).y = []
                     s[graphIndex].packetID = packet_id;
-                    s[graphIndex].x = 0;//sets x back to 0 to avoid overflow problems
+                    (s[graphIndex] as GraphStruct).x = 0;//sets x back to 0 to avoid overflow problems
                 }
-                s[graphIndex].y.push(fieldIndex)
+                (s[graphIndex] as GraphStruct).y.push(fieldIndex)
             }));
             // setGraphs( produce((s) => {
             // }));
         } else {
-            setGraphs( produce((s) => 
-                s[graphIndex].y = s[graphIndex].y.filter(ind => ind != fieldIndex)));
+            setDisplays( produce((s) => 
+            (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(ind => ind != fieldIndex)));
         }
     }
     
     const handleSelectX = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
         if (isChecked) {
-            setGraphs( produce((s) => {
+            setDisplays( produce((s) => {
                 if (s[graphIndex].packetID != packet_id){
-                    s[graphIndex].y = s[graphIndex].y.filter(_ => false);//sets all y values to false
+                    (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(_ => false);//sets all y values to false
                     s[graphIndex].packetID = packet_id;
                 }
-                s[graphIndex].x = fieldIndex
+                (s[graphIndex] as GraphStruct).x = fieldIndex
             }));
         } else {
-            setGraphs( produce((s) => 
-                s[graphIndex].x = 0));
+            setDisplays( produce((s) => 
+            (s[graphIndex] as GraphStruct).x = 0));
         }
     }
 
     const setGraphName = (newName: string, index: number) => {
-        setGraphs( produce((s) => 
-                s[index].graphName = newName))
+        setDisplays( produce((s) => 
+                s[index].displayName = newName))
     }
 
     const deleteGraph = (index: number) => {
-        let newGraphs: GraphStruct[] = [];
-        for (let i = 0; i < graphs.length; i++) {
+        let newGraphs: DisplayStruct[] = [];
+        for (let i = 0; i < displays.length; i++) {
             if (index !== i) {
-                newGraphs.push(graphs[i]);
+                newGraphs.push(displays[i]);
             }
         }
-        setGraphs(newGraphs);
+        setDisplays(newGraphs);
     }
 
     const updateColor = (color: string, colorIndex: number, graphIndex: number) => {
-        setGraphs( produce((s) => 
-            s[graphIndex].colors[colorIndex] = color))
+        setDisplays( produce((s) => 
+            (s[graphIndex] as GraphStruct).colors[colorIndex] = color))
     }
     
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
-            <For each={PacketStructureViewModels}>
-                {(PacketStructureViewModel: PacketStructureViewModel) =>
                     <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
                         <h3 contenteditable={true}  style="text-align:center;" class="m-2" onBlur={handleInput} onKeyDown={handleKeyDown}>
                             {graphCurrName()}
                         </h3>
+                        <For each={PacketStructureViewModels}>
+                                {(PacketStructureViewModel: PacketStructureViewModel) =>
                         <div class='flex flex-row bg-neutral-200 dark:bg-gray p-2 rounded-10'>
 
                             <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
@@ -149,6 +151,8 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                 </For>
                             </div>
                         </div>
+                        }
+                        </For>
                         <h3 style="text-align:center;" class="m-2">
                             Settings
                             {/* TODO!!! Allow for changing color of the graph object and variables */}
@@ -157,7 +161,7 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                         {/* Below is the set up to create a color picker for each var, in progress still. */}
                         <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
                             <h2>Graph Colors</h2>
-                            <For each={PacketStructureViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
+                            <For each={PacketStructureViewModels.find(psViewModel => psViewModel.id === props.graph.packetID)?.components.filter(component => component.type === PacketComponentType.Field)}>
                                 {(packetComponent: PacketComponent, i) => {
                                     const field = packetComponent.data as PacketField;
                                     return (
@@ -180,12 +184,8 @@ const FieldSelectModal = (props: ModalProps<FieldSelectModalProps>): JSX.Element
                                 }}>
                                 <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert justify-center" draggable={false} />
                             </button>
-                            
                         </div>
                     </div>                  
-                    
-                }
-            </For>
         </DefaultModalLayout>
     );
 };
