@@ -12,7 +12,7 @@ const [sendInterval, setSendInterval] = createSignal(500);
  * A component that allows the user to send test packets over a radio.
  */
 const RadioTestingTab: Component = () => {
-    const {availablePortNames, parsedPacketCount, sendingLoopState} = useBackend();
+    const {availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState} = useBackend();
     const {showModal} = useModal();
 
     let initialPacketCount = parsedPacketCount();

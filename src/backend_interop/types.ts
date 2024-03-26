@@ -1,11 +1,11 @@
 /**
- * The type of the payload of the `serial-update` event brodcast by the backend.
+ * The type of the payload of the `serial-update` event broadcast by the backend.
  */
 export type SerialUpdateResult = {
     /**
      * The list of available serial ports
      */
-    newAvailablePortNames: SerialPortNames[] | null,
+    newAvailablePortNames: DeviceNames[] | null,
     /**
      * The list of new parsed packets
      */
@@ -15,7 +15,7 @@ export type SerialUpdateResult = {
 /**
  * The names of a serial port.
  */
-export type SerialPortNames = {
+export type DeviceNames = {
     /**
      * The name of the serial port. On Windows, can be `COM[0-9]+`. On Unix, can be a file path like `/dev/ttyUSB[0-9]+`.
      * 

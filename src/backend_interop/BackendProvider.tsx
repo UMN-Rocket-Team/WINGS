@@ -5,7 +5,7 @@ import {
     PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
     SerialUpdateResult as SerialUpdateResult,
-    SerialPortNames,
+    DeviceNames,
     PacketStructureViewModelUpdate,
     PacketStructureViewModelUpdateType,
     SendingLoopState
@@ -19,7 +19,7 @@ export type BackendContextValue = {
     /**
      * An accessor to get the name information for each available serial port that can be connected to.
      */
-    availablePortNames: Accessor<SerialPortNames[]>,
+    availableDeviceNames: Accessor<DeviceNames[]>,
     /**
      * An accessor to get the number of packets parsed.
      */
@@ -42,7 +42,7 @@ export type BackendContextValue = {
  * The context that holds the global {@link BackendContextValue}.
  */
 const BackendContext = createContext<BackendContextValue>({
-    availablePortNames: (): SerialPortNames[] => [],
+    availableDeviceNames: (): DeviceNames[] => [],
     parsedPacketCount: () => 0,
     PacketStructureViewModels: [],
     setPacketStructureViewModels: () => {},
@@ -58,7 +58,7 @@ const BackendContext = createContext<BackendContextValue>({
  * @see {@link BackendContextValue} for the global view into the backend-managed state provided by this component
  */
 export const BackendProvider: ParentComponent = (props) => {
-    const [availablePortNames, setAvailablePortNames] = createSignal<SerialPortNames[]>([]);
+    const [availableDeviceNames, setAvailableDeviceNames] = createSignal<DeviceNames[]>([]);
     const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
     const [PacketStructureViewModels, setPacketStructureViewModels] = createStore<PacketStructureViewModel[]>([]);
     const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
@@ -78,7 +78,7 @@ export const BackendProvider: ParentComponent = (props) => {
             await listen<SerialUpdateResult>("serial-update", ({payload: result}) => {
                 //console.log(result);
                 if (result.newAvailablePortNames) {
-                    setAvailablePortNames(result.newAvailablePortNames);
+                    setAvailableDeviceNames(result.newAvailablePortNames);
                 }
                 if (result.parsedPackets) {
                     pushParsedPackets(result.parsedPackets);
@@ -147,7 +147,7 @@ export const BackendProvider: ParentComponent = (props) => {
     });
     
     const context = {
-        availablePortNames: availablePortNames,
+        availableDeviceNames: availableDeviceNames,
         parsedPacketCount: parsedPacketCount,
         PacketStructureViewModels: PacketStructureViewModels,
         setPacketStructureViewModels: setPacketStructureViewModels,

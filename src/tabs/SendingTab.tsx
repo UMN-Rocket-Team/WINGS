@@ -12,7 +12,7 @@ const [isSimulating2, setSimulating2] = createSignal(false);
 const [isSimulating3, setSimulating3] = createSignal(false);
 
 const SendingTab: Component = () => {
-    const { availablePortNames, parsedPacketCount, sendingLoopState } = useBackend();
+    const { availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState } = useBackend();
     const { showModal } = useModal();
 
     const startSimulating = async (setSimulating: (value: boolean) => void) => {

@@ -1,5 +1,5 @@
 import {Component, createSignal, For} from "solid-js";
-import FieldsScreen from "../components/FieldsScreen";
+import FieldsScreen from "../components/GraphSettingsScreen";
 import logo from "../assets/logo.png";
 import {useBackend} from "../backend_interop/BackendProvider";
 import {setActivePort} from "../backend_interop/api_calls";
@@ -10,22 +10,15 @@ import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
 import {useModal} from "../modals/ModalProvider";
-import PacketsTab from "./PacketsTab";
+import PacketEditor from "../components/PacketsEditor";
 
-const [selectedPort, setSelectedPort] = createSignal<string | null>();
+const [selectedDevice, setSelectedDevice] = createSignal<string | null>();
 
 /**
- * A component that allows the user to:
- *  - Customize four screens with different packet fields
- *  - Display screens as a modal to view the data received for the fields on the screen
- *  - Clear screens
- *  - Return to the homepage
- *  - Select the serial port to read data from
- *  - Read the number of parsed packets
- *  - Save flight data
+ * Main Tab for hosting all groundstation settings
  */
-const DataTab: Component = () => {
-    const { availablePortNames, PacketStructureViewModels, parsedPacketCount } = useBackend();
+const SettingsTab: Component = () => {
+    const { availableDeviceNames: availablePortNames, PacketStructureViewModels, parsedPacketCount } = useBackend();
     const { showModal } = useModal();
     const navigate = useNavigate();
     
@@ -42,11 +35,11 @@ const DataTab: Component = () => {
         }
     };
 
-    async function applyNewSelectedPort(newSelectedPort: string) {
+    async function applyNewSelectedPort(newSelectedDevice: string) {
         // Apply the change in selected port name to the backend
         try {
-            setSelectedPort(newSelectedPort);
-            await setActivePort(newSelectedPort);
+            setSelectedDevice(newSelectedDevice);
+            await setActivePort(newSelectedDevice);
         } catch (error) {
             showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
         }
@@ -60,7 +53,7 @@ const DataTab: Component = () => {
                     <FieldsScreen/>
                 </div>
                 <div class="flex flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
-                    <PacketsTab/>
+                    <PacketEditor/>
                 </div>
             </div>
 
@@ -72,14 +65,14 @@ const DataTab: Component = () => {
                             class="flex items-center justify-center border-transparent bg-transparent">
                         <img src={logo} height={25} alt="Home" draggable={false}></img>
                     </button>
-                    {/* Active serial port combobox */}
-                    <label for="serialPortInput" class="px-2 m-0">Serial Port:</label>
-                    <input name="Serial Port" id="serialPortInput" class="w-50"
-                        list="dataSerialPorts" value={selectedPort() ?? ""}
+                    {/* Active device combobox */}
+                    <label for="DeviceInput" class="px-2 m-0">Device:</label>
+                    <input name="Device" id="DeviceInput" class="w-50"
+                        list="dataDevices" value={selectedDevice() ?? ""}
                         onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
-                    <datalist id="dataSerialPorts">
+                    <datalist id="dataDevices">
                         <For each={availablePortNames()}>
-                            {(serialPort) => <option value={serialPort.name}/>}
+                            {(Device) => <option value={Device.name}/>}
                         </For>
                     </datalist>
                 </div>
@@ -92,4 +85,4 @@ const DataTab: Component = () => {
     );
 };
 
-export default DataTab;
+export default SettingsTab;
