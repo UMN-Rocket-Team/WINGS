@@ -93,7 +93,9 @@ impl PacketParser {
                 }
 
                 if !is_remaining_delimiters_matched {
-                    println!("- Remaining delimiters did not match");
+                    if print_flag{
+                        println!("- Remaining delimiters did not match");
+                    }
                     continue;
                 }
 

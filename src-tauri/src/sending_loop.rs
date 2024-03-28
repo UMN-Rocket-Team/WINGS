@@ -94,7 +94,7 @@ pub struct SendingLoop {
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
-        let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[0].clone();
+        let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[1].clone();
 
 
 
@@ -106,7 +106,7 @@ impl SendingLoop {
         };
 
 
-        let mode = SendingModes::FromCSV;
+        let mode = SendingModes::TimeStampAndIncreasing;
         let mut flipper: u8 = 0;
         let mut packets_sent: u8 = 0;
 

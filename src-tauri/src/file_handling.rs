@@ -86,11 +86,18 @@ impl FileHandler {
     /// # Errors
     /// 
     /// produces an error if unsuccessful
-    pub fn write_packet(&mut self, packet: Packet) -> Result<(), Error> {
+    pub fn write_packet(&mut self, mut packet: Packet) -> Result<(), Error> {
         match self.csv_writer.serialize(packet.field_data) {
-            Err(err) => bail!("Unable to write packet and got error: {}", err),
+            Err(err) => {
+                _ = self.csv_writer.flush(); //attempt to flush, we dont handle the result since we are already failing anyways
+                packet.field_data = Default::default();
+                bail!("Unable to write packet and got error: {}", err);
+            },
             Ok(_) => match self.csv_writer.flush() {
-                Err(err) => bail!("Unable to flush packet writer and got error: {}", err),
+                Err(err) => {
+                    bail!("Unable to flush packet writer and got error: {}", err)
+                },
+                
                 Ok(ok) => Ok(ok),
             },
         }
