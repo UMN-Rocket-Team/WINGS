@@ -75,10 +75,9 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
         "resizable": true,
         "title": "Wings",
-        "width": 800
+        "maximized": true
       }
     ]
   }
