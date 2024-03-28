@@ -138,8 +138,8 @@ fn iterate_receiving_loop(
                     for packet in result.parsed_packets.clone().unwrap(){
                         match file_handler.write_packet(packet) {
                             Err(err) => {
-                                println!("Somethings wrong with the csv ):");
-                                return Err(err)
+                                println!("Somethings wrong with the csv ): {}", err);
+                                
                             },
                             Ok(_) => {},
                         };
