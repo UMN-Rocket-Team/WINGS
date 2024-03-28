@@ -1,7 +1,7 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { Accessor, For, JSX, createSignal } from "solid-js";
-import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/GraphSettingsScreen";
+import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
@@ -12,7 +12,7 @@ import { produce } from "solid-js/store";
  */
 export interface GraphModalProps extends SettingsModalProps{
     /** Graph that is being passed */
-    graph: GraphStruct,
+    displayStruct: GraphStruct,
     /** Index of graph so that handleSelect[Y/X] can be called correctly! */
 }
 export interface GraphStruct extends DisplayStruct{
@@ -30,7 +30,7 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
-    const [graphCurrName, setName] = createSignal(props.graph.displayName);
+    const [graphCurrName, setName] = createSignal(props.displayStruct.displayName);
 
     /** handleInput will handle updating the graphs name and also catches blank inputs and reverts to previous name */
     const handleInput = (event: Event) => {
@@ -121,7 +121,7 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
                                         return (
                                             <label>
                                                 <input type="radio"
-                                                    checked={props.graph.x === field.index && props.graph.packetID === PacketStructureViewModel.id} // Check based on the state
+                                                    checked={props.displayStruct.x === field.index && props.displayStruct.packetID === PacketStructureViewModel.id} // Check based on the state
                                                     onclick={(event) => 
                                                         handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index, PacketStructureViewModel.id)
                                                     }
@@ -140,7 +140,7 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
                                         return (
                                             <label>
                                                 <input type="checkbox"
-                                                    checked={props.graph.y.some(selectedField => selectedField === field.index) && props.graph.packetID === PacketStructureViewModel.id} 
+                                                    checked={props.displayStruct.y.some(selectedField => selectedField === field.index) && props.displayStruct.packetID === PacketStructureViewModel.id} 
                                                     onclick={(event) => {
                                                         handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index, PacketStructureViewModel.id);
                                                     }} />
@@ -161,13 +161,13 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
                         {/* Below is the set up to create a color picker for each var, in progress still. */}
                         <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
                             <h2>Graph Colors</h2>
-                            <For each={PacketStructureViewModels.find(psViewModel => psViewModel.id === props.graph.packetID)?.components.filter(component => component.type === PacketComponentType.Field)}>
+                            <For each={PacketStructureViewModels.find(psViewModel => psViewModel.id === props.displayStruct.packetID)?.components.filter(component => component.type === PacketComponentType.Field)}>
                                 {(packetComponent: PacketComponent, i) => {
                                     const field = packetComponent.data as PacketField;
                                     return (
                                         <label>
                                             {field.name}
-                                            <input type="color" style={"rounded-full"} value={props.graph.colors[i() % props.graph.colors.length]} onInput={(event) => {
+                                            <input type="color" style={"rounded-full"} value={props.displayStruct.colors[i() % props.displayStruct.colors.length]} onInput={(event) => {
                                                 updateColor((event.target as HTMLInputElement).value, i(), props.index);
                                             }}/>
                                         </label>

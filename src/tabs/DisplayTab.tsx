@@ -1,5 +1,5 @@
 import {Component, For, JSX} from "solid-js";
-import { DisplayStruct, displays } from "../components/GraphSettingsScreen";
+import { DisplayStruct, displays } from "../components/DisplaySettingsScreen";
 import SolidChart from "../components/SolidChart";
 
 const DisplayTab : Component = (): JSX.Element => {
