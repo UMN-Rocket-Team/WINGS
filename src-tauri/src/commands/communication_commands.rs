@@ -42,3 +42,4 @@ pub fn add_altus_metrum(
         Ok(())
     })
 }
+
