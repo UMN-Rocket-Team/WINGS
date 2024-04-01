@@ -69,7 +69,17 @@ const Homepage: Component = () => {
                 class="flex flex-col items-center ma py-8 px-16 gap-4 bg-gray-100 dark:bg-dark-800 border-rounded border-2 border-gray-200 dark:border-dark-900">
                 <div class="flex items-center justify-start gap-4">
                     <img src={logo} class="h-20" alt="Wings Logo" draggable={false} />
-                    <span class="font-black text-5xl dark:text-white">Wings</span>
+                    <span class="font-black text-5xl dark:text-white">\
+                        <h1>
+                            <span id="zk-trigger">
+                            W<span id="hide1" class="hide">, </span>
+                            I<span id="hide2"  class="hide">'ts </span>
+                            N<span id="hide3"  class="hide">o_Cap </span>
+                            G<span id="hide4"  class="hide">iving </span>
+                            S<span id="hide5"  class="hide">kibidi </span>
+                            </span>
+                        </h1>
+                    </span>
                 </div>
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
                 <div class="flex gap-4 flex-col md:flex-row">
