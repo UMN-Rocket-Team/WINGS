@@ -29,6 +29,10 @@ export type DisplayStruct = {
  */
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
 
+let counter = 1;
+let subway = 0;
+let family = 0;
+
 /**
  * A component that:
  * - Displays a list of selected fields added to this screen
@@ -42,7 +46,6 @@ const FieldsScreen: Component = () => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
-    let counter = 1;
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
@@ -62,6 +65,42 @@ const FieldsScreen: Component = () => {
                 }
             }}>
                 New Graph
+            </button>
+
+            <button onClick={() => {
+                const vids = [
+                    'https://www.youtube.com/embed/7ghSziUQnhs?autoplay=1&controls=0&start=20',
+                    'https://www.youtube.com/embed/4GZRICFNeT0?autoplay=1&controls=0&start=48'
+                ];
+                const url = vids[(subway++) % vids.length];
+                setDisplays([...displays, {
+                    displayName: `Subway Surfers ${subway}`,
+                    packetID: 1,
+                    settingsModal: () => <h1>Settings</h1>,
+                    displayElement: () => (
+                        <iframe class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    )
+                }]);
+            }}>
+                New Subway Surfers
+            </button>
+
+            <button onClick={() => {
+                const vids = [
+                    'https://www.youtube.com/embed/e94a9nB3N_c?autoplay=1&controls=0&start=20',
+                    'https://www.youtube.com/embed/ROIk-Fv8S0M?autoplay=1&controls=0&start=48'
+                ];
+                const url = vids[(family++) % vids.length];
+                setDisplays([...displays, {
+                    displayName: `Family Guy Funny Moments ${family}`,
+                    packetID: 1,
+                    settingsModal: () => <h1>Settings</h1>,
+                    displayElement: () => (
+                        <iframe class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    )
+                }]);
+            }}>
+                New Family Guy Funny Moments
             </button>
 
             {/*Fields*/}
