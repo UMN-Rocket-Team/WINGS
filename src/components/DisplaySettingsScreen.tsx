@@ -1,4 +1,4 @@
-import { Component, For, JSX } from "solid-js";
+import { Component, For, JSX, createSignal } from "solid-js";
 import { ModalProps, useModal } from "../modals/ModalProvider";
 import { createStore, produce } from "solid-js/store";
 import FieldSelectModal, { GraphModalProps, GraphStruct } from "../modals/GraphSettingsModal";
@@ -32,6 +32,7 @@ export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
 let counter = 1;
 let subway = 0;
 let family = 0;
+let buttons = 0;
 
 /**
  * A component that:
@@ -101,6 +102,46 @@ const FieldsScreen: Component = () => {
                 }]);
             }}>
                 New Family Guy Funny Moments
+            </button>
+
+            <button onClick={() => {
+                const initial = 60;
+                let [seconds, setSeconds] = createSignal(initial);
+                const tick = () => {
+                    if (seconds() > 0) {
+                        setSeconds(seconds() - 1);
+                    } else {
+                        clearInterval(int);
+                        document.body.innerHTML = `
+                            <h1>You let the button expire!!!!!</h1>
+                        `;
+                    }
+                }
+                let int = setInterval(tick, 1000);
+                setDisplays([...displays, {
+                    displayName: `Button ${++buttons}`,
+                    packetID: 1,
+                    settingsModal: () => <h1>Settings</h1>,
+                    displayElement: () => (
+                        <div class="text-center w-100% h-100%">
+                            <h1>{seconds()}</h1>
+                            <button class="w-120px h-40px rounded" style={{
+                                "background-color": seconds() >= 52 ? 'purple'
+                                    : seconds() >= 42 ? 'blue'
+                                    : seconds() >= 32 ? 'green'
+                                    : seconds() >= 22 ? 'yellow'
+                                    : seconds() >= 12 ? 'orange'
+                                    : 'red'
+                            }} onClick={() => {
+                                setSeconds(initial);
+                                clearInterval(int);
+                                int = setInterval(tick, 1000);
+                            }}></button>
+                        </div>
+                    )
+                }]);
+            }}>
+                New The Button
             </button>
 
             {/*Fields*/}
