@@ -12,6 +12,7 @@ import {useBackend} from "../backend_interop/BackendProvider";
 import {Packet, PacketStructureViewModel} from "../backend_interop/types";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
 import webIcon from "../assets/web.svg";
+import {splashes} from './splashes';
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
@@ -67,7 +68,7 @@ const Homepage: Component = () => {
             </div>
             <div
                 class="flex flex-col items-center ma py-8 px-16 gap-4 bg-gray-100 dark:bg-dark-800 border-rounded border-2 border-gray-200 dark:border-dark-900">
-                <div class="flex items-center justify-start gap-4">
+                <div class="flex items-center justify-start gap-4 position-relative">
                     <img src={logo} class="h-20" alt="Wings Logo" draggable={false} />
                     <span class="font-black text-5xl dark:text-white">\
                         <h1>
@@ -79,6 +80,9 @@ const Homepage: Component = () => {
                             S<span id="hide5"  class="hide">kibidi </span>
                             </span>
                         </h1>
+                    </span>
+                    <span class="color-yellow text-center bouncy font-minecraft position-absolute top-60% right-0%">
+                        {splashes[Math.floor(splashes.length * Math.random())]}
                     </span>
                 </div>
                 <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
