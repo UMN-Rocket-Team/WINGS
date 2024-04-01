@@ -26,7 +26,7 @@ impl DataProcessor{
         self.name_list = vec![];
         for i in 0..packet_structure_manager.packet_structures.len(){
             self.name_list.push(DisplayPacketFieldNames::default());
-            self.name_list[i].field_names.push("Time Recieved".to_owned());
+            self.name_list[i].field_names.push("Time Received".to_owned());
             for j in 0..packet_structure_manager.packet_structures[i].fields.len(){
                 self.name_list[i].field_names.push(packet_structure_manager.packet_structures[i].fields[j].name.clone());
             }
