@@ -83,6 +83,9 @@ export const BackendProvider: ParentComponent = (props) => {
                 if (result.parsedPackets) {
                     pushParsedPackets(result.parsedPackets);
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.text = "yummy packets";
+                    window.speechSynthesis.speak(msg);
                 }
             }),
             await listen<PacketStructureViewModelUpdate[]>("packet-structures-update", event => {

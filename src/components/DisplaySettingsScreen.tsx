@@ -5,6 +5,7 @@ import FieldSelectModal, { GraphModalProps, GraphStruct } from "../modals/GraphS
 import { useBackend } from "../backend_interop/BackendProvider";
 import closeIcon from "../assets/close.svg";
 import SolidChart from "./SolidChart";
+import VidSettingsModal from "../modals/GraphSettingsModal copy";
 
 /**
  * general set of props to give each display settingsModal
@@ -76,8 +77,8 @@ const FieldsScreen: Component = () => {
                 const url = vids[(subway++) % vids.length];
                 setDisplays([...displays, {
                     displayName: `Subway Surfers ${subway}`,
-                    packetID: 1,
-                    settingsModal: () => <h1>Settings</h1>,
+                    packetID: PacketStructureViewModels[0].id,
+                    settingsModal: VidSettingsModal,
                     displayElement: () => (
                         <iframe class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                     )
@@ -94,8 +95,8 @@ const FieldsScreen: Component = () => {
                 const url = vids[(family++) % vids.length];
                 setDisplays([...displays, {
                     displayName: `Family Guy Funny Moments ${family}`,
-                    packetID: 1,
-                    settingsModal: () => <h1>Settings</h1>,
+                    packetID: PacketStructureViewModels[0].id,
+                    settingsModal: VidSettingsModal,
                     displayElement: () => (
                         <iframe class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                     )
