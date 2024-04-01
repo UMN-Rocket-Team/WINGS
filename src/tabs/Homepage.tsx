@@ -81,7 +81,7 @@ const Homepage: Component = () => {
                             </span>
                         </h1>
                     </span>
-                    <span class="color-yellow text-center bouncy font-minecraft position-absolute top-60% right-0%">
+                    <span class="color-yellow text-center bouncy font-minecraft position-absolute top-70% right--20%">
                         {splashes[Math.floor(splashes.length * Math.random())]}
                     </span>
                 </div>
