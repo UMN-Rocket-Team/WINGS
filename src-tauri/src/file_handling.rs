@@ -1,5 +1,8 @@
 use anyhow::{bail, Error};
+use chrono::{DateTime, Utc};
 use csv::{Reader, StringRecord, Writer};
+use serde::Serialize;
+use serde_json::{to_string, to_string_pretty, to_vec};
 use std::{
     fs::{self, File},
     io::Write,
@@ -9,9 +12,16 @@ use std::{
 use crate::models::packet::Packet;
 /// Acts as a general data structure to store all files that the ground station is currently interacting with
 pub struct FileHandler {
-    csv_writer:Writer<File>,
+    csv_writers: Vec<PacketWriter>,
     csv_reader: Option<Reader<File>>,
     byte_writer: File,
+    time: DateTime<Utc>,
+    safety_iterator: u8,
+}
+
+struct PacketWriter{
+    writer: Writer<File>,
+    index: usize
 }
 
 impl Default for FileHandler {
@@ -29,15 +39,9 @@ impl Default for FileHandler {
     /// this program will panic if it is unable to generate valid write files, this is done to prevent wings from starting without a log to save to
     fn default() -> Self {
         let _ = fs::create_dir("../logs");
-        let mut taken = true;
-        let mut i = 0;
-        while taken{
-            i = i + 1;
-            taken = taken && Path::new(&format!("../logs/packetslog{i}.csv")).exists();
-            taken = taken && Path::new(&format!("../logs/rawbytes{i}.wings")).exists();
-        }
+        let time = Utc::now();
         Self {
-            csv_writer: csv::Writer::from_path(Path::new(&format!("../logs/packetslog{i}.csv"))).unwrap(),
+            csv_writers: vec![],
             csv_reader: 
                 match csv::ReaderBuilder::new()
                     .has_headers(false)
@@ -56,26 +60,14 @@ impl Default for FileHandler {
                 fs::OpenOptions::new()
                     .append(true)
                     .create(true)
-                    .open(&format!("../logs/rawbytes{i}.wings")).unwrap()
+                    .open(&format!("../logs/rawbytes{}.wings",time.format("%Y_%m_%d_%H_%M_%S"))).unwrap(),
+            safety_iterator: 1,
+            time: time,
         }
     }
 }
 
 impl FileHandler {
-    /// Sets the filepath that the FileHandler writes csv's to. returns an error if it can't write to that path
-    ///
-    /// # Errors
-    /// 
-    /// returns an error if something goes wrong when loading the file from that directory (the old csv write directory will remain)
-    pub fn set_write(&mut self, path: String) -> Result<(), Error> {
-        match csv::Writer::from_path(Path::new(&path)) {
-            Err(err) => bail!("unable to load from path {}, error: {}", path, err),
-            Ok(writer) => {
-                self.csv_writer = writer;
-                Ok(())
-            }
-        }
-    }
 
     /// Write a packet to the csv currently loaded
     ///
@@ -87,13 +79,28 @@ impl FileHandler {
     /// 
     /// produces an error if unsuccessful
     pub fn write_packet(&mut self, mut packet: Packet) -> Result<(), Error> {
-        match self.csv_writer.serialize(packet.field_data) {
+        let csv_writer;
+        match self.find_writer_index(packet.structure_id){
+            Some(index) => csv_writer = &mut self.csv_writers[index],
+            None => {
+                let _ = fs::create_dir(&format!("../logs/{}",self.time.format("%Y_%m_%d_%H_%M_%S")));
+                self.csv_writers.push(
+                    PacketWriter{ writer: csv::Writer::from_path(Path::new(&format!("../logs/{}/packetslog_{}.csv",self.time.format("%Y_%m_%d_%H_%M_%S"),packet.structure_id)))?, index: packet.structure_id}
+                );
+                let iter = self.csv_writers.len() - 1;
+                csv_writer = &mut self.csv_writers[iter];
+            },
+        }
+        
+        match csv_writer.writer.serialize(packet.field_data) {
             Err(err) => {
-                _ = self.csv_writer.flush(); //attempt to flush, we dont handle the result since we are already failing anyways
+                _ = csv_writer.writer.flush(); //attempt to flush, we dont handle the result since we are already failing anyways
                 packet.field_data = Default::default();
+                self.safety_iterator += 1;
+                csv_writer.writer = csv::Writer::from_path(Path::new(&format!("../logs/{}/packetslog_{}_{}.csv",self.time.format("%Y_%m_%d_%H_%M_%S"),packet.structure_id, self.safety_iterator)))?;
                 bail!("Unable to write packet and got error: {}", err);
             },
-            Ok(_) => match self.csv_writer.flush() {
+            Ok(_) => match csv_writer.writer.flush() {
                 Err(err) => {
                     bail!("Unable to flush packet writer and got error: {}", err)
                 },
@@ -155,4 +162,9 @@ impl FileHandler {
             Ok(ok) => Ok(ok),
         }
     }
+
+    fn find_writer_index(&mut self, index: usize) -> Option<usize>{
+        self.csv_writers.iter().position(|r| r.index == index)
+    }
 }
+
