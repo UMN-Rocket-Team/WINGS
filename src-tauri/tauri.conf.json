@@ -67,7 +67,7 @@
       }
     },
     "security": {
-      "csp": "default-src 'self'"
+      "csp": null
     },
     "updater": {
       "active": false
