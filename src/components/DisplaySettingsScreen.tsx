@@ -80,7 +80,7 @@ const FieldsScreen: Component = () => {
                     packetID: PacketStructureViewModels[0].id,
                     settingsModal: VidSettingsModal,
                     displayElement: () => (
-                        <iframe class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        <iframe credentialless anonymous class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                     )
                 }]);
             }}>
@@ -98,7 +98,7 @@ const FieldsScreen: Component = () => {
                     packetID: PacketStructureViewModels[0].id,
                     settingsModal: VidSettingsModal,
                     displayElement: () => (
-                        <iframe class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        <iframe credentialless anonymous class="w-100% h-100%" src={url} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                     )
                 }]);
             }}>
