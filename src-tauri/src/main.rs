@@ -38,7 +38,7 @@ use crate::commands::{
         set_field_type, set_gap_size, set_packet_name,
     },
     communication_commands::{set_active_port, set_test_port,add_altus_metrum,add_rfd},
-    file_commands::{set_read,set_write}
+    file_commands::set_read
 };
 
 fn main() {
@@ -65,7 +65,6 @@ fn main() {
             add_altus_metrum,
             add_rfd,
             set_read,
-            set_write,
         ])
         .manage(PacketStructureManagerState::default())
         .manage(CommunicationManagerState::default())
