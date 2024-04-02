@@ -6,6 +6,7 @@ import { useBackend } from "../backend_interop/BackendProvider";
 import closeIcon from "../assets/close.svg";
 import SolidChart from "./SolidChart";
 import VidSettingsModal from "../modals/GraphSettingsModal copy";
+import { invoke } from "@tauri-apps/api";
 
 /**
  * general set of props to give each display settingsModal
@@ -106,16 +107,14 @@ const FieldsScreen: Component = () => {
             </button>
 
             <button onClick={() => {
-                const initial = 60;
+                const initial = 5;
                 let [seconds, setSeconds] = createSignal(initial);
                 const tick = () => {
                     if (seconds() > 0) {
                         setSeconds(seconds() - 1);
                     } else {
                         clearInterval(int);
-                        document.body.innerHTML = `
-                            <h1>You let the button expire!!!!!</h1>
-                        `;
+                        invoke('button_goofy');
                     }
                 }
                 let int = setInterval(tick, 1000);
