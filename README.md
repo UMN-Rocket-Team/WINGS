@@ -1,3 +1,7 @@
+# Downloads
+
+https://github.umn.edu/Rocket-Team/wings/releases
+
 # links to external materials
 
 new member training:
