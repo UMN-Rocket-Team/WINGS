@@ -243,6 +243,41 @@ mod tests {
         assert_eq!(handler.write_packet(packet).is_err(), false);
     }
     #[test]
+    fn test_can_adapt_to_write_error(){
+        let mut handler = FileHandler::default();
+        let mut packet = Packet{
+            structure_id: 0,
+            field_data: vec![
+                PacketFieldValue::UnsignedShort(0),
+                PacketFieldValue::UnsignedShort(1),
+                PacketFieldValue::UnsignedShort(0),
+                PacketFieldValue::UnsignedShort(1),
+            ],
+            field_meta_data: vec![],
+        };
+        assert_eq!(handler.write_packet(packet).is_err(), false);
+        packet = Packet{
+            structure_id: 0,
+            field_data: vec![
+                PacketFieldValue::UnsignedShort(3),
+                PacketFieldValue::UnsignedShort(4),
+                PacketFieldValue::UnsignedShort(5),
+            ],
+            field_meta_data: vec![],
+        };
+        assert_eq!(handler.write_packet(packet).is_err(), true);
+        packet = Packet{
+            structure_id: 0,
+            field_data: vec![
+                PacketFieldValue::UnsignedShort(3),
+                PacketFieldValue::UnsignedShort(4),
+                PacketFieldValue::UnsignedShort(5),
+            ],
+            field_meta_data: vec![],
+        };
+        assert_eq!(handler.write_packet(packet).is_err(), false);
+    }
+    #[test]
     fn test_write_bytes(){
         let mut handler = FileHandler::default();
         let data = vec![0,0xFF,0,0xFF];
