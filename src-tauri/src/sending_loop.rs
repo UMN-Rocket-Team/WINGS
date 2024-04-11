@@ -18,7 +18,7 @@ pub enum SendingModes{
     AllZeros,
     AllOnes,
     Alternating,
-    TimeStampAndIncreasing// assumes that the first field is timestamp compatible
+    TimeStampAndIncreasing // assumes that the first field is timestamp compatible
 }
 
 /// The object sent to the frontend.
@@ -129,7 +129,11 @@ impl SendingLoop {
                         }
                     }){
                         Ok(packet) => {packet_to_send = Some(packet);},
-                        Err(_) => return,
+                        Err(err) => {
+                            println!("Failed to lock file handler: {}", err);
+                            sleep();
+                            return
+                        },
                     },
                 SendingModes::AllZeros => { 
                     let mut output_string = vec![];
@@ -203,4 +207,5 @@ impl SendingLoop {
         self.task = None;
         Ok(())
     }
+    
 }
