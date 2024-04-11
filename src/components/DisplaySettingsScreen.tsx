@@ -1,10 +1,11 @@
 import { Component, For, JSX } from "solid-js";
 import { ModalProps, useModal } from "../modals/ModalProvider";
-import { createStore, produce } from "solid-js/store";
-import FieldSelectModal, { GraphModalProps, GraphStruct } from "../modals/GraphSettingsModal";
+import { createStore } from "solid-js/store";
+import FieldSelectModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
-import closeIcon from "../assets/close.svg";
 import SolidChart from "./SolidChart";
+import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
+import Readout from "./Readout";
 
 /**
  * general set of props to give each display settingsModal
@@ -29,6 +30,9 @@ export type DisplayStruct = {
  */
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
 
+let graphCounter = 1;
+let readoutCounter = 1;
+
 /**
  * A component that:
  * - Displays a list of selected fields added to this screen
@@ -42,7 +46,6 @@ const FieldsScreen: Component = () => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
-    let counter = 1;
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
@@ -50,7 +53,7 @@ const FieldsScreen: Component = () => {
             {   
                 if (PacketStructureViewModels.length != 0){
                     setDisplays([...displays, {
-                        displayName: `Graph ${counter}`, 
+                        displayName: `Graph ${graphCounter}`, 
                         packetID: PacketStructureViewModels[0].id, 
                         settingsModal: FieldSelectModal,
                         displayElement: SolidChart,
@@ -58,10 +61,24 @@ const FieldsScreen: Component = () => {
                         y: [0], 
                         colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"], 
                     } as GraphStruct]);
-                    {counter = counter + 1};
+                    graphCounter++;
                 }
             }}>
                 New Graph
+            </button>
+
+            <button onclick={() => {
+                if (PacketStructureViewModels.length !== 0){
+                    setDisplays([...displays, {
+                        displayName: `Readout ${readoutCounter}`, 
+                        packetID: PacketStructureViewModels[0].id, 
+                        settingsModal: ReadoutSettingsModal,
+                        displayElement: Readout,
+                    } as ReadoutStruct]);
+                    readoutCounter++;
+                }
+            }}>
+                New Readout
             </button>
 
             {/*Fields*/}
