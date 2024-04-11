@@ -13,7 +13,6 @@ import RadioTestingTab from "./RadioTestingTab";
  */
 const tabs: Component[] = [
     SettingsTab,
-    RadioTestingTab,
     SendingTab,
     DisplayTab
 ];
@@ -23,7 +22,6 @@ const tabs: Component[] = [
  */
 const tabNames: string[] = [
     "Settings",
-    "Devices",
     "Transmission",
     "Display",
 ];

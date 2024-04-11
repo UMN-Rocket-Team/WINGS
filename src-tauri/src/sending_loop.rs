@@ -94,7 +94,7 @@ pub struct SendingLoop {
 }
 
 impl SendingLoop {
-    pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,mode : SendingModes) -> anyhow::Result<()> {
+    pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
         let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[1].clone();
 
@@ -108,7 +108,7 @@ impl SendingLoop {
         };
 
         let mut flipper: u8 = 0;
-        let mut packets_sent: u32 = 0;
+        let mut packets_sent: u32 = already_sent;
 
 
 
@@ -149,7 +149,7 @@ impl SendingLoop {
                     flipper = !flipper;
                     let mut output_string = vec![unix_time().to_string()];
                     for i in 1..packet_structure.fields.len(){
-                        output_string.push((flipper + (i as u8)).to_string());
+                        output_string.push(((flipper.overflowing_add(i as u8).0)).to_string());
                     } 
                     packet_to_send = Some(StringRecord::from(output_string));
                 },

@@ -98,11 +98,11 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
         }
         for (let i = 0; i < datasets.length; i++) {
             config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
+            console.log(config.data.datasets[i].data);
         }
 
 
         lastPacketCount = packetData.length;
-
         chart.update();
     }, { defer: true });
 
@@ -119,7 +119,7 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
 
         // Adds previous data
         for (let i = 0; i < datasets.length; i++) {
-            config.data.datasets[i].data.push(...packetData.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
+            console.log(config.data.datasets[i].data);
         }
         lastPacketCount = packetData.length;
         chart.update();

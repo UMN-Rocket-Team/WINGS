@@ -7,10 +7,11 @@ pub fn start_sending_loop(
     app_handle: tauri::AppHandle,
     test_manager_state: tauri::State<'_, SendingLoopState>,
     interval: u64,
+    already_sent: u32,
     mode : SendingModes
 ) -> Result<(), String> {
     use_sending_loop_manager(test_manager_state, &mut |test_manager| {
-        test_manager.start(app_handle.clone(), Duration::from_millis(interval),mode)
+        test_manager.start(app_handle.clone(), Duration::from_millis(interval), already_sent ,mode)
     })
 }
 
@@ -21,15 +22,4 @@ pub fn stop_sending_loop(
     use_sending_loop_manager(test_manager_state, &mut |test_manager| {
         test_manager.stop()
     })
-}
-
-#[tauri::command(async)]
-pub fn mode_setter(
-    test_manager_state: tauri::State<'_, SendingLoopState>,
-    mode: SendingModes
-)
-    -> Result<(), String> {
-        use_sending_loop_manager(test_manager_state, &mut |test_manager| {
-            test_manager.stop()
-        })
 }
