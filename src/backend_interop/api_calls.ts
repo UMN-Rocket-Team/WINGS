@@ -10,7 +10,7 @@ export const setActivePort = async (portName: string) => await invoke<void>("set
 
 export const setTestPort = async (portName: string) => await invoke<void>("set_test_port", { portName });
 
-export const startSendingLoop = async (interval: number, mode : SendingModes) => await invoke<void>("start_sending_loop", { interval, mode});
+export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes) => await invoke<void>("start_sending_loop", { interval,alreadySent, mode});
 
 export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
 

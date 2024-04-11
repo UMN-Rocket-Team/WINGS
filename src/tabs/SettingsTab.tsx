@@ -12,8 +12,6 @@ import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
 import {useModal} from "../modals/ModalProvider";
 import PacketEditor from "../components/PacketsEditor";
 
-const [selectedDevice, setSelectedDevice] = createSignal<string | null>();
-
 /**
  * Main Tab for hosting all groundstation settings
  */
@@ -35,16 +33,6 @@ const SettingsTab: Component = () => {
         }
     };
 
-    async function applyNewSelectedPort(newSelectedDevice: string) {
-        // Apply the change in selected port name to the backend
-        try {
-            setSelectedDevice(newSelectedDevice);
-            await setActivePort(newSelectedDevice);
-        } catch (error) {
-            showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
-        }
-    }
-
     return (
         <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
             <div class="flex flex-grow h-0">
@@ -65,16 +53,6 @@ const SettingsTab: Component = () => {
                             class="flex items-center justify-center border-transparent bg-transparent">
                         <img src={logo} height={25} alt="Home" draggable={false}></img>
                     </button>
-                    {/* Active device combobox */}
-                    <label for="DeviceInput" class="px-2 m-0">Device:</label>
-                    <input name="Device" id="DeviceInput" class="w-50"
-                        list="dataDevices" value={selectedDevice() ?? ""}
-                        onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
-                    <datalist id="dataDevices">
-                        <For each={availablePortNames()}>
-                            {(Device) => <option value={Device.name}/>}
-                        </For>
-                    </datalist>
                 </div>
 
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
