@@ -108,7 +108,7 @@ impl SendingLoop {
 
         let mode = SendingModes::TimeStampAndIncreasing;
         let mut flipper: u8 = 0;
-        let mut packets_sent: u8 = 0;
+        let mut packets_sent: u32 = 0;
 
 
 
@@ -154,10 +154,9 @@ impl SendingLoop {
                     packet_to_send = Some(StringRecord::from(output_string));
                 },
                 SendingModes::TimeStampAndIncreasing => { 
-                    (packets_sent,_) = packets_sent.overflowing_add(1);
                     let mut output_string = vec![unix_time().to_string()];
                     for i in 1..packet_structure.fields.len(){
-                        output_string.push((packets_sent + (i as u8)).to_string());
+                        output_string.push(((packets_sent.overflowing_add(i as u32).0) as u8).to_string());
                     } 
                     packet_to_send = Some(StringRecord::from(output_string));
                 },
@@ -183,7 +182,7 @@ impl SendingLoop {
                 communication_manager.write_data(&packet, 1)
             }) {
                 Ok(_) => {
-                    packets_sent = packets_sent + 1;
+                    packets_sent = packets_sent.overflowing_add(1).0;
                     //println!("Sent packet {}: {:?}", packets_sent, packet);
 
                     let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent as u32));
