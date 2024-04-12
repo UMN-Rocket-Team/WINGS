@@ -107,7 +107,7 @@ const FieldsScreen: Component = () => {
             </button>
 
             <button onClick={() => {
-                const initial = 5;
+                const initial = 60;
                 let [seconds, setSeconds] = createSignal(initial);
                 const tick = () => {
                     if (seconds() > 0) {
