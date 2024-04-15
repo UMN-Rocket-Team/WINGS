@@ -4,9 +4,10 @@ import { setActivePort, setTestPort, startSendingLoop, stopSendingLoop} from "..
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../modals/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
+import { createStore } from "solid-js/store";
 const [sendPort, setSendPort] = createSignal('');
 const [selectedDevice, setSelectedDevice] = createSignal<string | null>();
-
+//const [comDevices, setComDevices] = createStore<DisplayComDevice[]>([])
 const [sendInterval, setSendInterval] = createSignal(500);
 
 const [isSimulating, setSimulating] = createSignal(false);
@@ -56,8 +57,9 @@ const SendingTab: Component = () => {
     }
 
     return (
-        <div class = "flex flex-grow gap-4 border-rounded dark:text-white">
-            <div class="flex flex-col gap-4">
+        <div class = "flex flex-grow gap-4">
+            <div class="flex flex-grow flex-col gap-4">
+
                 <label for="DeviceInput" class="px-2 m-0">
                     <span>Device:</span>
                     <input name="Device" id="DeviceInput" class="w-50"
@@ -71,7 +73,7 @@ const SendingTab: Component = () => {
                     </For>
                 </datalist>
             </div>
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-grow flex-col gap-4">
                 <datalist id="radioTestAvailablePorts">
                     <For each={availablePortNames()}>
                         {(serialPort) => <option value={serialPort.name} />}
@@ -124,11 +126,9 @@ const SendingTab: Component = () => {
                     {isSimulating() ? "Stop Sending" : "Start Sending"}
                 </button>
             </div>
-            <div class="flex flex-col gap-4">
-                <Show when={sendingLoopState() !== null}>
-                        <div>Sent {sendingLoopState()?.packetsSent} packets</div>
-                        <div>Received {parsedPacketCount()} packets</div>
-                </Show>
+            <div class="flex flex-grow flex-col gap-4">
+                <p><b>Sent: </b>{sendingLoopState()?.packetsSent} packets</p>
+                <p><b>Received: </b>{parsedPacketCount()} packets</p>
             </div>
         </div>
     );

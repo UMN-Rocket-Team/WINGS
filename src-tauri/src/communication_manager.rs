@@ -19,6 +19,8 @@ pub trait CommsIF {
     fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()>;
     fn get_new_available_ports(&mut self) -> std::option::Option<Vec<SerialPortNames>>;
     fn has_port(&mut self) -> bool;
+    fn set_id(&mut self, id: usize);
+    fn get_id(&mut self) -> usize;
 }
 
 pub struct GetDataResult {
@@ -95,13 +97,27 @@ impl CommunicationManager {
 
     /// Adds an rfd device object to the manager
     pub fn add_rfd(&mut self){
-        let new_device: SerialPortDriver = Default::default();
+        let mut new_device: SerialPortDriver = Default::default();
+        let mut id = 0;
+        for device in &mut self.comms_objects{
+            if device.get_id() == id{
+                id += 1;
+            }
+        }
+        new_device.set_id(id);
         self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
     }
 
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self){
-        let new_device: TeleDongleDriver = Default::default();
+        let mut new_device: TeleDongleDriver = Default::default();
+        let mut id = 0;
+        for device in &mut self.comms_objects{
+            if device.get_id() == id{
+                id += 1;
+            }
+        }
+        new_device.set_id(id);
         self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
     }
 }

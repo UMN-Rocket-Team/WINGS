@@ -6,7 +6,8 @@ use crate::communication_manager::{CommsIF, SerialPortNames};
 pub struct SerialPortDriver {
     previous_available_ports: Vec<SerialPortNames>,
     port: Option<Box<dyn serialport::SerialPort>>,
-    baud: u32
+    baud: u32,
+    id: usize
 }
 impl CommsIF for SerialPortDriver{
     
@@ -85,6 +86,12 @@ impl CommsIF for SerialPortDriver{
     /// Returns true if there is an active port
     fn has_port(&mut self) -> bool {
         self.port.is_some()
+    }
+    fn set_id(&mut self, id: usize){
+        self.id = id;
+    }
+    fn get_id(&mut self) -> usize {
+        return self.id;
     }
 }
 impl SerialPortDriver {
