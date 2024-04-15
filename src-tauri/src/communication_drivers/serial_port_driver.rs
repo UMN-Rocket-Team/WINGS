@@ -7,7 +7,7 @@ pub struct SerialPortDriver {
     previous_available_ports: Vec<SerialPortNames>,
     port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32,
-    id: usize
+    id: usize,
 }
 impl CommsIF for SerialPortDriver{
     
@@ -90,8 +90,12 @@ impl CommsIF for SerialPortDriver{
     fn set_id(&mut self, id: usize){
         self.id = id;
     }
-    fn get_id(&mut self) -> usize {
+    fn get_id(&self) -> usize {
         return self.id;
+    }
+    
+    fn get_type(&self) -> String {
+        return "SerialPort".to_owned();
     }
 }
 impl SerialPortDriver {

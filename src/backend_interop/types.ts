@@ -212,10 +212,29 @@ export type SendingLoopState = {
     packetsSent: number,
 };
 
+/**
+ * different ways that the sending loop can generate data to send out 
+ */
 export enum SendingModes {
-    FromCSV = "FromCSV",
-    AllZeroes = "AllZeros",
-    AllOnes = "AllOnes",
-    Alternating = "Alternating",
-    TimeStampAndIncreasing = "TimeStampAndIncreasing"
+    FromCSV = "FromCSV",//pulls number from given csv(input.csv)
+    AllZeroes = "AllZeros",//fills all zeros
+    AllOnes = "AllOnes",//fills all ones
+    Alternating = "Alternating",//alternates everything
+    TimeStampAndIncreasing = "TimeStampAndIncreasing"//first is the timestamp, the rest progressively increase
+};
+
+/**
+ * A display format of a communications device
+ */
+export type DisplayComDevice = {
+    
+    /**
+     * the ID of the coms device, needs to be given to any function calls
+     */
+    id: number,
+
+    /**
+     * the type of device (serial port?, teledongle?)
+     */
+    device_type: string,
 };
