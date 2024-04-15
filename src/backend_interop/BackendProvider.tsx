@@ -8,7 +8,8 @@ import {
     DeviceNames,
     PacketStructureViewModelUpdate,
     PacketStructureViewModelUpdateType,
-    SendingLoopState
+    SendingLoopState,
+    DisplayComDevice
 } from "./types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
 
@@ -36,6 +37,11 @@ export type BackendContextValue = {
      * Will be null before an update is received.
      */
     sendingLoopState: Accessor<SendingLoopState | null>
+
+    /**
+     * Provided IDs and device types for all current device objects
+     */
+    comDeviceList: Accessor<DisplayComDevice[]>
 };
 
 /**
@@ -46,7 +52,8 @@ const BackendContext = createContext<BackendContextValue>({
     parsedPacketCount: () => 0,
     PacketStructureViewModels: [],
     setPacketStructureViewModels: () => {},
-    sendingLoopState: () => null
+    sendingLoopState: () => null,
+    comDeviceList: (): DisplayComDevice[] => []
 });
 
 /**
@@ -62,6 +69,7 @@ export const BackendProvider: ParentComponent = (props) => {
     const [parsedPacketCount, setParsedPacketCount] = createSignal<number>(0);
     const [PacketStructureViewModels, setPacketStructureViewModels] = createStore<PacketStructureViewModel[]>([]);
     const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
+    const [comDeviceList, setComDeviceList] = createSignal<DisplayComDevice[]>([]);
 
     let unlistenFunctions: UnlistenFn[];
 
@@ -116,6 +124,12 @@ export const BackendProvider: ParentComponent = (props) => {
                     
                 }
             }),
+            await listen<DisplayComDevice[]>("com-device-update", ({payload}) => {
+                if(Array.isArray(payload)){
+                    setComDeviceList(payload as Array<DisplayComDevice>);
+                }
+                
+            }),
             await listen<SendingLoopState>("sending-loop-update", ({payload}) => {
                 setSendingLoopState(payload);
             })
@@ -161,7 +175,8 @@ export const BackendProvider: ParentComponent = (props) => {
         parsedPacketCount: parsedPacketCount,
         PacketStructureViewModels: PacketStructureViewModels,
         setPacketStructureViewModels: setPacketStructureViewModels,
-        sendingLoopState: sendingLoopState
+        sendingLoopState: sendingLoopState,
+        comDeviceList: comDeviceList
     };
 
     return (
