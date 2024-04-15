@@ -95,26 +95,27 @@ fn iterate_receiving_loop(
     // Get Data
     // ##########################
     match use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        match communication_manager.get_data(0) {
-            Ok(data) => {
-                match use_file_handler(&file_handler_state, &mut |file_handler| {
-                    match file_handler.write_bytes(data.data_read.clone()) {
-                        Err(err) => {
-                            return Err(err)
-                        },
-                        Ok(ok) => Ok(ok),
+        for device in 0..communication_manager.comms_objects.len(){
+            match communication_manager.get_data(device) {
+                Ok(data) => {
+                    match use_file_handler(&file_handler_state, &mut |file_handler| {
+                        match file_handler.write_bytes(data.data_read.clone()) {
+                            Err(err) => {
+                                return Err(err)
+                            },
+                            Ok(ok) => Ok(ok),
+                        }
+                    }){
+                        Ok(_) => {},
+                        Err(err) => return Err(anyhow!(err.to_string())),
                     }
-                }){
-                    Ok(_) => {},
-                    Err(err) => return Err(anyhow!(err.to_string())),
-                }
-            
-                read_data.extend(data.data_read);
-                result.new_available_port_names = data.new_ports;
-            },
-            Err(error) => return Err(anyhow!(error.to_string()))
+                
+                    read_data.extend(data.data_read);
+                    result.new_available_port_names = data.new_ports;
+                },
+                Err(error) => return Err(anyhow!(error.to_string()))
+            }
         }
-
         Ok(())
     }) {
         Ok(_) => {}

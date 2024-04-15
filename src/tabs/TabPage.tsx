@@ -6,7 +6,6 @@ import TestingTab from "./TestingTab";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import SendingTab from "./SendingTab";
 import DisplayTab from "./DisplayTab";
-import RadioTestingTab from "./RadioTestingTab";
 
 /**
  * A list of components that are the tabs to display inside the flight viewer 
