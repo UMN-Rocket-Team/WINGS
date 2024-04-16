@@ -70,11 +70,12 @@ const FieldsScreen: Component = () => {
             <button onclick={() => {
                 if (PacketStructureViewModels.length !== 0){
                     setDisplays([...displays, {
-                        displayName: `Readout ${readoutCounter}`, 
-                        packetID: PacketStructureViewModels[0].id, 
+                        displayName: `Readout ${readoutCounter}`,
+                        packetID: PacketStructureViewModels[0].id,
+                        fields: [],
                         settingsModal: ReadoutSettingsModal,
                         displayElement: Readout,
-                    } as ReadoutStruct]);
+                    } as unknown as ReadoutStruct]);
                     readoutCounter++;
                 }
             }}>
