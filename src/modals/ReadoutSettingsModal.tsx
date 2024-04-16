@@ -1,6 +1,6 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import { For, JSX } from "solid-js";
+import { For, JSX, Show } from "solid-js";
 import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
@@ -10,11 +10,13 @@ import closeIcon from "../assets/close.svg";
 export interface ReadoutModalProps extends SettingsModalProps {
     displayStruct: ReadoutStruct;
 }
+interface ReadoutStructField {
+    // index of field in packet
+    packetFieldIndex: number;
+    unit: string;
+}
 export interface ReadoutStruct extends DisplayStruct {
-    fields: Array<{
-        // index of field in packet
-        packetFieldIndex: number;
-    }>;
+    fields: ReadoutStructField[];
 }
 
 const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element => {
@@ -23,10 +25,12 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
     // used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
 
-    const isActive = (packetId: number, fieldIndex: number): boolean => (
-        props.displayStruct.packetID === packetId &&
-        !!props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex)
-    );
+    const getStructField = (packetId: number, fieldIndex: number): ReadoutStructField | undefined => {
+        if (props.displayStruct.packetID !== packetId) {
+            return undefined;
+        }
+        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex);
+    };
 
     const setActive = (packetId: number, fieldIndex: number, active: boolean) => {
         setDisplays(produce(s => {
@@ -40,14 +44,15 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
 
             if (active) {
                 struct.fields.push({
-                    packetFieldIndex: fieldIndex
+                    packetFieldIndex: fieldIndex,
+                    unit: ''
                 });
             } else {
                 struct.fields = struct.fields.filter(i => i.packetFieldIndex !== fieldIndex);
             }
         }));
     };
- 
+
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
         <div class="flex flex-col bg-neutral-200 rounded-10 dark:bg-gray p-2">
             <h2>
@@ -77,16 +82,35 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
 
                     <For each={packetViewModel.components.filter(i => i.type === PacketComponentType.Field)}>{(component, componentIndex) => {
                         const packetField = component.data as PacketField;
+                        const structField = () => getStructField(packetViewModel.id, packetField.index);
                         return <label class="flex flex-row">
                             <input
                                 type="checkbox"
-                                checked={isActive(packetViewModel.id, packetField.index)}
+                                checked={!!structField()}
                                 onchange={(e) => {
                                     const target = e.target as HTMLInputElement;
                                     setActive(packetViewModel.id, packetField.index, target.checked);
                                 }}
                             />
+
                             {packetField.name}
+
+                            <Show when={structField()}>
+                                <input
+                                    type="text"
+                                    value={structField()!.unit}
+                                    onchange={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        setDisplays(produce(s => {
+                                            const struct = s[props.index] as ReadoutStruct;
+                                            const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                                            if (componentField) {
+                                                componentField.unit = target.value;
+                                            }
+                                        }));
+                                    }}
+                                />
+                            </Show>
                         </label>
                     }}</For>
                 </>
