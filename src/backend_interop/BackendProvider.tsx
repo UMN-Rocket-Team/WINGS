@@ -126,18 +126,28 @@ export const BackendProvider: ParentComponent = (props) => {
         await emit("initialized");
     });
 
-    // TODO: remove once live telemetry is confirmed to work
-    // Push test data to graphs once per second
-
-    // setInterval(() => {
-
-    //     const parsedPackets: Packet[] = [
-    //         {fieldData: [Date.now(), 20, 30, 40], metaData: [], structureId: 0}
-    //     ];
-
-    //     pushParsedPackets(parsedPackets);
-    //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
-    // }, 1000);
+    // Uncomment for fake data
+    setInterval(() => {
+        const testPacket = PacketStructureViewModels.find(i => i.name === "test");
+        if (!testPacket) {
+            throw new Error('Fake data cannot work because "test" packet is missing!');
+        }
+        const parsedPackets: Packet[] = [
+            {
+                structureId: testPacket?.id,
+                fieldData: [
+                    Date.now(), // Timestamp
+                    10, // rkt_speed
+                    20, // rkt_speed_also
+                    30, // rkt_budget
+                    40, // var8
+                ],
+                metaData: [],
+            }
+        ];
+        pushParsedPackets(parsedPackets);
+        setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
+    }, 1000);
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted
