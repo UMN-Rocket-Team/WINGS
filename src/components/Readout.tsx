@@ -2,6 +2,7 @@ import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js"
 import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
+import { PacketComponentType, PacketField } from "../backend_interop/types";
 
 let _canvas: HTMLCanvasElement | null = null;
 let _ctx: CanvasRenderingContext2D | null = null;
@@ -76,7 +77,8 @@ const AutoAdjustFontSize = (props: {
     >
         {/* crazy css to center an absolute child inside of a parent element */}
         <div class="absolute top-50% left-50%" style={{
-            transform: "translate(-50%, -50%)"
+            transform: "translate(-50%, -50%)",
+            "white-space": "nowrap"
         }}>
             {props.text}
         </div>
@@ -84,7 +86,7 @@ const AutoAdjustFontSize = (props: {
 };
 
 const Readout: Component<ReadoutStruct> = (readout): JSX.Element => {
-    const { parsedPacketCount } = useBackend();
+    const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
     // each index corresponds to readout.fields value
     const [values, setValues] = createSignal([] as number[]);
@@ -110,20 +112,38 @@ const Readout: Component<ReadoutStruct> = (readout): JSX.Element => {
         update();
     });
 
+    const getPacket = () => PacketStructureViewModels.find(i => i.id === readout.packetID)!;
+    const getFieldComponents = () => getPacket().components.filter(i => i.type === PacketComponentType.Field);
+
     update();
 
-    return <div class="h-100% flex flex-col align-center justify-center text-center">
-        <div>
+    return <div class="h-100% gap-2 flex flex-col align-center justify-center text-center">
+        <div class="font-bold m-b-2 text-lg">
             {readout.displayName}
         </div>
 
-        <For each={readout.fields}>{(item, index) => (
-            <div class="grow-1">
-                <AutoAdjustFontSize
-                    text={values().length > index() ? '' + values()[index()] : 'N/A'}
-                />
-            </div>
-        )}</For>
+        <For each={readout.fields}>{(item, index) => {
+            const field = () => getFieldComponents()[item.packetFieldIndex].data as PacketField;
+            const getValue = (): string => {
+                if (values().length <= index()) {
+                    return 'N/A';
+                }
+                const value = values()[index()];
+                if (item.unit) {
+                    return `${value} ${item.unit}`;
+                }
+                return '' + value;
+            };
+            return <>
+                <div>{field().name}</div>
+                <div class="grow-1 max-h-120px" style={{
+                    // override default macOS font with one where all the numbers are the same size
+                    "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif'
+                }}>
+                    <AutoAdjustFontSize text={getValue()} />
+                </div>
+            </>;
+        }}</For>
     </div>
 };
 
