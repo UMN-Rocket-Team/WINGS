@@ -1,13 +1,17 @@
 import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { setActivePort, setTestPort, startSendingLoop, stopSendingLoop} from "../backend_interop/api_calls";
+import {addAltusMetrum, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop} from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../modals/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
 import { createStore } from "solid-js/store";
-const [sendPort, setSendPort] = createSignal('');
-const [selectedDevice, setSelectedDevice] = createSignal<string | null>();
-//const [comDevices, setComDevices] = createStore<DisplayComDevice[]>([])
+
+type comDevice = {
+    id: number,
+    selection: string,
+}
+export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevice[]>([]);
+const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
 
 const [isSimulating, setSimulating] = createSignal(false);
@@ -15,7 +19,7 @@ const [isSimulating, setSimulating] = createSignal(false);
 export const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
 const SendingTab: Component = () => {
-    const {availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState} = useBackend();
+    const {availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState, comDeviceList} = useBackend();
     const { showModal } = useModal();
     const startSimulating = async () => {
         debugger;
@@ -24,12 +28,11 @@ const SendingTab: Component = () => {
         });
 
         try {
-            await setTestPort(sendPort());
             switch (sendingLoopState()?.packetsSent){
                 case undefined:
-                    await startSendingLoop(sendInterval(),0 , mode());
+                    await startSendingLoop(sendInterval(),0 , mode(),parseInt(sendPort()?? "0"));
                 default:
-                    await startSendingLoop(sendInterval(),sendingLoopState()?.packetsSent as number, mode());
+                    await startSendingLoop(sendInterval(),sendingLoopState()?.packetsSent as number, mode(), parseInt(sendPort()?? "0"));
             }
         } catch (error) {
             setSimulating(false);
@@ -42,15 +45,15 @@ const SendingTab: Component = () => {
 
     const stopSimulating = async () => {
         await stopSendingLoop();
-        await setTestPort('');
+        await initDevicePort('',0);
         setSimulating(false);
     };
 
-    async function applyNewSelectedPort(newSelectedDevice: string) {
+    async function applyNewSelectedPort(newSelectedDevice: string, id: number) {
         // Apply the change in selected port name to the backend
         try {
-            setSelectedDevice(newSelectedDevice);
-            await setActivePort(newSelectedDevice);
+            setComDeviceSelections(device => device.id === id,"selection",() => newSelectedDevice)
+            await initDevicePort(newSelectedDevice,id);
         } catch (error) {
             showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
         }
@@ -59,13 +62,25 @@ const SendingTab: Component = () => {
     return (
         <div class = "flex flex-grow gap-4">
             <div class="flex flex-grow flex-col gap-4">
-
-                <label for="DeviceInput" class="px-2 m-0">
-                    <span>Device:</span>
-                    <input name="Device" id="DeviceInput" class="w-50"
-                        list="dataDevices" value={selectedDevice() ?? ""}
-                        onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value)} />
-                </label>
+                <button onClick = {() => {addRfd(); setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}])}} >addRfd</button>
+                <button onClick = {() => {addAltusMetrum(); 
+                    setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}])}} >
+                        addAltusMetrum
+                </button>
+                    <For each ={comDeviceList()}>
+                        {(device, device_index) => 
+                            <label for="DeviceInput" class="px-2 m-0">
+                                <span>{device.device_type} {device.id} Device: </span>
+                                <input name="Device" id="DeviceInput" class="w-50"
+                                    list="dataDevices" value={comDeviceSelections[device_index()].selection}
+                                    onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value, device.id)} />
+                                <button onClick = {() => {setComDeviceSelections(comDeviceSelections.filter((_,index) => device_index() != index)); 
+                                    deleteDevice(device.id)}}>
+                                    X
+                                </button>
+                            </label>
+                        }
+                    </For>
                 
                 <datalist id="dataDevices">
                     <For each={availablePortNames()}>
@@ -75,8 +90,8 @@ const SendingTab: Component = () => {
             </div>
             <div class="flex flex-grow flex-col gap-4">
                 <datalist id="radioTestAvailablePorts">
-                    <For each={availablePortNames()}>
-                        {(serialPort) => <option value={serialPort.name} />}
+                    <For each={comDeviceList()}>
+                        {(device) => <option value={device.id} />}
                     </For>
                 </datalist>
                 <label class="flex gap-1">

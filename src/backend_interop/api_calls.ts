@@ -6,11 +6,15 @@ import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketStructu
  * The backend counterparts of each of the functions are documented, so there will not be any documentation here
  */
 
-export const setActivePort = async (portName: string) => await invoke<void>("set_active_port", { portName: portName });
+export const initDevicePort = async (portName: string, id: number) => await invoke<void>("init_device_port", { portName: portName, id: id });
 
-export const setTestPort = async (portName: string) => await invoke<void>("set_test_port", { portName });
+export const deleteDevice = async (id: number) => await invoke<void>("delete_device", {id: id});
 
-export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes) => await invoke<void>("start_sending_loop", { interval,alreadySent, mode});
+export const addRfd = async () => await invoke<void>("add_rfd");
+
+export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum");
+
+export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes, write_id: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, write_id});
 
 export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
 

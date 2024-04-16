@@ -94,7 +94,7 @@ pub struct SendingLoop {
 }
 
 impl SendingLoop {
-    pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes) -> anyhow::Result<()> {
+    pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes, write_id: usize) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
         let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[1].clone();
 
@@ -109,7 +109,6 @@ impl SendingLoop {
 
         let mut flipper: u8 = 0;
         let mut packets_sent: u32 = already_sent;
-
 
 
         self.task = Some(BackgroundTask::run_repeatedly(move || {
@@ -183,7 +182,7 @@ impl SendingLoop {
             // Send Packet
             // ##########################
             match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
-                communication_manager.write_data(&packet, 1)
+                communication_manager.write_data(&packet, write_id)
             }) {
                 Ok(_) => {
                     packets_sent = packets_sent.overflowing_add(1).0;
