@@ -46,10 +46,8 @@ pub struct CommunicationManager{
 impl Default for CommunicationManager{
 
     fn default() -> Self { 
-        let receive: SerialPortDriver = Default::default();
-        let send: SerialPortDriver = Default::default();
         Self{
-            comms_objects: vec![Box::new(receive) as Box<dyn CommsIF + Send>, Box::new(send) as Box<dyn CommsIF + Send>],
+            comms_objects: vec![],
             selected: 0,
             id_iterator: 0
         }
@@ -84,7 +82,7 @@ impl CommunicationManager {
 
                 Ok(result)
             },
-            None => Err("could not find a device with that ID".to_owned()),
+            None => Err(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
         }
     }
 
@@ -100,7 +98,7 @@ impl CommunicationManager {
                 Ok(_) => Ok(()),
                 Err(message) => Err(message)
             },
-            None => bail!("could not find a device with that ID"),
+            None => bail!(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
         }
     }
 
@@ -117,9 +115,25 @@ impl CommunicationManager {
                     Ok(_) => Ok(()),
                     Err(message) => Err(message)
                 },
-            None => bail!("could not find a device with that ID"),
+            None => bail!(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
         }
     }
+
+    /// Connects the selected device struct to its hardware counterpart
+    /// 
+    /// # Errors
+    /// 
+    /// Was unable to initialize the device object
+    pub fn delete_device(&mut self, id: usize) -> anyhow::Result<()>{
+        let index = self.find(id);
+        match index{
+            Some(index) => 
+                {self.comms_objects.remove(index);
+                Ok(())},
+            None => bail!(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
+        }
+    }
+
 
     /// Adds an rfd device object to the manager
     pub fn add_rfd(&mut self){

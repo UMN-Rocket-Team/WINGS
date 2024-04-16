@@ -2,7 +2,6 @@ import {Component, createSignal, For} from "solid-js";
 import FieldsScreen from "../components/DisplaySettingsScreen";
 import logo from "../assets/logo.png";
 import {useBackend} from "../backend_interop/BackendProvider";
-import {setActivePort} from "../backend_interop/api_calls";
 import {useNavigate} from "@solidjs/router";
 import {Packet} from "../backend_interop/types";
 import {parsedPackets} from "../backend_interop/buffers";

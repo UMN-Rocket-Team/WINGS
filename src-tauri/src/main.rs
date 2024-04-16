@@ -37,15 +37,15 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    communication_commands::{set_active_port, set_test_port,add_altus_metrum,add_rfd},
+    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd},
     file_commands::set_read
 };
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            set_active_port,
-            set_test_port,
+            delete_device, 
+            init_device_port,
             start_sending_loop,
             stop_sending_loop,
             set_field_name,
