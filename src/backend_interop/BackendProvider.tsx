@@ -89,6 +89,9 @@ export const BackendProvider: ParentComponent = (props) => {
                     setAvailableDeviceNames(result.newAvailablePortNames);
                 }
                 if (result.parsedPackets) {
+
+
+                    
                     pushParsedPackets(result.parsedPackets);
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                 }

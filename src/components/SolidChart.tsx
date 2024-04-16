@@ -28,11 +28,12 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     }
 
     const initialParsedPackets = parsedPackets[graph.packetID];
+    const ratio = initialParsedPackets.length / 100;
     let datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
             label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,
-            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
+            data: initialParsedPackets.flatMap((packetData, index) => ( !(index % ratio) ? {x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] } : [])) ?? [],
             backgroundColor: graph.colors[i % graph.colors.length],
             borderColor: graph.colors[i % graph.colors.length],
             spanGaps: true,
