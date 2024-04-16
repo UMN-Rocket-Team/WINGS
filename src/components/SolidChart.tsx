@@ -21,6 +21,13 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
+    // Decimation variables:
+    var ptr1 = 1;
+    var ptr2 = 1;
+    var wall = 500;
+    var multiple = 2;
+    var next = 1;
+
     const colors: string[] = ["#FFD700", "black", "blue", "red"];
     //adds an empty array if we haven't received data in the packet type we want
     if (parsedPackets[graph.packetID] === undefined) {
@@ -33,7 +40,7 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
             label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,
-            data: initialParsedPackets.flatMap((packetData, index) => ( !(index % ratio) ? {x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] } : [])) ?? [],
+            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
             backgroundColor: graph.colors[i % graph.colors.length],
             borderColor: graph.colors[i % graph.colors.length],
             spanGaps: true,
@@ -88,17 +95,19 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     createEffect(() => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
+        console.log("in")
 
         if (parsedPackets[graph.packetID] === undefined) {
             parsedPackets[graph.packetID] = [];
         }
         const packetData = parsedPackets[graph.packetID];
 
-        if (packetData === undefined || lastPacketCount == packetData.length) {
+        if (packetData === undefined || chart === undefined) {
             return;
         }
         for (let i = 0; i < datasets.length; i++) {
-            config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
+            // config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
+            config.data.datasets[i].data = packetData.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] }));
             console.log(config.data.datasets[i].data);
         }
 
@@ -124,6 +133,7 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
         }
         lastPacketCount = packetData.length;
         chart.update();
+
     });
 
     onCleanup(() => {
