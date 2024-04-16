@@ -49,8 +49,7 @@ const FieldsScreen: Component = () => {
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
-            <button onClick={() => 
-            {   
+            <button class="m-1" onClick={() => {   
                 if (PacketStructureViewModels.length != 0){
                     setDisplays([...displays, {
                         displayName: `Graph ${graphCounter}`, 
@@ -67,7 +66,7 @@ const FieldsScreen: Component = () => {
                 New Graph
             </button>
 
-            <button onclick={() => {
+            <button class="m-1" onclick={() => {
                 if (PacketStructureViewModels.length !== 0){
                     setDisplays([...displays, {
                         displayName: `Readout ${readoutCounter}`,
