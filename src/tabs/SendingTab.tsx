@@ -62,9 +62,8 @@ const SendingTab: Component = () => {
     return (
         <div class = "flex flex-grow gap-4">
             <div class="flex flex-grow flex-col gap-4">
-                <button onClick = {() => {addRfd(); setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}])}} >addRfd</button>
-                <button onClick = {() => {addAltusMetrum(); 
-                    setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}])}} >
+                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}]); addRfd()}} >addRfd</button>
+                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}]); addAltusMetrum()}} >
                         addAltusMetrum
                 </button>
                     <For each ={comDeviceList()}>
