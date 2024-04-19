@@ -11,6 +11,7 @@ type comDevice = {
     selection: string,
 }
 export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevice[]>([]);
+export let comDevicesIterator = 0;
 const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
 
@@ -45,7 +46,7 @@ const SendingTab: Component = () => {
 
     const stopSimulating = async () => {
         await stopSendingLoop();
-        await initDevicePort('',0);
+        await parseInt(sendPort()?? "0");
         setSimulating(false);
     };
 
@@ -62,9 +63,11 @@ const SendingTab: Component = () => {
     return (
         <div class = "flex flex-grow gap-4">
             <div class="flex flex-grow flex-col gap-4">
-                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}]); addRfd()}} >addRfd</button>
-                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDeviceSelections.length, selection: ""}]); addAltusMetrum()}} >
-                        addAltusMetrum
+                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: ""}]); addRfd()}} >\
+                    addRfd
+                </button>
+                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: ""}]); addAltusMetrum()}} >
+                    addAltusMetrum
                 </button>
                     <For each ={comDeviceList()}>
                         {(device, device_index) => 

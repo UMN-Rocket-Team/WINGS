@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use anyhow::anyhow;
+use anyhow::bail;
 use chrono::Duration;
 use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
@@ -95,9 +95,29 @@ fn iterate_receiving_loop(
     // Get Data
     // ##########################
     match use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        for device in 0..communication_manager.comms_objects.len(){
+        let mut errors = "".to_owned();
+        for device in communication_manager.get_devices(){
             match communication_manager.get_data(device) {
-                Ok(data) => {
+                Ok(mut data) => {
+
+
+
+                    if let Some(ports) = result.new_available_port_names.as_mut() {
+                        if let Some(new_ports) = data.new_ports.as_mut(){
+                            ports.append(new_ports);
+                            ports.sort();
+                            ports.dedup();
+                            println!("append: {:#?}", ports);
+                        }
+                    } else {
+                        result.new_available_port_names = data.new_ports;
+                        if result.new_available_port_names.is_some(){
+                           println!("replace: {:#?} \n device: {:#?}", result.new_available_port_names, device);
+                        }
+                    }
+
+
+
                     match use_file_handler(&file_handler_state, &mut |file_handler| {
                         match file_handler.write_bytes(data.data_read.clone()) {
                             Err(err) => {
@@ -107,14 +127,21 @@ fn iterate_receiving_loop(
                         }
                     }){
                         Ok(_) => {},
-                        Err(err) => return Err(anyhow!(err.to_string())),
+                        Err(err) => {errors.push_str("File handling: "); errors.push_str(&err);},
                     }
-                
+
+
                     read_data.extend(data.data_read);
-                    result.new_available_port_names = data.new_ports;
+
+
+
                 },
-                Err(error) => return Err(anyhow!(error.to_string()))
+                Err(err) => {errors.push_str("coms manager: "); errors.push_str(&err);}
             }
+        }
+        if errors != ""{
+            println!("{:#?}", errors);
+            bail!(errors)
         }
         Ok(())
     }) {

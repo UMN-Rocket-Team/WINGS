@@ -14,7 +14,7 @@ export const addRfd = async () => await invoke<void>("add_rfd");
 
 export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum");
 
-export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes, write_id: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, write_id});
+export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes, writeId: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, writeId});
 
 export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
 

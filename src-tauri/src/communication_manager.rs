@@ -7,7 +7,7 @@ use crate::communication_drivers::{
     serial_port_driver::SerialPortDriver, 
     teledongle_driver::TeleDongleDriver,
 };
-#[derive(PartialEq, Serialize, Clone, Debug, Default)]
+#[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct SerialPortNames {
     pub name: String,
@@ -172,5 +172,13 @@ impl CommunicationManager {
             i+=1;
         }
         let _ = app_handle.emit_all(COM_DEVICE_UPDATE, &return_me);
+    }
+    
+    pub fn get_devices(&self) -> Vec<usize>{
+        let mut return_me = vec![];
+        for device in &self.comms_objects{
+            return_me.push(device.get_id());
+        }
+        return_me
     }
 }
