@@ -18,6 +18,7 @@ impl TeleDongleDriver {
     /// 
     /// Returns an error if no ports were successfully found, 
     fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
+        println!("{:#?}",serialport::available_ports()?);
         let ports = serialport::available_ports()?
             .into_iter()
             .filter_map(|port| match port.port_type {
