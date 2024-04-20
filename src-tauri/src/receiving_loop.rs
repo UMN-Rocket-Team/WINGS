@@ -183,7 +183,5 @@ fn iterate_receiving_loop(
         }
     }
 
-    
-
     Ok(result)
 }
