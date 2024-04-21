@@ -140,7 +140,6 @@ fn iterate_receiving_loop(
             }
         }
         if errors != ""{
-            println!("{:#?}", errors);
             bail!(errors)
         }
         Ok(())

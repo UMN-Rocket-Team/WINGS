@@ -1,13 +1,15 @@
 use std::cmp::max;
 
 use crate::{
-    models::packet::{Packet, PacketFieldValue},
+    models::{self, packet::{Packet, PacketFieldValue}},
     packet_structure_manager::PacketStructureManager,
 };
 
 #[derive(Default)]
 pub struct PacketParser {
     unparsed_data: Vec<u8>,
+    iterator: u64,
+    last: u64,
 }
 
 /// responsible converting raw data to packets
@@ -110,6 +112,17 @@ impl PacketParser {
                             [field_start_index..(field_start_index + field.r#type.size())],
                     );
                 }
+                //START delete this code after launch
+                let mut timestamp = serde_json::from_str::<u64>(&(serde_json::to_string(&field_data[0]).unwrap_or_default())).unwrap_or_default() + self.iterator;
+                if timestamp < self.last{
+                    println!("turnover");
+                    self.iterator += 65535;
+                    timestamp += 65535;
+                }
+                self.last = timestamp;
+                field_data[0] = models::packet::PacketFieldValue::UnsignedLong(timestamp);
+                
+                //END delete this code after launch
                 if print_flag {
                     println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
                 }
@@ -134,7 +147,6 @@ impl PacketParser {
             println!("LPI: {}", last_parsed_index);
         }
         self.unparsed_data.drain(0..last_parsed_index);
-
         packets
     }
 }

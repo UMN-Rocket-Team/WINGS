@@ -32,7 +32,7 @@ impl Default for PacketStructureManagerState {
 
         // Telemega Kalman and Voltage Data Packet Contents.
         let mut telemega_kalman_structure = PacketStructure::default();
-        telemega_kalman_structure.ez_make("205f u16 09 u8 i16 i16 i8 i8 i8 i8 i8 i8 i32 i16 i16 i16 i16 i16 i16");
+        telemega_kalman_structure.ez_make("2A6C u16 09 u8 i16 i16 i8 i8 i8 i8 i8 i8 i32 i16 i16 i16 i16 i16 i16");
         telemega_kalman_structure.fields[0].name = "Timestamp".to_owned();
         telemega_kalman_structure.fields[1].name = "state".to_owned();
         telemega_kalman_structure.fields[2].name = "v_batt".to_owned();
