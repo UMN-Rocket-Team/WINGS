@@ -95,7 +95,6 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
     createEffect(() => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
-        console.log("in")
 
         if (parsedPackets[graph.packetID] === undefined) {
             parsedPackets[graph.packetID] = [];
@@ -108,7 +107,7 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
         for (let i = 0; i < datasets.length; i++) {
             // config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
             config.data.datasets[i].data = packetData.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] }));
-            console.log(config.data.datasets[i].data);
+            // console.log(config.data.datasets[i].data.length);
         }
 
 

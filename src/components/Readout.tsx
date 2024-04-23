@@ -1,7 +1,7 @@
 import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
 import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { parsedPackets } from "../backend_interop/buffers";
+import { lastParsedPacket, parsedPackets } from "../backend_interop/buffers";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 
 let _canvas: HTMLCanvasElement | null = null;
@@ -92,13 +92,13 @@ const Readout: Component<ReadoutStruct> = (readout): JSX.Element => {
     const [values, setValues] = createSignal([] as number[]);
 
     const update = () => {
-        const packetData = parsedPackets[readout.packetID];
-        if (!packetData) {
+        const lastPacket = lastParsedPacket[readout.packetID];
+        if (!lastPacket) {
             setValues([]);
             return;
         }
 
-        const lastPacket = packetData[packetData.length - 1];
+        // const lastPacket = packetData[packetData.length - 1];
         setValues(readout.fields.map(i => {
             const latestValue = lastPacket.fieldData[i.packetFieldIndex];
             return latestValue;
