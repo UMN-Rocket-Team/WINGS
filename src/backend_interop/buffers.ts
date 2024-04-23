@@ -1,9 +1,12 @@
 import { Packet, PacketData } from "./types";
+import { createSignal } from "solid-js";
 
 /**
  * The global map between packet ids and the list of received packet data for the packet with that id
  */
 export const parsedPackets: Record<number, PacketData[]> = [];
+
+export const lastParsedPacket: Record<number, PacketData> = [];
 
 /**
  * Global variables
@@ -16,6 +19,8 @@ type PacketStructureId = {
     multiple: number,
     next: number
 }
+
+
 
 const decVars: Record<number, PacketStructureId> = [];
 
@@ -38,16 +43,14 @@ export const pushParsedPackets = (packets: Packet[]): void => {
         sortedNewParsedPackets[packet.structureId].push(packetData);
     }
 
-    // console.log(sortedNewParsedPackets)
-
     for (const structureId in sortedNewParsedPackets) {
+        // 
         if (parsedPackets[+structureId] === undefined) {
-            
             let decimationVars: PacketStructureId = {
                 structureId: structureId,
                 ptr1: 1,
                 ptr2: 1,
-                wall: 500,
+                wall: 50,
                 multiple: 2,
                 next: 1
             }
@@ -55,11 +58,15 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             decVars[+structureId] = decimationVars;
         }
 
+        // 
+
         if (decVars[+structureId].ptr2 + sortedNewParsedPackets[+structureId].length > (2 * decVars[+structureId].wall)) {
             // Need to do a while loop here to add the elements to the end of the array till it hits 2wall
             // This loop will only run once, when we are at the max capacity of the array for the first time
             var ctr = 0;
             while (decVars[+structureId].ptr2 < (2 * decVars[+structureId].wall)) {
+                lastParsedPacket[+structureId] = sortedNewParsedPackets[+structureId][ctr]; // For Readout.tsx
+                
                 parsedPackets[+structureId].push(sortedNewParsedPackets[+structureId][ctr]);
                 decVars[+structureId].ptr2++;
                 ctr++;
@@ -77,11 +84,15 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             // Next is initialized to 1 and is used to keep track of the count till next packet to add, it is always updated to multiple/2 and multiple is always a power of 2
             for (let i = 0; i < packets_left; i++) {
                 if (decVars[+structureId].next > 0) {
+                    lastParsedPacket[+structureId] = sortedNewParsedPackets[+structureId][ctr]; // For Readout.tsx
+
                     // While next is not 0, we are skipping a packet in parsed packets by incrementing ctr and decrementing next
                     ctr++;
                     decVars[+structureId].next--;
                 } else { // next == 0 (we are adding a packet to the end and removing a packet from the starting half)
                     
+                    lastParsedPacket[+structureId] = sortedNewParsedPackets[+structureId][ctr]; // For Readout.tsx
+
                     parsedPackets[+structureId].splice(decVars[+structureId].ptr1, 1); // remove a packet from the starting half of the array
                     // console.log("deleted packet");
                     decVars[+structureId].ptr1++;
@@ -99,6 +110,8 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             // If we have enough space to add all the packets from the new parsed packets
             // We just add them to the end of the array
             parsedPackets[+structureId].push(...sortedNewParsedPackets[structureId]);
+
+            lastParsedPacket[+structureId] = sortedNewParsedPackets[+structureId][sortedNewParsedPackets[+structureId].length - 1]; // For Readout.tsx
         }
         // console.log(parsedPackets[+structureId].length)
         decVars[+structureId].ptr2 = parsedPackets[+structureId].length; // ptr2 should basically always be the same as 2wall once we reach max capacitity, but good to have this anyways

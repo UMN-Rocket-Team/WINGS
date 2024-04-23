@@ -90,11 +90,9 @@ export const BackendProvider: ParentComponent = (props) => {
                 }
                 if (result.parsedPackets) {
 
-
-                    
                     pushParsedPackets(result.parsedPackets);
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
-                    console.log(parsedPacketCount());
+                    // console.log(parsedPacketCount());
                 }
             }),
             await listen<PacketStructureViewModelUpdate[]>("packet-structures-update", event => {
