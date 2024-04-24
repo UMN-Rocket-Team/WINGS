@@ -99,9 +99,6 @@ fn iterate_receiving_loop(
         for device in communication_manager.get_devices(){
             match communication_manager.get_data(device) {
                 Ok(mut data) => {
-
-
-
                     if let Some(ports) = result.new_available_port_names.as_mut() {
                         if let Some(new_ports) = data.new_ports.as_mut(){
                             ports.append(new_ports);
@@ -140,14 +137,15 @@ fn iterate_receiving_loop(
             }
         }
         if errors != ""{
-            bail!(errors)
+            if read_data.is_empty(){
+                bail!(errors);
+            }
         }
         Ok(())
     }) {
         Ok(_) => {}
         Err(message) => return Err(message)
     }
-
     // ##########################
     // Process data
     // ##########################
@@ -178,7 +176,7 @@ fn iterate_receiving_loop(
             })
         }) {
             Ok(_) => {}
-            Err(message) => return Err(message),
+            Err(message) => {return Err(message)},
         }
     }
 
