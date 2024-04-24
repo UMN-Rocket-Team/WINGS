@@ -84,7 +84,13 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
                         }
                     },
                     display: true,
-                },
+                //     min: -90,
+                //     max: 50
+                // },
+                // y: {
+                //     min: -90,
+                //     max: 50
+                }
             },
         }
     };
