@@ -50,7 +50,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
                 structureId: structureId,
                 ptr1: 1,
                 ptr2: 1,
-                wall: 50,
+                wall: 200,
                 multiple: 2,
                 next: 1
             }
@@ -89,11 +89,11 @@ export const pushParsedPackets = (packets: Packet[]): void => {
                     // While next is not 0, we are skipping a packet in parsed packets by incrementing ctr and decrementing next
                     ctr++;
                     decVars[+structureId].next--;
-                } else { // next == 0 (we are adding a packet to the end and removing a packet from the starting half)
+                } else { // next == 0 (we are adding a packet to the end and removing a packet from the starting 1/3)
                     
                     lastParsedPacket[+structureId] = sortedNewParsedPackets[+structureId][ctr]; // For Readout.tsx
 
-                    parsedPackets[+structureId].splice(decVars[+structureId].ptr1, 1); // remove a packet from the starting half of the array
+                    parsedPackets[+structureId].splice(decVars[+structureId].ptr1, 1); // remove a packet from the starting 1/3 of the array
                     // console.log("deleted packet");
                     decVars[+structureId].ptr1++;
                     if (decVars[+structureId].ptr1 >= decVars[+structureId].wall) {
@@ -120,7 +120,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
 
 };
 
-const clearParsedPackets = (): void => {
+export const clearParsedPackets = (): void => {
     for (const structureId in parsedPackets) {
         delete parsedPackets[+structureId];
     }

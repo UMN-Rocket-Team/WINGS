@@ -4,7 +4,7 @@ import logo from "../assets/logo.png";
 import {useBackend} from "../backend_interop/BackendProvider";
 import {useNavigate} from "@solidjs/router";
 import {Packet} from "../backend_interop/types";
-import {parsedPackets} from "../backend_interop/buffers";
+import {clearParsedPackets, parsedPackets} from "../backend_interop/buffers";
 import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
@@ -55,7 +55,7 @@ const SettingsTab: Component = () => {
                 </div>
 
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
-
+                <button onClick={clearParsedPackets}>Clear graph</button>
                 <button onClick={saveFlight}>Save</button>
             </footer>
         </div>

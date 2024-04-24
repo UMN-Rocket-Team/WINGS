@@ -119,7 +119,7 @@ impl CommunicationManager {
         }
     }
 
-    /// Connects the selected device struct to its hardware counterpart
+    /// DisConnects the selected device struct to its hardware counterpart
     /// 
     /// # Errors
     /// 
