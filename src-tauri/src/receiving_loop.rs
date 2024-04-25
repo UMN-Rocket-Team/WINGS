@@ -179,6 +179,5 @@ fn iterate_receiving_loop(
             Err(message) => {return Err(message)},
         }
     }
-
     Ok(result)
 }

@@ -6,7 +6,7 @@ import { createSignal } from "solid-js";
  */
 export const parsedPackets: Record<number, PacketData[]> = [];
 
-export const unDecimatedPacket: Record<number, PacketData[]> = [];
+export const unDecimatedPackets: Record<number, PacketData[]> = [];
 
 /**
  * Global variables
@@ -50,11 +50,12 @@ export const pushParsedPackets = (packets: Packet[]): void => {
                 structureId: structureId,
                 ptr1: 1,
                 ptr2: 1,
-                wall: 200,
+                wall: 500,
                 multiple: 2,
                 next: 1
             }
             parsedPackets[+structureId] = [];
+            unDecimatedPackets[+structureId] = [];
             decVars[+structureId] = decimationVars;
         }
 
@@ -65,7 +66,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             // This loop will only run once, when we are at the max capacity of the array for the first time
             var ctr = 0;
             while (decVars[+structureId].ptr2 < (2 * decVars[+structureId].wall)) {
-                unDecimatedPacket[+structureId].push(sortedNewParsedPackets[+structureId][ctr]); // For Readout.tsx
+                unDecimatedPackets[+structureId].push(sortedNewParsedPackets[+structureId][ctr]); // For Readout.tsx
                 
                 parsedPackets[+structureId].push(sortedNewParsedPackets[+structureId][ctr]);
                 decVars[+structureId].ptr2++;
@@ -83,7 +84,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             // The variable next is only used in this for loop and nowhere else, so it is safe to use it here
             // Next is initialized to 1 and is used to keep track of the count till next packet to add, it is always updated to multiple/2 and multiple is always a power of 2
             for (let i = 0; i < packets_left; i++) {
-                unDecimatedPacket[+structureId].push(sortedNewParsedPackets[+structureId][ctr]); // For Readout.tsx
+                unDecimatedPackets[+structureId].push(sortedNewParsedPackets[+structureId][ctr]); // For Readout.tsx
                 if (decVars[+structureId].next > 0) {
 
                     // While next is not 0, we are skipping a packet in parsed packets by incrementing ctr and decrementing next
@@ -109,7 +110,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             // We just add them to the end of the array
             parsedPackets[+structureId].push(...sortedNewParsedPackets[structureId]);
 
-            unDecimatedPacket[+structureId].push(...sortedNewParsedPackets[structureId]); // For Readout.tsx
+            unDecimatedPackets[+structureId].push(...sortedNewParsedPackets[structureId]); // For Readout.tsx
         }
         // console.log(parsedPackets[+structureId].length)
         decVars[+structureId].ptr2 = parsedPackets[+structureId].length; // ptr2 should basically always be the same as 2wall once we reach max capacitity, but good to have this anyways
