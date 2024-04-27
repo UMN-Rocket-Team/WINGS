@@ -4,8 +4,7 @@ use serde::Serialize;
 use tauri::Manager;
 
 use crate::communication_drivers::{
-    serial_port_driver::SerialPortDriver, 
-    teledongle_driver::TeleDongleDriver,
+    byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
@@ -21,7 +20,7 @@ pub trait CommsIF {
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()>;
     fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()>;
     fn get_new_available_ports(&mut self) -> std::option::Option<Vec<SerialPortNames>>;
-    fn has_port(&mut self) -> bool;
+    fn is_init(&mut self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
     fn get_type(&self) -> String;
@@ -73,7 +72,7 @@ impl CommunicationManager {
                 let new_ports = self.comms_objects[index].get_new_available_ports();
                 result.new_ports = new_ports;
 
-                if self.comms_objects[index].has_port() {
+                if self.comms_objects[index].is_init() {
                     match self.comms_objects[index].read_port(&mut result.data_read) {
                         Ok(_) => return Ok(result),
                         Err(error) => return Err(error.to_string())
@@ -146,6 +145,15 @@ impl CommunicationManager {
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self){
         let mut new_device: TeleDongleDriver = Default::default();
+        new_device.set_id(self.id_iterator);
+        self.id_iterator+=1;
+        self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+
+    }
+
+    /// Adds an byte reading device object to the manager
+    pub fn add_file_manager(&mut self){
+        let mut new_device: ByteReadDriver = Default::default();
         new_device.set_id(self.id_iterator);
         self.id_iterator+=1;
         self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);

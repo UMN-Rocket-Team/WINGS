@@ -89,7 +89,7 @@ impl CommsIF for TeleDongleDriver {
     }
 
     /// Returns true if there is an active port
-    fn has_port(&mut self) -> bool {
+    fn is_init(&mut self) -> bool {
         self.port.is_some()
     }
 

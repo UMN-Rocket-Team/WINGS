@@ -2,7 +2,6 @@ import { Component } from "solid-js";
 import SettingsTab from "./SettingsTab";
 import PacketEditor from "../components/PacketsEditor";
 import TabView from "../components/TabView";
-import TestingTab from "./TestingTab";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import SendingTab from "./SendingTab";
 import DisplayTab from "./DisplayTab";

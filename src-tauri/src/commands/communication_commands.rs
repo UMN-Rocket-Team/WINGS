@@ -57,3 +57,15 @@ pub fn add_altus_metrum(
     })
 }
 
+#[tauri::command(async)]
+pub fn add_file_manager(
+    app_handle: tauri::AppHandle,
+    communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+) -> Result<(), String> {
+    use_communication_manager(communication_manager_state, &mut |communication_manager| {
+        communication_manager.add_file_manager();
+        communication_manager.update_display_com_devices(app_handle.clone());
+        Ok(())
+    })
+}
+

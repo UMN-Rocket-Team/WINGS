@@ -13,7 +13,6 @@ impl CommsIF for SerialPortDriver{
     
     /// Attempts to set the port for comms with the rfd driver
     /// 
-    /// 
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
@@ -84,7 +83,7 @@ impl CommsIF for SerialPortDriver{
     }
 
     /// Returns true if there is an active port
-    fn has_port(&mut self) -> bool {
+    fn is_init(&mut self) -> bool {
         self.port.is_some()
     }
     fn set_id(&mut self, id: usize){

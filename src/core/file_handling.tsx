@@ -74,7 +74,7 @@ const updatePersistentFilePaths = async (filePathString: string) => {
  * Creates a file dialogue box, allowing user to select multiple .json packet files. returns the file directories of said packets
  */
 export const runImportPacketWindow = async () => {
-    const selectedFilePaths = await open({ title: 'Import Flight Data', multiple: true, filters: [{ name: 'FlightData', extensions: ['json'] }] });
+    const selectedFilePaths = await open({ title: 'Import Flight Data', multiple: true, filters: [{ name: 'FlightData', extensions: ['json','wings','TXT'] }] });
     return selectedFilePaths;
 }
 

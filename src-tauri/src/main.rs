@@ -37,7 +37,7 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd},
+    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd, add_file_manager},
     file_commands::set_read
 };
 
@@ -64,6 +64,7 @@ fn main() {
             delete_packet_structure,
             add_altus_metrum,
             add_rfd,
+            add_file_manager,
             set_read
         ])
         .manage(PacketStructureManagerState::default())

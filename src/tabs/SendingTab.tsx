@@ -1,10 +1,12 @@
 import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import {addAltusMetrum, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop} from "../backend_interop/api_calls";
+import {addAltusMetrum, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop} from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../modals/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
-import { createStore } from "solid-js/store";
+import { createStore} from "solid-js/store";
+import { Store } from"tauri-plugin-store-api";
+import FileModal from "../modals/FilePathModal";
 
 type comDevice = {
     id: number,
@@ -16,7 +18,6 @@ const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
 
 const [isSimulating, setSimulating] = createSignal(false);
-
 export const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
 const SendingTab: Component = () => {
@@ -50,6 +51,19 @@ const SendingTab: Component = () => {
         setSimulating(false);
     };
 
+    const addFileDirectory = async (filePaths: string | string[] | null) => {
+        if (Array.isArray(filePaths)) {
+            for (const path of filePaths) {
+                setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: path}]); 
+                addFileManager();
+            }
+        }
+        else if (filePaths != null) {
+            setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: filePaths}]); 
+            addFileManager();
+        }
+    };
+
     async function applyNewSelectedPort(newSelectedDevice: string, id: number) {
         // Apply the change in selected port name to the backend
         try {
@@ -63,7 +77,18 @@ const SendingTab: Component = () => {
     return (
         <div class = "flex flex-grow gap-4">
             <div class="flex flex-grow flex-col gap-4">
-                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: ""}]); addRfd()}} >\
+                <button onClick = {async () => {
+                    const store = new Store("persistent.dat");
+                    const recentPaths = (await store.get("recentSaves") || []) as string[];
+                    showModal(FileModal, {
+                        pathStrings: recentPaths,
+                        callBack: addFileDirectory
+                    });
+                    
+                    }} >
+                    addPath&#40;s&#41;
+                </button>
+                <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: ""}]); addRfd()}} >
                     addRfd
                 </button>
                 <button onClick = {() => {setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: ""}]); addAltusMetrum()}} >

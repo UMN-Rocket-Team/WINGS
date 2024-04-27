@@ -12,6 +12,8 @@ export const deleteDevice = async (id: number) => await invoke<void>("delete_dev
 
 export const addRfd = async () => await invoke<void>("add_rfd");
 
+export const addFileManager = async () => await invoke<void>("add_file_manager");
+
 export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum");
 
 export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes, writeId: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, writeId});
