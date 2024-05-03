@@ -75,6 +75,9 @@ impl Default for PacketStructureManagerState {
         real_units_structure.fields[15].name = "accBNO_X".to_owned();
         real_units_structure.fields[16].name = "accBNO_Y".to_owned();
         real_units_structure.fields[17].name = "accBNO_Z".to_owned();
+        real_units_structure.fields[18].name = "gyroBNO_X".to_owned();
+        real_units_structure.fields[19].name = "gyroBNO_Y".to_owned();
+        real_units_structure.fields[20].name = "gyroBNO_Z".to_owned();
         real_units_structure.fields[18].name = "magBNO_X".to_owned();
         real_units_structure.fields[19].name = "magBNO_Y".to_owned();
         real_units_structure.fields[20].name = "magBNO_Z".to_owned();
