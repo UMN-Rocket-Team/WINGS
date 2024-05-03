@@ -152,11 +152,12 @@ impl CommunicationManager {
     }
 
     /// Adds an byte reading device object to the manager
-    pub fn add_file_manager(&mut self){
+    pub fn add_file_manager(&mut self)->usize{
         let mut new_device: ByteReadDriver = Default::default();
         new_device.set_id(self.id_iterator);
         self.id_iterator+=1;
         self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        return self.comms_objects[self.comms_objects.len() - 1].get_id();
 
     }
 

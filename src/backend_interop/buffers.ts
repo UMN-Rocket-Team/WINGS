@@ -52,7 +52,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
                 ptr2: 1,
                 wall: 500,
                 multiple: 2,
-                next: 1
+                next: 1,
             }
             parsedPackets[+structureId] = [];
             unDecimatedPackets[+structureId] = [];

@@ -55,12 +55,12 @@ const SendingTab: Component = () => {
         if (Array.isArray(filePaths)) {
             for (const path of filePaths) {
                 setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: path}]); 
-                addFileManager();
+                addFileManager(path);
             }
         }
         else if (filePaths != null) {
             setComDeviceSelections([...comDeviceSelections,{id: comDevicesIterator++, selection: filePaths}]); 
-            addFileManager();
+            addFileManager(filePaths);
         }
     };
 
@@ -98,7 +98,7 @@ const SendingTab: Component = () => {
                         {(device, device_index) => 
                             <label for="DeviceInput" class="px-2 m-0">
                                 <span>{device.device_type} {device.id} Device: </span>
-                                <input name="Device" id="DeviceInput" class="w-50"
+                                <input name="Device" id="DeviceInput" class="w-50" autocomplete="off"
                                     list="dataDevices" value={comDeviceSelections[device_index()].selection}
                                     onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value, device.id)} />
                                 <button onClick = {() => {setComDeviceSelections(comDeviceSelections.filter((_,index) => device_index() != index)); 
@@ -122,8 +122,8 @@ const SendingTab: Component = () => {
                     </For>
                 </datalist>
                 <label class="flex gap-1">
-                        <span>Sending radio port:</span>
-                        <input class="dark:border-gray-4 border-1 border-rounded flex-grow" list="radioTestAvailablePorts"
+                        <span>Sending radio Device:</span>
+                        <input class="dark:border-gray-4 border-1 border-rounded flex-grow" autocomplete="off" list="radioTestAvailablePorts"
                             value={sendPort() ?? ""}
                             onChange={event => setSendPort((event.target as HTMLInputElement).value)}
                             disabled={isSimulating()} />
