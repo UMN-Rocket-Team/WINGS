@@ -92,7 +92,14 @@ const Readout: Component<ReadoutStruct> = (readout): JSX.Element => {
     const [values, setValues] = createSignal([] as number[]);
 
     const update = () => {
-        const lastPacket = unDecimatedPackets[readout.packetID][unDecimatedPackets[readout.packetID].length -1];
+        if (unDecimatedPackets[readout.packetID] === undefined){
+            setValues(readout.fields.map(() => {
+                const latestValue = NaN;
+                return latestValue;
+            }));   
+            return;     
+        }
+        const lastPacket = unDecimatedPackets[readout.packetID][(unDecimatedPackets[readout.packetID].length) -1];
         if (!lastPacket) {
             setValues([]);
             return;
