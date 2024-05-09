@@ -16,11 +16,11 @@ impl CommsIF for SerialPortDriver{
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str)  -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str , baud: u32)  -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
-            self.baud = 57600;
+            self.baud = baud;
             let mut new_port = serialport::new(port_name, self.baud).open()?;
             new_port.clear(serialport::ClearBuffer::All)?;
             // Short non-zero timeout is needed to receive data from the serialport when

@@ -16,7 +16,7 @@ pub struct SerialPortNames {
 
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 pub trait CommsIF {
-    fn init_device(&mut self, port_name: &str)  -> anyhow::Result<()>;
+    fn init_device(&mut self, port_name: &str, baud: u32)  -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()>;
     fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()>;
     fn get_new_available_ports(&mut self) -> std::option::Option<Vec<SerialPortNames>>;
@@ -106,11 +106,11 @@ impl CommunicationManager {
     /// # Errors
     /// 
     /// Was unable to initialize the device object
-    pub fn init_device(&mut self, port_name: &str, id: usize) -> anyhow::Result<()>{
+    pub fn init_device(&mut self, port_name: &str,baud: u32, id: usize) -> anyhow::Result<()>{
         let index = self.find(id);
         match index{
             Some(index) => 
-                match self.comms_objects[index].init_device(port_name){
+                match self.comms_objects[index].init_device(port_name, baud){
                     Ok(_) => Ok(()),
                     Err(message) => Err(message)
                 },

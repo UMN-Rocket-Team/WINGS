@@ -12,7 +12,7 @@ pub struct ByteReadDriver {
     id: usize,
 }
 impl CommsIF for ByteReadDriver{
-    fn init_device(&mut self, file_name: &str)  -> anyhow::Result<()> {
+    fn init_device(&mut self, file_name: &str, _baud: u32)  -> anyhow::Result<()> {
         match File::open(file_name){
             Ok(new_file) => {
                 self.file = Some(new_file); 

@@ -67,7 +67,7 @@ impl CommsIF for TeleDongleDriver {
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str) -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str, _baud: u32) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {

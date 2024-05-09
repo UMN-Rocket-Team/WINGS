@@ -16,7 +16,7 @@ export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevi
 export let comDevicesIterator = 0;
 const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
-
+const [baud, setBaud] = createSignal(57600);
 const [isSimulating, setSimulating] = createSignal(false);
 export const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
@@ -64,11 +64,11 @@ const SendingTab: Component = () => {
         }
     };
 
-    async function applyNewSelectedPort(newSelectedDevice: string, id: number) {
+    async function applyNewSelectedPort(newSelectedDevice: string, baud: number, id: number) {
         // Apply the change in selected port name to the backend
         try {
             setComDeviceSelections(device => device.id === id,"selection",() => newSelectedDevice)
-            await initDevicePort(newSelectedDevice,id);
+            await initDevicePort(newSelectedDevice, baud, id);
         } catch (error) {
             showModal(ErrorModal, {error: 'Failed to set the active serial port', description: `${error}`});
         }
@@ -100,7 +100,7 @@ const SendingTab: Component = () => {
                                 <span>{device.device_type} {device.id} Device: </span>
                                 <input name="Device" id="DeviceInput" class="w-50" autocomplete="off"
                                     list="dataDevices" value={comDeviceSelections[device_index()].selection}
-                                    onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value, device.id)} />
+                                    onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value, baud(), device.id)} />
                                 <button onClick = {() => {setComDeviceSelections(comDeviceSelections.filter((_,index) => device_index() != index)); 
                                     deleteDevice(device.id)}}>
                                     X
@@ -121,6 +121,39 @@ const SendingTab: Component = () => {
                         {(device) => <option value={device.id} />}
                     </For>
                 </datalist>
+                <datalist id="commonBauds">
+                    <option value="4800"/>
+                    <option value="9600"/>
+                    <option value="19200"/>
+                    <option value="38400"/>
+                    <option value="57600"/>
+                    <option value="115200"/>
+                    <option value="230400"/>
+                    <option value="460800"/>
+                    <option value="921600"/>
+                </datalist>
+                <label class="flex gap-1 items-center">
+                    <span>baud:</span>
+                    <input
+                        class="dark:border-gray-4 border-1 border-rounded flex-grow px-2 py-1" list="commonBauds"
+                        min={0}
+                        value={baud()}
+                        onBeforeInput={(e) => {
+                            // Deny any non-number characters
+                            if (e.data?.match(/[^0-9]/) ?? false) {
+                                e.preventDefault();
+                            }
+                        }}
+                        onChange={(e) => {
+                            const el = e.target as HTMLInputElement;
+                            // HTML min= is not actually enforced, so we have to enforce it ourselves
+                            const val = el.value.trim() === '' ? 57600 : Math.max(0, +el.value);
+                            el.value = val.toString();
+                            setBaud(val);
+                        }}
+                    />
+                    <span>ms</span>
+                </label>
                 <label class="flex gap-1">
                         <span>Sending radio Device:</span>
                         <input class="dark:border-gray-4 border-1 border-rounded flex-grow" autocomplete="off" list="radioTestAvailablePorts"

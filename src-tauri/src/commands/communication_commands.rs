@@ -26,10 +26,11 @@ pub fn delete_device(
 pub fn init_device_port(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     port_name: &str,
+    baud: u32,
     id: usize,
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        communication_manager.init_device(port_name, id)
+        communication_manager.init_device(port_name, baud, id)
     })
 }
 
@@ -65,7 +66,7 @@ pub fn add_file_manager(
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
         let new_id =communication_manager.add_file_manager();
-        let _ = communication_manager.init_device(file_path, new_id);
+        let _ = communication_manager.init_device(file_path, 0, new_id);
         communication_manager.update_display_com_devices(app_handle.clone());
         Ok(())
     })

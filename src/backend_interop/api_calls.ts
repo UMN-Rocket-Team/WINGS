@@ -6,7 +6,7 @@ import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketStructu
  * The backend counterparts of each of the functions are documented, so there will not be any documentation here
  */
 
-export const initDevicePort = async (portName: string, id: number) => await invoke<void>("init_device_port", { portName, id});
+export const initDevicePort = async (portName: string, baud: number, id: number) => await invoke<void>("init_device_port", { portName, baud, id});
 
 export const deleteDevice = async (id: number) => await invoke<void>("delete_device", {id: id});
 
