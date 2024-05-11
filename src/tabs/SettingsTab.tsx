@@ -16,7 +16,6 @@ import PacketEditor from "../components/PacketsEditor";
  */
 const SettingsTab: Component = () => {
     const { availableDeviceNames: availablePortNames, PacketStructureViewModels, parsedPacketCount } = useBackend();
-    const { showModal } = useModal();
     const navigate = useNavigate();
     
     const saveFlight = async () => {
@@ -53,7 +52,6 @@ const SettingsTab: Component = () => {
                         <img src={logo} height={25} alt="Home" draggable={false}></img>
                     </button>
                 </div>
-
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
                 <button onClick={clearParsedPackets}>Clear graph</button>
                 <button onClick={saveFlight}>Save</button>

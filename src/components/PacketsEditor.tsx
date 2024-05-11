@@ -65,7 +65,7 @@ const PacketEditor: Component = () => {
         <div class="flex gap-2">
             {/* Packet structure list */}
             <div class="flex flex-col gap-2">
-                <div class="flex flex-col flex-grow tab">
+                <div class="flex flex-col overflow-auto flex-grow tab">
                     <h1 class="m-0">Packets</h1>
                         <For each={PacketStructureViewModels}>
                             {packetStructure => (

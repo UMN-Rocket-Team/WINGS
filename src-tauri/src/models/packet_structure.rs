@@ -53,17 +53,17 @@ impl PacketStructure {
     /// 
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
-    pub fn ez_make(&mut self, input: &str) {
+    pub fn ez_make(&mut self, input: &str, names: &[&str],) {
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
             if first_char.is_digit(16) && (first_char.is_lowercase() || first_char.is_ascii_digit()){
 
                 let mut new_identifier = hex::decode(substr).unwrap();
-                new_identifier.reverse();//this is the way firmware brodcasts the identifiers
+                new_identifier.reverse();//this is the way firmware broadcasts the identifiers
 
                 let offset = new_identifier.len();//calculates size of the delimiter in memory
-                curr_offset = (curr_offset + offset - 1)/ offset * offset;//alligns the variable
+                curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
                 
                 let new_delimiter = PacketDelimiter{
                     index: self.delimiters.len(),
@@ -94,10 +94,11 @@ impl PacketStructure {
                         "F64" => {offset = 8; t = PacketFieldType::Double},
                         &_ => {offset = 0; t = PacketFieldType::UnsignedByte},
                 }
-                curr_offset = (curr_offset + offset - 1)/ offset * offset;//alligns the variable
+                curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
+                println!("{}",names[self.fields.len()].to_owned());
                 let new_field = PacketField{
                     index: self.fields.len(),
-                    name:"test field ".to_string()  + &(self.fields.len()).to_string(),
+                    name: names[self.fields.len()].to_owned(),
                     r#type: t,
                     offset_in_packet: curr_offset,
                 };
