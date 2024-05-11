@@ -20,7 +20,7 @@ const tabs: Component[] = [
  */
 const tabNames: string[] = [
     "Settings",
-    "Transmission",
+    "Communications",
     "Display",
 ];
 
