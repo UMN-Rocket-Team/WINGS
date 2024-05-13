@@ -74,7 +74,9 @@ impl PacketParser {
                     // the packet ended.
                     if packet_start_index < last_successful_match_end_index {
                         // The current packet cannot overlap with a previous one``
-                        println!("- Overlaps with previous packet");
+                        if print_flag {
+                            println!("- Overlaps with previous packet");
+                        }
                         continue;
                     }
                 }
