@@ -8,7 +8,7 @@
     "build": "vite build",
     "serve": "vite preview",
     "tauri": "tauri",
-    "test": "node mkdirp dist && vitest --environment jsdom --watch false && cd src-tauri && cargo test"
+    "test": "node mkdirp dist && vitest --environment jsdom --watch false && cd src-tauri && cargo test -- --show-output"
   },
   "license": "AGPL-3.0",
   "devDependencies": {
