@@ -54,7 +54,7 @@ impl Default for CommunicationManager{
 }
 
 impl CommunicationManager {
-
+    
     /// Get data from the currently selected device
     /// 
     /// # Error
@@ -135,19 +135,21 @@ impl CommunicationManager {
 
 
     /// Adds an rfd device object to the manager
-    pub fn add_rfd(&mut self){
+    pub fn add_rfd(&mut self)->usize{
         let mut new_device: SerialPortDriver = Default::default();
         new_device.set_id(self.id_iterator);
         self.id_iterator+=1;
         self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        return self.comms_objects[self.comms_objects.len() - 1].get_id();
     }
 
     /// Adds an altus metrum device object to the manager
-    pub fn add_altus_metrum(&mut self){
+    pub fn add_altus_metrum(&mut self)->usize{
         let mut new_device: TeleDongleDriver = Default::default();
         new_device.set_id(self.id_iterator);
         self.id_iterator+=1;
         self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        return self.comms_objects[self.comms_objects.len() - 1].get_id();
 
     }
 
@@ -173,7 +175,7 @@ impl CommunicationManager {
         None
     }
 
-    pub fn update_display_com_devices(&mut self, app_handle: tauri::AppHandle){
+    pub fn update_display_com_devices(&mut self, app_handle: &tauri::AppHandle){
         let mut return_me = vec![];
         let mut i = 0;
         while i < self.comms_objects.len(){
@@ -182,7 +184,7 @@ impl CommunicationManager {
         }
         let _ = app_handle.emit_all(COM_DEVICE_UPDATE, &return_me);
     }
-    
+
     pub fn get_devices(&self) -> Vec<usize>{
         let mut return_me = vec![];
         for device in &self.comms_objects{

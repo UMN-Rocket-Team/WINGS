@@ -9,11 +9,11 @@ pub fn delete_device(
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
         match communication_manager.delete_device(id){
             Ok(_) => {
-                communication_manager.update_display_com_devices(app_handle.clone());
+                communication_manager.update_display_com_devices(&app_handle);
                 Ok(())
             },
             Err(err) => {
-                communication_manager.update_display_com_devices(app_handle.clone());
+                communication_manager.update_display_com_devices(&app_handle);
                 Err(err)
             },
         }
@@ -41,7 +41,7 @@ pub fn add_rfd(
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
         communication_manager.add_rfd();
-        communication_manager.update_display_com_devices(app_handle.clone());
+        communication_manager.update_display_com_devices(&app_handle);
         Ok(())
     })
 }
@@ -53,7 +53,7 @@ pub fn add_altus_metrum(
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
         communication_manager.add_altus_metrum();
-        communication_manager.update_display_com_devices(app_handle.clone());
+        communication_manager.update_display_com_devices(&app_handle);
         Ok(())
     })
 }
@@ -67,7 +67,7 @@ pub fn add_file_manager(
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
         let new_id =communication_manager.add_file_manager();
         let _ = communication_manager.init_device(file_path, 0, new_id);
-        communication_manager.update_display_com_devices(app_handle.clone());
+        communication_manager.update_display_com_devices(&app_handle);
         Ok(())
     })
 }
