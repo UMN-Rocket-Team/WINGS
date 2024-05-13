@@ -161,9 +161,9 @@ pub enum PacketMetadataType {
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
-///Represents a Delimiter within a Packet that can be used to identify that packet within the raw data that is recieved by radio
+///Represents a Delimiter within a Packet that can be used to identify that packet within the raw data that is received by radio
 /// 
-///The identifier variable represents the unique set of data that the groundstation should look out for when looking at the incoming datastream
+///The identifier variable represents the unique set of data that the groundstation should look out for when looking at the incoming data stream
 pub struct PacketDelimiter {
     pub(crate) index: usize,
     pub(crate) name: String,
