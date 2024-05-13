@@ -95,7 +95,6 @@ impl PacketStructure {
                         &_ => {offset = 0; t = PacketFieldType::UnsignedByte},
                 }
                 curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
-                println!("{}",names[self.fields.len()].to_owned());
                 let new_field = PacketField{
                     index: self.fields.len(),
                     name: names[self.fields.len()].to_owned(),
