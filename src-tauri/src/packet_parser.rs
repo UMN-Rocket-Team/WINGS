@@ -189,7 +189,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -224,7 +224,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -261,7 +261,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -302,7 +302,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -357,7 +357,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut wacky_structure = PacketStructure {
             id: 0, // gets overridden
@@ -366,7 +366,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &[]);
+        wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -414,7 +414,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut wacky_structure = PacketStructure {
             id: 0, // gets overridden
@@ -423,7 +423,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &[]);
+        wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -474,7 +474,7 @@ mod tests {
             delimiters: vec![],
             metafields: vec![],
         };
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &[]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &["";5]);
         let mut packet_parser = PacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
