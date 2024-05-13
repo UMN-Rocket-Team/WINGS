@@ -25,7 +25,7 @@ impl ReceivingState {
             ) {
                 Ok(result) => {
                     //sends packets to frontend
-                    if result.new_available_port_names.is_some() || result.parsed_packets.is_some() {
+                    if result.new_available_port_names.is_some() || result.parsed_packets.len() != 0 {
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
                 }
@@ -56,7 +56,7 @@ struct RefreshTimerData {
 #[serde(rename_all = "camelCase")]
 pub struct RefreshAndReadResult {
     pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
-    pub(crate) parsed_packets: Option<Vec<Packet>>,
+    pub(crate) parsed_packets: Vec<Packet>,
 
 }
 
@@ -87,7 +87,7 @@ fn iterate_receiving_loop(
 ) -> Result<RefreshAndReadResult, String> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
-        parsed_packets: None,
+        parsed_packets: vec![],
     };
     let mut read_data: Vec<u8> = vec![];
 
@@ -128,12 +128,46 @@ fn iterate_receiving_loop(
                     }
 
 
-                    read_data.extend(data.data_read);
+                    read_data = data.data_read;//moving data into new array for ownership purposes
 
+                    if !read_data.is_empty() {
+                        match use_packet_parser(&packet_parser_state, &mut |packet_parser| {
+                            use_packet_structure_manager::<(), String>( &ps_manager_state,&mut |ps_manager| {
+                                use_file_handler(&file_handler_state, &mut |file_handler| {
+                
+                
+                                    //add data to parser
+                                    packet_parser.push_data(&read_data, false);
+                                    //run parser
+                                    result.parsed_packets.extend(packet_parser.parse_packets(&ps_manager, false));
+                                    //write to csv
+                                    for packet in result.parsed_packets.clone(){
+                                        match file_handler.write_packet(packet) {
+                                            Err(err) => {
+                                                println!("Somethings wrong with the csv ): {}", err);
+                                            },
+                                            Ok(_) => {},
+                                        };
+                                    }
+                                    Ok(())
+                
+                                    
+                                })
+                            })
+                        }) {
+                            Ok(_) => {}
+                            Err(message) => {bail!(message)},
+                        }
+                    }
 
 
                 },
-                Err(err) => {errors.push_str("coms manager: "); errors.push_str(&err);}
+                Err(err) => {
+                    if err != "Operation timed out"{
+                        errors.push_str("coms manager: "); 
+                        errors.push_str(&err);
+                    }
+                }
             }
         }
         if errors != ""{
@@ -146,38 +180,79 @@ fn iterate_receiving_loop(
         Ok(_) => {}
         Err(message) => return Err(message)
     }
-    // ##########################
-    // Process data
-    // ##########################
-    if !read_data.is_empty() {
-        match use_packet_parser(packet_parser_state, &mut |packet_parser| {
-            use_packet_structure_manager::<(), String>( &ps_manager_state,&mut |ps_manager| {
-                use_file_handler(&file_handler_state, &mut |file_handler| {
+    Ok(result)
+}
 
+#[cfg(test)]
+mod tests {
+    use super::*; // lets the unit tests use everything in this file
+    use tauri::Manager;
 
-                    //add data to parser
-                    packet_parser.push_data(&read_data, false);
-                    //run parser
-                    result.parsed_packets = Some(packet_parser.parse_packets(&ps_manager, false));
-                    //write to csv
-                    for packet in result.parsed_packets.clone().unwrap(){
-                        match file_handler.write_packet(packet) {
-                            Err(err) => {
-                                println!("Somethings wrong with the csv ): {}", err);
-                                
-                            },
-                            Ok(_) => {},
-                        };
+    #[test]
+    fn run_loop_once() {
+        let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
+            .manage(PacketStructureManagerState::default())
+            .manage(CommunicationManagerState::default())
+            .manage(PacketParserState::default())
+            .manage(FileHandlingState::default())
+            .build(tauri::generate_context!())
+            .expect("failed to build app");
+        assert!(iterate_receiving_loop(
+            app_handle.state::<CommunicationManagerState>(),
+            app_handle.state::<PacketStructureManagerState>(),
+            app_handle.state::<PacketParserState>(),
+            app_handle.state::<FileHandlingState>()).is_ok())
+    }
+
+    #[test]
+    #[ignore]
+    //runs the receiving loop with the expectation that one RFD is connected, will print any hardcoded packets(packets in packet_structure_manager_state.rs) that are received.
+    fn can_receive_and_parse_data_with_rfds() {
+        //init app
+        let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
+            .manage(PacketStructureManagerState::default())
+            .manage(CommunicationManagerState::default())
+            .manage(PacketParserState::default())
+            .manage(FileHandlingState::default())
+            .build(tauri::generate_context!())
+            .expect("failed to build app");
+
+        let mut new_id= 0;
+
+        //add an rfd device to comms manager
+        let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
+            new_id = communication_manager.add_rfd();
+        }));
+
+        //run the main receiving loop and print if any data is received
+        loop{
+            let output = iterate_receiving_loop(
+                app_handle.state::<CommunicationManagerState>(),
+                app_handle.state::<PacketStructureManagerState>(),
+                app_handle.state::<PacketParserState>(),
+                app_handle.state::<FileHandlingState>());
+            match output{
+                Ok(output) => {
+                    match output.new_available_port_names {
+                        Some(new_ports) => {
+                            if new_ports.len() != 0 {
+                                println!("{:#?}", new_ports);
+                                match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                                    let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
+                                    Ok(())
+                                }){
+                                    Ok(_) => {},
+                                    Err(err) => {println!("{}", err)},
+                                }
+                            }
+                        },
+                        None => {},
                     }
-                    Ok(())
-
-                    
-                })
-            })
-        }) {
-            Ok(_) => {}
-            Err(message) => {return Err(message)},
+                    if output.parsed_packets.len() != 0 {
+                        println!("{:#?}", output.parsed_packets);
+                    }},
+                Err(err) => {println!("{}", err)},
+            }
         }
     }
-    Ok(result)
 }

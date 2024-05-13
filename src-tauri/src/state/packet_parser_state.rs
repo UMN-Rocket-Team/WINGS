@@ -15,7 +15,7 @@ impl Default for PacketParserState {
 }
 
 pub fn use_packet_parser<ReturnType, ErrorType>(
-    packet_parser_state: tauri::State<'_, PacketParserState>,
+    packet_parser_state: &tauri::State<'_, PacketParserState>,
     callback: &mut dyn FnMut(&mut PacketParser) -> Result<ReturnType, ErrorType>,
 ) -> Result<ReturnType, String>
 where
