@@ -185,6 +185,7 @@ fn iterate_receiving_loop(
 
 #[cfg(test)]
 mod tests {
+
     use super::*; // lets the unit tests use everything in this file
     use tauri::Manager;
 
@@ -250,6 +251,65 @@ mod tests {
                     }
                     if output.parsed_packets.len() != 0 {
                         println!("{:#?}", output.parsed_packets);
+                    }},
+                Err(err) => {println!("{}", err)},
+            }
+        }
+    }
+
+    #[test]
+    #[ignore]
+    //runs the receiving loop with the expectation that an RFD and teledongle COM14 are connected
+    fn can_receive_and_parse_data_with_multiple_rfds() {
+        //init app
+        let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
+            .manage(PacketStructureManagerState::default())
+            .manage(CommunicationManagerState::default())
+            .manage(PacketParserState::default())
+            .manage(FileHandlingState::default())
+            .build(tauri::generate_context!())
+            .expect("failed to build app");
+
+        let mut new_id= 0;
+        let mut new_id_2= 0;
+
+        //add an rfd device to comms manager
+        let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
+            new_id = communication_manager.add_rfd();
+        }));
+        let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
+            new_id_2 = communication_manager.add_altus_metrum();
+        }));
+
+        //run the main receiving loop and print if any data is received
+        loop{
+            let output = iterate_receiving_loop(
+                app_handle.state::<CommunicationManagerState>(),
+                app_handle.state::<PacketStructureManagerState>(),
+                app_handle.state::<PacketParserState>(),
+                app_handle.state::<FileHandlingState>());
+            match output{
+                Ok(output) => {
+                    match output.new_available_port_names {
+                        Some(new_ports) => {
+                            if new_ports.len() != 0 {
+                                println!("{:#?}", new_ports);
+                                match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                                    let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
+                                    let _ = communication_manager.init_device("COM14", 57600, new_id_2);
+                                    Ok(())
+                                }){
+                                    Ok(_) => {},
+                                    Err(err) => {println!("{}", err)},
+                                }
+                            }
+                        },
+                        None => {},
+                    }
+                    if output.parsed_packets.len() != 0 {
+                        for packet in output.parsed_packets{
+                            println!("{:?} {}", packet.field_data[0], packet.structure_id);//print timestamp and packet structure id
+                        }
                     }},
                 Err(err) => {println!("{}", err)},
             }

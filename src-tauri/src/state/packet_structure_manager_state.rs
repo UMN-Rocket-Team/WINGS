@@ -17,7 +17,7 @@ impl Default for PacketStructureManagerState {
         let mut packet_structure_manager = PacketStructureManager::default();
 
         let mut draw_structure = PacketStructure::default();
-        draw_structure.ez_make("ba5eba11 _4 F64 F64 F64 _4 ca11ab1e",
+        draw_structure.ez_make("ba5eba11 d5a1d5a1 F64 F64 F64 d5a1d5a1 ca11ab1e",
             &["Timestamp","rkt_speed","rkt_speed_also"]);
         draw_structure.name = "draw".to_owned();
         packet_structure_manager.register_packet_structure(&mut draw_structure).expect("Failed to register draw packet");
