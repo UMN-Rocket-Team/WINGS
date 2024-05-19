@@ -15,7 +15,7 @@ Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointEleme
  * 
  * @param graph a graphStruct that is the graph that is being created
  */
-const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
+const GraphDisplayElement: Component<GraphStruct> = (graph: GraphStruct) => {
     const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
     let canvas: HTMLCanvasElement;
@@ -152,4 +152,4 @@ const SolidChart: Component<GraphStruct> = (graph: GraphStruct) => {
 
 // TODO WORK ON ADDING A LEGEND AND BETTER AXIS NAMING AND COLOR CHANGING!
 
-export default SolidChart;
+export default GraphDisplayElement;

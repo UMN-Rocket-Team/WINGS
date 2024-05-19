@@ -1,11 +1,12 @@
-import { Component, For, JSX } from "solid-js";
+import { Component, For, JSX, onMount } from "solid-js";
 import { ModalProps, useModal } from "../modals/ModalProvider";
 import { createStore } from "solid-js/store";
-import FieldSelectModal, { GraphStruct } from "../modals/GraphSettingsModal";
+import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
-import SolidChart from "./SolidChart";
+import GraphDisplayElement from "./SolidChart";
 import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
-import Readout from "./Readout";
+import ReadoutDisplayElement from "./Readout";
+import { store } from "../core/file_handling";
 
 /**
  * general set of props to give each display settingsModal
@@ -21,15 +22,18 @@ export type SettingsModalProps = {
 export type DisplayStruct = {
     displayName: string,
     packetID: number,
-    settingsModal: (props: ModalProps<SettingsModalProps>) => JSX.Element,
-    displayElement: (graph: DisplayStruct) => JSX.Element,
+    type: string,
+    settingsModal: number,
+    displayElement: number,
 }
+export const settingsModalArray = [
+    GraphSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element), 
+    ReadoutSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element)];
+export const displayArray = [
+    GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
+    ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element];
 
-/**
- * a store of all displays currently on the frontend
- */
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
-
 let graphCounter = 1;
 let readoutCounter = 1;
 
@@ -46,6 +50,37 @@ const FieldsScreen: Component = () => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
+    onMount(async () => {
+        /**
+         * a store of all displays currently on the frontend
+         */
+        let importedDisplays: DisplayStruct[] = await store.get("display") ?? [];
+
+        //safety check
+        for (let displayString in importedDisplays){
+            let display = importedDisplays[displayString];
+            console.log(display);
+            if (display.type === `Graph`){
+                let graph = display as GraphStruct;
+                if(graph.settingsModal !== 0 || graph.displayElement !== 0 || graph.x === undefined || graph.y === undefined || graph.colors === undefined){
+                    importedDisplays.splice(importedDisplays.indexOf(display),1);
+                }
+            }
+            else if (display.type === `Readout`){
+                let read = display as ReadoutStruct;
+                if(read.settingsModal !== 1 || read.displayElement !== 1 || read.fields === undefined){
+                    importedDisplays.splice(importedDisplays.indexOf(display),1);
+                }
+            }
+            else{
+                console.log(importedDisplays.indexOf(display));
+                importedDisplays.splice(importedDisplays.indexOf(display),1);
+            }
+            console.log(importedDisplays);
+        }
+        setDisplays(importedDisplays);
+    });
+
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
             {/*Field Select Button*/}
@@ -54,13 +89,15 @@ const FieldsScreen: Component = () => {
                     setDisplays([...displays, {
                         displayName: `Graph ${graphCounter}`, 
                         packetID: PacketStructureViewModels[0].id, 
-                        settingsModal: FieldSelectModal,
-                        displayElement: SolidChart,
+                        type: `Graph`,
+                        settingsModal: 0,
+                        displayElement: 0,
                         x: 0, 
                         y: [0], 
                         colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"], 
                     } as GraphStruct]);
                     graphCounter++;
+                    store.set("display", displays);
                 }
             }}>
                 New Graph
@@ -71,11 +108,13 @@ const FieldsScreen: Component = () => {
                     setDisplays([...displays, {
                         displayName: `Readout ${readoutCounter}`,
                         packetID: PacketStructureViewModels[0].id,
+                        type: `Readout`,
                         fields: [],
-                        settingsModal: ReadoutSettingsModal,
-                        displayElement: Readout,
+                        settingsModal: 1,
+                        displayElement: 1,
                     } as unknown as ReadoutStruct]);
                     readoutCounter++;
+                    store.set("display", displays);
                 }
             }}>
                 New Readout
@@ -91,7 +130,7 @@ const FieldsScreen: Component = () => {
                             <div class="bg-stone-400 dark:bg-dark-900 flex justify-center items-center h-[100px] p-1.5 overflow-hidden rounded-7">
                                 <button 
                                     class = "bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
-                                    onClick={() => showModal<SettingsModalProps, {}>(display.settingsModal, {
+                                    onClick={() => showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal]  ?? 0, {
                                         displayStruct: display,
                                         index:index(),
                                     })

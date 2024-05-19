@@ -42,6 +42,11 @@ export type BackendContextValue = {
      * Provided IDs and device types for all current device objects
      */
     comDeviceList: Accessor<DisplayComDevice[]>
+
+    /**
+     * True if the backend just received bytes (these bytes are not necessarily packets)
+     */
+    gotData: Accessor<boolean>
 };
 
 /**
@@ -53,7 +58,8 @@ const BackendContext = createContext<BackendContextValue>({
     PacketStructureViewModels: [],
     setPacketStructureViewModels: () => {},
     sendingLoopState: () => null,
-    comDeviceList: (): DisplayComDevice[] => []
+    comDeviceList: (): DisplayComDevice[] => [],
+    gotData: () => false,
 });
 
 /**
@@ -70,6 +76,7 @@ export const BackendProvider: ParentComponent = (props) => {
     const [PacketStructureViewModels, setPacketStructureViewModels] = createStore<PacketStructureViewModel[]>([]);
     const [sendingLoopState, setSendingLoopState] = createSignal<SendingLoopState | null>(null);
     const [comDeviceList, setComDeviceList] = createSignal<DisplayComDevice[]>([]);
+    const [gotData, setGotData] = createSignal<boolean>(false);
 
     let unlistenFunctions: UnlistenFn[];
 
@@ -94,6 +101,9 @@ export const BackendProvider: ParentComponent = (props) => {
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                     // console.log(parsedPacketCount());
                 }
+                setGotData(result.gotData);
+                console.log(gotData());
+            
             }),
             await listen<PacketStructureViewModelUpdate[]>("packet-structures-update", event => {
                 //console.log(event);
@@ -178,7 +188,8 @@ export const BackendProvider: ParentComponent = (props) => {
         PacketStructureViewModels: PacketStructureViewModels,
         setPacketStructureViewModels: setPacketStructureViewModels,
         sendingLoopState: sendingLoopState,
-        comDeviceList: comDeviceList
+        comDeviceList: comDeviceList,
+        gotData: gotData,
     };
 
     return (

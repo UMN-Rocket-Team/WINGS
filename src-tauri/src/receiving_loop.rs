@@ -25,9 +25,10 @@ impl ReceivingState {
             ) {
                 Ok(result) => {
                     //sends packets to frontend
-                    if result.new_available_port_names.is_some() || result.parsed_packets.len() != 0 {
-                        app_handle.emit_all("serial-update", result).unwrap();
-                    }
+                    app_handle.emit_all("serial-update", result).unwrap();
+                    // if result.new_available_port_names.is_some() || result.parsed_packets.len() != 0{
+                    //     app_handle.emit_all("serial-update", result).unwrap();
+                    // }
                 }
                 Err(message) => app_handle.emit_all("error", message).unwrap(),
             };
@@ -57,6 +58,7 @@ struct RefreshTimerData {
 pub struct RefreshAndReadResult {
     pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
     pub(crate) parsed_packets: Vec<Packet>,
+    pub(crate) got_data: bool
 
 }
 
@@ -88,6 +90,7 @@ fn iterate_receiving_loop(
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
         parsed_packets: vec![],
+        got_data: false,
     };
     let mut read_data: Vec<u8> = vec![];
 
@@ -131,6 +134,8 @@ fn iterate_receiving_loop(
                     read_data = data.data_read;//moving data into new array for ownership purposes
 
                     if !read_data.is_empty() {
+                        println!("{:#?}",read_data);
+                        result.got_data = true;
                         match use_packet_parser(&packet_parser_state, &mut |packet_parser| {
                             use_packet_structure_manager::<(), String>( &ps_manager_state,&mut |ps_manager| {
                                 use_file_handler(&file_handler_state, &mut |file_handler| {
@@ -158,6 +163,9 @@ fn iterate_receiving_loop(
                             Ok(_) => {}
                             Err(message) => {bail!(message)},
                         }
+                    }
+                    else{
+
                     }
 
 

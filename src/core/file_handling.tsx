@@ -16,6 +16,7 @@ export const runExportPacketWindow = async (packetView: PacketStructureViewModel
     runExport(selectedFilePath, packetView);
 }
 
+export const store = new Store("persistent.dat");
 
 const runExport = async (selectedFilePath: string | null, packetView: PacketStructureViewModel) => {
     updatePersistentFilePaths(await exportToLocation(selectedFilePath, packetView));
@@ -45,7 +46,6 @@ const exportToLocation = async (selectedFilePath: string | null, packetView: Pac
  */
 const updatePersistentFilePaths = async (filePathString: string) => {
     //adds new file directory to persistent data
-    const store = new Store("persistent.dat");
     let prevSaves: String[] | null = await store.get("recentSaves");
     if( Array.isArray(prevSaves)){
 

@@ -1,6 +1,7 @@
 import {Component, For, JSX} from "solid-js";
-import { DisplayStruct, displays } from "../components/DisplaySettingsScreen";
-import SolidChart from "../components/SolidChart";
+import { DisplayStruct, displayArray, displays } from "../components/DisplaySettingsScreen";
+import GraphDisplayElement from "../components/SolidChart";
+import ReadoutDisplayElement from "../components/Readout";
 
 const DisplayTab : Component = (): JSX.Element => {
     return (
@@ -8,11 +9,13 @@ const DisplayTab : Component = (): JSX.Element => {
                 {/*Views*/}
                 <div class="grid gap-2 h-100%" style={{"grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, displays.length)}, 1fr)`}}>
                     <For each={displays}>
-                        {(display: DisplayStruct) =>
-                            <div class="relative" style={{height: '40vh'}}>
-                                <display.displayElement {...display}/>
-                            </div>
-                        }
+                        {
+                        (display: DisplayStruct) =>{
+                            let DisplayElement = displayArray[display.displayElement  ?? 0];
+                            return <div class="relative" style={{height: '40vh'}}>
+                                        <DisplayElement {...display}/>
+                                    </div>
+                        }}
                     </For>
                 </div>
         </div>

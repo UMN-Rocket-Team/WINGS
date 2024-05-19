@@ -21,7 +21,7 @@ const [isSimulating, setSimulating] = createSignal(false);
 export const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
 const SendingTab: Component = () => {
-    const {availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState, comDeviceList} = useBackend();
+    const {availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState, comDeviceList, gotData} = useBackend();
     const { showModal } = useModal();
     const startSimulating = async () => {
         debugger;
@@ -204,6 +204,15 @@ const SendingTab: Component = () => {
             <div class="flex flex-grow flex-col gap-4">
                 <p><b>Sent: </b>{sendingLoopState()?.packetsSent} packets</p>
                 <p><b>Received: </b>{parsedPacketCount()} packets</p>
+                <button
+                    class="py-2 px-4 border-rounded border-0 color-black"
+                    classList={{
+                        "bg-red": !gotData(),
+                        "bg-green": gotData(),
+                    }}
+                >
+                    data_indicator
+                </button>
             </div>
         </div>
     );

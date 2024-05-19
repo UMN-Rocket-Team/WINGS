@@ -6,6 +6,7 @@ import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import closeIcon from "../assets/close.svg";
 import { produce } from "solid-js/store";
+import { store } from "../core/file_handling";
 
 /**
  * generic interface for all g
@@ -26,7 +27,7 @@ export interface GraphStruct extends DisplayStruct{
  * 
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
-const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
+const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
@@ -66,6 +67,7 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
             setDisplays( produce((s) => 
             (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(ind => ind != fieldIndex)));
         }
+        store.set("display", displays);
     }
     
     const handleSelectX = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
@@ -81,11 +83,13 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
             setDisplays( produce((s) => 
             (s[graphIndex] as GraphStruct).x = 0));
         }
+        store.set("display", displays);
     }
 
     const setGraphName = (newName: string, index: number) => {
         setDisplays( produce((s) => 
                 s[index].displayName = newName))
+        store.set("display", displays);
     }
 
     const deleteGraph = (index: number) => {
@@ -96,11 +100,13 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
             }
         }
         setDisplays(newGraphs);
+        store.set("display", displays);
     }
 
     const updateColor = (color: string, colorIndex: number, graphIndex: number) => {
         setDisplays( produce((s) => 
             (s[graphIndex] as GraphStruct).colors[colorIndex] = color))
+        store.set("display", displays);
     }
     
     return (
@@ -190,4 +196,4 @@ const FieldSelectModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
     );
 };
 
-export default FieldSelectModal;
+export default GraphSettingsModal;

@@ -2,6 +2,7 @@
  * The type of the payload of the `serial-update` event broadcast by the backend.
  */
 export type SerialUpdateResult = {
+    gotData: boolean;
     /**
      * The list of available serial ports
      */

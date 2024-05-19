@@ -85,7 +85,7 @@ const AutoAdjustFontSize = (props: {
     </div>;
 };
 
-const Readout: Component<ReadoutStruct> = (readout): JSX.Element => {
+const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element => {
     const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
     // each index corresponds to readout.fields value
@@ -154,4 +154,4 @@ const Readout: Component<ReadoutStruct> = (readout): JSX.Element => {
     </div>
 };
 
-export default Readout;
+export default ReadoutDisplayElement;

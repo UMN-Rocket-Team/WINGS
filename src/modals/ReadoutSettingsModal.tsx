@@ -6,6 +6,7 @@ import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { produce } from "solid-js/store";
 import closeIcon from "../assets/close.svg";
+import { store } from "../core/file_handling";
 
 export interface ReadoutModalProps extends SettingsModalProps {
     displayStruct: ReadoutStruct;
@@ -51,6 +52,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
                 struct.fields = struct.fields.filter(i => i.packetFieldIndex !== fieldIndex);
             }
         }));
+        store.set("display", displays);
     };
 
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -70,6 +72,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
                                 struct.displayName = oldName;
                             }
                         }));
+                        store.set("display", displays);
                     }}
                 />
             </h2>
@@ -108,6 +111,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
                                                 componentField.unit = target.value;
                                             }
                                         }));
+                                        store.set("display", displays);
                                     }}
                                 />
                             </Show>
@@ -122,6 +126,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
                 class=" w-[10%] h-[10%] rounded-5 border-none text-center"
                 onClick={() => {
                     setDisplays(displays.filter((graph, index) => index !== props.index));
+                    store.set("display", displays);
                     props.closeModal({});
                 }}>
                 <img alt="Delete" src={closeIcon} class="w-full h-full dark:invert justify-center" draggable={false} />
