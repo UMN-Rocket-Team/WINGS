@@ -1,6 +1,6 @@
 {
   "name": "wings",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "The Ground Station of the University of Minnesota Twin Cities Rocket Team",
   "scripts": {
     "start": "vite",
