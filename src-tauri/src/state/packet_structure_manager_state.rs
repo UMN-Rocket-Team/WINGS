@@ -29,7 +29,7 @@ impl Default for PacketStructureManagerState {
         
         //UFC Raw
         let mut ufc_raw_data_structure = PacketStructure::default();
-        ufc_raw_data_structure.ez_make("ba5eba11 0001 _2 i64 i16 i16 i16 u16 u16 u16 u16 u16 u16 u16 u16 u8 u8 u8 i16 i16 i16 i16 i16 i16 i16 i16 i16 _4 _4 ca11ab1e",
+        ufc_raw_data_structure.ez_make("ba5eba11 0001 _2 i64 i16 i16 i16 u16 u16 u16 u16 u16 u16 u16 u16 u8 u8 u8 i16 i16 i16 i16 i16 i16 i16 i16 i16 _4 ca11ab1e",
         &["Timestamp",
                 "acc16g_X" ,"acc16g_Y" ,"acc16g_Z",
                 "gyroX"    ,"gyroY"    ,"gyroZ",
@@ -44,7 +44,7 @@ impl Default for PacketStructureManagerState {
 
         //UFC Real
         let mut ufc_real_units_structure = PacketStructure::default();
-        ufc_real_units_structure.ez_make("ba5eba11 0002 _2 i64 F32 F32 F32 F32 F32 F32 i16 i16 i16 F32 F32 F32 _4 _4 ca11ab1e",
+        ufc_real_units_structure.ez_make("ba5eba11 0002 _2 i64 F32 F32 F32 F32 F32 F32 i16 i16 i16 F32 F32 F32 _4 ca11ab1e",
     &["Timestamp",
             "acc100g_X","acc100g_Y","acc100g_Z",
             "acc16g_X" ,"acc16g_Y" ,"acc16g_Z",
@@ -55,7 +55,7 @@ impl Default for PacketStructureManagerState {
 
         //UFC BNO
         let mut ufc_bno_structure = PacketStructure::default();
-        ufc_bno_structure.ez_make("ba5eba11 0004 _2 i64 F32 F32 F32 F32 F32 F32 F32 F32 F32 _4 _4 ca11ab1e",
+        ufc_bno_structure.ez_make("ba5eba11 0004 _2 i64 F32 F32 F32 F32 F32 F32 F32 F32 F32 _4 ca11ab1e",
     &["Timestamp",
             "acc_X" ,"acc_Y" ,"acc_Z",
             "gyro_X","gyro_Y","gyro_Z",

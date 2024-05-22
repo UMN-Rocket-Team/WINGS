@@ -25,10 +25,10 @@ impl ReceivingState {
             ) {
                 Ok(result) => {
                     //sends packets to frontend
-                    app_handle.emit_all("serial-update", result).unwrap();
-                    // if result.new_available_port_names.is_some() || result.parsed_packets.len() != 0{
-                    //     app_handle.emit_all("serial-update", result).unwrap();
-                    // }
+                    // app_handle.emit_all("serial-update", result).unwrap();
+                    if result.new_available_port_names.is_some() || result.parsed_packets.len() != 0{
+                        app_handle.emit_all("serial-update", result).unwrap();
+                    }
                 }
                 Err(message) => app_handle.emit_all("error", message).unwrap(),
             };
@@ -134,7 +134,7 @@ fn iterate_receiving_loop(
                     read_data = data.data_read;//moving data into new array for ownership purposes
 
                     if !read_data.is_empty() {
-                        println!("{:#?}",read_data);
+                        // println!("{:#?}",read_data);
                         result.got_data = true;
                         match use_packet_parser(&packet_parser_state, &mut |packet_parser| {
                             use_packet_structure_manager::<(), String>( &ps_manager_state,&mut |ps_manager| {
@@ -179,6 +179,7 @@ fn iterate_receiving_loop(
             }
         }
         if errors != ""{
+            println!("{}",errors);
             if read_data.is_empty(){
                 bail!(errors);
             }
