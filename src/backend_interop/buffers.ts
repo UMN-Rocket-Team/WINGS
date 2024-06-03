@@ -45,7 +45,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
 
     for (const structureId in sortedNewParsedPackets) {
         // 
-        if (parsedPackets[+structureId] === undefined) {
+        if (parsedPackets[+structureId] === undefined || decVars[+structureId] === undefined) {
             let decimationVars: PacketStructureId = {
                 structureId: structureId,
                 ptr1: 1,
