@@ -197,7 +197,6 @@ impl SendingLoop {
 
             sleep();
         }));
-
         Ok(())
     }
 

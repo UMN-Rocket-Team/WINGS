@@ -147,7 +147,7 @@ fn iterate_receiving_loop(
                                     result.parsed_packets.extend(packet_parser.parse_packets(&ps_manager, false));
                                     //write to csv
                                     for packet in result.parsed_packets.clone(){
-                                        match file_handler.write_packet(packet) {
+                                        match file_handler.write_packet(packet,ps_manager) {
                                             Err(err) => {
                                                 println!("Somethings wrong with the csv ): {}", err);
                                             },

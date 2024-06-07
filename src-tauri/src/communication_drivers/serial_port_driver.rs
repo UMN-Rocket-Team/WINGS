@@ -41,9 +41,8 @@ impl CommsIF for SerialPortDriver{
             Some(some_port) => some_port,
             None => bail!("No active test port")
         };
-
+        
         test_port.write(packet)?;
-
         Ok(())
     }
 

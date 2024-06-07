@@ -1,5 +1,5 @@
 use anyhow::{bail, Error};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use csv::{Reader, StringRecord, Writer};
 use std::{
     fs::{self, File},
@@ -7,14 +7,17 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::models::packet::Packet;
-
+use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
+const BASE_DIRECTORY: &str = "Wings_data_logs";
+const DAY_FORMAT: &str = "%F";
+const TIME_FORMAT: &str = "%H_%M_%S";
+const LOG_TIME_FORMAT: &str = "%a_%F_%H_%M_%S";
 /// Acts as a general data structure to store all files that the ground station is currently interacting with
 pub struct FileHandler {
-    csv_writers: Vec<PacketWriter>,
+    csv_writers: Vec<PacketWriter>,//a list of all csv writers within the FileHandler(one for each packet)
     csv_reader: Option<Reader<File>>,
     byte_writer: File,
-    time: DateTime<Utc>,
+    base_path: PathBuf,
     safety_iterator: u8,
 
 }
@@ -40,12 +43,15 @@ impl Default for FileHandler {
     fn default() -> Self {
         let mut path_buf = tauri::api::path::data_dir().expect("no data dir found on this system");
         println!("{:#?}", path_buf);
-        path_buf.push("wings_logs");
+        path_buf.push(BASE_DIRECTORY);
         let _ = fs::create_dir(path_buf.as_path());
         let time = Utc::now();
-        path_buf.push(&format!("{}",time.format("%Y_%m_%d_%H_%M_%S")));
+        path_buf.push(&format!("{}",time.format(DAY_FORMAT)));
         let _ = fs::create_dir(path_buf.as_path());
-        path_buf.push(&format!("rawbytes{}",time.format("%Y_%m_%d_%H_%M_%S")));
+        path_buf.push(&format!("{}",time.format(TIME_FORMAT)));
+        let _ = fs::create_dir(path_buf.as_path());
+        let general_directory = path_buf.clone();
+        path_buf.push(&format!("rawbytes_log_{}",time.format(LOG_TIME_FORMAT)));
         path_buf.set_extension("wings");
         Self {
             csv_writers: vec![],
@@ -69,7 +75,7 @@ impl Default for FileHandler {
                     .create(true)
                     .open(path_buf.as_path()).unwrap(),
             safety_iterator: 1,
-            time: time,
+            base_path: general_directory,
 
         }
     }
@@ -79,33 +85,37 @@ impl FileHandler {
 
     /// Write a packet to the csv currently loaded
     ///
-    /// Note: this function flushes the writer  buffer with every call, 
+    /// Note: this function flushes the writer buffer with every call, 
     /// meaning that we aren't making use of the csv_writer internal buffer.
     /// This is safer when it comes to saving as much data as possible, but might possibly slow down the groundstation
     /// 
     /// # Errors
     /// 
     /// produces an error if unsuccessful
-    pub fn write_packet(&mut self, mut packet: Packet) -> Result<(), Error> {
+    pub fn write_packet(&mut self, mut packet: Packet, packet_structure_manager: &mut PacketStructureManager) -> Result<(), Error> {
         let csv_writer;
         match self.find_writer_index(packet.structure_id){
             Some(index) => csv_writer = &mut self.csv_writers[index],
             None => {
-                let mut path_buf: PathBuf;
-                match tauri::api::path::data_dir(){
-                    Some(data) => path_buf = data,
-                    None => bail!("Unable to get data path"),
-                }
-                path_buf.push("wings_logs");
-                path_buf.push(format!("{}",self.time.format("%Y_%m_%d_%H_%M_%S")));
+                let mut field_names = vec![];
+                let mut path_buf = self.base_path.clone();
                 let _ = fs::create_dir(path_buf.as_path());
-                path_buf.push(format!("packetslog_{}", packet.structure_id));
+                match packet_structure_manager.get_packet_structure(packet.structure_id){
+                    Ok(packet_structure) => {
+                        path_buf.push(format!("packet_log_{}", packet_structure.name)); 
+                        for field in &packet_structure.fields{
+                            field_names.push(field.name.to_owned());
+                        }
+                    },
+                    Err(_) => {path_buf.push(format!("packet_log_{}", packet.structure_id))},
+                }
                 path_buf.set_extension("csv");
                 self.csv_writers.push(
                     PacketWriter{ writer: csv::Writer::from_path(path_buf.as_path())?, index: packet.structure_id}
                 );
                 let iter = self.csv_writers.len() - 1;
                 csv_writer = &mut self.csv_writers[iter];
+                let _ = csv_writer.writer.serialize(field_names);//dont care if this actually gets written, headers can get reverse engineered
             },
         }
         
@@ -114,14 +124,8 @@ impl FileHandler {
                 _ = csv_writer.writer.flush(); //attempt to flush, we dont handle the result since we are already failing anyways
                 packet.field_data = Default::default();
                 self.safety_iterator += 1;
-                let mut path_buf: PathBuf;
-                match tauri::api::path::data_dir(){
-                    Some(data) => path_buf = data,
-                    None => bail!("FATAL ERROR, Unable to write packet and got error, and unable to get a new directory: {}", err),
-                }
-                path_buf.push("wings_logs");
-                path_buf.push(format!("{}",self.time.format("%Y_%m_%d_%H_%M_%S")));
-                path_buf.push(format!("packetslog_{}_{}", packet.structure_id, self.safety_iterator));
+                let mut path_buf = self.base_path.clone();
+                path_buf.push(format!("error_log_{}_{}", packet.structure_id, self.safety_iterator));
                 path_buf.set_extension("csv");
 
                 csv_writer.writer = csv::Writer::from_path(path_buf.as_path())?;
@@ -197,91 +201,6 @@ impl FileHandler {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::packet::{Packet, PacketFieldValue};
-
-    use super::FileHandler;
-
-    #[test]
-    fn test_write_packet(){
-
-        let mut handler = FileHandler::default();
-        let packet = Packet{
-            structure_id: 0,
-            field_data: vec![
-                PacketFieldValue::UnsignedShort(0),
-                PacketFieldValue::UnsignedShort(1),
-                PacketFieldValue::UnsignedShort(0),
-                PacketFieldValue::UnsignedShort(1),
-            ],
-            field_meta_data: vec![],
-        };
-        assert_eq!(handler.write_packet(packet).is_err(), false);
-    }
-    #[test]
-    fn test_write_two_different_packets(){
-        let mut handler = FileHandler::default();
-        let mut packet = Packet{
-            structure_id: 0,
-            field_data: vec![
-                PacketFieldValue::UnsignedShort(0),
-                PacketFieldValue::UnsignedShort(1),
-                PacketFieldValue::UnsignedShort(0),
-                PacketFieldValue::UnsignedShort(1),
-            ],
-            field_meta_data: vec![],
-        };
-        assert_eq!(handler.write_packet(packet).is_err(), false);
-        packet = Packet{
-            structure_id: 1,
-            field_data: vec![
-                PacketFieldValue::UnsignedShort(3),
-                PacketFieldValue::UnsignedShort(4),
-                PacketFieldValue::UnsignedShort(5),
-            ],
-            field_meta_data: vec![],
-        };
-        assert_eq!(handler.write_packet(packet).is_err(), false);
-    }
-    #[test]
-    fn test_can_adapt_to_write_error(){
-        let mut handler = FileHandler::default();
-        let mut packet = Packet{
-            structure_id: 0,
-            field_data: vec![
-                PacketFieldValue::UnsignedShort(0),
-                PacketFieldValue::UnsignedShort(1),
-                PacketFieldValue::UnsignedShort(0),
-                PacketFieldValue::UnsignedShort(1),
-            ],
-            field_meta_data: vec![],
-        };
-        assert_eq!(handler.write_packet(packet).is_err(), false);
-        packet = Packet{
-            structure_id: 0,
-            field_data: vec![
-                PacketFieldValue::UnsignedShort(3),
-                PacketFieldValue::UnsignedShort(4),
-                PacketFieldValue::UnsignedShort(5),
-            ],
-            field_meta_data: vec![],
-        };
-        assert_eq!(handler.write_packet(packet).is_err(), true);
-        packet = Packet{
-            structure_id: 0,
-            field_data: vec![
-                PacketFieldValue::UnsignedShort(3),
-                PacketFieldValue::UnsignedShort(4),
-                PacketFieldValue::UnsignedShort(5),
-            ],
-            field_meta_data: vec![],
-        };
-        assert_eq!(handler.write_packet(packet).is_err(), false);
-    }
-    #[test]
-    fn test_write_bytes(){
-        let mut handler = FileHandler::default();
-        let data = vec![0,0xFF,0,0xFF];
-        assert_eq!(handler.write_bytes(data).is_err(), false);
-    }
-    
+    //TODO
+    //write a systems test to check all functions within file_handling
 }

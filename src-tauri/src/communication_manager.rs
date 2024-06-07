@@ -94,7 +94,7 @@ impl CommunicationManager {
         let index = self.find(id);
         match index{
             Some(index) => match self.comms_objects[index].write_port(packet){
-                Ok(_) => Ok(()),
+                Ok(_) => {Ok(())},
                 Err(message) => Err(message)
             },
             None => bail!(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
