@@ -51,6 +51,12 @@ Currently, builds for an operating system can only be performed on that operatin
 
    - Each distribution format (`.exe`, `.deb`, `.AppImage`, `.app`) will have its own directory
 
+### Building on Linux
+1. Follow the insturctions to install pnpm and Node.js. Ensure that you install npm as you install Node.js. Your Node.js version must be over v12.
+   - [`pnpm`](https://pnpm.io/): package management
+   - [Node.js]([https://nodejs.org](https://nodejs.org/en/download/package-manager)): Javascript runtime
+ 2. Run `npm install` in the
+
 ## Developing
 
 ### Prerequisites
