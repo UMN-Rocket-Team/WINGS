@@ -21,13 +21,10 @@ pub mod config_struct;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use packet_structure_events::send_initial_packet_structure_update_event;
-use packet_structure_manager_state::{use_packet_structure_manager, PacketStructureManagerState};
-use communication_manager_state::CommunicationManagerState;
-use packet_parser_state::PacketParserState;
-use data_processor_state::DataProcessorState;
-use sending_loop_state::SendingLoopState;
+use generic_state::PacketParserState;
+use crate::generic_state::DataProcessorState;
 
-use state::{communication_manager_state, file_handling_state::FileHandlingState, packet_parser_state, packet_structure_manager_state, sending_loop_state,data_processor_state};
+use state::{generic_state::{self, CommunicationManagerState, FileHandlingState, SendingLoopState}, packet_structure_manager_state::default_packet_structure_manager};
 use tauri::Manager;
 use receiving_loop::ReceivingState;
 
@@ -68,7 +65,7 @@ fn main() {
             add_file_manager,
             set_read
         ])
-        .manage(PacketStructureManagerState::default())
+        .manage(default_packet_structure_manager())
         .manage(CommunicationManagerState::default())
         .manage(PacketParserState::default())
         .manage(SendingLoopState::default())

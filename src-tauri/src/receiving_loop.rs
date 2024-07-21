@@ -1,12 +1,12 @@
 use std::sync::Mutex;
 
-use anyhow::bail;
+use anyhow::{bail, Error};
 use chrono::Duration;
 use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager::DeviceName, communication_manager_state::CommunicationManagerState, models::packet::Packet, packet_parser::PacketParser, packet_parser_state::{use_packet_parser, PacketParserState}, packet_structure_manager_state::PacketStructureManagerState, state::{communication_manager_state::use_communication_manager, file_handling_state::{use_file_handler, FileHandlingState}, generic_state::use_struct}, use_packet_structure_manager
+    communication_manager::{CommunicationManager, DeviceName}, file_handling::FileHandler, models::packet::Packet, packet_parser::PacketParser, packet_structure_manager::PacketStructureManager, state::generic_state::{use_struct, CommunicationManagerState, FileHandlingState, PacketParserState, PacketStructureManagerState}
 };
 
 pub struct ReceivingState {
@@ -20,7 +20,7 @@ impl ReceivingState {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<Mutex<PacketParser>>(),
+                app_handle.state::<PacketParserState>(),
                 app_handle.state::<FileHandlingState>(),
             ) {
                 Ok(result) => {
@@ -30,7 +30,7 @@ impl ReceivingState {
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
                 }
-                Err(message) => app_handle.emit_all("error", message).unwrap(),
+                Err(message) => app_handle.emit_all("error", message.to_string()).unwrap(),
             };
         });
 
@@ -84,9 +84,9 @@ pub struct RefreshAndReadResult {
 fn iterate_receiving_loop(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     ps_manager_state: tauri::State<'_, PacketStructureManagerState>,
-    packet_parser_state: tauri::State<'_, Mutex<PacketParser>>,
+    packet_parser_state: tauri::State<'_, PacketParserState>,
     file_handler_state: tauri::State<'_, FileHandlingState>
-) -> Result<RefreshAndReadResult, String> {
+) -> Result<RefreshAndReadResult, Error> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
         parsed_packets: vec![],
@@ -97,8 +97,8 @@ fn iterate_receiving_loop(
     // ##########################
     // Get Data
     // ##########################
-    match use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        let mut errors = "".to_owned();
+    match use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
+        let mut error_counter = 0;
         for device in communication_manager.get_devices(){
             match communication_manager.get_data(device) {
                 Ok(mut data) => {
@@ -118,7 +118,7 @@ fn iterate_receiving_loop(
 
 
 
-                    match use_file_handler(&file_handler_state, &mut |file_handler| {
+                    match use_struct(&file_handler_state, &mut |file_handler| {
                         match file_handler.write_bytes(data.data_read.clone()) {
                             Err(err) => {
                                 return Err(err)
@@ -127,7 +127,7 @@ fn iterate_receiving_loop(
                         }
                     }){
                         Ok(_) => {},
-                        Err(err) => {errors.push_str("File handling: "); errors.push_str(&err);},
+                        Err(err) => {eprintln!("{}", &err); error_counter += 1;},
                     }
 
 
@@ -137,10 +137,8 @@ fn iterate_receiving_loop(
                         // println!("{:#?}",read_data);
                         result.got_data = true;
                         match use_struct(&packet_parser_state, &mut |packet_parser: &mut PacketParser| {
-                            use_packet_structure_manager::<(), String>( &ps_manager_state,&mut |ps_manager| {
-                                use_file_handler(&file_handler_state, &mut |file_handler| {
-                
-                
+                            use_struct::<PacketStructureManager, (), Error>( &ps_manager_state,&mut |ps_manager| {
+                                use_struct::<FileHandler, (), Error>(&file_handler_state, &mut |file_handler| {
                                     //add data to parser
                                     packet_parser.push_data(&read_data, false);
                                     //run parser
@@ -149,14 +147,12 @@ fn iterate_receiving_loop(
                                     for packet in result.parsed_packets.clone(){
                                         match file_handler.write_packet(packet,ps_manager) {
                                             Err(err) => {
-                                                println!("Somethings wrong with the csv ): {}", err);
+                                                eprintln!("{}", err.context("Somethings wrong with the csv writing"));
                                             },
                                             Ok(_) => {},
-                                        };
+                                        }
                                     }
                                     Ok(())
-                
-                                    
                                 })
                             })
                         }) {
@@ -172,17 +168,14 @@ fn iterate_receiving_loop(
                 },
                 Err(err) => {
                     if err != "Operation timed out"{
-                        errors.push_str("coms manager: "); 
-                        errors.push_str(&err);
+                        eprintln!("coms manager: {}", err);
                     }
                 }
             }
         }
-        if errors != ""{
-            println!("{}",errors);
-            if read_data.is_empty(){
-                bail!(errors);
-            }
+        if error_counter != 0 && read_data.is_empty(){
+                eprintln!("bailing main loop iteration from previous errors in coms manager");
+                bail!("errors in coms manager");
         }
         Ok(())
     }) {
@@ -210,7 +203,7 @@ mod tests {
         assert!(iterate_receiving_loop(
             app_handle.state::<CommunicationManagerState>(),
             app_handle.state::<PacketStructureManagerState>(),
-            app_handle.state::<Mutex<PacketParser>>(),
+            app_handle.state::<PacketParserState>(),
             app_handle.state::<FileHandlingState>()).is_ok())
     }
 
@@ -230,7 +223,7 @@ mod tests {
         let mut new_id= 0;
 
         //add an rfd device to comms manager
-        let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
+        let _ = use_struct::<CommunicationManager,(),String>(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
             new_id = communication_manager.add_serial_device();
         }));
 
@@ -239,7 +232,7 @@ mod tests {
             let output = iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<Mutex<PacketParser>>(),
+                app_handle.state::<PacketParserState>(),
                 app_handle.state::<FileHandlingState>());
             match output{
                 Ok(output) => {
@@ -247,7 +240,7 @@ mod tests {
                         Some(new_ports) => {
                             if new_ports.len() != 0 {
                                 println!("{:#?}", new_ports);
-                                match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                                match use_struct::<CommunicationManager,(),String>(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
                                     let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
                                     Ok(())
                                 }){
@@ -283,10 +276,10 @@ mod tests {
         let mut new_id_2= 0;
 
         //add an rfd device to comms manager
-        let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
+        let _ = use_struct::<CommunicationManager,(),String>(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
             new_id = communication_manager.add_serial_device();
         }));
-        let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
+        let _ = use_struct::<CommunicationManager,(),String>(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
             new_id_2 = communication_manager.add_altus_metrum();
         }));
 
@@ -295,7 +288,7 @@ mod tests {
             let output = iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<Mutex<PacketParser>>(),
+                app_handle.state::<PacketParserState>(),
                 app_handle.state::<FileHandlingState>());
             match output{
                 Ok(output) => {
@@ -303,7 +296,7 @@ mod tests {
                         Some(new_ports) => {
                             if new_ports.len() != 0 {
                                 println!("{:#?}", new_ports);
-                                match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                                match use_struct::<CommunicationManager,(),String>(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
                                     let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
                                     let _ = communication_manager.init_device("COM14", 57600, new_id_2);
                                     Ok(())

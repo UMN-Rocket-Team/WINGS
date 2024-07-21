@@ -50,7 +50,7 @@ impl Default for CommunicationManager{
             id_iterator: 0,
             old_device_names: vec![]
         };
-        temp.plug_and_play();
+        //temp.plug_and_play();
         
         return temp;
     }

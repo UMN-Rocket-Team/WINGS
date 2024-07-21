@@ -1,10 +1,10 @@
-use crate::{models::packet_view_model::PacketStructureViewModel, state::data_processor_state::{use_data_processor, DataProcessorState}, use_packet_structure_manager};
+use crate::{models::packet_view_model::PacketStructureViewModel, state::generic_state::{use_struct, DataProcessorState, PacketStructureManagerState}};
+use anyhow::{Error,anyhow};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
 use crate::{
     packet_structure_manager::PacketStructureManager,
-    packet_structure_manager_state::PacketStructureManagerState,
     models::packet_view_model::create_packet_view_model,
 };
 
@@ -46,8 +46,8 @@ pub fn update_packet_structures(
     callback: &mut dyn FnMut(
         &mut PacketStructureManager,
     ) -> Result<(Vec<usize>, Option<Vec<usize>>), (Vec<usize>, Option<Vec<usize>>, String)>,
-) -> Result<(), String> {
-    use_packet_structure_manager(
+) -> Result<(), Error> {
+    use_struct(
         &packet_structure_manager_state,
         &mut |packet_structure_manager| {
             let result = callback(packet_structure_manager);
@@ -67,10 +67,10 @@ pub fn update_packet_structures(
                         deleted_packet_view_model_ids,
                         packet_structure_manager,
                     );
-                    return Err(message);
+                    return Err(anyhow!(message));
                 }
             }
-            use_data_processor(
+            use_struct(
                 &data_processor_state, 
                 &mut |data_processor| {
                     match data_processor.generate_display_field_names(packet_structure_manager) {
@@ -87,7 +87,6 @@ pub fn update_packet_structures(
                             Err(message)
                         }
                     }
-
                 }
             )
         },
@@ -95,7 +94,7 @@ pub fn update_packet_structures(
 }
 
 pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
-    match use_packet_structure_manager::<(), &str>(
+    match use_struct::<PacketStructureManager,(), &str>(
         &app_handle.state::<PacketStructureManagerState>(),
         &mut |packet_structure_manager| {
             emit_packet_structure_update_event(

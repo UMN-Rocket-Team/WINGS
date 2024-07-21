@@ -1,10 +1,10 @@
-use std::{sync::mpsc, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{sync::{mpsc, Mutex}, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
-use crate::{packet_generator::generate_packet, state::{communication_manager_state::{use_communication_manager, CommunicationManagerState}, file_handling_state::{use_file_handler, FileHandlingState}, packet_structure_manager_state::PacketStructureManagerState}};
+use crate::{communication_manager::CommunicationManager, packet_generator::generate_packet, state::generic_state::{use_struct, FileHandlingState, PacketStructureManagerState}};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -96,7 +96,7 @@ pub struct SendingLoop {
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes, write_id: usize) -> anyhow::Result<()> {
         let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
-        let packet_structure = structure_manager_state.packet_structure_manager.lock().unwrap().packet_structures[1].clone();
+        let packet_structure = structure_manager_state.lock().unwrap().packet_structures[1].clone();
 
 
 
@@ -121,7 +121,7 @@ impl SendingLoop {
             // ##########################
             match mode{
                 SendingModes::FromCSV => 
-                    match use_file_handler(&file_handling_state, &mut |file_handler|{
+                    match use_struct(&file_handling_state, &mut |file_handler|{
                         match file_handler.read_packet(){
                             Ok(packet) =>  Ok(packet),
                             Err(err) => Err(err),
@@ -181,7 +181,7 @@ impl SendingLoop {
             // ##########################
             // Send Packet
             // ##########################
-            match use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+            match use_struct(&app_handle.state::<Mutex<CommunicationManager>>(), &mut |communication_manager: &mut CommunicationManager| {
                 communication_manager.write_data(&packet, write_id)
             }) {
                 Ok(_) => {

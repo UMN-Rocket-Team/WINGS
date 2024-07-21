@@ -1,9 +1,9 @@
 use crate::{
-    models::{packet_structure::{
+    generic_state::result_to_string, models::{packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
     packet_view_model::{PacketComponentType, PacketStructureViewModel},
-    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, packet_structure_manager_state::PacketStructureManagerState, state::data_processor_state::DataProcessorState
+    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, state::generic_state::{DataProcessorState, PacketStructureManagerState}
 };
 // # packet_structure_manager_commands
 // 
@@ -19,7 +19,7 @@ pub fn set_packet_name(
     packet_structure_id: usize,
     name: &str,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -29,7 +29,7 @@ pub fn set_packet_name(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -41,7 +41,7 @@ pub fn set_field_name(
     field_index: usize,
     name: &str,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -51,7 +51,7 @@ pub fn set_field_name(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -63,7 +63,7 @@ pub fn set_field_type(
     field_index: usize,
     r#type: PacketFieldType,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -73,7 +73,7 @@ pub fn set_field_type(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -85,7 +85,7 @@ pub fn set_field_metadata_type(
     field_index: usize,
     metadata_type: PacketMetadataType,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -99,7 +99,7 @@ pub fn set_field_metadata_type(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -111,7 +111,7 @@ pub fn set_delimiter_name(
     delimiter_index: usize,
     name: &str,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -121,7 +121,7 @@ pub fn set_delimiter_name(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -133,7 +133,7 @@ pub fn set_delimiter_identifier(
     delimiter_index: usize,
     identifier: &str,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -145,7 +145,7 @@ pub fn set_delimiter_identifier(
             Ok(_) => Ok((vec![packet_structure_id], None)),
             Err(error) => Err((vec![packet_structure_id], None, error.to_string()))
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -157,7 +157,7 @@ pub fn set_gap_size(
     gap_offset: usize,
     new_gap_size: isize,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -167,7 +167,7 @@ pub fn set_gap_size(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -177,7 +177,7 @@ pub fn add_field(
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -187,7 +187,7 @@ pub fn add_field(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -197,7 +197,7 @@ pub fn add_delimiter(
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -207,7 +207,7 @@ pub fn add_delimiter(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -219,7 +219,7 @@ pub fn add_gap_after(
     is_field: bool,
     component_index: usize,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -229,7 +229,7 @@ pub fn add_gap_after(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -241,7 +241,7 @@ pub fn delete_packet_structure_component(
     component_index: usize,
     component_type: PacketComponentType,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -263,7 +263,7 @@ pub fn delete_packet_structure_component(
             }
             Ok((vec![packet_structure_id], None))
         },
-    )
+    ))
 }
 
 /// Takes PacketStructureViewModel and parses it into a packetStructure, it then registers the packetStructure via the packet_structure_manager
@@ -277,7 +277,7 @@ pub fn add_packet_structure(
     data_processor_state: tauri::State<'_, DataProcessorState>,
     view: PacketStructureViewModel,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -292,7 +292,7 @@ pub fn add_packet_structure(
                 )),
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -301,7 +301,7 @@ pub fn register_empty_packet_structure(
     packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -354,7 +354,7 @@ pub fn register_empty_packet_structure(
                 Err(error) => Err((vec![], None, error.to_string()))
             }
         },
-    )
+    ))
 }
 
 #[tauri::command]
@@ -364,7 +364,7 @@ pub fn delete_packet_structure(
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
 ) -> Result<(), String> {
-    update_packet_structures(
+    result_to_string(update_packet_structures(
         app_handle,
         packet_structure_manager_state,
         data_processor_state,
@@ -374,5 +374,5 @@ pub fn delete_packet_structure(
                 Err(err) => Err((vec![], None, err.to_string()))
             }
         },
-    )
+    ))
 }
