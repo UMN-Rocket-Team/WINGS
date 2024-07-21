@@ -8,7 +8,7 @@ use crate::communication_drivers::{
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
-pub struct SerialPortNames {
+pub struct DeviceName {
     pub name: String,
     pub manufacturer_name: Option<String>,
     pub product_name: Option<String>,
@@ -19,7 +19,7 @@ pub trait CommsIF {
     fn init_device(&mut self, port_name: &str, baud: u32)  -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()>;
     fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()>;
-    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<SerialPortNames>>;
+    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>>;
     fn is_init(&mut self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
@@ -27,7 +27,7 @@ pub trait CommsIF {
 }
 
 pub struct GetDataResult {
-    pub(crate) new_ports: Option<Vec<SerialPortNames>>,
+    pub(crate) new_ports: Option<Vec<DeviceName>>,
     pub(crate) data_read: Vec<u8>
 }
 #[derive(Serialize)]
@@ -38,23 +38,77 @@ pub struct DisplayComDevice {
 
 pub struct CommunicationManager{
     pub comms_objects: Vec<Box<dyn CommsIF + Send>>,
-    pub selected: usize,
     pub id_iterator: usize,
+    pub old_device_names: Vec<DeviceName>,
 }
 
 impl Default for CommunicationManager{
 
     fn default() -> Self { 
-        Self{
+        let mut temp = Self{
             comms_objects: vec![],
-            selected: 0,
-            id_iterator: 0
-        }
+            id_iterator: 0,
+            old_device_names: vec![]
+        };
+        temp.plug_and_play();
+        
+        return temp;
     }
 }
 
 impl CommunicationManager {
-    
+    fn plug_and_play(&mut self){
+        let maybe_device_names = self.get_all_potential_devices();
+        match maybe_device_names{
+            Some(devices) => {
+                for device_name in devices{
+                    let number = self.add_serial_device();
+                    match self.init_device(&device_name.name, 56700,number){
+                        Ok(_) => {},
+                        Err(_) => {_= self.delete_device(number)},
+                    }
+                }
+            },
+            None => {},
+        }
+    }
+    pub fn get_all_potential_devices(&mut self)-> Option<Vec<DeviceName>>{
+        let available_ports ;
+        match serialport::available_ports(){
+            Ok(ports) => available_ports = ports,
+            Err(_) => return None,
+        }
+        let device_names: Vec<DeviceName> = available_ports
+            .into_iter()
+            .filter_map(|port| match port.port_type {
+                serialport::SerialPortType::UsbPort(usb_info) => {
+                    // On macOS, each serial port shows up as both eg.:
+                    //  - /dev/cu.usbserial-AK06O4AO
+                    //  - /dev/tty.usbserial-AK06O4AO
+                    // For our use, these are equivalent, so we'll filter one out to avoid confusion.
+                    if cfg!(target_os = "macos") && port.port_name.starts_with("/dev/cu.usbserial-") {
+                        None
+                    } else {
+                        Some(DeviceName {
+                            name: port.port_name,
+                            manufacturer_name: usb_info.manufacturer,
+                            product_name: usb_info.product,
+                        })
+                    }
+                },
+                serialport::SerialPortType::PciPort
+                | serialport::SerialPortType::BluetoothPort
+                | serialport::SerialPortType::Unknown => None,
+            })
+            .collect();
+        if device_names == self.old_device_names{
+            return None;
+        }
+        else{
+            self.old_device_names = device_names.clone();
+            return Some(device_names)
+        }
+    }
     /// Get data from the currently selected device
     /// 
     /// # Error
@@ -135,7 +189,7 @@ impl CommunicationManager {
 
 
     /// Adds an rfd device object to the manager
-    pub fn add_rfd(&mut self)->usize{
+    pub fn add_serial_device(&mut self)->usize{
         let mut new_device: SerialPortDriver = Default::default();
         new_device.set_id(self.id_iterator);
         self.id_iterator+=1;

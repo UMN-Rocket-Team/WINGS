@@ -5,3 +5,5 @@ pub mod sending_loop_state;
 pub mod mutex_utils;
 pub mod data_processor_state;
 pub mod file_handling_state;
+pub mod config_state;
+pub mod generic_state;

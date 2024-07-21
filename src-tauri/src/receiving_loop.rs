@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager_state::CommunicationManagerState, communication_manager::SerialPortNames, models::packet::Packet, packet_parser_state::{use_packet_parser, PacketParserState}, packet_structure_manager_state::PacketStructureManagerState, state::{communication_manager_state::use_communication_manager, file_handling_state::{use_file_handler, FileHandlingState}}, use_packet_structure_manager
+    communication_manager::DeviceName, communication_manager_state::CommunicationManagerState, models::packet::Packet, packet_parser::PacketParser, packet_parser_state::{use_packet_parser, PacketParserState}, packet_structure_manager_state::PacketStructureManagerState, state::{communication_manager_state::use_communication_manager, file_handling_state::{use_file_handler, FileHandlingState}, generic_state::use_struct}, use_packet_structure_manager
 };
 
 pub struct ReceivingState {
@@ -20,7 +20,7 @@ impl ReceivingState {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<PacketParserState>(),
+                app_handle.state::<Mutex<PacketParser>>(),
                 app_handle.state::<FileHandlingState>(),
             ) {
                 Ok(result) => {
@@ -56,7 +56,7 @@ struct RefreshTimerData {
 #[derive(serde::Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RefreshAndReadResult {
-    pub(crate) new_available_port_names: Option<Vec<SerialPortNames>>,
+    pub(crate) new_available_port_names: Option<Vec<DeviceName>>,
     pub(crate) parsed_packets: Vec<Packet>,
     pub(crate) got_data: bool
 
@@ -84,7 +84,7 @@ pub struct RefreshAndReadResult {
 fn iterate_receiving_loop(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     ps_manager_state: tauri::State<'_, PacketStructureManagerState>,
-    packet_parser_state: tauri::State<'_, PacketParserState>,
+    packet_parser_state: tauri::State<'_, Mutex<PacketParser>>,
     file_handler_state: tauri::State<'_, FileHandlingState>
 ) -> Result<RefreshAndReadResult, String> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
@@ -136,7 +136,7 @@ fn iterate_receiving_loop(
                     if !read_data.is_empty() {
                         // println!("{:#?}",read_data);
                         result.got_data = true;
-                        match use_packet_parser(&packet_parser_state, &mut |packet_parser| {
+                        match use_struct(&packet_parser_state, &mut |packet_parser: &mut PacketParser| {
                             use_packet_structure_manager::<(), String>( &ps_manager_state,&mut |ps_manager| {
                                 use_file_handler(&file_handler_state, &mut |file_handler| {
                 
@@ -210,7 +210,7 @@ mod tests {
         assert!(iterate_receiving_loop(
             app_handle.state::<CommunicationManagerState>(),
             app_handle.state::<PacketStructureManagerState>(),
-            app_handle.state::<PacketParserState>(),
+            app_handle.state::<Mutex<PacketParser>>(),
             app_handle.state::<FileHandlingState>()).is_ok())
     }
 
@@ -231,7 +231,7 @@ mod tests {
 
         //add an rfd device to comms manager
         let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
-            new_id = communication_manager.add_rfd();
+            new_id = communication_manager.add_serial_device();
         }));
 
         //run the main receiving loop and print if any data is received
@@ -239,7 +239,7 @@ mod tests {
             let output = iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<PacketParserState>(),
+                app_handle.state::<Mutex<PacketParser>>(),
                 app_handle.state::<FileHandlingState>());
             match output{
                 Ok(output) => {
@@ -284,7 +284,7 @@ mod tests {
 
         //add an rfd device to comms manager
         let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
-            new_id = communication_manager.add_rfd();
+            new_id = communication_manager.add_serial_device();
         }));
         let _ = use_communication_manager(app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| Ok({
             new_id_2 = communication_manager.add_altus_metrum();
@@ -295,7 +295,7 @@ mod tests {
             let output = iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                 app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<PacketParserState>(),
+                app_handle.state::<Mutex<PacketParser>>(),
                 app_handle.state::<FileHandlingState>());
             match output{
                 Ok(output) => {

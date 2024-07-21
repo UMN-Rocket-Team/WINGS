@@ -2,16 +2,9 @@ use std::sync::Mutex;
 
 use crate::{state::mutex_utils::use_state_in_mutex, packet_parser::PacketParser};
 
+#[derive(Default)]
 pub struct PacketParserState {
     pub(crate) packet_parser: Mutex<PacketParser>,
-}
-
-impl Default for PacketParserState {
-    fn default() -> Self {
-        Self {
-            packet_parser: Mutex::new(Default::default()),
-        }
-    }
 }
 
 pub fn use_packet_parser<ReturnType, ErrorType>(

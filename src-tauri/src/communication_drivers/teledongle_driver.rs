@@ -2,11 +2,11 @@ use std::str::from_utf8;
 
 use anyhow::bail;
 
-use crate::communication_manager::{CommsIF,SerialPortNames};
+use crate::communication_manager::{CommsIF,DeviceName};
 
 #[derive(Default)]
 pub struct TeleDongleDriver {
-    previous_available_ports: Vec<SerialPortNames>,
+    previous_available_ports: Vec<DeviceName>,
     port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32,
     id: usize,
@@ -17,7 +17,7 @@ impl TeleDongleDriver {
     /// # Errors
     /// 
     /// Returns an error if no ports were successfully found, 
-    fn get_available_ports(&self) -> Result<Vec<SerialPortNames>, serialport::Error> {
+    fn get_available_ports(&self) -> Result<Vec<DeviceName>, serialport::Error> {
         let ports = serialport::available_ports()?
             .into_iter()
             .filter_map(|port| match port.port_type {
@@ -29,7 +29,7 @@ impl TeleDongleDriver {
                     if cfg!(target_os = "macos") && port.port_name.starts_with("/dev/cu.usbserial-") {
                         None
                     } else {
-                        Some(SerialPortNames {
+                        Some(DeviceName {
                             name: port.port_name,
                             manufacturer_name: usb_info.manufacturer,
                             product_name: usb_info.product,
@@ -47,7 +47,7 @@ impl TeleDongleDriver {
 impl CommsIF for TeleDongleDriver {
 
     /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
-    fn get_new_available_ports(&mut self) -> Option<Vec<SerialPortNames>> {
+    fn get_new_available_ports(&mut self) -> Option<Vec<DeviceName>> {
         match self.get_available_ports() {
             Ok(new_ports) => {
                 if new_ports == self.previous_available_ports {

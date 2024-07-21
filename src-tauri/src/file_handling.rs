@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
-const BASE_DIRECTORY: &str = "Wings_data_logs";
+pub const BASE_DIRECTORY: &str = "Wings_data_logs";
 const DAY_FORMAT: &str = "%F";
 const TIME_FORMAT: &str = "%H_%M_%S";
 const LOG_TIME_FORMAT: &str = "%a_%F_%H_%M_%S";

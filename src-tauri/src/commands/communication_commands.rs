@@ -40,7 +40,7 @@ pub fn add_rfd(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
     use_communication_manager(communication_manager_state, &mut |communication_manager| {
-        communication_manager.add_rfd();
+        communication_manager.add_serial_device();
         communication_manager.update_display_com_devices(&app_handle);
         Ok(())
     })

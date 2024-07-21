@@ -17,6 +17,7 @@ mod communication_manager;
 mod data_processing;
 mod file_handling;
 mod testing;
+pub mod config_struct;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use packet_structure_events::send_initial_packet_structure_update_event;

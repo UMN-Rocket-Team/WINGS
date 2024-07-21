@@ -1,6 +1,6 @@
 
 
-use crate::{models::packet::{Packet, PacketFieldValue}, packet_structure_manager::PacketStructureManager};
+use crate::{models::packet::PacketFieldValue, packet_structure_manager::PacketStructureManager};
 
 #[derive(serde::Serialize, Default, Debug, Clone)]
 pub struct DisplayPacket{
@@ -14,8 +14,6 @@ pub struct DisplayPacketFieldNames{
 }
 #[derive(Default)]
 pub struct DataProcessor{
-    pub data_list: Vec<Packet>,
-    pub formatted_list: Vec<DisplayPacket>,
     pub name_list: Vec<DisplayPacketFieldNames>,
 }
 impl DataProcessor{

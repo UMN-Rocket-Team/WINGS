@@ -8,7 +8,6 @@ use crate::{
 
 pub struct PacketStructureManagerState {
     pub(crate) packet_structure_manager: Mutex<PacketStructureManager>,
-    pub sending_loop_structure: PacketStructure
 }
 
 impl Default for PacketStructureManagerState {
@@ -190,7 +189,6 @@ impl Default for PacketStructureManagerState {
 
         Self {
             packet_structure_manager: Mutex::new(packet_structure_manager),
-            sending_loop_structure: metrum_sensor_data
         }
     }
 }

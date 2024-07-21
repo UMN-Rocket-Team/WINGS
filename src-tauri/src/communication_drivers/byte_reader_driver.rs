@@ -4,7 +4,7 @@ use std::{fs::File, io::Read};
 
 use anyhow::bail;
 
-use crate::communication_manager::{CommsIF, SerialPortNames};
+use crate::communication_manager::{CommsIF, DeviceName};
 
 #[derive(Default)]
 pub struct ByteReadDriver {
@@ -48,7 +48,7 @@ impl CommsIF for ByteReadDriver{
     }
 
     //Picking files to read is done by the frontend. We don't need to worry about scanning for files that the user might want
-    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<SerialPortNames>> {
+    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>> {
         return None;
     }
 
