@@ -50,13 +50,14 @@ impl Default for CommunicationManager{
             id_iterator: 0,
             old_device_names: vec![]
         };
-        //temp.plug_and_play();
+        //temp.plug_and_play(); currently broken, does not update front end correctly
         
         return temp;
     }
 }
 
 impl CommunicationManager {
+    //potential plug and play support
     fn plug_and_play(&mut self){
         let maybe_device_names = self.get_all_potential_devices();
         match maybe_device_names{
@@ -72,6 +73,7 @@ impl CommunicationManager {
             None => {},
         }
     }
+    //for plug and play
     pub fn get_all_potential_devices(&mut self)-> Option<Vec<DeviceName>>{
         let available_ports ;
         match serialport::available_ports(){
