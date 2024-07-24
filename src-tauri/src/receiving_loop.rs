@@ -9,11 +9,11 @@ use crate::{
     communication_manager::{CommunicationManager, DeviceName}, file_handling::FileHandler, models::packet::Packet, packet_parser::PacketParser, packet_structure_manager::PacketStructureManager, state::generic_state::{use_struct, CommunicationManagerState, FileHandlingState, PacketParserState, PacketStructureManagerState}
 };
 
-pub struct ReceivingState {
+pub struct MainLoop {
     refresh_timer_data: RefreshTimerData,
 }
 
-impl ReceivingState {
+impl MainLoop {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(50), move || {

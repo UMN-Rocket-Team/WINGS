@@ -16,17 +16,17 @@ mod sending_loop;
 mod communication_manager;
 mod data_processing;
 mod file_handling;
-mod testing;
 pub mod config_struct;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
+use communication_manager::CommunicationManager;
 use packet_structure_events::send_initial_packet_structure_update_event;
 use generic_state::PacketParserState;
 use crate::generic_state::DataProcessorState;
 
 use state::{generic_state::{self, CommunicationManagerState, FileHandlingState, SendingLoopState}, packet_structure_manager_state::default_packet_structure_manager};
 use tauri::Manager;
-use receiving_loop::ReceivingState;
+use receiving_loop::MainLoop;
 
 use crate::commands::{
     packet_structure_manager_commands::{
@@ -78,11 +78,17 @@ fn main() {
             app.listen_global("initialized", move |_| {
                 send_initial_packet_structure_update_event(app_handle_1.clone());
 
+                //run the plug and play function before the backend function starts up, this initializes the backend with radios already connected
+                let comms_state = app_handle_2.state::<CommunicationManagerState>();
+                let _always_ok = generic_state::use_struct::<CommunicationManager,(),String>(&comms_state, &mut|communication_manager| Ok({
+                    communication_manager.plug_and_play(&app_handle_2);
+                }));
+
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
                 // program and accessed upon termination
-                if app_handle_2.try_state::<ReceivingState>().is_none() {
-                    app_handle_2.manage(ReceivingState::new(app_handle_2.clone()));
+                if app_handle_2.try_state::<MainLoop>().is_none() {
+                    app_handle_2.manage(MainLoop::new(app_handle_2.clone()));
                 }
             });
 
@@ -91,7 +97,7 @@ fn main() {
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { .. } => {
                 // Timer internals need to manually dropped, do that here at program termination
-                event.window().app_handle().state::<ReceivingState>().destroy()
+                event.window().app_handle().state::<MainLoop>().destroy()
             }
             _ => {}
         })

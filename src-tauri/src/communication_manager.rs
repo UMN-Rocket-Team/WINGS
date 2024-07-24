@@ -45,20 +45,18 @@ pub struct CommunicationManager{
 impl Default for CommunicationManager{
 
     fn default() -> Self { 
-        let mut temp = Self{
+        Self{
             comms_objects: vec![],
             id_iterator: 0,
             old_device_names: vec![]
-        };
-        //temp.plug_and_play(); currently broken, does not update front end correctly
-        
-        return temp;
+    
+        }
     }
 }
 
 impl CommunicationManager {
     //potential plug and play support
-    fn plug_and_play(&mut self){
+    pub fn plug_and_play(&mut self, app_handle: &tauri::AppHandle){
         let maybe_device_names = self.get_all_potential_devices();
         match maybe_device_names{
             Some(devices) => {
@@ -72,9 +70,11 @@ impl CommunicationManager {
             },
             None => {},
         }
+        self.update_display_com_devices(app_handle);
     }
     //for plug and play
     pub fn get_all_potential_devices(&mut self)-> Option<Vec<DeviceName>>{
+
         let available_ports ;
         match serialport::available_ports(){
             Ok(ports) => available_ports = ports,

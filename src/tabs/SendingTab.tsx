@@ -20,6 +20,11 @@ const [baud, setBaud] = createSignal(57600);
 const [isSimulating, setSimulating] = createSignal(false);
 export const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
+//needed this in the backend provider it just does the same thing as ++;
+export const IterateComDevicesIterator = () =>{
+    return comDevicesIterator++
+}
+
 const SendingTab: Component = () => {
     const {availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState, comDeviceList, gotData} = useBackend();
     const { showModal } = useModal();

@@ -12,6 +12,7 @@ import {
     DisplayComDevice
 } from "./types";
 import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
+import { comDeviceSelections, IterateComDevicesIterator, setComDeviceSelections } from "../tabs/SendingTab";
 
 /**
  * The global state managed by the {@link BackendContext}.
@@ -139,6 +140,16 @@ export const BackendProvider: ParentComponent = (props) => {
             await listen<DisplayComDevice[]>("com-device-update", ({payload}) => {
                 if(Array.isArray(payload)){
                     setComDeviceList(payload as Array<DisplayComDevice>);
+
+                    //check for a de-sync to prevent the front end from crashing
+                    const difference = comDeviceList().length - comDeviceSelections.length
+                    console.log("difference %d:", difference)
+                    if (difference > 0){
+                        for(let i = 0; i < difference; i++){
+                            setComDeviceSelections([...comDeviceSelections,{id: IterateComDevicesIterator(), selection: "Plug and Play"}])
+                        }
+                    }
+
                 }
                 
             }),
