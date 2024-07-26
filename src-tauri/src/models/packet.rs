@@ -113,6 +113,53 @@ impl PacketFieldType {
         }
     }
 
+     /// takes raw bytes and assigns them the PacketFieldType which they match
+     pub fn parse_be(&self, bytes: &[u8]) -> PacketFieldValue {
+        match self {
+            PacketFieldType::UnsignedByte => {
+                PacketFieldValue::UnsignedByte(u8::from_be_bytes(slice_to_fixed_size::<1>(bytes)))
+            }
+            PacketFieldType::SignedByte => {
+                PacketFieldValue::SignedByte(i8::from_be_bytes(slice_to_fixed_size::<1>(bytes)))
+            }
+            PacketFieldType::UnsignedShort => {
+                PacketFieldValue::UnsignedShort(u16::from_be_bytes(slice_to_fixed_size::<2>(bytes)))
+            }
+            PacketFieldType::SignedShort => {
+                PacketFieldValue::SignedShort(i16::from_be_bytes(slice_to_fixed_size::<2>(bytes)))
+            }
+            PacketFieldType::UnsignedInteger => {
+                PacketFieldValue::UnsignedInteger(u32::from_be_bytes(slice_to_fixed_size::<4>(bytes)))
+            }
+            PacketFieldType::SignedInteger => {
+                PacketFieldValue::SignedInteger(i32::from_be_bytes(slice_to_fixed_size::<4>(bytes)))
+            }
+            PacketFieldType::UnsignedLong => {
+                PacketFieldValue::UnsignedLong(u64::from_be_bytes(slice_to_fixed_size::<8>(bytes)))
+            }
+            PacketFieldType::SignedLong => {
+                PacketFieldValue::SignedLong(i64::from_be_bytes(slice_to_fixed_size::<8>(bytes)))
+            }
+            PacketFieldType::Float => {
+                PacketFieldValue::Float(f32::from_be_bytes(slice_to_fixed_size::<4>(bytes)))
+            }
+            PacketFieldType::Double => {
+                PacketFieldValue::Double(f64::from_be_bytes(slice_to_fixed_size::<8>(bytes)))
+            }
+        }
+    }
+    
+    /// takes raw bytes and assigns them the PacketFieldType which they match
+    pub fn parse_leep_time(&self, bytes: &[u8]) -> PacketFieldValue {
+        match self {
+            PacketFieldType::Float => {
+                PacketFieldValue::Float(u32::from_be_bytes(slice_to_fixed_size::<4>(bytes)) as f32 * 0.0001)
+            }
+            _ => {
+                PacketFieldValue::Float(0.0)
+            }
+        }
+    }
     ///parses the given string into the field
     /// 
     /// # Errors

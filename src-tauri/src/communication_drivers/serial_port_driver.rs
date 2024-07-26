@@ -21,7 +21,8 @@ impl CommsIF for SerialPortDriver{
             self.port = None;
         } else {
             self.baud = baud;
-            let mut new_port = serialport::new(port_name, self.baud).open()?;
+            let mut new_port = serialport::new(port_name, self.baud).flow_control(serialport::FlowControl::Hardware).open()?;
+            println!("Port open");
             new_port.clear(serialport::ClearBuffer::All)?;
             // Short non-zero timeout is needed to receive data from the serialport when
             // the buffer isn't full yet.
@@ -56,7 +57,7 @@ impl CommsIF for SerialPortDriver{
             Some(port) => port,
             None => bail!("No read port has been set")
         };
-
+        
         let mut buffer = [0; 4096];
         let bytes_read = active_port.read(&mut buffer)?;
 

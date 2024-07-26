@@ -106,6 +106,60 @@ impl PacketStructure {
             }
         }
     }
+
+    //ez_make but without packet alignment
+    pub fn dumb_make(&mut self, input: &str, names: &[&str],) {
+        let mut curr_offset = 0;
+        for substr in input.split(" ") {
+            let first_char = substr.chars().nth(0).unwrap();
+            if first_char.is_digit(16) && (first_char.is_lowercase() || first_char.is_ascii_digit()){
+
+                let mut new_identifier = hex::decode(substr).unwrap();
+                new_identifier.reverse();//this is the way firmware broadcasts the identifiers
+
+                let offset = new_identifier.len();//calculates size of the delimiter in memory
+                curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
+                
+                let new_delimiter = PacketDelimiter{
+                    index: self.delimiters.len(),
+                    name:"test delimiter ".to_string() + &(self.delimiters.len()).to_string(),
+                    identifier: new_identifier,
+                    offset_in_packet: curr_offset
+                };
+                curr_offset += offset;
+                self.delimiters.push(new_delimiter);
+            }
+            else if first_char == '_' {
+                let trimmedstr = substr.chars().next().map(|c| &substr[c.len_utf8()..]);
+                curr_offset += trimmedstr.unwrap().parse::<usize>().unwrap();
+            }
+            else{
+                let offset: usize;
+                let t: PacketFieldType;
+                match substr{
+                        "u8" => {offset = 1; t = PacketFieldType::UnsignedByte},
+                        "i8" => {offset = 1; t = PacketFieldType::SignedByte},
+                        "u16" => {offset = 2; t = PacketFieldType::UnsignedShort},
+                        "i16" => {offset = 2; t = PacketFieldType::SignedShort},
+                        "u32" => {offset = 4; t = PacketFieldType::UnsignedInteger},
+                        "i32" => {offset = 4; t = PacketFieldType::SignedInteger},
+                        "u64" => {offset = 8; t = PacketFieldType::UnsignedLong},
+                        "i64" => {offset = 8; t = PacketFieldType::SignedLong},
+                        "F32" => {offset = 4; t = PacketFieldType::Float},
+                        "F64" => {offset = 8; t = PacketFieldType::Double},
+                        &_ => {offset = 0; t = PacketFieldType::UnsignedByte},
+                }
+                let new_field = PacketField{
+                    index: self.fields.len(),
+                    name: names[self.fields.len()].to_owned(),
+                    r#type: t,
+                    offset_in_packet: curr_offset,
+                };
+                self.fields.push(new_field);
+                curr_offset += offset;
+            }
+        }
+    }
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]

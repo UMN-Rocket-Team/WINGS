@@ -26,8 +26,8 @@ impl Default for PacketStructureManagerState {
         //Leep Hardcoded packets start here
         //################################
         let mut leep_gps_data_structure = PacketStructure::default();
-        leep_gps_data_structure.ez_make("b5a6 u32 06 u8 u8 F32 F32 F32 F32",
-        &[ "Timestamp",
+        leep_gps_data_structure.dumb_make("a6b5 F32 06 u8 u8 F32 F32 F32 F32",
+        &[ "Leep_Timestamp",
             "fixType", "satsInView",
             "GPS_TimeStamp", "lat", "long", "altitude"
         ]);
@@ -35,8 +35,8 @@ impl Default for PacketStructureManagerState {
         packet_structure_manager.register_packet_structure(&mut leep_gps_data_structure).expect("Failed to register leep gps data packet");
 
         let mut leep_volt_data_structure = PacketStructure::default();
-        leep_volt_data_structure.ez_make("b5a6 u32 07 F32",
-        &[ "Timestamp",
+        leep_volt_data_structure.dumb_make("a6b5 F32 07 F32",
+        &[ "Leep_Timestamp",
             "voltage"
         ]);
         leep_volt_data_structure.name = "leep_volt".to_owned();

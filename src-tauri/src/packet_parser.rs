@@ -109,11 +109,28 @@ impl PacketParser {
                 for k in 0..packet_structure.fields.len() {
                     let field = &packet_structure.fields[k];
                     let field_start_index = packet_start_index + field.offset_in_packet;
-                    field_data[k] = field.r#type.parse(
-                        &self.unparsed_data
-                            [field_start_index..(field_start_index + field.r#type.size())],
-                    );
+                    if field.name == "Leep_Timestamp"{
+                        println!("{:#?}",&self.unparsed_data
+                            [field_start_index..(field_start_index + field.r#type.size())]);
+                        field_data[k] = (field.r#type.parse_leep_time(
+                            &self.unparsed_data
+                                [field_start_index..(field_start_index + field.r#type.size())],
+                        ));
+                    }
+                    else if packet_structure.name == "leep_gps" || packet_structure.name == "leep_volt"{
+                        field_data[k] = field.r#type.parse_be(
+                            &self.unparsed_data
+                                [field_start_index..(field_start_index + field.r#type.size())],
+                        );
+                    }
+                    else{
+                        field_data[k] = field.r#type.parse(
+                            &self.unparsed_data
+                                [field_start_index..(field_start_index + field.r#type.size())],
+                        );
+                    }
                 }
+                
                 //START AltusMetrum, timestamp code
                 if packet_structure.name == "telemega_kalman" || packet_structure.name == "TeleMetrum v1.x Sensor Data" || packet_structure.name == "TeleMetrum v2 Sensor Data"{
                     let mut timestamp = serde_json::from_str::<u64>(&(serde_json::to_string(&field_data[0]).unwrap_or_default())).unwrap_or_default() + self.iterator;
