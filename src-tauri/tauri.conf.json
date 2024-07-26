@@ -6,8 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "wings",
-    "version": "1.3.0"
+    "productName": "wings"
   },
   "tauri": {
     "allowlist": {
