@@ -9,9 +9,9 @@ use crate::file_handling;
 const DEFAULT_CONFIG: ConfigStruct = ConfigStruct {
     default_baud: 56700
 };
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct ConfigStruct{
-    default_baud: u32
+    pub default_baud: u32
 }
 
 ///Default will either be what is already in the config file, or the DEFAULT_CONFIG const
@@ -59,4 +59,15 @@ fn make_config() -> Result<(),Error>{
 }
 impl ConfigStruct{
     
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*; // lets the unit tests use everything in this file
+
+    #[test]
+    #[ignore]
+    fn print_config_as_read() {
+        println!("{:#?}", ConfigStruct::default());
+    }
 }

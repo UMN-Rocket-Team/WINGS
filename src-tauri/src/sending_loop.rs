@@ -4,7 +4,7 @@ use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
-use crate::{communication_manager::CommunicationManager, packet_generator::generate_packet, state::generic_state::{use_struct, FileHandlingState, PacketStructureManagerState}};
+use crate::{communication_manager::CommunicationManager, packet_generator::generate_packet, state::generic_state::{result_to_string, use_struct, FileHandlingState, PacketStructureManagerState}};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -114,19 +114,19 @@ impl SendingLoop {
         self.task = Some(BackgroundTask::run_repeatedly(move || {
 
             let file_handling_state = app_handle.state::<FileHandlingState>();
-            let packet_to_send;
+            let packet_to_send:Option<StringRecord>;
 
             // ##########################
             // Get the packet string record Depending on mode
             // ##########################
             match mode{
                 SendingModes::FromCSV => 
-                    match use_struct(&file_handling_state, &mut |file_handler|{
+                    match result_to_string(use_struct(&file_handling_state, &mut |file_handler|{
                         match file_handler.read_packet(){
                             Ok(packet) =>  Ok(packet),
                             Err(err) => Err(err),
                         }
-                    }){
+                    })){
                         Ok(packet) => {packet_to_send = Some(packet);},
                         Err(err) => {
                             println!("Failed to lock file handler: {}", err);

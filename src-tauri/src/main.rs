@@ -80,9 +80,9 @@ fn main() {
 
                 //run the plug and play function before the backend function starts up, this initializes the backend with radios already connected
                 let comms_state = app_handle_2.state::<CommunicationManagerState>();
-                let _always_ok = generic_state::use_struct::<CommunicationManager,(),String>(&comms_state, &mut|communication_manager| Ok({
+                let _always_ok = generic_state::use_struct::<CommunicationManager,()>(&comms_state, &mut|communication_manager| {
                     communication_manager.plug_and_play(&app_handle_2);
-                }));
+                });
 
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the

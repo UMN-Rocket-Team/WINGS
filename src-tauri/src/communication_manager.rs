@@ -3,9 +3,9 @@ use anyhow::bail;
 use serde::Serialize;
 use tauri::Manager;
 
-use crate::communication_drivers::{
+use crate::{communication_drivers::{
     byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
-};
+}, state::generic_state::{ConfigState}};
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
@@ -62,7 +62,7 @@ impl CommunicationManager {
             Some(devices) => {
                 for device_name in devices{
                     let number = self.add_serial_device();
-                    match self.init_device(&device_name.name, 56700,number){
+                    match self.init_device(&device_name.name , app_handle.state::<ConfigState>().default_baud, number) {
                         Ok(_) => {},
                         Err(_) => {_= self.delete_device(number)},
                     }

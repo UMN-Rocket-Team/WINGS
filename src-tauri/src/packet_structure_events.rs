@@ -1,4 +1,4 @@
-use crate::{models::packet_view_model::PacketStructureViewModel, state::generic_state::{use_struct, DataProcessorState, PacketStructureManagerState}};
+use crate::{models::packet_view_model::PacketStructureViewModel, state::generic_state::{result_to_error, use_struct, DataProcessorState, PacketStructureManagerState}};
 use anyhow::{Error,anyhow};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
@@ -46,7 +46,7 @@ pub fn update_packet_structures(
     callback: &mut dyn FnMut(
         &mut PacketStructureManager,
     ) -> Result<(Vec<usize>, Option<Vec<usize>>), (Vec<usize>, Option<Vec<usize>>, String)>,
-) -> Result<(), Error> {
+) -> Result<Result<(), Error>,String> {
     use_struct(
         &packet_structure_manager_state,
         &mut |packet_structure_manager| {
@@ -70,7 +70,7 @@ pub fn update_packet_structures(
                     return Err(anyhow!(message));
                 }
             }
-            use_struct(
+            result_to_error(use_struct(
                 &data_processor_state, 
                 &mut |data_processor| {
                     match data_processor.generate_display_field_names(packet_structure_manager) {
@@ -88,13 +88,13 @@ pub fn update_packet_structures(
                         }
                     }
                 }
-            )
+            ))
         },
     )
 }
 
 pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
-    match use_struct::<PacketStructureManager,(), &str>(
+    match use_struct::<PacketStructureManager,()>(
         &app_handle.state::<PacketStructureManagerState>(),
         &mut |packet_structure_manager| {
             emit_packet_structure_update_event(
@@ -107,7 +107,6 @@ pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
                 None,
                 packet_structure_manager,
             );
-            Ok(())
         },
     ) {
         Ok(_) => {}
