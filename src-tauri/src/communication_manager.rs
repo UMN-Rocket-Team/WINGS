@@ -5,7 +5,7 @@ use tauri::Manager;
 
 use crate::{communication_drivers::{
     byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
-}, state::generic_state::{ConfigState}};
+}, state::generic_state::ConfigState};
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
