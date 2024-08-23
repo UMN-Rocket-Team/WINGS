@@ -1,4 +1,4 @@
-use crate::{models::packet_view_model::PacketStructureViewModel, state::generic_state::{result_to_error, use_struct, DataProcessorState, PacketStructureManagerState}};
+use crate::{file_handling::config_struct::ConfigStruct, models::packet_view_model::PacketStructureViewModel, state::generic_state::{result_to_error, use_struct, ConfigState, DataProcessorState}};
 use anyhow::{Error,anyhow};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
@@ -41,7 +41,7 @@ fn emit_packet_structure_update_event(
 
 pub fn update_packet_structures(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    packet_structure_manager_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     callback: &mut dyn FnMut(
         &mut PacketStructureManager,
@@ -49,15 +49,15 @@ pub fn update_packet_structures(
 ) -> Result<Result<(), Error>,String> {
     use_struct(
         &packet_structure_manager_state,
-        &mut |packet_structure_manager| {
-            let result = callback(packet_structure_manager);
+        &mut |config| {
+            let result = callback(&mut config.packet_structure_manager);
             match result {
                 Ok((modified_packet_view_model_ids, deleted_packet_view_model_ids)) => {
                     emit_packet_structure_update_event(
                         &app_handle,
                         modified_packet_view_model_ids,
                         deleted_packet_view_model_ids,
-                        packet_structure_manager,
+                        &config.packet_structure_manager,
                     );
                 }
                 Err((modified_packet_view_model_ids, deleted_packet_view_model_ids, message)) => {
@@ -65,7 +65,7 @@ pub fn update_packet_structures(
                         &app_handle,
                         modified_packet_view_model_ids,
                         deleted_packet_view_model_ids,
-                        packet_structure_manager,
+                        &config.packet_structure_manager,
                     );
                     return Err(anyhow!(message));
                 }
@@ -73,7 +73,7 @@ pub fn update_packet_structures(
             result_to_error(use_struct(
                 &data_processor_state, 
                 &mut |data_processor| {
-                    match data_processor.generate_display_field_names(packet_structure_manager) {
+                    match data_processor.generate_display_field_names(&config.packet_structure_manager) {
                         Ok(new_fields) => {
                             app_handle
                                 .emit_all("display-fields-update", new_fields)
@@ -94,18 +94,18 @@ pub fn update_packet_structures(
 }
 
 pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
-    match use_struct::<PacketStructureManager,()>(
-        &app_handle.state::<PacketStructureManagerState>(),
-        &mut |packet_structure_manager| {
+    match use_struct::<ConfigStruct,()>(
+        &app_handle.state::<ConfigState>(),
+        &mut |config| {
             emit_packet_structure_update_event(
                 &app_handle,
-                packet_structure_manager
+                config.packet_structure_manager
                     .packet_structures
                     .iter()
                     .map(|packet_structure| packet_structure.id)
                     .collect(),
                 None,
-                packet_structure_manager,
+                &config.packet_structure_manager,
             );
         },
     ) {

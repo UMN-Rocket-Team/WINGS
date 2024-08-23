@@ -1,11 +1,12 @@
 
+
 use anyhow::bail;
 use serde::Serialize;
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 
 use crate::{communication_drivers::{
     byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
-}, state::generic_state::ConfigState};
+}, models::packet::Packet, state::generic_state::ConfigState};
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
@@ -15,20 +16,16 @@ pub struct DeviceName {
 }
 
 const COM_DEVICE_UPDATE: &str = "com-device-update";
+const HANDLE_EXPECT: &str = "This is assigned at initialization"; // reason to expect the app_handle in the code
 pub trait CommsIF {
-    fn init_device(&mut self, port_name: &str, baud: u32)  -> anyhow::Result<()>;
+    fn init_device(&mut self, port_name: &str, baud: u32, app_handle: AppHandle)  -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()>;
-    fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()>;
+    fn get_device_packets(&mut self, data_vector: &mut Vec<Packet>) -> anyhow::Result<()>;
     fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>>;
     fn is_init(&mut self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
     fn get_type(&self) -> String;
-}
-
-pub struct GetDataResult {
-    pub(crate) new_ports: Option<Vec<DeviceName>>,
-    pub(crate) data_read: Vec<u8>
 }
 #[derive(Serialize)]
 pub struct DisplayComDevice {
@@ -36,33 +33,24 @@ pub struct DisplayComDevice {
     device_type: String,
 }
 
+#[derive(Default)]
 pub struct CommunicationManager{
     pub comms_objects: Vec<Box<dyn CommsIF + Send>>,
     pub id_iterator: usize,
     pub old_device_names: Vec<DeviceName>,
-}
-
-impl Default for CommunicationManager{
-
-    fn default() -> Self { 
-        Self{
-            comms_objects: vec![],
-            id_iterator: 0,
-            old_device_names: vec![]
-    
-        }
-    }
+    pub app_handle: Option<AppHandle>,//can always be expected since it will be assigned during initialization
 }
 
 impl CommunicationManager {
     //potential plug and play support
-    pub fn plug_and_play(&mut self, app_handle: &tauri::AppHandle){
+    pub fn init(&mut self, app_handle: AppHandle){
+        self.app_handle = Some(app_handle.clone());
         let maybe_device_names = self.get_all_potential_devices();
         match maybe_device_names{
             Some(devices) => {
                 for device_name in devices{
                     let number = self.add_serial_device();
-                    match self.init_device(&device_name.name , app_handle.state::<ConfigState>().default_baud, number) {
+                    match self.init_device(&device_name.name , app_handle.state::<ConfigState>().lock().expect(HANDLE_EXPECT).default_baud, number) {
                         Ok(_) => {},
                         Err(_) => {_= self.delete_device(number)},
                     }
@@ -70,7 +58,7 @@ impl CommunicationManager {
             },
             None => {},
         }
-        self.update_display_com_devices(app_handle);
+        self.update_display_com_devices();
     }
     //for plug and play
     pub fn get_all_potential_devices(&mut self)-> Option<Vec<DeviceName>>{
@@ -116,20 +104,14 @@ impl CommunicationManager {
     /// # Error
     /// 
     /// Returns an error if the device being addressed isn't initialized correctly
-    pub fn get_data(&mut self, id: usize) -> Result<GetDataResult, String>{
+    pub fn get_data(&mut self, id: usize) -> Result<Vec<Packet>, String>{
         let index = self.find(id);
         match index{
             Some(index) => {
-                let mut result: GetDataResult = GetDataResult {
-                    new_ports: None,
-                    data_read: vec![]
-                };
-
-                let new_ports = self.comms_objects[index].get_new_available_ports();
-                result.new_ports = new_ports;
+                let mut result = vec![];
 
                 if self.comms_objects[index].is_init() {
-                    match self.comms_objects[index].read_port(&mut result.data_read) {
+                    match self.comms_objects[index].get_device_packets(&mut result) {
                         Ok(_) => return Ok(result),
                         Err(error) => return Err(error.to_string())
                     }
@@ -166,7 +148,7 @@ impl CommunicationManager {
         let index = self.find(id);
         match index{
             Some(index) => 
-                match self.comms_objects[index].init_device(port_name, baud){
+                match self.comms_objects[index].init_device(port_name, baud,self.app_handle.clone().expect(HANDLE_EXPECT)){
                     Ok(_) => Ok(()),
                     Err(message) => Err(message)
                 },
@@ -231,14 +213,14 @@ impl CommunicationManager {
         None
     }
 
-    pub fn update_display_com_devices(&mut self, app_handle: &tauri::AppHandle){
+    pub fn update_display_com_devices(&mut self){
         let mut return_me = vec![];
         let mut i = 0;
         while i < self.comms_objects.len(){
             return_me.push(DisplayComDevice{ id: self.comms_objects[i].get_id(), device_type: self.comms_objects[i].get_type() });
             i+=1;
         }
-        let _ = app_handle.emit_all(COM_DEVICE_UPDATE, &return_me);
+        let _ = self.app_handle.clone().unwrap().emit_all(COM_DEVICE_UPDATE, &return_me);
     }
 
     pub fn get_devices(&self) -> Vec<usize>{

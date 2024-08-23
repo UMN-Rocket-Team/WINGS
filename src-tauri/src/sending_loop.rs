@@ -4,7 +4,7 @@ use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
-use crate::{communication_manager::CommunicationManager, packet_generator::generate_packet, state::generic_state::{result_to_string, use_struct, FileHandlingState, PacketStructureManagerState}};
+use crate::{communication_manager::CommunicationManager, packet_generator::generate_packet, state::generic_state::{result_to_string, use_struct, ConfigState, FileHandlingState}};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -95,8 +95,8 @@ pub struct SendingLoop {
 
 impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes, write_id: usize) -> anyhow::Result<()> {
-        let structure_manager_state = app_handle.state::<PacketStructureManagerState>();
-        let packet_structure = structure_manager_state.lock().unwrap().packet_structures[1].clone();
+        let config_state = app_handle.state::<ConfigState>();
+        let packet_structure = config_state.lock().unwrap().packet_structure_manager.packet_structures[1].clone();
 
 
 

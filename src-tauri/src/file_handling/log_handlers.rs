@@ -13,7 +13,7 @@ const DAY_FORMAT: &str = "%F";
 const TIME_FORMAT: &str = "%H_%M_%S";
 const LOG_TIME_FORMAT: &str = "%a_%F_%H_%M_%S";
 /// Acts as a general data structure to store all files that the ground station is currently interacting with
-pub struct FileHandler {
+pub struct LogHandler {
     csv_writers: Vec<PacketWriter>,//a list of all csv writers within the FileHandler(one for each packet)
     csv_reader: Option<Reader<File>>,
     byte_writer: File,
@@ -27,7 +27,7 @@ struct PacketWriter{
     index: usize
 }
 
-impl Default for FileHandler {
+impl Default for LogHandler {
     /// Makes a default configuration for the file handler
     /// 
     /// the handler will first generate a logs directory in parallel to the execution directory
@@ -81,7 +81,7 @@ impl Default for FileHandler {
     }
 }
 
-impl FileHandler {
+impl LogHandler {
 
     /// Write a packet to the csv currently loaded
     ///
@@ -194,8 +194,8 @@ impl FileHandler {
         }
     }
 
-    fn find_writer_index(&mut self, index: usize) -> Option<usize>{
-        self.csv_writers.iter().position(|r| r.index == index)
+    fn find_writer_index(&mut self, id: usize) -> Option<usize>{
+        self.csv_writers.iter().position(|r| r.index == id)
     }
 }
 

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 
 
-#[derive(PartialEq, Deserialize, Clone, Debug, Default)]
+#[derive(PartialEq, Deserialize,Serialize, Clone, Debug, Default)]
 
 /// Represents an entire "Data Packet Structure" 
 /// 

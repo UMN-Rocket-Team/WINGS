@@ -3,7 +3,7 @@ use crate::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
     packet_view_model::{PacketComponentType, PacketStructureViewModel},
-    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, state::generic_state::{DataProcessorState, PacketStructureManagerState}
+    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, state::generic_state::{ConfigState, DataProcessorState}
 };
 // # packet_structure_manager_commands
 // 
@@ -14,14 +14,14 @@ use crate::{
 #[tauri::command]
 pub fn set_packet_name(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     name: &str,
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.set_packet_name(packet_structure_id, name) {
@@ -35,7 +35,7 @@ pub fn set_packet_name(
 #[tauri::command]
 pub fn set_field_name(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     field_index: usize,
@@ -43,7 +43,7 @@ pub fn set_field_name(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.set_field_name(packet_structure_id, field_index, name) {
@@ -57,7 +57,7 @@ pub fn set_field_name(
 #[tauri::command]
 pub fn set_field_type(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     field_index: usize,
@@ -65,7 +65,7 @@ pub fn set_field_type(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.set_field_type(packet_structure_id, field_index, r#type) {
@@ -79,7 +79,7 @@ pub fn set_field_type(
 #[tauri::command]
 pub fn set_field_metadata_type(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     field_index: usize,
@@ -87,7 +87,7 @@ pub fn set_field_metadata_type(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.set_field_metadata_type(
@@ -105,7 +105,7 @@ pub fn set_field_metadata_type(
 #[tauri::command]
 pub fn set_delimiter_name(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     delimiter_index: usize,
@@ -113,7 +113,7 @@ pub fn set_delimiter_name(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.set_delimiter_name(packet_structure_id, delimiter_index, name) {
@@ -127,7 +127,7 @@ pub fn set_delimiter_name(
 #[tauri::command]
 pub fn set_delimiter_identifier(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     delimiter_index: usize,
@@ -135,7 +135,7 @@ pub fn set_delimiter_identifier(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| match packet_structure_manager.set_delimiter_identifier(
             packet_structure_id,
@@ -151,7 +151,7 @@ pub fn set_delimiter_identifier(
 #[tauri::command]
 pub fn set_gap_size(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     gap_offset: usize,
@@ -159,7 +159,7 @@ pub fn set_gap_size(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.set_gap_size(packet_structure_id, gap_offset, new_gap_size) {
@@ -173,13 +173,13 @@ pub fn set_gap_size(
 #[tauri::command]
 pub fn add_field(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.add_field(packet_structure_id) {
@@ -193,13 +193,13 @@ pub fn add_field(
 #[tauri::command]
 pub fn add_delimiter(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.add_delimiter(packet_structure_id) {
@@ -213,7 +213,7 @@ pub fn add_delimiter(
 #[tauri::command]
 pub fn add_gap_after(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     is_field: bool,
@@ -221,7 +221,7 @@ pub fn add_gap_after(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.add_gap_after(packet_structure_id, is_field, component_index) {
@@ -235,7 +235,7 @@ pub fn add_gap_after(
 #[tauri::command]
 pub fn delete_packet_structure_component(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
     component_index: usize,
@@ -243,7 +243,7 @@ pub fn delete_packet_structure_component(
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.delete_packet_structure_component(
@@ -273,13 +273,13 @@ pub fn delete_packet_structure_component(
 #[tauri::command]
 pub fn add_packet_structure(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     view: PacketStructureViewModel,
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             let mut packet_structure = view.to_packet_structure();
@@ -298,12 +298,12 @@ pub fn add_packet_structure(
 #[tauri::command]
 pub fn register_empty_packet_structure(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             // Find the smallest number possible to append to the name "New Packet " so that subsequent new packet's names do not collide
@@ -360,13 +360,13 @@ pub fn register_empty_packet_structure(
 #[tauri::command]
 pub fn delete_packet_structure(
     app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, PacketStructureManagerState>,
+    config_state: tauri::State<'_, ConfigState>,
     data_processor_state: tauri::State<'_, DataProcessorState>,
     packet_structure_id: usize,
 ) -> Result<(), String> {
     result_to_string(update_packet_structures(
         app_handle,
-        packet_structure_manager_state,
+        config_state,
         data_processor_state,
         &mut |packet_structure_manager| {
             match packet_structure_manager.delete_packet_structure(packet_structure_id) {

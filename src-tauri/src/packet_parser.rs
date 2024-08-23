@@ -6,14 +6,14 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct PacketParser {
+pub struct SerialPacketParser {
     unparsed_data: Vec<u8>,
     iterator: u64,
     last: u64,
 }
 
 /// responsible converting raw data to packets
-impl PacketParser {
+impl SerialPacketParser {
     // adds new unparsed data
     pub fn push_data(&mut self, data: &[u8], print_flag: bool) {
         self.unparsed_data.extend(data);
@@ -191,7 +191,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -226,7 +226,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -263,7 +263,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -304,7 +304,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -368,7 +368,7 @@ mod tests {
         };
         wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -425,7 +425,7 @@ mod tests {
         };
         wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x20,0x00,
                     0x08,0x00,
@@ -475,7 +475,7 @@ mod tests {
             metafields: vec![],
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &["";5]);
-        let mut packet_parser = PacketParser::default();
+        let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,

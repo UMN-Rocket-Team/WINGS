@@ -1,13 +1,18 @@
 use anyhow::bail;
+use tauri::AppHandle;
 
-use crate::communication_manager::{CommsIF, DeviceName};
+use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::Packet, packet_parser::SerialPacketParser};
 
+const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct SerialPortDriver {
     previous_available_ports: Vec<DeviceName>,
     port: Option<Box<dyn serialport::SerialPort>>,
+    packet_parser: SerialPacketParser,
     baud: u32,
     id: usize,
+    app_handle: Option<AppHandle>,
+    config: ConfigStruct
 }
 impl CommsIF for SerialPortDriver{
     
@@ -16,7 +21,8 @@ impl CommsIF for SerialPortDriver{
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32)  -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str , baud: u32, app_handle: AppHandle)  -> anyhow::Result<()> {
+        self.app_handle = Some(app_handle.clone());
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -51,7 +57,7 @@ impl CommsIF for SerialPortDriver{
     /// # Errors
     /// 
     /// bails and returns an error if there is no active port
-    fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
+    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
         let active_port = match self.port.as_mut() {
             Some(port) => port,
             None => bail!("No read port has been set")
@@ -60,9 +66,8 @@ impl CommsIF for SerialPortDriver{
         let mut buffer = [0; 4096];
         let bytes_read = active_port.read(&mut buffer)?;
 
-        // Clone to a vec so we can return it easily, especially as we don't
-        // know how large it will end up being at compile time.
-        write_buffer.extend(buffer[..bytes_read].to_vec());
+        self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
         Ok(())
     }
 

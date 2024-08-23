@@ -1,12 +1,12 @@
 use std::sync::Mutex;
 
-use anyhow::{bail, Error, anyhow};
+use anyhow::{Error, anyhow};
 use chrono::Duration;
 use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager::{CommunicationManager, DeviceName}, models::packet::Packet, packet_parser::PacketParser, state::generic_state::{result_to_string, use_struct, CommunicationManagerState, FileHandlingState, PacketParserState, PacketStructureManagerState}
+    communication_manager::{CommunicationManager, DeviceName}, models::packet::Packet, state::generic_state::{use_struct, CommunicationManagerState}
 };
 
 pub struct MainLoop {
@@ -19,9 +19,6 @@ impl MainLoop {
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(50), move || {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
-                app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<PacketParserState>(),
-                app_handle.state::<FileHandlingState>(),
             ) {
                 Ok(result) => {
                     //sends packets to frontend
@@ -83,84 +80,22 @@ pub struct RefreshAndReadResult {
 /// along with new display packets for graphs, and other displays.
 fn iterate_receiving_loop(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
-    ps_manager_state: tauri::State<'_, PacketStructureManagerState>,
-    packet_parser_state: tauri::State<'_, PacketParserState>,
-    file_handler_state: tauri::State<'_, FileHandlingState>
 ) -> Result<RefreshAndReadResult, Error> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
         parsed_packets: vec![],
         got_data: false,
     };
-    let mut read_data: Vec<u8> = vec![];
 
     // ##########################
     // Get Data
     // ##########################
     match use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        let mut error_counter = 0;
+        result.new_available_port_names = communication_manager.get_all_potential_devices();
         for device in communication_manager.get_devices(){
             match communication_manager.get_data(device) {
-                Ok(mut data) => {
-                    if let Some(ports) = result.new_available_port_names.as_mut() {
-                        if let Some(new_ports) = data.new_ports.as_mut(){
-                            ports.append(new_ports);
-                            ports.sort();
-                            ports.dedup();
-                            println!("append: {:#?}", ports);
-                        }
-                    } else {
-                        result.new_available_port_names = data.new_ports;
-                        if result.new_available_port_names.is_some(){
-                           println!("replace: {:#?} \n device: {:#?}", result.new_available_port_names, device);
-                        }
-                    }
-
-
-
-                    match use_struct(&file_handler_state, &mut |file_handler| {
-                        match file_handler.write_bytes(data.data_read.clone()) {
-                            Err(err) => {
-                                return Err(err)
-                            },
-                            Ok(ok) => Ok(ok),
-                        }
-                    }){
-                        Ok(_) => {},
-                        Err(err) => {eprintln!("{}", &err); error_counter += 1;},
-                    }
-
-
-                    read_data = data.data_read;//moving data into new array for ownership purposes
-
-                    if !read_data.is_empty() {
-                        // println!("{:#?}",read_data);
-                        result.got_data = true;
-                        match result_to_string(use_struct(&packet_parser_state, &mut |packet_parser: &mut PacketParser| {
-                            use_struct( &ps_manager_state,&mut |ps_manager| {
-                                use_struct(&file_handler_state, &mut |file_handler| {
-                                    //add data to parser
-                                    packet_parser.push_data(&read_data, false);
-                                    //run parser
-                                    result.parsed_packets.extend(packet_parser.parse_packets(&ps_manager, false));
-                                    //write to csv
-                                    for packet in result.parsed_packets.clone(){
-                                        match file_handler.write_packet(packet,ps_manager) {
-                                            Err(err) => {
-                                                eprintln!("{}", err.context("Somethings wrong with the csv writing"));
-                                            },
-                                            Ok(_) => {},
-                                        }
-                                    }
-                                })
-                            })
-                        })) {
-                            Ok(_) => {}
-                            Err(message) => {bail!(message)},
-                        }
-                    }
-
-
+                Ok(data) => {
+                    result.parsed_packets.extend(data);
                 },
                 Err(err) => {
                     if err != "Operation timed out"{
@@ -168,10 +103,6 @@ fn iterate_receiving_loop(
                     }
                 }
             }
-        }
-        if error_counter != 0 && read_data.is_empty(){
-                eprintln!("bailing main loop iteration from previous errors in coms manager");
-                bail!("errors in coms manager");
         }
         Ok(())
     }) {
@@ -187,23 +118,20 @@ fn iterate_receiving_loop(
 #[cfg(test)]
 mod tests {
 
+    use crate::state::generic_state::FileHandlingState;
+
     use super::*; // lets the unit tests use everything in this file
     use tauri::Manager;
 
     #[test]
     fn run_loop_once() {
         let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
-            .manage(PacketStructureManagerState::default())
             .manage(CommunicationManagerState::default())
-            .manage(PacketParserState::default())
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
         assert!(iterate_receiving_loop(
-            app_handle.state::<CommunicationManagerState>(),
-            app_handle.state::<PacketStructureManagerState>(),
-            app_handle.state::<PacketParserState>(),
-            app_handle.state::<FileHandlingState>()).is_ok())
+            app_handle.state::<CommunicationManagerState>()).is_ok())
     }
 
     #[test]
@@ -212,9 +140,7 @@ mod tests {
     fn can_receive_and_parse_data_with_rfds() {
         //init app
         let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
-            .manage(PacketStructureManagerState::default())
             .manage(CommunicationManagerState::default())
-            .manage(PacketParserState::default())
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
@@ -229,10 +155,7 @@ mod tests {
         //run the main receiving loop and print if any data is received
         loop{
             let output = iterate_receiving_loop(
-                app_handle.state::<CommunicationManagerState>(),
-                app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<PacketParserState>(),
-                app_handle.state::<FileHandlingState>());
+                app_handle.state::<CommunicationManagerState>());
             match output{
                 Ok(output) => {
                     match output.new_available_port_names {
@@ -263,9 +186,7 @@ mod tests {
     fn can_receive_and_parse_data_with_multiple_rfds() {
         //init app
         let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
-            .manage(PacketStructureManagerState::default())
             .manage(CommunicationManagerState::default())
-            .manage(PacketParserState::default())
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
@@ -284,10 +205,7 @@ mod tests {
         //run the main receiving loop and print if any data is received
         loop{
             let output = iterate_receiving_loop(
-                app_handle.state::<CommunicationManagerState>(),
-                app_handle.state::<PacketStructureManagerState>(),
-                app_handle.state::<PacketParserState>(),
-                app_handle.state::<FileHandlingState>());
+                app_handle.state::<CommunicationManagerState>());
             match output{
                 Ok(output) => {
                     match output.new_available_port_names {

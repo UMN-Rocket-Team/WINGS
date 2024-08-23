@@ -1,13 +1,9 @@
-use std::sync::Mutex;
-
 use crate::{
     models::packet_structure::PacketStructure,
     packet_structure_manager::PacketStructureManager,
 };
 
-use super::generic_state::PacketStructureManagerState;
-
-pub fn default_packet_structure_manager() -> PacketStructureManagerState {
+pub fn default_packet_structure_manager() -> PacketStructureManager {
     let mut packet_structure_manager = PacketStructureManager::default();
 
     let mut draw_structure = PacketStructure::default();
@@ -200,5 +196,5 @@ pub fn default_packet_structure_manager() -> PacketStructureManagerState {
     altus_satellite_packet.name = "Altus GPS Satellite Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut altus_satellite_packet).expect("Failed to register altusmetrum satellite packet");
 
-    Mutex::new(packet_structure_manager)
+    packet_structure_manager
 }

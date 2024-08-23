@@ -25,7 +25,7 @@ impl PacketStructureViewModel {
                 PacketComponent::Delimiter(delimiter) => packet_delimiters.push(PacketDelimiter {
                     index: delimiter.index,
                     name: delimiter.name.to_string(),
-                    identifier: hex::decode(delimiter.identifier.to_string()).unwrap(), // used unwrap instead of match(program will panick if this cant decode)
+                    identifier: hex::decode(delimiter.identifier.to_string()).unwrap(), // used unwrap instead of match(program will panic if this cant decode)
                     offset_in_packet: delimiter.offset_in_packet,
                 }),
                 PacketComponent::Gap(_gap) => {} //gaps are view only and can be ignored

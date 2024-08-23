@@ -16,15 +16,13 @@ mod sending_loop;
 mod communication_manager;
 mod data_processing;
 mod file_handling;
-pub mod config_struct;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use communication_manager::CommunicationManager;
 use packet_structure_events::send_initial_packet_structure_update_event;
-use generic_state::PacketParserState;
 use crate::generic_state::DataProcessorState;
 
-use state::{generic_state::{self, CommunicationManagerState, FileHandlingState, SendingLoopState}, packet_structure_manager_state::default_packet_structure_manager};
+use state::{generic_state::{self, CommunicationManagerState, ConfigState, FileHandlingState, SendingLoopState}, packet_structure_manager_state::default_packet_structure_manager};
 use tauri::Manager;
 use receiving_loop::MainLoop;
 
@@ -67,10 +65,10 @@ fn main() {
         ])
         .manage(default_packet_structure_manager())
         .manage(CommunicationManagerState::default())
-        .manage(PacketParserState::default())
         .manage(SendingLoopState::default())
         .manage(DataProcessorState::default())
         .manage(FileHandlingState::default())
+        .manage(ConfigState::default())
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
@@ -80,8 +78,8 @@ fn main() {
 
                 //run the plug and play function before the backend function starts up, this initializes the backend with radios already connected
                 let comms_state = app_handle_2.state::<CommunicationManagerState>();
-                let _always_ok = generic_state::use_struct::<CommunicationManager,()>(&comms_state, &mut|communication_manager| {
-                    communication_manager.plug_and_play(&app_handle_2);
+                let _ = generic_state::use_struct::<CommunicationManager,()>(&comms_state, &mut|communication_manager| {
+                    communication_manager.init(app_handle_2.clone());
                 });
 
                 // Initialize and start the background refresh timer

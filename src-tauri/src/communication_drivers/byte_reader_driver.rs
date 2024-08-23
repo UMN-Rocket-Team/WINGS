@@ -1,18 +1,26 @@
-//specific communications device for reading files
-
+// ****
+// Written by Kuba K
+// Communications device driver for reading byte files and Putty outputs
+// 
+// ****
 use std::{fs::File, io::Read};
+use anyhow::{bail, Context};
+use tauri::{AppHandle, Manager};
+use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::Packet, packet_parser::SerialPacketParser, state::generic_state::{get_clone, ConfigState}};
 
-use anyhow::bail;
-
-use crate::communication_manager::{CommsIF, DeviceName};
+const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 pub struct ByteReadDriver {
     file: Option<File>,
     id: usize,
+    packet_parser: SerialPacketParser,
+    config: ConfigStruct
+
 }
 impl CommsIF for ByteReadDriver{
-    fn init_device(&mut self, file_name: &str, _baud: u32)  -> anyhow::Result<()> {
+    fn init_device(&mut self, file_name: &str, _baud: u32, app_handle: AppHandle)  -> anyhow::Result<()> {
+        self.config = get_clone(&app_handle.state::<ConfigState>())?;
         match File::open(file_name){
             Ok(new_file) => {
                 self.file = Some(new_file); 
@@ -28,15 +36,16 @@ impl CommsIF for ByteReadDriver{
         Ok(())
     }
 
-    fn read_port(&mut self, write_buffer: &mut Vec<u8>) -> anyhow::Result<()> {
+    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
         if self.is_init(){
             let mut buffer = [0; 4096];
-            match self.file.as_mut().unwrap().read(&mut buffer) {
+            match self.file.as_mut().context("failed to load file")?.read(&mut buffer) {
                 Ok(_) => {
                     if buffer == [0; 4096] {
                         return Ok(());
                     }
-                    write_buffer.extend_from_slice(&buffer); 
+                    self.packet_parser.push_data(&buffer, PRINT_PARSING);
+                    write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
                     Ok(())
                 },
                 Err(err) =>  bail!(err),

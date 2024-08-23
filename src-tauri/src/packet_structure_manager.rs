@@ -3,6 +3,8 @@ use std::{
     vec,
 };
 
+use serde::{Deserialize, Serialize};
+
 use crate::{
     models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
@@ -53,15 +55,16 @@ impl Error {
 
 /// A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
 #[readonly::make]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PacketStructureManager {
     pub(crate) packet_structures: Vec<PacketStructure>,
 
-    // These variables are used in situations when matching packets to bits
+    // These variables are used for parsing packets
     pub(crate) minimum_packet_structure_size: usize,
     pub(crate) maximum_packet_structure_size: usize,
     pub(crate) maximum_first_delimiter: usize,
 
-    // Every packet structure is given a monotonically increasing ID
+    // Every packet structure is given an increasing ID
     next_packet_id: usize,
 }
 
