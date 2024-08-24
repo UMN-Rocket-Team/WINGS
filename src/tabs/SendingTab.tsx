@@ -80,7 +80,7 @@ const SendingTab: Component = () => {
     }
 
     return (
-        <div class = "flex flex-grow gap-4">
+        <div class="flex flex-grow gap-4">
             <div class="flex flex-grow flex-col gap-4">
                 <button onClick = {async () => {
                     const store = new Store("persistent.dat");

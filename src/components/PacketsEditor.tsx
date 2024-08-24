@@ -102,8 +102,8 @@ const PacketEditor: Component = () => {
                                     onInput={async e => await showErrorModalOnError(async () => await setPacketName(selectedPacket()!.id, (e.target as HTMLInputElement).value), 'Failed to change packet name')} />
                             </label>
                             <span>Components</span>
-                            <div class = "justify-between">
-                                <div class ="flex flex-col gap-2">
+                            <div class="justify-between">
+                                <div class="flex flex-col gap-2">
                                     <For each={selectedPacketStructureComponents()}>
                                         {(component, i) => (
                                             <button class={`flex justify-between gap-4 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>

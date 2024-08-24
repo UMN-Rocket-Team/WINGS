@@ -129,7 +129,7 @@ const FieldsScreen: Component = () => {
                         return (
                             <div class="bg-stone-400 dark:bg-dark-900 flex justify-center items-center h-[100px] p-1.5 overflow-hidden rounded-7">
                                 <button 
-                                    class = "bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
+                                    class="bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
                                     onClick={() => showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal]  ?? 0, {
                                         displayStruct: display,
                                         index:index(),

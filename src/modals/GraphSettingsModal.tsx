@@ -117,7 +117,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                         </h3>
                         <For each={PacketStructureViewModels}>
                                 {(PacketStructureViewModel: PacketStructureViewModel) =>
-                        <div class='flex flex-row bg-neutral-200 dark:bg-gray p-2 rounded-10'>
+                        <div class='flex bg-neutral-200 dark:bg-gray p-2 rounded-10'>
 
                             <div class='flex flex-col bg-neutral-200 dark:bg-gray p-2 rounded-10'>
                                 <h2>X-Axis</h2>
@@ -165,7 +165,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                         </h3>
                         
                         {/* Below is the set up to create a color picker for each var, in progress still. */}
-                        <div class = "flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
+                        <div class="flex flex-col bg-neutral-200 dark:bg-gray p-2" style={"text-align:center;"}>
                             <h2>Graph Colors</h2>
                             <For each={PacketStructureViewModels.find(psViewModel => psViewModel.id === props.displayStruct.packetID)?.components.filter(component => component.type === PacketComponentType.Field)}>
                                 {(packetComponent: PacketComponent, i) => {
@@ -181,9 +181,9 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                                 }}
                             </For>
                         </div>
-                        <div class = "relative items-center justify-center" style={"text-align:center;"}>
+                        <div class="relative items-center justify-center" style={"text-align:center;"}>
                             <button 
-                                class = " w-[10%] h-[10%] rounded-5 border-none justify-center"
+                                class="w-[10%] h-[10%] rounded-5 border-none justify-center"
                                 onClick={() => {
                                     deleteGraph(props.index);
                                     props.closeModal({})

@@ -35,7 +35,7 @@ const SettingsTab: Component = () => {
         <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
             <div class="flex flex-grow h-0">
                 {/*Views*/}
-                <div class=" flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                <div class="flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
                     <FieldsScreen/>
                 </div>
                 <div class="flex flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
@@ -47,8 +47,7 @@ const SettingsTab: Component = () => {
             <footer class="flex p-2 items-center justify-between drop-shadow-lightgray dark:drop-shadow-gray">
                 <div class="flex items-center">
                     {/* Homepage button */}
-                    <button onClick={() => navigate("/")}
-                            class="flex items-center justify-center border-transparent bg-transparent">
+                    <button onClick={() => navigate("/")} class="flex items-center justify-center border-transparent bg-transparent">
                         <img src={logo} height={25} alt="Home" draggable={false}></img>
                     </button>
                 </div>
