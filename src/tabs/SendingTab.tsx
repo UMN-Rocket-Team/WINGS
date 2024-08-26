@@ -140,7 +140,7 @@ const SendingTab: Component = () => {
                 <label class="flex gap-1 items-center">
                     <span>baud:</span>
                     <input
-                        class="dark:border-gray-4 border-1 border-rounded flex-grow px-2 py-1" list="commonBauds"
+                        class="inputBox flex-grow px-2 py-1" list="commonBauds"
                         min={0}
                         value={baud()}
                         onBeforeInput={(e) => {
@@ -161,7 +161,7 @@ const SendingTab: Component = () => {
                 </label>
                 <label class="flex gap-1">
                         <span>Sending radio Device:</span>
-                        <input class="dark:border-gray-4 border-1 border-rounded flex-grow" autocomplete="off" list="radioTestAvailablePorts"
+                        <input class="inputBox flex-grow" autocomplete="off" list="radioTestAvailablePorts"
                             value={sendPort() ?? ""}
                             onChange={event => setSendPort((event.target as HTMLInputElement).value)}
                             disabled={isSimulating()} />
@@ -169,7 +169,7 @@ const SendingTab: Component = () => {
                 <label class="flex gap-1 items-center">
                     <span>Sending a packet every:</span>
                     <input
-                        class="dark:border-gray-4 border-1 border-rounded flex-grow px-2 py-1"
+                        class="inputBox flex-grow px-2 py-1"
                         type="number"
                         min={0}
                         value={sendInterval()}

@@ -82,7 +82,7 @@ const FieldsScreen: Component = () => {
     });
 
     return (
-        <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2">
+        <div class="relative contentContainer">
             {/*Field Select Button*/}
             <button class="m-1" onClick={() => {   
                 if (PacketStructureViewModels.length != 0){
@@ -120,17 +120,16 @@ const FieldsScreen: Component = () => {
                 New Readout
             </button>
 
-            {/*Fields*/}
             <div
                 class="absolute grid flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll"
                 style={{ "width": "90%", "grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, displays.length)}, 1fr)`}}>
                 <For each={displays}>
                     {(display: DisplayStruct, index) => {
                         return (
-                            <div class="bg-stone-400 dark:bg-dark-900 flex justify-center items-center h-[100px] p-1.5 overflow-hidden rounded-7">
+                            <div class="flex justify-center items-center h-[100px] WindowContainer">
                                 <button 
                                     class="bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
-                                    onClick={() => showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal]  ?? 0, {
+                                    onClick={() => showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal] ?? 0, {
                                         displayStruct: display,
                                         index:index(),
                                     })

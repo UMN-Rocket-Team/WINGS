@@ -65,7 +65,7 @@ const PacketEditor: Component = () => {
         <div class="flex gap-2">
             {/* Packet structure list */}
             <div class="flex flex-col gap-2">
-                <div class="flex flex-col overflow-auto flex-grow tab">
+                <div class="flex flex-col overflow-auto flex-grow contentContainer">
                     <h1 class="m-0">Packets</h1>
                         <For each={PacketStructureViewModels}>
                             {packetStructure => (
@@ -78,7 +78,7 @@ const PacketEditor: Component = () => {
                             )}
                         </For>
                 </div>
-                <button class="externalButton" onClick={async () => {
+                <button class="menuButton" onClick={async () => {
                     const store = new Store("persistent.dat");
                     const recentPaths = (await store.get("recentSaves") || []) as string[];
                     showModal(FileModal, {
@@ -86,13 +86,13 @@ const PacketEditor: Component = () => {
                         callBack: importPacketsFromDirectories
                     })
                     }}>Import Packet</button>
-                {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
-                <button class="externalButton" onClick={async () => await runExportPacketWindow(selectedPacket()!)}>Export Packet...</button>
-                <button class="externalButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
+                {/*<button class="menuButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
+                <button class="menuButton" onClick={async () => await runExportPacketWindow(selectedPacket()!)}>Export Packet...</button>
+                <button class="menuButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col justify-between gap-2">
-                <div class="flex flex-col flex-grow justify-between overflow-auto tab">
+                <div class="flex flex-col flex-grow justify-between overflow-auto contentContainer">
                     <Show when={selectedPacket() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
                         <div class="flex-col gap-2 overflow-auto dark:text-white">
                             <h2 class="m-0">{selectedPacket()!.name}</h2>
@@ -138,9 +138,9 @@ const PacketEditor: Component = () => {
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureID()!), 'Failed to add field')}>Add Field</button>
-                    <button class="externalButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimiter</button>
-                    <button class="externalButton" onClick={async () => {
+                    <button class="menuButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureID()!), 'Failed to add field')}>Add Field</button>
+                    <button class="menuButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimiter</button>
+                    <button class="menuButton" onClick={async () => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
                         let index: number;
@@ -161,7 +161,7 @@ const PacketEditor: Component = () => {
                 </div>
             </div>
             {/* Packet structure component editor */}
-            <div class="flex flex-col justify-between tab">
+            <div class="flex flex-col justify-between contentContainer">
                 <Show when={selectedPacketStructureID() !== null} fallback={<h2 class="m-0 dark:text-white">No component selected</h2>}>
                     <div class="flex flex-col dark:text-white">
                         <Switch>
