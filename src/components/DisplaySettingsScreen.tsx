@@ -5,6 +5,7 @@ import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import GraphDisplayElement from "./SolidChart";
 import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
+import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import ReadoutDisplayElement from "./Readout";
 import { store } from "../core/file_handling";
 
@@ -28,7 +29,8 @@ export type DisplayStruct = {
 }
 export const settingsModalArray = [
     GraphSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element), 
-    ReadoutSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element)];
+    ReadoutSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element),
+    BooleanSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element)];
 export const displayArray = [
     GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
     ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element];
@@ -36,6 +38,8 @@ export const displayArray = [
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
 let graphCounter = 1;
 let readoutCounter = 1;
+let indicatorCounter = 1;
+
 
 /**
  * A component that:
@@ -79,6 +83,7 @@ const FieldsScreen: Component = () => {
             console.log(importedDisplays);
         }
         setDisplays(importedDisplays);
+        // setDisplays([]);
     });
 
     return (
@@ -119,7 +124,26 @@ const FieldsScreen: Component = () => {
             }}>
                 New Readout
             </button>
+            
+            <button class="m-1" onClick={() => {   
+                if (PacketStructureViewModels.length != 0){
+                    setDisplays([...displays, {
+                        displayName: `Indicator ${indicatorCounter}`,
+                        packetID: PacketStructureViewModels[0].id,
+                        type: `Indicator`,
+                        fields: [],
+                        settingsModal: 2,
+                        displayElement: 2,
+                    } as BooleanStruct]);
 
+                    indicatorCounter++;
+                    store.set("display", displays);
+                }
+            }}>
+                New Indicator
+            </button>
+
+            {/*Fields*/}
             <div
                 class="absolute grid flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll"
                 style={{ "width": "90%", "grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, displays.length)}, 1fr)`}}>
@@ -129,10 +153,10 @@ const FieldsScreen: Component = () => {
                             <div class="flex justify-center items-center h-[100px] WindowContainer">
                                 <button 
                                     class="bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
-                                    onClick={() => showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal] ?? 0, {
+                                    onClick={() => {showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal] ?? 0, {
                                         displayStruct: display,
                                         index:index(),
-                                    })
+                                    })}
                                 }>
                                     <h3 class="text-black dark:text-white">{display.displayName}</h3>
                                 </button>
