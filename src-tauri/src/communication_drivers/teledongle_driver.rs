@@ -152,4 +152,12 @@ impl CommsIF for TeleDongleDriver {
     fn get_type(&self) -> String {
         return "TeleDongle".to_owned();
     }
+    
+    fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
+        todo!()
+    }
+    
+    fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
+        todo!()
+    }
 }

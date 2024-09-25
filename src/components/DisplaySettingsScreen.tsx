@@ -56,7 +56,7 @@ const FieldsScreen: Component = () => {
          */
         let importedDisplays: DisplayStruct[] = await store.get("display") ?? [];
 
-        //safety check
+        //safety check to remove any non-expected display types
         for (let displayString in importedDisplays){
             let display = importedDisplays[displayString];
             console.log(display);

@@ -14,7 +14,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.11",
     "@types/luxon": "^3.2.0",
-    "@types/node": "^18.15.3",
+    "@types/node": "^18.15.11",
     "jsdom": "^22.1.0",
     "prettier": "^2.8.7",
     "typescript": "^4.9.5",
@@ -24,12 +24,13 @@
     "vitest": "^0.30.1"
   },
   "dependencies": {
-    "@solidjs/router": "^0.5.1",
+    "@solidjs/router": "^0.14.3",
     "@tauri-apps/api": "^1.5.3",
     "chart.js": "^4.2.1",
     "chartjs-adapter-luxon": "^1.3.1",
     "luxon": "^3.3.0",
-    "solid-js": "^1.6.16",
+    "solid-devtools": "^0.30.1",
+    "solid-js": "^1.8.21",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1"
   }
 }

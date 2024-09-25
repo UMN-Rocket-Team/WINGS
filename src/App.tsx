@@ -4,7 +4,7 @@ import TabPage from "./tabs/TabPage";
 import Homepage from "./tabs/Homepage";
 import { ModalProvider } from "./modals/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
-import { Router, Routes, Route } from "@solidjs/router"
+import { Router, Route } from "@solidjs/router"
 
 const App = (): JSX.Element => {
     return (
@@ -12,10 +12,8 @@ const App = (): JSX.Element => {
             <BackendProvider>
                 <ModalProvider>
                     <Router>
-                        <Routes>
-                            <Route path="/" component={Homepage} />
-                            <Route path="/newFlight" component={TabPage} />
-                        </Routes>
+                        <Route path="/" component={Homepage} />
+                        <Route path="/newFlight" component={TabPage} />
                     </Router>
                 </ModalProvider>
             </BackendProvider>

@@ -188,8 +188,10 @@ export const BackendProvider: ParentComponent = (props) => {
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted
-        for (const unlistenFunction of unlistenFunctions) {
-            unlistenFunction();
+        if (unlistenFunctions !== undefined){
+            for (const unlistenFunction of unlistenFunctions) {
+                unlistenFunction();
+            }
         }
     });
     

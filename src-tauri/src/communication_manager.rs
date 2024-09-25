@@ -20,7 +20,15 @@ const HANDLE_EXPECT: &str = "This is assigned at initialization"; // reason to e
 pub trait CommsIF {
     fn init_device(&mut self, port_name: &str, baud: u32, app_handle: AppHandle)  -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()>;
+
+    //Implements the communications side of the device (the bare minimum to get data), then returns it inside the Vec<u8>
+    fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()>;
+
+    //Converts raw data into actual packets according to how the device specifies it
+    fn parse_device_data(&mut self, raw_data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()>;
     fn get_device_packets(&mut self, data_vector: &mut Vec<Packet>) -> anyhow::Result<()>;
+
+    //for future plug and play implementations, could be deleted if necessary 
     fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>>;
     fn is_init(&mut self) -> bool;
     fn set_id(&mut self, id: usize);
@@ -223,6 +231,7 @@ impl CommunicationManager {
         let _ = self.app_handle.clone().unwrap().emit_all(COM_DEVICE_UPDATE, &return_me);
     }
 
+    //should be get_device_ids
     pub fn get_devices(&self) -> Vec<usize>{
         let mut return_me = vec![];
         for device in &self.comms_objects{

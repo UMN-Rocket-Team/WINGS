@@ -1,9 +1,14 @@
 import { defineConfig } from "vitest/config";
 import solidPlugin from "vite-plugin-solid";
 import Unocss from 'unocss/vite';
+import devtools from 'solid-devtools/vite'
 
 export default defineConfig({
   plugins: [
+    devtools({
+      /* features options - all disabled by default */
+      autoname: true, // e.g. enable autoname
+    }),
     solidPlugin(),
     Unocss(),
   ],

@@ -21,7 +21,7 @@ const getContext = () => {
 };
 
 /**
- * Uses crazy webdev tricks to make an element that automatically resizes the text inside
+ * Uses crazy web dev tricks to make an element that automatically resizes the text inside
  * to be as big as possible but not too big.
  */
 const AutoAdjustFontSize = (props: {
