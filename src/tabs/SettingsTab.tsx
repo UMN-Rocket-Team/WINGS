@@ -32,19 +32,19 @@ const SettingsTab: Component = () => {
     };
 
     return (
-        <div class="flex flex-col flex-grow gap-4 border-rounded dark:text-white">
+        <div class="flex flex-col flex-grow gap-4 rounded border dark:text-white">
             <div class="flex flex-grow h-0">
-                {/*Views*/}
-                <div class="flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                {/* Views */}
+                <div class="flex-grow grid grid-cols-1 p-2 gap-2 w-full">
                     <FieldsScreen/>
                 </div>
-                <div class="flex flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                <div class="flex-grow grid grid-cols-1 p-2 gap-2 w-full">
                     <PacketEditor/>
                 </div>
             </div>
 
-            {/*Actions bar*/}
-            <footer class="flex p-2 items-center justify-between drop-shadow-lightgray dark:drop-shadow-gray">
+            {/* Actions bar */}
+            <footer class="flex p-2 items-center justify-between shadow-md dark:shadow-gray-800">
                 <div class="flex items-center">
                     {/* Homepage button */}
                     <button onClick={() => navigate("/")} class="flex items-center justify-center border-transparent bg-transparent">

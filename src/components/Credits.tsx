@@ -10,8 +10,8 @@ import { ModalProps } from "../modals/ModalProvider";
 const Credits = (creditsProps: ModalProps): JSX.Element => {
     return (
         <DefaultModalLayout close={() => creditsProps.closeModal({})} title="Credits">
-            <div class="flex flex-col justify-center items-stretch gap-2 max-h-75%">
-                <section class="flex flex-col dark:text-white">
+            <div class="flex flex-col justify-center items-stretch gap-2 max-h-3/4">
+                <section class="flex flex-col text-white">
                     <h1 class="text-center">Contributors</h1>
                     <h2>Lead Developers, Project Managers</h2>
                     <span>Ryan Hill</span>
@@ -27,10 +27,10 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                     <span>Ashlyn Pietrowski</span>
                 </section>
                 <section class="flex flex-col">
-                    <h1 class="text-center dark:text-white">Attributions</h1>
+                    <h1 class="text-center text-white">Attributions</h1>
 
-                    <table>
-                        <thead class="dark:text-white">
+                    <table class="table-auto">
+                        <thead class="text-white">
                             <tr>
                                 <th>Object</th>
                                 <th>Author</th>
@@ -39,12 +39,12 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="dark:text-white">bxs:moon and bx:x, Icons</td>
+                                <td class="text-white">bxs:moon and bx:x, Icons</td>
                                 <td><a href="https://github.com/atisawd/boxicons">Atisa</a></td>
                                 <td><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></td>
                             </tr>
                             <tr>
-                                <td class="dark:text-white">mdi:web Icon</td>
+                                <td class="text-white">mdi:web Icon</td>
                                 <td><a href="https://github.com/Templarian/MaterialDesign">Austin Andrews</a></td>
                                 <td><a href="#apache2.0">Apache 2.0</a></td>
                             </tr>
@@ -52,7 +52,7 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                     </table>
                 </section>
 
-                <section class="dark:text-white">
+                <section class="text-white">
                     <h1 class="text-center">Licenses</h1>
 
                     <pre>
@@ -63,6 +63,7 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
         </DefaultModalLayout>
     );
 };
+
 
 const APACHE2_0_LICENSE = String.raw`Apache License
 Version 2.0, January 2004

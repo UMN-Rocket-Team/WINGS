@@ -30,7 +30,7 @@ const tabNames: string[] = [
  */
 const TabPage: Component = () => {
     return (
-        <TabView tabs={tabs} tabNames={tabNames} navbarClasses="drop-shadow-lightgray dark:drop-shadow-gray">
+        <TabView tabs={tabs} tabNames={tabNames} navbarClasses="shadow-md dark:shadow-gray-800">
             <ThemeSwitcher />
         </TabView>
     );

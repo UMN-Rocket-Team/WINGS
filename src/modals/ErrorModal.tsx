@@ -1,6 +1,6 @@
-import {ModalProps} from "./ModalProvider";
+import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import {JSX} from "solid-js";
+import { JSX } from "solid-js";
 
 /**
  * The properties required for the {@link ErrorModal} component.
@@ -13,19 +13,23 @@ export type ErrorModalProps = {
     /**
      * A description of the error, displayed as the content of the modal
      */
-    description: string
+    description: string;
 };
 
 /**
- * A simple modal component that notifies the use that an error has occurred.
+ * A simple modal component that notifies the user that an error has occurred.
  * 
  * @param props an object that contains a function to close the modal and the error message and description
  */
 const ErrorModal = (props: ModalProps<ErrorModalProps>): JSX.Element => {
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title={props.error}>
-            {props.description}
-            <button onClick={() => props.closeModal({})}>Ok</button>
+            <p>{props.description}</p>
+            <button 
+                class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800" 
+                onClick={() => props.closeModal({})}>
+                Ok
+            </button>
         </DefaultModalLayout>
     );
 };

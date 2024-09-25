@@ -1,6 +1,6 @@
-import {ModalProps} from "./ModalProvider";
+import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import {For, JSX} from "solid-js";
+import { For, JSX } from "solid-js";
 import { runImportPacketWindow } from "../core/file_handling";
 
 /**
@@ -10,12 +10,12 @@ export type FileModalProps = {
     /**
      * list of paths in reverse order of what it will be displayed (last item will be on top)
      */
-    pathStrings: string[]
-    
+    pathStrings: string[];
+
     /**
      * call this with the string returned from the modal 
      */
-    callBack: Function
+    callBack: Function;
 };
 
 /**
@@ -32,11 +32,17 @@ const FileModal = (props: ModalProps<FileModalProps>): JSX.Element => {
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="File Select">
-            <button class="listButton" onClick={async () => runCallBack(await runImportPacketWindow())}>Select Directory</button>
-            <p>Open Recent:</p>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                    onClick={async () => runCallBack(await runImportPacketWindow())}>
+                Select Directory
+            </button>
+            <p class="text-lg font-semibold mt-4">Open Recent:</p>
             <For each={props.pathStrings.reverse()}>{(item) => 
-                <div>
-                    <button class="listButton" onClick={() => runCallBack([item])}>{item}</button>
+                <div class="mt-2">
+                    <button class="bg-gray-200 hover:bg-gray-300 text-black font-semibold py-2 px-4 rounded w-full text-left" 
+                            onClick={() => runCallBack([item])}>
+                        {item}
+                    </button>
                 </div>
             }</For>
         </DefaultModalLayout>
