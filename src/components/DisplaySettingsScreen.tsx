@@ -151,14 +151,14 @@ const FieldsScreen: Component = () => {
 
             {/*Fields*/}
             <div
-                class="absolute grid flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-4 overflow-y-scroll"
+                class="absolute grid flex-wrap top-10 bottom-8 left-0 right-0 m-auto p-4 items-center justify-center gap-4 overflow-y-scroll"
                 style={{ "width": "90%", "grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, displays.length)}, 1fr)`}}>
                 <For each={displays}>
                     {(display: DisplayStruct, index) => {
                         return (
-                            <div class="flex justify-center items-center h-[100px] WindowContainer">
+                            <div class="bg-stone-400 dark:bg-neutral-900 flex justify-center items-center h-[100px] p-1.5 overflow-hidden rounded-2xl">
                                 <button 
-                                    class="bg-white w-[100%] h-[100%] rounded-5.5 border-none justify-center dark:bg-dark-300"
+                                    class="bg-white w-full h-full rounded-[1.375rem] border-0 justify-center dark:bg-neutral-700"
                                     onClick={() => {showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal] ?? 0, {
                                         displayStruct: display,
                                         index:index(),
