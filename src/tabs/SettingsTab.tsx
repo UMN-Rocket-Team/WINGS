@@ -44,11 +44,11 @@ const SettingsTab: Component = () => {
             </div>
 
             {/* Actions bar */}
-            <footer class="flex p-2 items-center justify-between shadow-md dark:shadow-gray-800">
+            <footer class="flex p-2 items-center justify-between shadow-md dark:bg-black-800">
                 <div class="flex items-center">
                     {/* Homepage button */}
                     <button onClick={() => navigate("/")} class="flex items-center justify-center border-transparent bg-transparent">
-                        <img src={logo} height={25} alt="Home" draggable={false}></img>
+                        <img src={logo} class="h-20" alt="Home" draggable={false}></img>
                     </button>
                 </div>
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>

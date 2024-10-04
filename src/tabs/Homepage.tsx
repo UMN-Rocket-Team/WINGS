@@ -61,16 +61,16 @@ const Homepage: Component = () => {
     }
 
     return (
-        <div class="flex flex-col flex-grow p-4 gap-4 dark:bg-gray-800">
+        <div class="flex flex-col flex-grow p-4 gap-4 dark:bg-dark-700">
             <div class="flex flex-row-reverse">
                 <ThemeSwitcher/>
             </div>
-            <div class="flex flex-col items-center my-8 px-16 gap-4 bg-gray-100 dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-800">
+            <div class="flex flex-col items-center h-[100%] my-8 px-16 gap-4 bg-gray-100 dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-start gap-4">
-                    <img src={logo} class="h-20" alt="Wings Logo" draggable={false} />
-                    <span class="font-black text-5xl text-gray-900 dark:text-white">Wings</span>
+                    <img src={logo} class="h-[50%]" alt="Wings Logo" draggable={false} />
+                    <span class="font-black text-[30vh] text-gray-900 dark:text-white">Wings</span>
                 </div>
-                <span class="dark:text-white text-center">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
+                <span class="dark:text-white text-center text-2xl">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
                 <div class="flex gap-4 flex-col md:flex-row">
                     <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
                             onClick={() => navigate("/newFlight")}>
