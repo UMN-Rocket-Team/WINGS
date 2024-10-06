@@ -5,8 +5,9 @@ import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import GraphDisplayElement from "./SolidChart";
 import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
-import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import ReadoutDisplayElement from "./Readout";
+import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
+import Boolean from "./Boolean";
 import { store } from "../core/file_handling";
 
 /**
@@ -33,7 +34,8 @@ export const settingsModalArray = [
     BooleanSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element)];
 export const displayArray = [
     GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
-    ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element];
+    ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element,
+    Boolean as (graph: DisplayStruct) => JSX.Element];
 
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
 let graphCounter = 1;
@@ -63,16 +65,22 @@ const FieldsScreen: Component = () => {
         //safety check to remove any non-expected display types
         for (let displayString in importedDisplays){
             let display = importedDisplays[displayString];
-            console.log(display);
+    
             if (display.type === `Graph`){
                 let graph = display as GraphStruct;
                 if(graph.settingsModal !== 0 || graph.displayElement !== 0 || graph.x === undefined || graph.y === undefined || graph.colors === undefined){
                     importedDisplays.splice(importedDisplays.indexOf(display),1);
                 }
-            }
-            else if (display.type === `Readout`){
+
+            } else if (display.type === `Readout`){
                 let read = display as ReadoutStruct;
                 if(read.settingsModal !== 1 || read.displayElement !== 1 || read.fields === undefined){
+                    importedDisplays.splice(importedDisplays.indexOf(display),1);
+                }
+
+            } else if (display.type === `Indicator`) {
+                let read = display as ReadoutStruct;
+                if(read.settingsModal !== 2 || read.displayElement !== 2 || read.fields === undefined){
                     importedDisplays.splice(importedDisplays.indexOf(display),1);
                 }
             }
@@ -80,10 +88,8 @@ const FieldsScreen: Component = () => {
                 console.log(importedDisplays.indexOf(display));
                 importedDisplays.splice(importedDisplays.indexOf(display),1);
             }
-            console.log(importedDisplays);
         }
         setDisplays(importedDisplays);
-        // setDisplays([]);
     });
 
     return (
