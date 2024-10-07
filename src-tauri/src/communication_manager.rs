@@ -21,7 +21,7 @@ pub trait CommsIF {
     fn init_device(&mut self, port_name: &str, baud: u32, app_handle: AppHandle)  -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()>;
 
-    //Implements the communications side of the device (the bare minimum to get data), then returns it inside the Vec<u8>
+    //Implements the communications side of the communications object (the bare minimum to get data), then returns it inside the Vec<u8>
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()>;
 
     //Converts raw data into actual packets according to how the device specifies it

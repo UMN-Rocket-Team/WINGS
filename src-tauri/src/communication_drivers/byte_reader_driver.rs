@@ -76,10 +76,13 @@ impl CommsIF for ByteReadDriver{
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
-        todo!()
+        self.file.as_mut().context("failed to load file")?.read(data_vector)?;//question mark operator returns error if we fail
+        return Ok(());// returns ok if everything succeeded
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        todo!()
+        self.packet_parser.push_data(data_vector, PRINT_PARSING);
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING));
+        return Ok(());
     }
 }

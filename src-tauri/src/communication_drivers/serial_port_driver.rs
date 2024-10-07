@@ -14,6 +14,7 @@ pub struct SerialPortDriver {
     app_handle: Option<AppHandle>,
     config: ConfigStruct
 }
+
 impl CommsIF for SerialPortDriver{
     
     /// Attempts to set the port for comms with the rfd driver
@@ -102,11 +103,21 @@ impl CommsIF for SerialPortDriver{
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
-        todo!()
+        let active_port = match self.port.as_mut() {
+            Some(port) => port,
+            None => bail!("No read port has been set")
+        };
+
+        let mut buffer = [0; 4096];
+        let bytes_read = active_port.read(&mut buffer)?;
+        data_vector.extend_from_slice(&buffer[..bytes_read]);
+        return Ok(());
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        todo!()
+        self.packet_parser.push_data(data_vector, PRINT_PARSING);
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
+        return Ok(());
     }
 }
 impl SerialPortDriver {

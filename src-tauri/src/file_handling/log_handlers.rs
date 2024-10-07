@@ -187,7 +187,7 @@ impl LogHandler {
     /// # Errors
     /// 
     /// produces an error if unsuccessful
-    pub fn write_bytes(&mut self, data: Vec<u8>) -> Result<usize, Error> {
+    pub fn write_bytes(&mut self, data: Vec<u8>, ps_id: u8, manager_id: u8, device_id: u8) -> Result<usize, Error> {
         match self.byte_writer.write(&data) {
             Err(err) => bail!("Unable to write packet and got error:{}", err),
             Ok(ok) => Ok(ok),

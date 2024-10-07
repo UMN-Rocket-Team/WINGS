@@ -154,10 +154,27 @@ impl CommsIF for TeleDongleDriver {
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
-        todo!()
+        let active_port = match self.port.as_mut() {
+            Some(port) => port,
+            None => bail!("No read port has been set")
+        };
+
+        let mut buffer = [0; 4096];
+        let _bytes_read = active_port.read(&mut buffer)?;
+        let str = from_utf8(&buffer)?;
+        let mut parsed_str = "".to_owned();
+        for c in str.chars() {
+            if c.is_ascii_hexdigit() {
+                parsed_str.push(c);
+            }
+        }
+        data_vector.append(&mut hex::decode(parsed_str)?);
+        return Ok(());
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        todo!()
+        self.packet_parser.push_data(&data_vector, PRINT_PARSING);
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
+        return Ok(());
     }
 }
