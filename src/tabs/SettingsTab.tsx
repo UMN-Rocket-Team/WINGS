@@ -50,10 +50,11 @@ const SettingsTab: Component = () => {
                     <button onClick={() => navigate("/")} class="flex items-center justify-center border-transparent bg-transparent">
                         <img src={logo} class="h-20" alt="Home" draggable={false}></img>
                     </button>
+                    {/* <button type="button" >Dark</button> */}
                 </div>
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
-                <button onClick={clearParsedPackets}>Clear graph</button>
-                <button onClick={saveFlight}>Save</button>
+                <button type="button" onClick={clearParsedPackets} class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Clear graph</button>
+                <button type="button" onClick={saveFlight} class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Save</button>
             </footer>
         </div>
     );

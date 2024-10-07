@@ -69,7 +69,7 @@ const PacketEditor: Component = () => {
                     <h1 class="m-0">Packets</h1>
                         <For each={PacketStructureViewModels}>
                             {packetStructure => (
-                                <button class={`flex justify-between gap-4 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
+                                <button class={`flex justify-between gap-4 m-1 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
                                     setSelectedPacketStructureID(packetStructure.id);
                                     setSelectedPacketComponentIndex(0);
                                 })}>
@@ -78,7 +78,7 @@ const PacketEditor: Component = () => {
                             )}
                         </For>
                 </div>
-                <button class="menuButton" onClick={async () => {
+                <button class="externalButton m-1 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => {
                     const store = new Store("persistent.dat");
                     const recentPaths = (await store.get("recentSaves") || []) as string[];
                     showModal(FileModal, {
@@ -86,9 +86,9 @@ const PacketEditor: Component = () => {
                         callBack: importPacketsFromDirectories
                     })
                     }}>Import Packet</button>
-                {/*<button class="menuButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
-                <button class="menuButton" onClick={async () => await runExportPacketWindow(selectedPacket()!)}>Export Packet...</button>
-                <button class="menuButton" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
+                {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
+                <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await runExportPacketWindow(selectedPacket()!)}>Export Packet...</button>
+                <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col justify-between gap-2">
@@ -106,7 +106,7 @@ const PacketEditor: Component = () => {
                                 <div class="flex flex-col gap-2">
                                     <For each={selectedPacketStructureComponents()}>
                                         {(component, i) => (
-                                            <button class={`flex justify-between gap-4 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>
+                                            <button class={`flex justify-between gap-4 m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-0 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>
                                                 <Switch>
                                                     <Match when={component.type === PacketComponentType.Field}>
                                                         <span>F</span>
@@ -171,7 +171,7 @@ const PacketEditor: Component = () => {
                             {/* Selected packet structure field editor */}
                             <Match when={selectedFieldData() !== null}>
                                 <h2 class="m-0">Field Information</h2>
-                                <div class="flex flex-col gap-2">
+                                <div class="flex flex-col gap-2 bg-slate-600">
                                     <div class="flex flex-col">
                                         <label for="fieldName">Name</label>
                                         <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
