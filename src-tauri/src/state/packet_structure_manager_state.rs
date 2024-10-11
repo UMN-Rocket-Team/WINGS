@@ -112,7 +112,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
 
     // TeleMega IMU Data Packet.
     let mut telemega_imu_data = PacketStructure::default();
-    telemega_imu_data.ez_make("2A6C u16 08 u8 i16 i32 i16 i16 i16 i16 i16 i16 i16 i16 i16 i16", 
+    telemega_imu_data.ez_make("2B65 u16 08 u8 i16 i32 i16 i16 i16 i16 i16 i16 i16 i16 i16 i16", 
         &["Timestamp",
         "Angle from vertical in degrees","accel","pressure (Pa * 10)","temperature (°C * 100)",
         "accel_x","accel_y","accel_z",
@@ -123,7 +123,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
 
     // TeleMega Kalman Data Packet.
     let mut telemega_kalman_structure = PacketStructure::default();
-    telemega_kalman_structure.ez_make("2A6C u16 09 u8 i16 i16 i8 i8 i8 i8 i8 i8 i32 i16 i16 i16 i16 i16 i16", 
+    telemega_kalman_structure.ez_make("2B65 u16 09 u8 i16 i16 i8 i8 i8 i8 i8 i8 i32 i16 i16 i16 i16 i16 i16", 
     &["Timestamp","state",
         "v_batt","v_pyro",
         "sense_1","sense_2","sense_3","sense_4","sense_5","sense_6",
@@ -155,7 +155,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
 
     //AltusMetrum config packet
     let mut altus_config_packet = PacketStructure::default();
-    altus_config_packet.ez_make("2C0E u16 04 u8 u16 u8 u8 u16 u16 u16 u64 u64", 
+    altus_config_packet.ez_make("2B65 u16 04 u8 u16 u8 u8 u16 u16 u16 u64 u64", 
     &["Timestamp",
             "Device type","Flight number",
             "Config major version","Config minor version",
@@ -166,7 +166,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
 
     //AltusMetrum gps packet
     let mut altus_gps_packet = PacketStructure::default();
-    altus_gps_packet.ez_make("2C0E u16 05 u8 i16 i32 i32 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u16 i16 u8", 
+    altus_gps_packet.ez_make("2B65 u16 05 u8 i16 i32 i32 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u16 i16 u8", 
     &["Timestamp","flags",
             "altitude (m)",
             "latitude degrees * 107","longitude degrees * 107",
@@ -179,7 +179,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
 
     //AltusMetrum satellite packet
     let mut altus_satellite_packet = PacketStructure::default();
-    altus_satellite_packet.ez_make("2C0E u16 06 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8", 
+    altus_satellite_packet.ez_make("2B65 u16 06 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8 u8", 
     &["Timestamp","channels",
             "sat_1_svid", "sat_1_c_n_1",
             "sat_2_svid", "sat_2_c_n_1",
