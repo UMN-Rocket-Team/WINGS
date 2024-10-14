@@ -12,8 +12,9 @@ const Hello: Component<{name: string}> = (props) => <div style={{
 
 const FlexviewPlayground: Component<{}> = () => {
     const [editable, setEditable] = createSignal(true);
-    const factories: FlexviewFactory<any>[] = [
+    const factories: FlexviewFactory[] = [
         {
+            name: 'Hello Component',
             component: Hello
         },
     ];
@@ -79,7 +80,7 @@ const FlexviewPlayground: Component<{}> = () => {
         <button onClick={() => setEditable(!editable())}>Toggle edit</button>
         <Flexview
             editable={editable}
-            // factories={factories}
+            factories={factories}
             objects={objects}
             setObjects={setObjects}
         />

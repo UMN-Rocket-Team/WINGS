@@ -1,8 +1,9 @@
 import { Accessor, Component, createEffect, createSignal, For, JSX, Match, onCleanup, onMount, Setter, Show, Switch } from "solid-js";
 import { produce } from "solid-js/store";
 
-export interface FlexviewFactory<T> {
-    component: Component<T>;
+export interface FlexviewFactory {
+    name: string;
+    component: Component<any>;
 }
 
 /**
@@ -37,13 +38,6 @@ export interface FlexviewLayout {
 }
 
 export type FlexviewObject = FlexviewElement | FlexviewLayout;
-
-interface FlexviewEditorProps {
-    editable: Accessor<boolean>;
-    factories: FlexviewFactory<any>[];
-    objects: Array<FlexviewObject>;
-    setObjects: Setter<Array<FlexviewObject>>;
-}
 
 /**
  * Draggable handle between adjacent items in a flexview.
@@ -123,11 +117,85 @@ const DragHandle: Component<{
     );
 };
 
+interface DraggableThing {
+    removeFromOldPosition: () => void;
+
+    /**
+     * Actually creates the object if it hasn't been created yet.
+     * @returns The ID of the object.
+     */
+    actualizeObjectID: () => number;
+}
+
+interface DropTarget {
+    rect: DOMRect;
+    setIsHovered: Setter<boolean>;
+    onAccept: (objectId: number) => void;
+}
+
+/**
+ * A spot where an element can be dropped.
+ */
+const DropSite: Component<{
+    direction: LayoutDirection;
+    dropTargets: Array<() => DropTarget>;
+    onAccept: (objectId: number) => void;
+}> = (props) => {
+    const [isHovered, setIsHovered] = createSignal(false);
+
+    let element: HTMLElement | null = null;
+    const getDropTarget = (): DropTarget => ({
+        rect: element!.getBoundingClientRect(),
+        setIsHovered,
+        onAccept: props.onAccept
+    });
+
+    onMount(() => {
+        props.dropTargets.push(getDropTarget);
+    });
+
+    onCleanup(() => {
+        const idx = props.dropTargets.indexOf(getDropTarget);
+        if (idx !== -1) {
+            props.dropTargets.splice(idx, 1);
+        }
+    });
+
+    return (
+        <div
+            ref={el => {
+                element = el;
+            }}
+            class="position-relative"
+            style={{
+                width: props.direction === LayoutDirection.Column ? "100%" : "0",
+                height: props.direction === LayoutDirection.Column ? "0" : "100%",
+            }}    
+        >
+            <div
+                class="position-relative"
+                classList={{
+                    'bg-red': isHovered()
+                }}
+                style={{
+                    width: props.direction === LayoutDirection.Column ? "100%" : "4px",
+                    height: props.direction === LayoutDirection.Column ? "4px" : "100%",
+                    cursor: props.direction === LayoutDirection.Column ? "ns-resize" : "ew-resize"
+                }}    
+            />
+        </div>
+    );
+};
+
+/**
+ * Render an item in the flexview. If the item is a layout, then this will be recursive.
+ */
 const RecursiveItemView: Component<{
     editable: Accessor<boolean>;
     objects: Array<FlexviewObject>;
     setObjects: Setter<Array<FlexviewObject>>;
     objectIndex: number;
+    dropTargets: Array<() => DropTarget>;
 }> = (props) => {
     const [dimensions, setDimensions] = createSignal(new DOMRect());
     const resizeObserver = new ResizeObserver((changes) => {
@@ -140,6 +208,22 @@ const RecursiveItemView: Component<{
     });
 
     const me = props.objects[props.objectIndex];
+
+    const acceptLayoutDropItem = (index: number, objectId: number) => {
+        props.setObjects(produce(objects => {
+            const layout = objects[props.objectIndex] as FlexviewLayout;
+
+            const newWeight = 1 / (layout.children.length + 1);
+            const offset = newWeight / layout.children.length;
+            for (let i = 0; i < layout.weights.length; i++) {
+                layout.weights[i] -= offset;
+            }
+            layout.weights.splice(index, 0, newWeight);
+            layout.children.splice(index, 0, objectId);
+
+            return objects;
+        }));
+    };
 
     return (
         <div
@@ -158,6 +242,16 @@ const RecursiveItemView: Component<{
                             "flex-direction": (me as FlexviewLayout).direction,
                         }}
                     >
+                        <Show when={props.editable()}>
+                            <DropSite
+                                direction={(me as FlexviewLayout).direction}
+                                dropTargets={props.dropTargets}
+                                onAccept={(object) => {
+                                    acceptLayoutDropItem(0, object);
+                                }}
+                            />
+                        </Show>
+
                         <For each={(me as FlexviewLayout).children}>{(childObject, index) => (
                             <>
                                 <div
@@ -171,6 +265,7 @@ const RecursiveItemView: Component<{
                                         objects={props.objects}
                                         setObjects={props.setObjects}
                                         editable={props.editable}
+                                        dropTargets={props.dropTargets}
                                     />
                                 </div>
 
@@ -182,6 +277,17 @@ const RecursiveItemView: Component<{
                                         objects={props.objects}
                                         setObjects={props.setObjects}
                                         dimensions={dimensions}
+                                    />
+                                </Show>
+
+                                <Show when={props.editable()}>
+                                    <DropSite
+                                        direction={(me as FlexviewLayout).direction}
+                                        dropTargets={props.dropTargets}
+                                        onAccept={(object) => {
+                                            // Drop after current item
+                                            acceptLayoutDropItem(index() + 1, object);
+                                        }}
                                     />
                                 </Show>
                             </>
@@ -197,6 +303,24 @@ const RecursiveItemView: Component<{
     )
 };
 
+const Draggable: Component<{
+    name: string;
+    thing: () => DraggableThing;
+    setDragging: Setter<DraggableThing>;
+}> = (props) => {
+    return (
+        <div
+            class="user-select-none"
+            draggable={true}
+            onDragStart={() => {
+                props.setDragging(props.thing);
+            }}
+        >
+            {props.name}
+        </div>
+    );
+};
+
 /**
  * Customizable, recursive, flexible viewer & editor
  */
@@ -204,15 +328,109 @@ const Flexview: Component<{
     editable: Accessor<boolean>;
     objects: Array<FlexviewObject>;
     setObjects: Setter<Array<FlexviewObject>>;
+    factories: Array<FlexviewFactory>;
 }> = (props) => {
+    const [dragging, setDragging] = createSignal<DraggableThing | null>(null);
+    const dropTargets: Array<() => DropTarget> = [];
+    let actualizedDropTargets: DropTarget[] = [];
+
+    createEffect(() => {
+        if (dragging()) {
+            actualizedDropTargets = dropTargets.map(i => i());
+        }
+    });
+
+    const pointDistance = (x1: number, y1: number, x2: number, y2: number): number => {
+        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+    };
+
+    const rectangleDistance = (rect: DOMRect, x: number, y: number): number => {
+        if (x >= rect.x && x <= rect.x + rect.width) {
+            // Only consider y-axis
+            return Math.abs(rect.y - y);
+        }
+
+        if (y >= rect.y && y <= rect.y + rect.height) {
+            // Only consider x-axis
+            return Math.abs(rect.x - x);
+        }
+
+        return Math.min(
+            pointDistance(x, y, rect.x, rect.y),
+            pointDistance(x, y, rect.x + rect.width, rect.y),
+            pointDistance(x, y, rect.x, rect.y + rect.height),
+            pointDistance(x, y, rect.x + rect.width, rect.y + rect.height),
+        );
+    };
+
+    const getNearestTarget = (x: number, y: number): DropTarget | null => {
+        let bestTarget = null;
+        let bestDistance = 50;
+        for (const target of actualizedDropTargets) {
+            const distance = rectangleDistance(target.rect, x, y);
+            if (distance < bestDistance) {
+                bestTarget = target;
+                bestDistance = distance;
+            }
+        }
+        return bestTarget;
+    };
+
     return (
-        <div class="w-100% h-100%">
+        <div
+            class="w-100% h-100%"
+            onDragOver={(e) => {
+                e.preventDefault();
+                const nearest = getNearestTarget(e.clientX, e.clientY);
+                for (const target of actualizedDropTargets) {
+                    target.setIsHovered(target === nearest);
+                }
+            }}
+            onDragEnd={(e) => {
+                e.preventDefault();
+                const nearest = getNearestTarget(e.clientX, e.clientY);
+                const draggingThing = dragging();
+                if (nearest && draggingThing) {
+                    draggingThing.removeFromOldPosition();
+                    const id = draggingThing.actualizeObjectID();
+                    nearest.onAccept(id);
+                }
+                for (const target of actualizedDropTargets) {
+                    target.setIsHovered(false);
+                }
+            }}
+        >
+            <Show when={props.editable()}>
+                <For each={props.factories}>{(factory) => (
+                    <Draggable
+                        name={factory.name}
+                        thing={() => ({
+                            removeFromOldPosition: () => {
+                                // Does not exist yet
+                            },
+                            actualizeObjectID: () => {
+                                const newObject: FlexviewObject = {
+                                    type: 'element',
+                                    element: factory.component({}),
+                                    id: (Math.random() * 10000) | 0
+                                };
+                                const newId = props.objects.length;
+                                props.setObjects([...props.objects, newObject]);
+                                return newId;
+                            }
+                        })}
+                        setDragging={setDragging}
+                    />
+                )}</For>
+            </Show>
+
             <RecursiveItemView
                 // Object 0 is the root layout.
                 objectIndex={0}
                 editable={props.editable}
                 objects={props.objects}
                 setObjects={props.setObjects}
+                dropTargets={dropTargets}
             />
         </div>
     );
