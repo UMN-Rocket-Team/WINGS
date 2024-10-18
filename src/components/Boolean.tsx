@@ -1,9 +1,14 @@
-import { Component, For, JSX, createEffect, createSignal } from "solid-js";
+import { Component, For, JSX, createEffect, createSignal, createMemo } from "solid-js";
 import { BooleanStruct } from "../modals/BooleanSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { unDecimatedPackets, parsedPackets } from "../backend_interop/buffers";
-import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { displays } from "./DisplaySettingsScreen";
+import { PacketComponentType, PacketField, PacketComponent } from "../backend_interop/types";
+import { displays, setDisplays } from "./DisplaySettingsScreen";
+import { store } from "../core/file_handling";
+import { produce } from "solid-js/store";
+import { setFieldName } from "../backend_interop/api_calls";
+import { createInvokeApiSetterFunction } from "../core/packet_editor_helpers";
+import { useModal } from "../modals/ModalProvider";
 
 const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
     enum Colors {
@@ -11,6 +16,9 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
         GREY = "#6e6e6e",
         GREEN = "#1eff00"
     }
+
+    const { showModal } = useModal();
+
     
     const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
@@ -18,23 +26,46 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
     const [values, setValues] = createSignal([] as number[]);
 
     const update = () => {
-        if (unDecimatedPackets[boolean.packetID] === undefined){
-            setValues(boolean.fields.map(() => {
-                const latestValue = 0;
-                return latestValue;
-            }));   
-            return;     
-        }
-        const lastPacket = unDecimatedPackets[boolean.packetID][(unDecimatedPackets[boolean.packetID].length) -1];
-        if (!lastPacket) {
-            setValues([]);
-            return;
+        const updatePacket = (packetID: number) => {
+            if (unDecimatedPackets[packetID] === undefined){
+                setValues((v) => { // Setting all values in packet of packetID to 0
+                    let newVals = boolean.fields.map((field, i) =>
+                        field.packetID === packetID ? 0 : v[i]
+                    );
+                    return newVals;
+                });   
+                return;     
+            }
+            
+            const lastPacket = unDecimatedPackets[packetID][(unDecimatedPackets[packetID].length) -1];
+            if (!lastPacket) {
+                setValues((v) => { // Removing all values in packet of packetID
+                    let newVals: number[] = [];
+                    for (let i=0; i<boolean.fields.length; i++) {
+                        const field = boolean.fields[i];
+                        if (field.packetID !== packetID) newVals.push(v[i]);
+                    }
+        
+                    return newVals;
+                });   
+                return;  
+            }
+
+            setValues((v) => { // Changing all values in packet of packetID to values from lastPacket
+                let newVals = boolean.fields.map((field, i) =>
+                    field.packetID === packetID ? lastPacket.fieldData[field.packetFieldIndex] : v[i]
+                );
+                return newVals;
+            });
         }
 
-        setValues(boolean.fields.map(i => {
-            const latestValue = lastPacket.fieldData[i.packetFieldIndex];
-            return latestValue;
-        }));
+        let updatedPackets: {[id: number]: boolean} = {};
+        boolean.fields.forEach((f) => {
+            if (!updatedPackets[f.packetID]) {
+                updatePacket(f.packetID);
+                updatedPackets[f.packetID] = true;
+            }
+        });
     };
 
     createEffect(() => {
@@ -44,8 +75,10 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
         update();
     });
 
-    const getPacket = () => PacketStructureViewModels.find(i => i.id === boolean.packetID)!;
-    const getFieldComponents = () => getPacket().components.filter(i => i.type === PacketComponentType.Field);
+    const getPacket = (packetID: number) => {
+        return PacketStructureViewModels.find(i => i.id === packetID)!;
+    }
+    const getFieldComponents = (packetID: number) => getPacket(packetID).components.filter(i => i.type === PacketComponentType.Field);
 
     update();
 
@@ -59,8 +92,17 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
 
         <div class="flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-6 content-center w-90%">
             <For each={boolean.fields}>{(item, index) => {
-                const field = () => getFieldComponents()[item.packetFieldIndex].data as PacketField;
-
+                const packetComponent = getFieldComponents(item.packetID)[item.packetFieldIndex];
+                const field = () => packetComponent.data as PacketField;
+                console.log("id: ", item.packetID, "idx: ", item.packetFieldIndex);
+                // setSelectedPacketStructureID(item.packetID);
+                // setSelectedPacketComponentIndex(item.packetFieldIndex);
+                const [packetIDAccessor, _] = createSignal<number>(item.packetID);
+                const [packetComponentAccessor, setPacketComponentAccessor] = createSignal<PacketComponent>(packetComponent);
+                const invokeApiSetter = createInvokeApiSetterFunction(packetIDAccessor, packetComponentAccessor, showModal);
+                
+                // console.log(`selected --- ${selectedPacketStructureID()} index: ${selectedPacketComponentIndex()}`)
+                
                 const getValue = (): string => {
                     if (values().length <= index()) {
                         return 'N/A';
@@ -111,7 +153,36 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
                                 background-color: ${getColor()}`}> 
 
                         <div>
-                            <div style={{"word-wrap": "break-word"}}>{field().name}</div>
+                            {/* <div style={{"word-wrap": "break-word"}}>{field().name}</div> */}
+                            <div style={{"word-wrap": "break-word"}}>
+                                <input 
+                                    value={field().name}
+                                    onInput={async (e) => {
+                                        await invokeApiSetter(setFieldName, (e.target as HTMLInputElement).value)
+                                    }}
+                                />
+                            </div>
+                            {/* <h2>
+                                <input
+                                    value={props.displayStruct.displayName}
+                                    class="text-lg border-0 p-0 m-0 bg-transparent text-center font-bold"
+                                    onChange={(e) => {
+                                        console.log("sdfsdf")
+                                        setDisplays(produce(s => {
+                                            const struct = s[props.index] as BooleanStruct;
+                                            const value = (e.target as HTMLInputElement).value.trim();
+                                            if (value) {
+                                                struct.displayName = value;
+                                                oldName = value;
+                                            } else {
+                                                struct.displayName = oldName;
+                                            }
+                                        }));
+                                        store.set("display", displays);
+                                    }}
+                                />
+                            </h2>                             */}
+
                             <div class="grow-1 max-h-120px" style={{
                                 // override default macOS font with one where all the numbers are the same size
                                 "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif',
