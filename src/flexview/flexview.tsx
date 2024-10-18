@@ -105,6 +105,12 @@ const DragHandle: Component<{
                 cursor: props.direction === LayoutDirection.Column ? "ns-resize" : "ew-resize"
             }}
             class="hover:bg-blue"
+            classList={{
+                // need to specify both of these to override default hover style, needed
+                // as during dragging the mouse is not consistently hovering the bar
+                "bg-purple": dragging(),
+                "hover:bg-purple": dragging()
+            }}
             onMouseDown={(e) => {
                 e.preventDefault();
                 startX = e.clientX;
@@ -252,6 +258,11 @@ const RecursiveItemView: Component<{
                             />
                         </Show>
 
+                        {/* TODO: when empty, entire layout should be DropSite */}
+                        <Show when={(me as FlexviewLayout).children.length === 0}>
+                            <p class="flex align-center justify-center">(Empty layout)</p>
+                        </Show>
+
                         <For each={(me as FlexviewLayout).children}>{(childObject, index) => (
                             <>
                                 <div
@@ -321,6 +332,33 @@ const Draggable: Component<{
     );
 };
 
+const Factory: Component<{
+    name: string;
+    createObject: (id: number) => FlexviewObject;
+    objects: Array<FlexviewObject>;
+    setObjects: Setter<FlexviewObject[]>;
+    setDragging: Setter<DraggableThing>;
+}> = (props) => {
+    return (
+        <Draggable
+            name={props.name}
+            thing={() => ({
+                removeFromOldPosition: () => {
+                    // Does not exist yet, nothing to remove
+                },
+                actualizeObjectID: () => {
+                    // Create the object to get its ID
+                    const newId = props.objects.length;
+                    const newObject = props.createObject(newId);
+                    props.setObjects([...props.objects, newObject]);
+                    return newId;
+                }
+            })}
+            setDragging={props.setDragging}
+        />
+    )
+};
+
 /**
  * Customizable, recursive, flexible viewer & editor
  */
@@ -355,6 +393,7 @@ const Flexview: Component<{
             return Math.abs(rect.x - x);
         }
 
+        // Consider each corner
         return Math.min(
             pointDistance(x, y, rect.x, rect.y),
             pointDistance(x, y, rect.x + rect.width, rect.y),
@@ -363,32 +402,46 @@ const Flexview: Component<{
         );
     };
 
+    const rectanglePerimeter = (rect: DOMRect): number => {
+        return rect.width * 2 + rect.height;
+    };
+
     const getNearestTarget = (x: number, y: number): DropTarget | null => {
         let bestTarget = null;
         let bestDistance = 50;
+        let bestPerimeter = Infinity;
         for (const target of actualizedDropTargets) {
+            // Distance ties are broken by lowest perimeter to make it easier to select tiny lines.
+            const perimeter = rectanglePerimeter(target.rect);
             const distance = rectangleDistance(target.rect, x, y);
-            if (distance < bestDistance) {
+            if (distance < bestDistance || (distance === bestDistance && perimeter < bestPerimeter)) {
                 bestTarget = target;
                 bestDistance = distance;
+                bestPerimeter = perimeter;
             }
         }
         return bestTarget;
     };
+
+    let lastClientX = 0;
+    let lastClientY = 0;
 
     return (
         <div
             class="w-100% h-100%"
             onDragOver={(e) => {
                 e.preventDefault();
+                lastClientX = e.clientX;
+                lastClientY = e.clientY;
                 const nearest = getNearestTarget(e.clientX, e.clientY);
                 for (const target of actualizedDropTargets) {
                     target.setIsHovered(target === nearest);
                 }
             }}
             onDragEnd={(e) => {
+                // Safari bug: e.clientX and e.clientY from the dragend event are broken
                 e.preventDefault();
-                const nearest = getNearestTarget(e.clientX, e.clientY);
+                const nearest = getNearestTarget(lastClientX, lastClientY);
                 const draggingThing = dragging();
                 if (nearest && draggingThing) {
                     draggingThing.removeFromOldPosition();
@@ -401,27 +454,49 @@ const Flexview: Component<{
             }}
         >
             <Show when={props.editable()}>
-                <For each={props.factories}>{(factory) => (
-                    <Draggable
-                        name={factory.name}
-                        thing={() => ({
-                            removeFromOldPosition: () => {
-                                // Does not exist yet
-                            },
-                            actualizeObjectID: () => {
-                                const newObject: FlexviewObject = {
-                                    type: 'element',
-                                    element: factory.component({}),
-                                    id: (Math.random() * 10000) | 0
-                                };
-                                const newId = props.objects.length;
-                                props.setObjects([...props.objects, newObject]);
-                                return newId;
-                            }
+                <div class="flex flex-row gap-5">
+                    <Factory
+                        name={'Horizontal Container'}
+                        createObject={id => ({
+                            id,
+                            type: 'layout',
+                            direction: LayoutDirection.Row,
+                            children: [],
+                            weights: []
                         })}
+                        objects={props.objects}
+                        setObjects={props.setObjects}
                         setDragging={setDragging}
                     />
-                )}</For>
+
+                    <Factory
+                        name={'Vertical Container'}
+                        createObject={id => ({
+                            id,
+                            type: 'layout',
+                            direction: LayoutDirection.Column,
+                            children: [],
+                            weights: []
+                        })}
+                        objects={props.objects}
+                        setObjects={props.setObjects}
+                        setDragging={setDragging}
+                    />
+
+                    <For each={props.factories}>{(factory) => (
+                        <Factory
+                            name={factory.name}
+                            createObject={id => ({
+                                id,
+                                type: 'element',
+                                element: factory.component({})
+                            })}
+                            objects={props.objects}
+                            setObjects={props.setObjects}
+                            setDragging={setDragging}
+                        />
+                    )}</For>
+                </div>
             </Show>
 
             <RecursiveItemView
