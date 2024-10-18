@@ -1,16 +1,18 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import { For, JSX, Show } from "solid-js";
+import { For, JSX, Show, createSignal, onMount } from "solid-js";
 import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { produce } from "solid-js/store";
 import closeIcon from "../assets/close.svg";
+import infoIcon from "../assets/info-sym.svg";
 import { store } from "../core/file_handling";
 
 export interface ReadoutModalProps extends SettingsModalProps {
     displayStruct: ReadoutStruct;
 }
+
 interface ReadoutStructField {
     // index of field in packet
     packetFieldIndex: number;
@@ -22,6 +24,18 @@ export interface ReadoutStruct extends DisplayStruct {
 
 const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
+
+    let infoIconRef: HTMLImageElement | undefined;
+    onMount(() => { // Events for hovering over info icon
+        infoIconRef?.addEventListener("mouseout", (e) => {
+            setDisplayInfo(false);
+            console.log(displayInfo());
+        });
+        infoIconRef?.addEventListener("mouseover", (e) => {
+            setDisplayInfo(true);
+            console.log(displayInfo());
+        });
+    });
 
     // used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
@@ -55,7 +69,18 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
         store.set("display", displays);
     };
 
+    const [displayInfo, setDisplayInfo] = createSignal(false);
+
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
+
+        <Show when={displayInfo()}>
+            <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-16 rounded-3xl right-1 p-t-10 p-r-0 z-1">
+                Display the latest value from a group of variable in the same packet.
+            </div>          
+        </Show>
+
+        <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative w-[6%] dark:invert z-2" />
+
         <div class="flex flex-col bg-neutral-200 rounded-10 dark:bg-gray p-2">
             <h2>
                 <input
