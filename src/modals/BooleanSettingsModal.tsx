@@ -19,6 +19,7 @@ interface BooleanStructField {
     unit: {left: string; right: string};
     sign: string;
     isRange: boolean;
+    packetID: number;
 }
 
 export interface BooleanStruct extends DisplayStruct {
@@ -26,17 +27,16 @@ export interface BooleanStruct extends DisplayStruct {
 }
 
 const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX.Element => {
+    
     const { PacketStructureViewModels } = useBackend();
 
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
         infoIconRef?.addEventListener("mouseout", (e) => {
             setDisplayInfo(false);
-            console.log(displayInfo());
         });
         infoIconRef?.addEventListener("mouseover", (e) => {
             setDisplayInfo(true);
-            console.log(displayInfo());
         });
     });
 
@@ -45,32 +45,24 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
     // used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
 
-    const getStructField = (packetId: number, fieldIndex: number): BooleanStructField | undefined => {
-        if (props.displayStruct.packetID !== packetId) {
-            return undefined;
-        }
-        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex);
+    const getStructField = (packetID: number, fieldIndex: number): BooleanStructField | undefined => {
+        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex && i.packetID === packetID);
     };
 
-    const setActive = (packetId: number, fieldIndex: number, active: boolean) => {
+    const setActive = (packetID: number, fieldIndex: number, active: boolean) => {
         setDisplays(produce(s => {
             const struct = s[props.index] as BooleanStruct;
-
-            // When switching packet IDs, remove all the old stuff
-            if (struct.packetID !== packetId) {
-                struct.packetID = packetId;
-                struct.fields = [];
-            }
 
             if (active) {
                 struct.fields.push({
                     packetFieldIndex: fieldIndex,
                     unit: {left: '', right: ''},
                     sign: "<",
-                    isRange: false
+                    isRange: false,
+                    packetID: packetID
                 });
             } else {
-                struct.fields = struct.fields.filter(i => i.packetFieldIndex !== fieldIndex);
+                struct.fields = struct.fields.filter(i => !(i.packetFieldIndex === fieldIndex && i.packetID === packetID));
             }
         }));
         store.set("display", displays);
@@ -88,12 +80,18 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
 
         <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-5 w-[6%] dark:invert z-2" />
 
-
         <div class="flex items-center justify-center z-0">
             <button
                 class="w-[10%] h-[10%] rounded-5 border-none text-center"
                 onClick={() => {
-                    setDisplays(displays.filter((graph, index) => index !== props.index));
+                    // Need to clear fields before removing display
+                    setDisplays(produce(s => {
+                        const struct = s[props.index] as BooleanStruct;
+                        struct.fields =[];
+                    }));
+                    store.set("display", displays);
+                    
+                    setDisplays(displays.filter((_, index) => index !== props.index));
                     store.set("display", displays);
                     props.closeModal({});
                 }}>
@@ -133,7 +131,9 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                         const structField = () => getStructField(packetViewModel.id, packetField.index);
                         const getComponentField = () => {
                             const struct = (displays[props.index] as BooleanStruct);
-                            const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                            const componentField = struct.fields.find(
+                                i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
+                            );
                             return componentField;
                         }
                         
@@ -148,7 +148,10 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                             const target = e.target as HTMLInputElement;
                                             setDisplays(produce(s => {
                                                 const struct = (s[props.index] as BooleanStruct);
-                                                const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                                                const componentField = struct.fields.find(
+                                                    i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
+                                                );
+
                                                 if (componentField) {
                                                     componentField.unit = {...componentField.unit, left: target.value};
                                                 }
@@ -161,7 +164,10 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                         const target = e.target as HTMLInputElement;
                                         setDisplays(produce(s => {
                                             const struct = (s[props.index] as BooleanStruct);
-                                            const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                                            const componentField = struct.fields.find(
+                                                i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
+                                            );
+
                                             if (componentField) {
                                                 componentField.sign = target.value;
                                             }
@@ -189,7 +195,10 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                     const target = e.target as HTMLInputElement;
                                     setDisplays(produce(s => {
                                         const struct = (s[props.index] as BooleanStruct);
-                                        const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                                        const componentField = struct.fields.find(
+                                            i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
+                                        );
+
                                         if (componentField) {
                                             componentField.sign = target.value;
                                         }
@@ -209,7 +218,10 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                         const target = e.target as HTMLInputElement;
                                         setDisplays(produce(s => {
                                             const struct = (s[props.index] as BooleanStruct);
-                                            const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                                            const componentField = struct.fields.find(
+                                                i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
+                                            );
+                                            
                                             if (componentField) {
                                                 componentField.unit = {...componentField.unit, right: target.value};
                                             }
@@ -218,17 +230,20 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                     }}
                                 />
 
-                                <label for={`range-select-${packetField.index}`} class="m-l-2">
+                                <label for={`range-select-${packetViewModel.id}-${packetField.index}`} class="m-l-2">
                                     Range?
                                     <input
                                         type="checkbox"
-                                        id={`range-select-${packetField.index}`}
+                                        id={`range-select-${packetViewModel.id}-${packetField.index}`}
                                         checked={getComponentField()?.isRange}
                                         onchange={(e) => {
                                             const target = e.target as HTMLInputElement;
                                             setDisplays(produce(s => {
                                                 const struct = (s[props.index] as BooleanStruct);
-                                                const componentField = struct.fields.find(i => i.packetFieldIndex === packetField.index);
+                                                const componentField = struct.fields.find(
+                                                    i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
+                                                );
+
                                                 if (componentField) {
                                                     componentField.isRange = target.checked;
                                                 }
