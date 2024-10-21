@@ -62,11 +62,12 @@ const PacketEditor: Component = () => {
     }
 
     return (
-        <div class="flex gap-2">
+        <div class="flex gap-2 width-[100%] overflow-hidden">
             {/* Packet structure list */}
             <div class="flex flex-col gap-2">
-                <div class="flex flex-col overflow-auto flex-grow contentContainer">
+                <div class="h-[100%] flex flex-col overflow-scroll flex-grow tab">
                     <h1 class="m-0">Packets</h1>
+                        
                         <For each={PacketStructureViewModels}>
                             {packetStructure => (
                                 <button class={`flex justify-between gap-4 m-1 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
@@ -88,7 +89,15 @@ const PacketEditor: Component = () => {
                     }}>Import Packet</button>
                 {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
                 <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await runExportPacketWindow(selectedPacket()!)}>Export Packet...</button>
-                <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}>Add Empty Packet</button>
+                
+                <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900
+                    focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm 
+                    px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700
+                    dark:border-gray-700" 
+                    onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}
+                >
+                    Add Empty Packet
+                </button>
             </div>
             {/* Packet structure component list */}
             <div class="flex flex-col justify-between gap-2">
@@ -103,7 +112,7 @@ const PacketEditor: Component = () => {
                             </label>
                             <span>Components</span>
                             <div class="justify-between">
-                                <div class="flex flex-col gap-2">
+                                <div class="flex flex-col gap-2 pb-10">
                                     <For each={selectedPacketStructureComponents()}>
                                         {(component, i) => (
                                             <button class={`flex justify-between gap-4 m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-0 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 ${selectedPacketComponentIndex() === i() ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => setSelectedPacketComponentIndex(i())}>
@@ -127,7 +136,7 @@ const PacketEditor: Component = () => {
                                 </div>
                             </div>
                         </div>
-                        <button class="redButton relative bottom-0" onClick={async () => await showErrorModalOnError(async () => {
+                        <button class="redButton relative bottom-0 pt-2 mt-5 m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await showErrorModalOnError(async () => {
                             await deletePacketStructure(selectedPacket()!.id);
                             // Select the previous packet structure if the last packet structure was deleted, select no packet structure
                             // if none are left
@@ -138,9 +147,9 @@ const PacketEditor: Component = () => {
                     </Show>
                 </div>
                 <div class="flex gap-2">
-                    <button class="menuButton" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureID()!), 'Failed to add field')}>Add Field</button>
-                    <button class="menuButton" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimiter</button>
-                    <button class="menuButton" onClick={async () => {
+                    <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await showErrorModalOnError(async () => await addField(selectedPacketStructureID()!), 'Failed to add field')}>Add Field</button>
+                    <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await showErrorModalOnError(async () => await addDelimiter(selectedPacketStructureID()!), 'Failed to add delimiter')}>Add Delimiter</button>
+                    <button class="externalButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => {
                         const selectedComponentType = selectedPacketStructureComponent()!.type;
                         let isField: boolean;
                         let index: number;
@@ -180,12 +189,23 @@ const PacketEditor: Component = () => {
                                     <span>Offset in Packet: {selectedFieldData()!.offsetInPacket} byte{selectedFieldData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                     <div class="flex flex-col">
                                         <label for="fieldType">Type</label>
-                                        <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
-                                            onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
+                                        {/* <form class="max-w-sm mx-auto"> */}
+                                            {/* <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label> */}
+                                        <select id="fieldType" 
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}
+                                        >
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
                                             </For>
                                         </select>
+
+                                        {/* <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
+                                            onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
+                                            <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
+                                                {(fieldType) => <option value={fieldType}>{fieldType}</option>}
+                                            </For>
+                                        </select> */}
                                     </div>
                                     <div class="flex flex-col">
                                         <label for="fieldMetadataType">Metadata Type</label>
@@ -246,19 +266,19 @@ const PacketEditor: Component = () => {
                             </Match>
                             {/* Selected packet structure field editor */}
                             <Match when={selectedFieldData() !== null}>
-                                <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                                <button class="redButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
                                     Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Field"}
                                 </button>
                             </Match>
                             {/* Selected packet structure delimiter editor */}
                             <Match when={selectedDelimiterData() !== null}>
-                                <button class="redButton" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
+                                <button class="redButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}>
                                     Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Delimiter"}
                                 </button>
                             </Match>
                             {/* Selected packet structure gap editor */}
                             <Match when={selectedGapData() !== null}>
-                                <button class="redButton" onClick={async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, 0)}>
+                                <button class="redButton m-0 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, 0)}>
                                     Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
                                 </button>
                             </Match>
