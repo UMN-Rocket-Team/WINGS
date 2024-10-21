@@ -35,10 +35,10 @@ const SettingsTab: Component = () => {
         <div class="flex flex-col flex-grow gap-4 rounded border dark:text-white">
             <div class="flex flex-grow h-0">
                 {/* Views */}
-                <div class="flex-grow grid grid-cols-1 p-2 gap-2 w-full">
+                <div class="flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
                     <FieldsScreen/>
                 </div>
-                <div class="flex-grow grid grid-cols-1 p-2 gap-2 w-full">
+                <div class="flex flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
                     <PacketEditor/>
                 </div>
             </div>
