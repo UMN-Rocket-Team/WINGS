@@ -93,12 +93,10 @@ fn iterate_receiving_loop(
     match use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         result.new_available_port_names = communication_manager.get_all_potential_devices();
         for device in communication_manager.get_devices(){
-            match communication_manager.get_data(device) {
-                Ok(data) => {
-                    result.parsed_packets.extend(data);
-                },
+            match communication_manager.get_data(device,&mut result.parsed_packets) {
+                Ok(_) => {},
                 Err(err) => {
-                    if err != "Operation timed out"{
+                    if err.to_string() != "Operation timed out"{
                         eprintln!("coms manager: {}", err);
                     }
                 }
