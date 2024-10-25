@@ -137,7 +137,10 @@ const FieldsScreen: Component = () => {
                 New Readout
             </button>
             
-            <button class="m-1" onClick={() => {   
+            <button class="class=m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+                focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2
+                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
+                onClick={() => {   
                 if (PacketStructureViewModels.length != 0){
                     setDisplays([...displays, {
                         displayName: `Indicator ${indicatorCounter}`,
