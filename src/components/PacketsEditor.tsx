@@ -66,7 +66,7 @@ const PacketEditor: Component = () => {
             {/* Packet structure list */}
             <div class="flex flex-col gap-2">
                 <div class="h-[100%] flex flex-col overflow-scroll flex-grow tab">
-                    <h1 class="m-0 text-black dark:text-white">Packets</h1>
+                    <h1 class="m-0 text-xl font-bold text-black dark:text-white">Packets</h1>
                         
                         <For each={PacketStructureViewModels}>
                             {packetStructure => (
@@ -116,13 +116,13 @@ const PacketEditor: Component = () => {
                 <div class="flex flex-col flex-grow justify-between overflow-auto contentContainer">
                     <Show when={selectedPacket() !== null} fallback={<h2 class="m-0 dark:text-white">No packet selected</h2>}>
                         <div class="flex-col gap-2 overflow-auto dark:text-white">
-                            <h2 class="m-0">{selectedPacket()!.name}</h2>
+                            <h2 class="text-xl font-bold m-0">{selectedPacket()!.name}</h2>
                             <label class='flex flex-col'>
-                                <span>Name</span>
+                                <span class="text-gray-700 dark:text-gray-400 text-sm">Name</span>
                                 <input class="inputBox" type='text' value={selectedPacket()!.name}
                                     onInput={async e => await showErrorModalOnError(async () => await setPacketName(selectedPacket()!.id, (e.target as HTMLInputElement).value), 'Failed to change packet name')} />
                             </label>
-                            <span>Components</span>
+                            <span class="font-bold">Components</span>
                             <div class="justify-between">
                                 <div class="flex flex-col gap-2 pb-10">
                                     <For each={selectedPacketStructureComponents()}>
@@ -199,8 +199,8 @@ const PacketEditor: Component = () => {
                             </Match>
                             {/* Selected packet structure field editor */}
                             <Match when={selectedFieldData() !== null}>
-                                <h2 class="m-0">Field Information</h2>
-                                <div class="flex flex-col gap-2 bg-slate-600">
+                                <h2 class="m-0 font-bold">Field Information</h2>
+                                <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
                                         <label for="fieldName">Name</label>
                                         <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
@@ -211,21 +211,21 @@ const PacketEditor: Component = () => {
                                         <label for="fieldType">Type</label>
                                         {/* <form class="max-w-sm mx-auto"> */}
                                             {/* <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label> */}
-                                        <select id="fieldType" 
+                                        {/* <select id="fieldType" 
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}
                                         >
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
                                             </For>
-                                        </select>
+                                        </select> */}
 
-                                        {/* <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
+                                        <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
                                             onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
                                             <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
                                                 {(fieldType) => <option value={fieldType}>{fieldType}</option>}
                                             </For>
-                                        </select> */}
+                                        </select>
                                     </div>
                                     <div class="flex flex-col">
                                         <label for="fieldMetadataType">Metadata Type</label>
@@ -240,15 +240,15 @@ const PacketEditor: Component = () => {
                             </Match>
                             {/* Selected packet structure delimiter editor */}
                             <Match when={selectedDelimiterData() !== null}>
-                                <h2 class="m-0">Delimiter Information</h2>
+                                <h2 class="m-0 font-bold text-xl">Delimiter Information</h2>
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
-                                        <label for="delimiterName">Name</label>
+                                        <label for="delimiterName" class="text-gray-700 dark:text-gray-400 text-sm">Name</label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.name} id="delimiterName"
                                             onInput={async e => await invokeApiSetter(setDelimiterName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div>
-                                        <label for="delimiterIdentifier">Identifier:</label>
+                                        <label for="delimiterIdentifier">Identifier: </label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
                                             onChange={async e => {
                                                 const el = e.target as HTMLInputElement;
