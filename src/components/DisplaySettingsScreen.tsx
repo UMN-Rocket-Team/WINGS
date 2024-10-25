@@ -93,9 +93,12 @@ const FieldsScreen: Component = () => {
     });
 
     return (
-        <div class="relative contentContainer">
+        <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2 mb-5">
             {/*Field Select Button*/}
-            <button type="button" class="m-1 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onClick={() => {   
+            <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
+            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
+            onClick={() => {   
                 if (PacketStructureViewModels.length != 0){
                     setDisplays([...displays, {
                         displayName: `Graph ${graphCounter}`, 
@@ -114,7 +117,10 @@ const FieldsScreen: Component = () => {
                 New Graph
             </button>
 
-            <button type="button" class="m-1 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" onclick={() => {
+            <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2
+            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white"
+            onclick={() => {
                 if (PacketStructureViewModels.length !== 0){
                     setDisplays([...displays, {
                         displayName: `Readout ${readoutCounter}`,
@@ -151,7 +157,7 @@ const FieldsScreen: Component = () => {
 
             {/*Fields*/}
             <div
-                class="absolute grid flex-wrap top-10 bottom-8 left-0 right-0 m-auto p-4 items-center justify-center gap-4 overflow-y-scroll"
+                class="absolute grid flex-wrap top-10 bottom-8 left-0 mt-5 right-0 m-auto p-4 items-center justify-center gap-4 overflow-y-scroll"
                 style={{ "width": "90%", "grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, displays.length)}, 1fr)`}}>
                 <For each={displays}>
                     {(display: DisplayStruct, index) => {

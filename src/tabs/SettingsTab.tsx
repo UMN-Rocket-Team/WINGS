@@ -53,8 +53,24 @@ const SettingsTab: Component = () => {
                     {/* <button type="button" >Dark</button> */}
                 </div>
                 <p class="m-0">Packets Received: {parsedPacketCount()}</p>
-                <button type="button" onClick={clearParsedPackets} class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Clear graph</button>
-                <button type="button" onClick={saveFlight} class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Save</button>
+                <button 
+                    type="button" 
+                    onClick={clearParsedPackets} 
+                    class="text-black bg-gray-200 hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300
+                    font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 
+                    dark:border-gray-700 dark:text-white"
+                >
+                    Clear graph
+                </button>
+                <button 
+                    type="button" 
+                    onClick={saveFlight} 
+                    class="text-dark bg-gray-200 hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300
+                    font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 
+                    dark:border-gray-700 dark:text-white"
+                >
+                    Save
+                </button>
             </footer>
         </div>
     );
