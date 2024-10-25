@@ -1,6 +1,6 @@
 
 
-use anyhow::bail;
+use anyhow::{bail,anyhow};
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
@@ -50,7 +50,10 @@ pub struct CommunicationManager{
 }
 
 impl CommunicationManager {
-    //potential plug and play support
+
+    /// Initializes all currently connected devices automatically
+    /// 
+    /// Initialize the Communication manager with any serial devices that are already attached to the ground station
     pub fn init(&mut self, app_handle: AppHandle){
         self.app_handle = Some(app_handle.clone());
         let maybe_device_names = self.get_all_potential_devices();
@@ -68,6 +71,7 @@ impl CommunicationManager {
         }
         self.update_display_com_devices();
     }
+
     //for plug and play
     pub fn get_all_potential_devices(&mut self)-> Option<Vec<DeviceName>>{
 
@@ -112,7 +116,7 @@ impl CommunicationManager {
     /// # Error
     /// 
     /// Returns an error if the device being addressed isn't initialized correctly
-    pub fn get_data(&mut self, id: usize) -> Result<Vec<Packet>, String>{
+    pub fn get_data(&mut self, id: usize, return_buffer: &mut Vec<Packet>) -> anyhow::Result<()>{
         let index = self.find(id);
         match index{
             Some(index) => {
@@ -120,14 +124,14 @@ impl CommunicationManager {
 
                 if self.comms_objects[index].is_init() {
                     match self.comms_objects[index].get_device_packets(&mut result) {
-                        Ok(_) => return Ok(result),
-                        Err(error) => return Err(error.to_string())
+                        Ok(_) => return_buffer.append(&mut result),
+                        Err(error) => return Err(error)
                     }
                 }
 
-                Ok(result)
+                Ok(())
             },
-            None => Err(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
+            None => bail!(format!("could not find a device with that ID: {} {}",id ,self.comms_objects.len())),
         }
     }
 
@@ -238,5 +242,43 @@ impl CommunicationManager {
             return_me.push(device.get_id());
         }
         return_me
+    }
+}
+
+mod tests {
+    
+    use crate::state::generic_state::{CommunicationManagerState, FileHandlingState};
+
+    use super::*; // lets the unit tests use everything in this file
+    use tauri::Manager;
+
+    #[test]
+    #[ignore]
+    fn test_if_serial_recognized() {
+        let mut test_interface = CommunicationManager::default();
+        let device_names = test_interface.get_all_potential_devices();
+        assert!(device_names.is_some());
+        assert!(device_names.unwrap().len() > 0);
+    }
+    const BAUD: u32 = 57600;
+
+    #[test]
+    #[ignore]
+    fn test_serial_receive() {
+        let mut test_interface = CommunicationManager::default();
+        let device_names = test_interface.get_all_potential_devices();
+        assert!(device_names.clone().is_some());
+        assert!(device_names.clone().unwrap().len() > 0);
+        test_interface.add_serial_device();
+        let result = test_interface.init_device(&device_names.unwrap()[0].name, BAUD, 0);
+        if result.is_err(){
+            println!("{}", result.unwrap_err());
+        };
+        loop{
+            let mut buff = vec![];
+            let result = test_interface.get_data(0,&mut buff);
+            println!("             {:#?}",result);
+            println!("{:#?}",buff);
+        }
     }
 }
