@@ -104,12 +104,12 @@ const DragHandle: Component<{
                 height: props.direction === LayoutDirection.Column ? "4px" : "100%",
                 cursor: props.direction === LayoutDirection.Column ? "ns-resize" : "ew-resize"
             }}
-            class="hover:bg-blue"
+            class="hover:bg-blue-500"
             classList={{
                 // need to specify both of these to override default hover style, needed
                 // as during dragging the mouse is not consistently hovering the bar
-                "bg-purple": dragging(),
-                "hover:bg-purple": dragging()
+                "bg-purple-500": dragging(),
+                "hover:bg-purple-500": dragging()
             }}
             onMouseDown={(e) => {
                 e.preventDefault();
@@ -181,7 +181,7 @@ const DropSite: Component<{
             <div
                 class="position-relative"
                 classList={{
-                    'bg-red': isHovered()
+                    'bg-red-500': isHovered()
                 }}
                 style={{
                     width: props.direction === LayoutDirection.Column ? "100%" : "4px",
@@ -233,7 +233,7 @@ const RecursiveItemView: Component<{
 
     return (
         <div
-            class="w-100% h-100% overflow-hidden"
+            class="w-full h-full overflow-hidden"
             ref={(element) => {
                 resizeObserver.observe(element);
             }}
@@ -243,7 +243,7 @@ const RecursiveItemView: Component<{
             )}>
                 <Match when={me.type === 'layout'}>
                     <div
-                        class="flex w-100% h-100%"
+                        class="flex w-full h-full"
                         style={{
                             "flex-direction": (me as FlexviewLayout).direction,
                         }}
@@ -337,7 +337,7 @@ const Factory: Component<{
     createObject: (id: number) => FlexviewObject;
     objects: Array<FlexviewObject>;
     setObjects: Setter<FlexviewObject[]>;
-    setDragging: Setter<DraggableThing>;
+    setDragging: Setter<DraggableThing | null>;
 }> = (props) => {
     return (
         <Draggable
@@ -428,7 +428,7 @@ const Flexview: Component<{
 
     return (
         <div
-            class="w-100% h-100%"
+            class="w-full h-full"
             onDragOver={(e) => {
                 e.preventDefault();
                 lastClientX = e.clientX;
@@ -456,7 +456,7 @@ const Flexview: Component<{
             <Show when={props.editable()}>
                 <div class="flex flex-row gap-5">
                     <Factory
-                        name={'Horizontal Container'}
+                        name="Horizontal Container"
                         createObject={id => ({
                             id,
                             type: 'layout',
@@ -470,7 +470,7 @@ const Flexview: Component<{
                     />
 
                     <Factory
-                        name={'Vertical Container'}
+                        name="Vertical Container"
                         createObject={id => ({
                             id,
                             type: 'layout',
