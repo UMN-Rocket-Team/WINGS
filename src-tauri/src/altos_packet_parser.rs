@@ -103,6 +103,26 @@ impl SerialPacketParser {
                     continue;
                 }
 
+                let mut crc_cor = true;
+                for crc in &packet_structure.packet_crc {
+                    if !checksum(
+                        &self.unparsed_data,
+                        packet_start_index,
+                        crc.offset_in_packet,
+                        print_flag
+                    ) {
+                        crc_cor = false;
+                        break;
+                    }                    
+                }
+
+                if !crc_cor {
+                    if print_flag {
+                        println!("- CRC check failed");
+                    }
+                    continue;
+                }
+
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
                     vec![PacketFieldValue::UnsignedByte(0); packet_structure.fields.len()];
@@ -173,8 +193,20 @@ fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: 
     true
 }
 
+fn checksum(data: &Vec<u8>, start_index: usize, offset: usize, print_flag: bool) -> bool {
+    let sum: usize = data[start_index+1..offset].iter().map(|&x| x as usize).sum();
+    let calculated_crc = (0x5a + sum) % 256;
+    if print_flag {
+        println!("Calculated crc: {:02X?}, actual crc: {:02X?}", calculated_crc, data[offset]);
+    }
+
+    calculated_crc == data[offset] as usize
+}
+
 #[cfg(test)]
-mod tests {
+mod parser_tests {
+    use models::packet_structure::PacketCRC;
+
     use crate::models::packet_structure::PacketStructure;
 
     use super::*;//lets the unit tests use everything in this file
@@ -191,7 +223,6 @@ mod tests {
             packet_crc: vec![]
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
-        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
@@ -203,9 +234,21 @@ mod tests {
                     0x04,
                     0x00,0x00,
                     0x00,0x00,0x00,0x00,
-                    0x1E,0xAB,0x11,0xCA];
+                    0x1E,0xAB,0x11,0xCA,
+                    0xF2 // crc
+                ]; 
+        
+        let crc = PacketCRC {
+            length: 0,
+            offset_in_packet: data.len()-1
+        };
+
+        p_structure.packet_crc.push(crc);
+        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
+
+
         packet_parser.push_data(&data,false);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,true);
         assert_eq!(parsed[0].structure_id,id);//does the packet have the right ID?
         assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
         assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
