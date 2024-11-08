@@ -37,6 +37,7 @@ impl PacketStructureViewModel {
             fields: packet_fields,
             delimiters: packet_delimiters,
             metafields: vec![],
+            packet_crc: vec![]
         };
     }
 }
@@ -172,6 +173,7 @@ mod tests {
                 }
             ],
             metafields: vec![],
+            packet_crc: vec![]
         };
         let view_model = create_packet_view_model(&packet_structure);
         assert_eq!(view_model, PacketStructureViewModel {
@@ -213,6 +215,7 @@ mod tests {
                 }
             ],
             metafields: vec![],
+            packet_crc: vec![]
         };
         let view_model = create_packet_view_model(&packet_structure);
         assert_eq!(view_model, PacketStructureViewModel {
@@ -268,6 +271,7 @@ mod tests {
                 make_structure_delimiter(14),
             ],
             metafields: vec![],
+            packet_crc: vec![]
         };
 
         let view_model = create_packet_view_model(&packet_structure);

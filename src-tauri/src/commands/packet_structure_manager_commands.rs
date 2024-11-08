@@ -349,6 +349,7 @@ pub fn register_empty_packet_structure(
                     PacketDelimiter { index: 0, name: String::from("Delimiter 1"), identifier: smallest_delimiter, offset_in_packet: PacketFieldType::SignedInteger.size() }
                 ],
                 metafields: vec![],
+                packet_crc: vec![]
             }) {
                 Ok(new_id) => Ok((vec![new_id], None)),
                 Err(error) => Err((vec![], None, error.to_string()))

@@ -571,6 +571,7 @@ mod tests {
             fields: vec![],
             delimiters: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         // run the manager function we are trying to test on the test packet
@@ -599,6 +600,7 @@ mod tests {
             fields: vec![packet_field],
             delimiters: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         packet_structure_manager.set_field_name(id, 0, "name").unwrap();
@@ -638,6 +640,7 @@ mod tests {
                     fields: vec![packet_field, packet_field2],
                     delimiters: vec![],
                     metafields: vec![],
+                    packet_crc: vec![]
                 }).unwrap();
 
                 packet_structure_manager.set_field_type(id, 0, field_type2).unwrap();
@@ -665,6 +668,7 @@ mod tests {
             fields: vec![packet_field],
             delimiters: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         packet_structure_manager.set_field_metadata_type(id, 0, packet_metadata_type2).unwrap();
@@ -686,6 +690,7 @@ mod tests {
             fields: vec![],
             delimiters: vec![packet_delimiter],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         packet_structure_manager.set_delimiter_name(id, 0, "new_name").unwrap();
@@ -715,6 +720,7 @@ mod tests {
                 },
             ],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         // First we test just changing the identifier to something with the same size
@@ -781,6 +787,7 @@ mod tests {
                 },
             ],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         // This should move everything back by 1 byte
@@ -863,6 +870,7 @@ mod tests {
             fields: vec![],
             delimiters: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         packet_structure_manager.add_field(id).unwrap();
@@ -880,6 +888,7 @@ mod tests {
             fields: vec![],
             delimiters: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         }).unwrap();
 
         packet_structure_manager.add_delimiter(id).unwrap();

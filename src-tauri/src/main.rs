@@ -16,6 +16,7 @@ mod sending_loop;
 mod communication_manager;
 mod data_processing;
 mod file_handling;
+mod altos_packet_parser;
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use communication_manager::CommunicationManager;

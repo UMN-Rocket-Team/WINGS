@@ -172,6 +172,7 @@ pub struct PacketDelimiter {
     pub(crate) offset_in_packet: usize,
 }
 
+#[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 pub struct PacketCRC {
     pub(crate) length: usize, 
     pub(crate) offset_in_packet: usize
