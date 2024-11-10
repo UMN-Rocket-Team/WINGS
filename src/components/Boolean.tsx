@@ -82,14 +82,14 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
 
     update();
 
-    return <div class={`h-100% gap-2 text-center overflow-y-auto overflow-x-hidden `}>
+    return <div class={`h-full gap-2 text-center overflow-y-auto overflow-x-hidden `}>
 
-        <div class="font-bold m-b-2 text-lg">
+        <div class="font-bold mb-2 text-lg">
             {boolean.displayName}
 
         </div>
 
-        <div class="flex flex-wrap top-10 bottom-8 left-0 right-0 m-a p-4 items-center justify-center gap-6 content-center w-90%">
+        <div class="flex flex-wrap top-10 bottom-8 left-0 right-0 m-auto p-4 items-center justify-center gap-6 content-center w-9/10">
             <For each={boolean.fields}>{(item, index) => {
                 const packetComponent = getFieldComponents(item.packetID)[item.packetFieldIndex];
                 const field = () => packetComponent.data as PacketField;
@@ -143,11 +143,11 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
                 }
 
                 return <>
-                    <div class="w96px aspect-square border-rounded-xl border-0 px-4 py-2 flex flex-col justify-center align-center"
+                    <div class="w-[112px] aspect-square rounded-xl border-0 px-4 py-2 flex flex-col justify-center items-center max-h-[112px]"
                             style={`box-shadow: 0px 0px 6px 6px ${!(getColor() === Colors.GREY) && getColor()}; 
                                 background-color: ${getColor()}`}> 
                         <div>
-                            <textarea class="b-0 bg-transparent p-0 m-0 text-center w-100% resize-none max-h-4em overflow-y-hidden" 
+                            <textarea class="border-0 bg-transparent p-0 m-0 text-center w-full resize-none max-h-[5em] overflow-y-hidden" 
                                 style={
                                     `word-wrap: break-word; 
                                     word-break: break-all; 
@@ -168,7 +168,7 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
                                 }}
                             >{field().name}</textarea>
 
-                            <div class="grow-1 max-h-120px" style={{
+                            <div class="grow max-h-[120px]" style={{
                                 // override default macOS font with one where all the numbers are the same size
                                 "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif',
                                 "word-wrap": "break-word"
