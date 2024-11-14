@@ -42,9 +42,7 @@ impl AltosPacketParser {
             // Try to find a matching packet for the data
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
-                if packet_structure.packet_crc.len() > 0 {
-                    println!("crc len: {}", packet_structure.packet_crc.len());
-                }
+              
                 if print_flag {
                     println!("At index {}, matching structure {}", i, j);
                 }
@@ -106,22 +104,16 @@ impl AltosPacketParser {
                     continue;
                 }
 
-                let mut crc_cor = true;
-  
                 if !checksum(
                     &self.unparsed_data,
                     packet_start_index,
                     print_flag
                 ) {
-                    crc_cor = false;
-                }   
-
-                if !crc_cor {
                     if print_flag {
                         println!("- CRC check failed");
                     }
                     continue;
-                }
+                }   
 
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
@@ -194,26 +186,21 @@ fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: 
 }
 
 fn checksum(data: &Vec<u8>, start_index: usize, print_flag: bool) -> bool {
-    let len: usize = data[start_index-1] as usize;
+    if start_index == 0 {
+        return false;
+    }
+
+    let len: usize = data[start_index-1] as usize; // Length of each AltusMetrum packet stored at byte before start index
     if start_index + len >= data.len() {
         return false;
     }
 
-    for i in start_index-1..start_index+len+1 {
-        if i < data.len() {
-            print!("{:02X?}", data[i]);
-        }
-    }
-    println!();
-
-    let sum: usize = data[start_index..start_index+len].iter().map(|&x| x as usize).sum();
-    let calculated_crc = (0x5a + sum) % 256;
     if print_flag {
-        println!("Calculated crc: {:02X?}, actual crc: {:02X?}", calculated_crc, data[start_index+len]);
+        println!("Second to last byte in packet: {:02X?}", data[start_index+len-1]);
     }
 
-    (calculated_crc == data[start_index+len] as usize)
-    // data[start_index+len-1] & 0x80 > 0
+    // Checking if 7th bit in second to last byte in packet is set. Then we know CRC is correct according to AltuMetrum docs.
+    data[start_index+len-1] & 0x80 > 0 
 }
 
 #[cfg(test)]
