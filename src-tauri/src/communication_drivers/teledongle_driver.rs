@@ -119,6 +119,7 @@ impl CommsIF for TeleDongleDriver {
             }
         }
         let decoded = hex::decode(parsed_str)?;
+        
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
         self.packet_parser.push_data(&decoded, PRINT_PARSING);
@@ -164,7 +165,7 @@ impl CommsIF for TeleDongleDriver {
         let str = from_utf8(&buffer)?;
         let mut parsed_str = "".to_owned();
         for c in str.chars() {
-            if c.is_ascii_hexdigit() {
+            if c.is_ascii_hexdigit(){
                 parsed_str.push(c);
             }
         }

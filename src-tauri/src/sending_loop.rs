@@ -11,7 +11,6 @@ const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
 
 /// Sending Modes
 
-#[allow(dead_code)]
 #[derive(Deserialize, Serialize, Clone, Debug, Copy)]
 pub enum SendingModes{
     FromCSV,
