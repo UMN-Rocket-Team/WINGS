@@ -22,7 +22,7 @@ impl PacketStructure {
 
     /// Returns the size of the PacketStructure
     /// 
-    /// size is found by going through every element in the packetstructure, and finding the largest sum of an elements offset and size.
+    /// size is found by going through every element in the packetStructure, and finding the largest sum of an elements offset and size.
     /// this produces the same result as returning the largest offset with the size of that element added on
     pub fn size(&self) -> usize {
         let mut max_end: usize = 0;
@@ -42,7 +42,7 @@ impl PacketStructure {
     }
 
     /// fills the packet calling it using string inputs,
-    /// THIS IS MENT FOR TESTING ONLY
+    /// THIS IS MEANT FOR TESTING ONLY
     /// 
     /// 0 - f,    represents delimiters in hex
     /// _1-inf    represents gaps, the number after is the length in decimal
