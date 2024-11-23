@@ -33,7 +33,7 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
             }}
             // Close the modal if the user clicks outside
             onClick={() => props.close()}>
-            <div class="flex flex-col items-center m-auto max-h-[75%] p-4 gap-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 relative"
+            <div class="flex flex-col items-center m-auto max-h-[75%] min-w-[40%] w-[45%] p-4 gap-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 relative"
                 // Do not close the modal if the user clicks inside
                 onClick={event => event.stopPropagation()}>
                 <button class="absolute w-6 h-6 right-4 top-4 p-1 bg-transparent hover:bg-gray-200 dark:hover:bg-gray-900 rounded-full"
@@ -41,7 +41,7 @@ const DefaultModalLayout: ParentComponent<DefaultModalLayoutProps> = (props): JS
                     <img alt="Close" src={closeIcon} class="w-full h-full dark:invert" draggable={false} />
                 </button>
                 <b class="text-center text-4xl dark:text-white mx-14">{props.title}</b>
-                <div class="overflow-auto">
+                <div class="overflow-auto w-[100%]">
                     {props.children}
                 </div>
             </div>

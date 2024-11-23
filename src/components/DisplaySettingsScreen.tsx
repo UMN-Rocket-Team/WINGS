@@ -1,6 +1,6 @@
 import { Component, For, JSX, onMount } from "solid-js";
 import { ModalProps, useModal } from "../modals/ModalProvider";
-import { createStore } from "solid-js/store";
+import { createStore, SetStoreFunction } from "solid-js/store";
 import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import GraphDisplayElement from "./SolidChart";
@@ -27,6 +27,7 @@ export type DisplayStruct = {
     type: string,
     settingsModal: number,
     displayElement: number,
+    packetsDisplayed: boolean[] // If user has PacketStructureViewModels()[i] dropdown open, then displayedPackets[i] == true
 }
 export const settingsModalArray = [
     GraphSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element), 
@@ -106,6 +107,7 @@ const FieldsScreen: Component = () => {
                         type: `Graph`,
                         settingsModal: 0,
                         displayElement: 0,
+                        packetsDisplayed: Array(PacketStructureViewModels.length).fill(false),
                         x: 0, 
                         y: [0], 
                         colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"], 
@@ -129,6 +131,7 @@ const FieldsScreen: Component = () => {
                         fields: [],
                         settingsModal: 1,
                         displayElement: 1,
+                        packetsDisplayed: Array(PacketStructureViewModels.length).fill(false)
                     } as unknown as ReadoutStruct]);
                     readoutCounter++;
                     store.set("display", displays);
@@ -149,6 +152,7 @@ const FieldsScreen: Component = () => {
                         fields: [],
                         settingsModal: 2,
                         displayElement: 2,
+                        packetsDisplayed: Array(PacketStructureViewModels.length).fill(false)
                     } as BooleanStruct]);
 
                     indicatorCounter++;
