@@ -7,7 +7,7 @@ import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { produce } from "solid-js/store";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
-import dropdownIcon from "../assets/dropdown.svg"
+import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
 
 export interface BooleanSettingsModalProps extends SettingsModalProps {
@@ -177,7 +177,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                             <input
                                                 type="number"
                                                 value={structField()!.unit?.left}
-                                                class="w-16"
+                                                class="w-16 max-h-6"
                                                 onchange={(e) => {
                                                     const target = e.target as HTMLInputElement;
                                                     setDisplays(produce(s => {
@@ -194,7 +194,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                                 }}
                                             />   
 
-                                            <select value={getComponentField()?.sign} class="mr-1 cursor-pointer" onInput={(e) => {
+                                            <select value={getComponentField()?.sign} class="mr-1 cursor-pointer max-h-6" onInput={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setDisplays(produce(s => {
                                                     const struct = (s[props.index] as BooleanStruct);
@@ -208,16 +208,16 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                                 }));    
                                                 store.set("display", displays);                               
                                             }}>
-                                                <option value="<">{"<"}</option>
+                                                <option value="<" selected>{"<"}</option>
                                             </select>  
                                         </Show>                                
                                     </Show>
 
-                                    <label class="ml-2 cursor-pointer">
+                                    <label class="ml-2 cursor-pointer flex items-center max-h-6">
                                         <input
                                             type="checkbox"
                                             checked={!!structField()}
-                                            class="mr-1"
+                                            class="mr-1 cursor-pointer"
                                             onchange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setActive(packetViewModel.id, packetField.index, target.checked);
@@ -228,7 +228,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                     </label>
 
                                     <Show when={structField()}>
-                                        <select value={getComponentField()?.sign} class="ml-2" onInput={(e) => {
+                                        <select value={getComponentField()?.sign} class="ml-2 max-h-6 cursor-pointer" onInput={(e) => {
                                             const target = e.target as HTMLInputElement;
                                             setDisplays(produce(s => {
                                                 const struct = (s[props.index] as BooleanStruct);
@@ -244,13 +244,13 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                         }}>
                                             {!getComponentField()?.isRange ? 
                                                 <For each={signs}>{(sign) =>{return <option value={sign}>{sign}</option>}}</For> : 
-                                                <option value="<">{"<"}</option>}
+                                                <option value="<" selected>{"<"}</option>}
                                         </select>                                
 
                                         <input
                                             type="number"
                                             value={structField()!.unit?.right}
-                                            class="w-16"
+                                            class="w-16 max-h-6"
                                             onchange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setDisplays(produce(s => {
@@ -267,13 +267,14 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                             }}
                                         />
 
-                                        <label for={`range-select-${packetViewModel.id}-${packetField.index}`} class="ml-2 cursor-pointer">
+                                        <label for={`range-select-${packetViewModel.id}-${packetField.index}`} 
+                                            class="ml-2 cursor-pointer flex items-center max-h-6">
                                             Range?
                                             <input
                                                 type="checkbox"
                                                 id={`range-select-${packetViewModel.id}-${packetField.index}`}
                                                 checked={getComponentField()?.isRange}
-                                                class="ml-1"
+                                                class="ml-1 cursor-pointer"
                                                 onchange={(e) => {
                                                     const target = e.target as HTMLInputElement;
                                                     setDisplays(produce(s => {
