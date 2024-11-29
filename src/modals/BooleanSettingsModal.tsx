@@ -213,7 +213,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                         </Show>                                
                                     </Show>
 
-                                    <label class="ml-2 cursor-pointer flex items-center max-h-6">
+                                    <label class="ml-2 cursor-pointer flex items-center max-h-full">
                                         <input
                                             type="checkbox"
                                             checked={!!structField()}
