@@ -1,14 +1,13 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
-import { Accessor, For, JSX, createSignal, Show, onMount } from "solid-js";
+import { For, JSX, createSignal, Show, onMount } from "solid-js";
 import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
-import closeIcon from "../assets/close.svg";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg"
-import { produce, createStore } from "solid-js/store";
+import { produce } from "solid-js/store";
 import { store } from "../core/file_handling";
 
 
@@ -40,9 +39,6 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
 
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
-
-    // If user has PacketStructureViewModels()[i] dropdown open, then displayedPackets[i] == true
-    // const [displayedPackets, setDisplayedPackets] = createStore(Array(PacketStructureViewModels.length).fill(false) as boolean[]);
 
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
@@ -131,7 +127,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
 
-            <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative'>
+            <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit'>
                 <Show when={displayInfo()}>
                     <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                         Customizable graph for visualizing data.
@@ -142,8 +138,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                     <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
                     <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]" 
-                        onBlur={handleInput} onKeyDown={handleKeyDown}
-                    >
+                        onBlur={handleInput} onKeyDown={handleKeyDown}>
                         {graphCurrName()}
                     </h3>
 
@@ -180,13 +175,11 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                                 <h3>Remove Display</h3>
                             </button>
                         </div>
-
                     </div>
                 </Show>
 
                 <For each={PacketStructureViewModels}>
                     {(PacketStructureViewModel: PacketStructureViewModel, packetIdx) =>
-                        
                         <div class='flex flex-col mb-4'>
                             <div class='flex gap-2 leading-none w-fit cursor-pointer'
                                 onClick={() => {
@@ -197,12 +190,13 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                                     store.set("display", displays);
                                 }}>
                                 <img alt="Dropdown" src={dropdownIcon} 
-                                    class={`h-4 dark:invert rotate-${displays[props.index].packetsDisplayed[packetIdx()] ? "0" : "[270deg]"}`} 
+                                    class={`h-4 dark:invert`} 
+                                    style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
                                     draggable={false}/>
                                 <h3 class='font-bold'>{PacketStructureViewModel.name}</h3>
                             </div>
 
-                            <Show when={displays[props.index].packetsDisplayed[packetIdx()]}>
+                            <Show when={displays[props.index]?.packetsDisplayed[packetIdx()]}>
                                 <div class='flex bg-neutral-200 dark:bg-gray-700 p-4 pt-0 pb-0 rounded-lg'>
                                     <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg'>
                                         <h2 class="font-bold">X-Axis</h2>
