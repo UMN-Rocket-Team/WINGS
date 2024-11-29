@@ -112,7 +112,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
         <div class="flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit">
             <Show when={displayInfo()}>
                 <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
-                    <p class="max-w-prose">Monitors chosen variables and displays lights that indicate whether data satisfies input inequalities or not.</p>
+                    <p class="max-w-prose">Displays incoming data for chosen variables.</p>
                 </div>            
             </Show>
             
