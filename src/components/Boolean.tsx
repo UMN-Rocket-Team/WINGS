@@ -3,9 +3,6 @@ import { BooleanStruct } from "../modals/BooleanSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { unDecimatedPackets } from "../backend_interop/buffers";
 import { PacketComponentType, PacketField, PacketComponent } from "../backend_interop/types";
-import { displays, setDisplays } from "./DisplaySettingsScreen";
-import { setFieldName } from "../backend_interop/api_calls";
-import { createInvokeApiSetterFunction } from "../core/packet_editor_helpers";
 import { useModal } from "../modals/ModalProvider";
 
 const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
@@ -86,7 +83,6 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
 
         <div class="font-bold mb-2 text-lg">
             {boolean.displayName}
-
         </div>
 
         <div class="flex flex-wrap top-10 bottom-8 left-0 right-0 m-auto p-4 items-center justify-center gap-6 content-center w-9/10">
@@ -96,7 +92,6 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
 
                 const [packetIDAccessor, _] = createSignal<number>(item.packetID);
                 const [packetComponentAccessor, setPacketComponentAccessor] = createSignal<PacketComponent>(packetComponent);
-                const invokeApiSetter = createInvokeApiSetterFunction(packetIDAccessor, packetComponentAccessor, showModal);
 
                 const getValue = (): string => {
                     if (values().length <= index()) {
@@ -147,31 +142,11 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
                             style={`box-shadow: 0px 0px 6px 6px ${!(getColor() === Colors.GREY) && getColor()}; 
                                 background-color: ${getColor()}`}> 
                         <div>
-                            <textarea class="border-0 bg-transparent p-0 m-0 text-center w-full resize-none max-h-[5em] overflow-y-hidden" 
-                                style={
-                                    `word-wrap: break-word; 
-                                    word-break: break-all; 
-                                    scrollbar-width: thin;
-                                    font-family: inherit;
-                                    font-size: inherit;`
-                                }
-                                rows="1"
-                                ref={textAreaRef}
-                                spellcheck={false}
-                                
-                                onInput={async (e) => {
-                                    e.target.style.height = 'auto';
-                                    e.target.style.height = e.target.scrollHeight + "px";
+                            <div class="break-words w-full line-clamp-4 overflow-hidden text-ellipsis">{field().name}</div>
 
-                                    const content: string = (e.target as HTMLTextAreaElement).value || "";
-                                    await invokeApiSetter(setFieldName, content);
-                                }}
-                            >{field().name}</textarea>
-
-                            <div class="grow max-h-[120px]" style={{
+                            <div class="grow max-h-[120px] break-words" style={{
                                 // override default macOS font with one where all the numbers are the same size
-                                "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                                "word-wrap": "break-word"
+                                "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif'
                             }}>
                                 {getValue()}
                             </div>                                   
