@@ -15,6 +15,7 @@ pub struct PacketStructure {
     pub(crate) fields: Vec<PacketField>,
     pub(crate) delimiters: Vec<PacketDelimiter>,
     pub(crate) metafields: Vec<PacketMetaDataFields>,
+    pub(crate) packet_crc: Vec<PacketCRC> 
 }
 
 impl PacketStructure {
@@ -169,4 +170,10 @@ pub struct PacketDelimiter {
     pub(crate) name: String,
     pub(crate) identifier: Vec<u8>,
     pub(crate) offset_in_packet: usize,
+}
+
+#[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
+pub struct PacketCRC {
+    pub(crate) length: usize, 
+    pub(crate) offset_in_packet: usize
 }

@@ -6,14 +6,14 @@ use crate::{
 };
 
 #[derive(Default)]
-pub struct SerialPacketParser {
+pub struct AltosPacketParser {
     unparsed_data: Vec<u8>,
     iterator: u64,
     last: u64,
 }
 
 /// responsible converting raw data to packets
-impl SerialPacketParser {
+impl AltosPacketParser {
     // adds new unparsed data
     pub fn push_data(&mut self, data: &[u8], print_flag: bool) {
         self.unparsed_data.extend(data);
@@ -42,6 +42,7 @@ impl SerialPacketParser {
             // Try to find a matching packet for the data
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
+              
                 if print_flag {
                     println!("At index {}, matching structure {}", i, j);
                 }
@@ -102,6 +103,17 @@ impl SerialPacketParser {
                     }
                     continue;
                 }
+
+                if !checksum(
+                    &self.unparsed_data,
+                    packet_start_index,
+                    print_flag
+                ) {
+                    if print_flag {
+                        println!("- CRC check failed");
+                    }
+                    continue;
+                }   
 
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
@@ -173,8 +185,28 @@ fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: 
     true
 }
 
+fn checksum(data: &Vec<u8>, start_index: usize, print_flag: bool) -> bool {
+    if start_index == 0 {
+        return false;
+    }
+
+    let len: usize = data[start_index-1] as usize; // Length of each AltusMetrum packet stored at byte before start index
+    if start_index + len >= data.len() {
+        return false;
+    }
+
+    if print_flag {
+        println!("Second to last byte in packet: {:02X?}", data[start_index+len-1]);
+    }
+
+    // Checking if 7th bit in second to last byte in packet is set. Then we know CRC is correct according to AltuMetrum docs.
+    data[start_index+len-1] & 0x80 > 0 
+}
+
 #[cfg(test)]
-mod tests {
+mod parser_tests {
+    use models::packet_structure::PacketCRC;
+
     use crate::models::packet_structure::PacketStructure;
 
     use super::*;//lets the unit tests use everything in this file
@@ -191,8 +223,7 @@ mod tests {
             packet_crc: vec![]
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
-        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -203,9 +234,21 @@ mod tests {
                     0x04,
                     0x00,0x00,
                     0x00,0x00,0x00,0x00,
-                    0x1E,0xAB,0x11,0xCA];
+                    0x1E,0xAB,0x11,0xCA,
+                    0xF2 // crc
+                ]; 
+        
+        let crc = PacketCRC {
+            length: 1,
+            offset_in_packet: data.len()-1
+        };
+
+        p_structure.packet_crc.push(crc);
+        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
+
+
         packet_parser.push_data(&data,false);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,true);
         assert_eq!(parsed[0].structure_id,id);//does the packet have the right ID?
         assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
         assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
@@ -228,7 +271,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -266,7 +309,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -308,7 +351,7 @@ mod tests {
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -374,7 +417,7 @@ mod tests {
         };
         wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,
@@ -433,7 +476,7 @@ mod tests {
         };
         wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x20,0x00,
                     0x08,0x00,
@@ -484,7 +527,7 @@ mod tests {
             packet_crc: vec![]
         };
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &["";5]);
-        let mut packet_parser = SerialPacketParser::default();
+        let mut packet_parser = AltosPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,
                     0x08,0x00,

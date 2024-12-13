@@ -66,6 +66,7 @@ mod tests {
             delimiters: vec![],
             fields: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         };
         let packet = generate_packet(&structure, StringRecord::from(vec![""])).unwrap();
         assert_eq!(packet.len(), 0);
@@ -86,6 +87,7 @@ mod tests {
             ],
             fields: vec![],
             metafields: vec![],
+            packet_crc: vec![]
         };
         let packet = generate_packet(&structure, StringRecord::from(vec![""])).unwrap();
         assert_eq!(packet, [0, 42, 43, 45]);
@@ -106,6 +108,7 @@ mod tests {
                 }
             ],
             metafields: vec![],
+            packet_crc: vec![]
         };
         let packet = generate_packet(&structure, StringRecord::from(vec!["305419896"])).unwrap();
         assert_eq!(packet, [
@@ -131,6 +134,7 @@ mod tests {
                 }
             ],
             metafields: vec![],
+            packet_crc: vec![]
         };
         // notice that we provide no packet values when we should provide some
         let packet = generate_packet(&structure, StringRecord::from(vec![""]));
@@ -171,6 +175,7 @@ mod tests {
                 }
             ],
             metafields: vec![],
+            packet_crc: vec![]
         };
 
         let packet = generate_packet(&structure, StringRecord::from(vec![

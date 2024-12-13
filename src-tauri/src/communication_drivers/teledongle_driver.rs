@@ -3,14 +3,14 @@ use std::str::from_utf8;
 use anyhow::bail;
 use tauri::{AppHandle, Manager};
 
-use crate::{communication_manager::{CommsIF,DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::Packet, packet_parser::SerialPacketParser, state::generic_state::{get_clone, ConfigState}};
+use crate::{communication_manager::{CommsIF,DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::Packet, altos_packet_parser::AltosPacketParser, state::generic_state::{get_clone, ConfigState}};
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 pub struct TeleDongleDriver {
     previous_available_ports: Vec<DeviceName>,
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: SerialPacketParser,
+    packet_parser: AltosPacketParser,
     baud: u32,
     id: usize,
     config: ConfigStruct
