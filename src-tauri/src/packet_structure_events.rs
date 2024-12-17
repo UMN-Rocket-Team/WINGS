@@ -1,5 +1,5 @@
-use crate::{file_handling::config_struct::ConfigStruct, models::packet_view_model::PacketStructureViewModel, state::generic_state::{result_to_error, use_struct, ConfigState, DataProcessorState}};
-use anyhow::{Error,anyhow};
+use crate::{data_processing::DataProcessorState, file_handling::config_struct::{ConfigState, ConfigStruct}, models::packet_view_model::PacketStructureViewModel, state::generic_state::use_struct};
+use anyhow::Error;
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
@@ -115,6 +115,6 @@ pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
         },
     ) {
         Ok(_) => {}
-        Err(_) => panic!("Failed to send initial packet stuctures!"),
+        Err(_) => panic!("Failed to send initial packet structures!"),
     };
 }

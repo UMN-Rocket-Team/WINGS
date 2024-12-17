@@ -1,14 +1,20 @@
 use crate::{
-    generic_state::result_to_string, models::{packet_structure::{
+    data_processing::DataProcessorState, file_handling::config_struct::ConfigState, models::{packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
     packet_view_model::{PacketComponentType, PacketStructureViewModel},
-    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, state::generic_state::{ConfigState, DataProcessorState}
+    }, packet_structure_events::update_packet_structures, packet_structure_manager::Error, state::generic_state::result_to_string
 };
 // # packet_structure_manager_commands
 // 
 // Contains all tauri commands related to the packet structure manager
 // 
+// !!!!!
+// Everything in this file is Depreciated and should not be used moving forward. 
+//
+// Developers: If you want you could replace all of these calls with a json config file editor, but dont edit the PSM state derictly
+// !!!!!
+//
 // These functions update the current packet structures in the packet_Structure_manager_state, by calling update_packet_structures
 // 
 #[tauri::command]

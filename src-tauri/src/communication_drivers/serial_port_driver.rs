@@ -1,7 +1,9 @@
+use std::sync::Arc;
+
 use anyhow::bail;
 use tauri::AppHandle;
 
-use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::Packet, packet_parser::SerialPacketParser};
+use crate::{communication_manager::{CommsIF, DeviceName}, models::packet::Packet, packet_parser::SerialPacketParser, packet_structure_manager::PacketStructureManager};
 
 const PRINT_PARSING: bool = false;
 #[derive(Default)]
@@ -12,7 +14,7 @@ pub struct SerialPortDriver {
     baud: u32,
     id: usize,
     app_handle: Option<AppHandle>,
-    config: ConfigStruct
+    packet_structure_manager: Arc<PacketStructureManager>,
 }
 
 impl CommsIF for SerialPortDriver{
@@ -22,8 +24,8 @@ impl CommsIF for SerialPortDriver{
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32, app_handle: AppHandle)  -> anyhow::Result<()> {
-        self.app_handle = Some(app_handle.clone());
+    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<PacketStructureManager>)  -> anyhow::Result<()> {
+        self.packet_structure_manager = ps_manager.clone();
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -68,7 +70,7 @@ impl CommsIF for SerialPortDriver{
         let bytes_read = active_port.read(&mut buffer)?;
 
         self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
         Ok(())
     }
 
@@ -116,7 +118,7 @@ impl CommsIF for SerialPortDriver{
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
         return Ok(());
     }
 }
