@@ -19,8 +19,6 @@ pub struct DeviceName {
     pub manufacturer_name: Option<String>,
     pub product_name: Option<String>,
 }
-
-const COM_DEVICE_UPDATE: &str = "com-device-update";
 const HANDLE_EXPECT: &str = "This is assigned at initialization"; // reason to expect the app_handle in the code
 #[derive(Serialize)]
 pub struct DisplayComDevice {
@@ -36,7 +34,6 @@ pub struct CommunicationManager {
     pub comms_objects: Vec<Box<dyn CommsIF + Send>>,
     pub id_iterator: usize,
     pub old_device_names: Vec<DeviceName>,
-    pub app_handle: Option<AppHandle>, //can always be expected since it will be assigned during initialization
     pub ps_manager: Arc<PacketStructureManager>,
 }
 
@@ -246,21 +243,18 @@ impl CommunicationManager {
         None
     }
 
-    pub fn update_display_com_devices(&mut self) {
-        let mut return_me = vec![];
+
+    /// The function `update_display_com_devices` iterates through communication objects, creates
+    /// `DisplayComDevice` instances, and places them inside the provided buffer.
+    pub fn update_display_com_devices(&mut self,buffer: &mut Vec<DisplayComDevice>){
         let mut i = 0;
         while i < self.comms_objects.len() {
-            return_me.push(DisplayComDevice {
+            buffer.push(DisplayComDevice {
                 id: self.comms_objects[i].get_id(),
                 device_type: self.comms_objects[i].get_type(),
             });
             i += 1;
         }
-        let _ = self
-            .app_handle
-            .clone()
-            .unwrap()
-            .emit_all(COM_DEVICE_UPDATE, &return_me);
     }
 
     //should be get_device_ids
