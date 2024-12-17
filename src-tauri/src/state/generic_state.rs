@@ -3,13 +3,7 @@ use std::sync::Mutex;
 
 use anyhow::{anyhow,Error};
 
-use crate::{communication_manager::CommunicationManager, file_handling::{log_handlers::LogHandler,config_struct::ConfigStruct}, data_processing::DataProcessor, sending_loop::SendingLoop, state::mutex_utils::use_state_in_mutex};
-
-pub type CommunicationManagerState = Mutex<CommunicationManager>;
-pub type FileHandlingState = Mutex<LogHandler>;
-pub type SendingLoopState = Mutex<SendingLoop>;
-pub type DataProcessorState = Mutex<DataProcessor>;
-pub type ConfigState = Mutex<ConfigStruct>;
+use crate::state::mutex_utils::use_state_in_mutex;
 
 
 pub fn use_struct<Struct: Send,ReturnType>(

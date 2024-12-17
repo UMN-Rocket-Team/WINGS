@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{sending_loop::SendingModes, state::generic_state::{result_to_string, use_struct, SendingLoopState}};
+use crate::{sending_loop::{SendingLoopState, SendingModes}, state::generic_state::{result_to_string, use_struct}};
 
 #[tauri::command(async)]
 pub fn start_sending_loop(

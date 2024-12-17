@@ -4,7 +4,7 @@ use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
-use crate::{communication_manager::CommunicationManager, packet_generator::generate_packet, state::generic_state::{result_to_string, use_struct, ConfigState, FileHandlingState}};
+use crate::{communication_manager::CommunicationManager, file_handling::{config_struct::ConfigState, log_handlers::{FileHandlingState, LogHandler}}, packet_generator::generate_packet, state::generic_state::{result_to_string, use_struct}};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -87,6 +87,8 @@ fn unix_time() -> i64 {
         .unwrap_or(i64::MAX)
 }
 
+/// A `Mutex` wrapper for `SendingLoop`
+pub type SendingLoopState = Mutex<SendingLoop>;
 #[derive(Default)]
 pub struct SendingLoop {
     task: Option<BackgroundTask>
@@ -120,7 +122,7 @@ impl SendingLoop {
             // ##########################
             match mode{
                 SendingModes::FromCSV => 
-                    match result_to_string(use_struct(&file_handling_state, &mut |file_handler|{
+                    match result_to_string(use_struct(&file_handling_state, &mut |file_handler:&mut LogHandler|{
                         match file_handler.read_packet(){
                             Ok(packet) =>  Ok(packet),
                             Err(err) => Err(err),

@@ -18,12 +18,16 @@ mod data_processing;
 mod file_handling;
 mod altos_packet_parser;
 
+use std::sync::Mutex;
+
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use communication_manager::CommunicationManager;
+use data_processing::DataProcessorState;
+use file_handling::{config_struct::ConfigStruct, log_handlers::FileHandlingState};
 use packet_structure_events::send_initial_packet_structure_update_event;
-use crate::generic_state::DataProcessorState;
 
-use state::{generic_state::{self, CommunicationManagerState, ConfigState, FileHandlingState, SendingLoopState}, packet_structure_manager_state::default_packet_structure_manager};
+use sending_loop::SendingLoopState;
+use state::packet_structure_manager_state::default_packet_structure_manager;
 use tauri::Manager;
 use receiving_loop::MainLoop;
 
@@ -38,7 +42,12 @@ use crate::commands::{
     file_commands::set_read
 };
 
+/// The main function initializes various states and sets up event handlers and plugins for the Tauri
+/// application, running this will start the App.
 fn main() {
+    //initializing all states
+    let config = ConfigStruct::default();
+    let comms = CommunicationManager::default_state(config.packet_structure_manager.clone());
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             delete_device, 
@@ -65,24 +74,17 @@ fn main() {
             set_read
         ])
         .manage(default_packet_structure_manager())
-        .manage(CommunicationManagerState::default())
+        .manage(Mutex::new(config))
+        .manage(comms)
         .manage(SendingLoopState::default())
         .manage(DataProcessorState::default())
         .manage(FileHandlingState::default())
-        .manage(ConfigState::default())
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
 
             app.listen_global("initialized", move |_| {
                 send_initial_packet_structure_update_event(app_handle_1.clone());
-
-                //run the plug and play function before the backend function starts up, this initializes the backend with radios already connected
-                let comms_state = app_handle_2.state::<CommunicationManagerState>();
-                let _ = generic_state::use_struct::<CommunicationManager,()>(&comms_state, &mut|communication_manager| {
-                    communication_manager.init(app_handle_2.clone());
-                });
-
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
                 // program and accessed upon termination

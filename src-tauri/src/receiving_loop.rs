@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager::{CommunicationManager, DeviceName}, models::packet::Packet, state::generic_state::{use_struct, CommunicationManagerState}
+    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, models::packet::Packet, state::generic_state::use_struct
 };
 
 pub struct MainLoop {
@@ -113,10 +113,16 @@ fn iterate_receiving_loop(
     Ok(result)
 }
 
+
+
+
+
 #[cfg(test)]
 mod tests {
 
-    use crate::state::generic_state::FileHandlingState;
+    use std::sync::Arc;
+
+    use crate::{communication_manager, file_handling::log_handlers::FileHandlingState, state::packet_structure_manager_state::default_packet_structure_manager};
 
     use super::*; // lets the unit tests use everything in this file
     use tauri::Manager;
@@ -149,7 +155,6 @@ mod tests {
         let _ = use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
             new_id = communication_manager.add_serial_device();
         });
-
         //run the main receiving loop and print if any data is received
         loop{
             let output = iterate_receiving_loop(
@@ -195,11 +200,9 @@ mod tests {
         //add an rfd device to comms manager
         let _ = use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
             new_id = communication_manager.add_serial_device();
-        });
-        let _ = use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
             new_id_2 = communication_manager.add_altus_metrum();
+            communication_manager.ps_manager = Arc::new(default_packet_structure_manager());
         });
-
         //run the main receiving loop and print if any data is received
         loop{
             let output = iterate_receiving_loop(

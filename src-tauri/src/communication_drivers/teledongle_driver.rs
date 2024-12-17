@@ -1,9 +1,9 @@
-use std::str::from_utf8;
+use std::{str::from_utf8, sync::Arc};
 
 use anyhow::bail;
 use tauri::{AppHandle, Manager};
 
-use crate::{communication_manager::{CommsIF,DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::Packet, altos_packet_parser::AltosPacketParser, state::generic_state::{get_clone, ConfigState}};
+use crate::{communication_manager::{CommsIF,DeviceName}, models::packet::Packet, altos_packet_parser::AltosPacketParser, packet_structure_manager::PacketStructureManager};
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
@@ -13,7 +13,7 @@ pub struct TeleDongleDriver {
     packet_parser: AltosPacketParser,
     baud: u32,
     id: usize,
-    config: ConfigStruct
+    packet_structure_manager: Arc<PacketStructureManager>,
 }
 impl TeleDongleDriver {
     /// Returns a list of all accessible serial ports
@@ -71,8 +71,8 @@ impl CommsIF for TeleDongleDriver {
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str, _baud: u32, app_handle: AppHandle) -> anyhow::Result<()> {
-        self.config = get_clone(&app_handle.state::<ConfigState>())?;
+    fn init_device(&mut self, port_name: &str, _baud: u32, ps_manager: Arc<PacketStructureManager>) -> anyhow::Result<()> {
+        self.packet_structure_manager = ps_manager;
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -123,7 +123,7 @@ impl CommsIF for TeleDongleDriver {
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
         self.packet_parser.push_data(&decoded, PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
         Ok(())
     }
 
@@ -175,7 +175,7 @@ impl CommsIF for TeleDongleDriver {
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(&data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.config.packet_structure_manager, PRINT_PARSING)); 
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
         return Ok(());
     }
 }
