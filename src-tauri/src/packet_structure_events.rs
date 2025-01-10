@@ -1,5 +1,4 @@
-use crate::{data_processing::DataProcessorState, file_handling::config_struct::{ConfigState, ConfigStruct}, models::packet_view_model::PacketStructureViewModel, state::generic_state::use_struct};
-use anyhow::Error;
+use crate::{file_handling::config_struct::{ConfigState, ConfigStruct}, models::packet_view_model::PacketStructureViewModel, state::generic_state::use_struct};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
@@ -37,65 +36,6 @@ fn emit_packet_structure_update_event(
     app_handle
         .emit_all("packet-structures-update", &packet_view_model_updates)
         .unwrap();
-}
-
-
-/// # !!!Depreciated function!!!
-/// 
-/// this function will always error, the app should never update a packet structure at runtime, instead a new config with different packet structures should be loaded
-pub fn update_packet_structures(
-    app_handle: tauri::AppHandle,
-    packet_structure_manager_state: tauri::State<'_, ConfigState>,
-    data_processor_state: tauri::State<'_, DataProcessorState>,
-    callback: &mut dyn FnMut(
-        &mut PacketStructureManager,
-    ) -> Result<(Vec<usize>, Option<Vec<usize>>), (Vec<usize>, Option<Vec<usize>>, String)>,
-) -> Result<Result<(), Error>,String> {
-    return Err("WINGS can no longer edit packet structures, edit config instead".to_owned())
-    // use_struct(
-    //     &packet_structure_manager_state,
-    //     &mut |config| {
-    //         let result = callback(&mut config.packet_structure_manager);
-    //         match result {
-    //             Ok((modified_packet_view_model_ids, deleted_packet_view_model_ids)) => {
-    //                 emit_packet_structure_update_event(
-    //                     &app_handle,
-    //                     modified_packet_view_model_ids,
-    //                     deleted_packet_view_model_ids,
-    //                     &config.packet_structure_manager,
-    //                 );
-    //             }
-    //             Err((modified_packet_view_model_ids, deleted_packet_view_model_ids, message)) => {
-    //                 emit_packet_structure_update_event(
-    //                     &app_handle,
-    //                     modified_packet_view_model_ids,
-    //                     deleted_packet_view_model_ids,
-    //                     &config.packet_structure_manager,
-    //                 );
-    //                 return Err(anyhow!(message));
-    //             }
-    //         }
-    //         result_to_error(use_struct(
-    //             &data_processor_state, 
-    //             &mut |data_processor| {
-    //                 match data_processor.generate_display_field_names(&config.packet_structure_manager) {
-    //                     Ok(new_fields) => {
-    //                         app_handle
-    //                             .emit_all("display-fields-update", new_fields)
-    //                             .unwrap();
-    //                         Ok(())
-    //                     }
-    //                     Err((new_fields,message)) => {
-    //                         app_handle
-    //                             .emit_all("display-fields-update", new_fields)
-    //                             .unwrap();
-    //                         Err(message)
-    //                     }
-    //                 }
-    //             }
-    //         ))
-    //     },
-    // )
 }
 
 pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {

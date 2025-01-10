@@ -10,12 +10,14 @@ pub struct PacketStructureViewModel {
     components: Vec<PacketComponent>,
 }
 
+
 impl PacketStructureViewModel {
 
     /// Takes current PacketStructureViewModel and parses it into a packetStructure which is then returned
     ///
     /// ### Output
     /// * 'PacketStructure' - contains all data from the PacketStructureViewModel, repackaged as a PacketStructure
+    #[allow(dead_code)]
     pub fn to_packet_structure(&self) -> PacketStructure {
         let mut packet_fields: Vec<PacketField> = Vec::new();
         let mut packet_delimiters: Vec<PacketDelimiter> = Vec::new();

@@ -5,15 +5,13 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    models::packet_structure::{
+use crate::models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
-    },
-    models::packet_view_model::PacketComponentType,
-};
+    };
 
 /// Represents all possible errors that can be encountered when managing packet structures.
 #[derive(Debug, Clone, PartialEq)]
+#[allow(warnings)]
 pub enum Error {
     /// Contains the ID that was asked for
     PacketDoesNotExist(usize),
@@ -34,6 +32,7 @@ pub enum Error {
     GapEndOverflow
 }
 
+#[allow(warnings)]
 impl Error {
     pub fn to_string(&self) -> String {
         match self {
@@ -84,6 +83,7 @@ impl Default for PacketStructureManager {
     }
 }
 
+#[allow(warnings)]
 impl PacketStructureManager {
     /// Takes the given PacketStructure and makes a copy within the manager for future use
     /// Note: this also needs to be unit tested
@@ -435,81 +435,6 @@ impl PacketStructureManager {
 
         return Ok(());
     }
-
-    ///deletes a component, taking its index and type as parameters
-    pub fn delete_packet_structure_component(
-        &mut self,
-        packet_structure_id: usize,
-        component_index: usize,
-        component_type: PacketComponentType,
-    ) -> Result<(), Error> {
-        let packet_structures = self.packet_structures.clone();
-
-        match component_type {
-            PacketComponentType::Field => {
-                let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
-
-                if packet_structure.fields.len() == 1 {
-                    return Err(Error::CannotDeleteLastField);
-                }
-
-                let removed_field = packet_structure.fields.remove(component_index);
-                Self::shift_components_after(
-                    packet_structure,
-                    -(removed_field.r#type.size() as isize),
-                    removed_field.offset_in_packet,
-                )?;
-
-                for field in &mut packet_structure.fields {
-                    if field.index > removed_field.index {
-                        field.index -= 1;
-                    }
-                }
-            }
-            PacketComponentType::Delimiter => {//also doesn't seem to work
-                let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
-
-                if packet_structure.delimiters.len() == 1 {
-                    return Err(Error::CannotDeleteLastDelimiter);
-                }
-
-                let removed_delimiter = packet_structure.delimiters.remove(component_index);
-
-                if let Some(colliding_ids) = Self::check_for_identifier_collisions(
-                    &packet_structures,
-                    packet_structure_id,
-                    &packet_structure.delimiters,
-                ) {
-                    return Err(Error::DelimiterIdentifierCollision(colliding_ids));
-                }
-
-                let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
-                Self::shift_components_after(
-                    packet_structure,
-                    -(removed_delimiter.identifier.len() as isize),
-                    removed_delimiter.offset_in_packet,
-                )?;
-                for delimiter in &mut packet_structure.delimiters {
-                    if delimiter.index > removed_delimiter.index {
-                        delimiter.index -= 1;
-                    }
-                }
-            }
-            PacketComponentType::Gap => {
-                // TODO: not working
-                Self::set_gap_size(self, packet_structure_id, component_index, 0)?;
-            }
-        };
-
-        Ok(())
-    }
-
-    /// Deletes the packet structure with the given packet structure id
-    pub fn delete_packet_structure(&mut self, packet_structure_id: usize) -> Result<(), Error> {
-        self.packet_structures.retain(|packet_structure| packet_structure.id != packet_structure_id);
-        Ok(())
-    }
-
 
     /// Updates all of the universal values in the manager 
     /// 

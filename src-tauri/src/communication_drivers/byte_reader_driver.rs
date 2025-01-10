@@ -4,7 +4,7 @@
 //
 // ****
 use crate::{
-    communication_manager::{CommsIF, DeviceName},
+    communication_manager::CommsIF,
     models::packet::Packet,
     packet_parser::SerialPacketParser,
     packet_structure_manager::PacketStructureManager,
@@ -79,11 +79,6 @@ impl CommsIF for ByteReadDriver {
         } else {
             bail!("reading from uninitialized driver");
         }
-    }
-
-    //Picking files to read is done by the frontend. We don't need to worry about scanning for files that the user might want
-    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>> {
-        return None;
     }
 
     fn is_init(&mut self) -> bool {
