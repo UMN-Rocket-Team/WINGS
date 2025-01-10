@@ -1,19 +1,16 @@
 use std::sync::Arc;
 
 use anyhow::bail;
-use tauri::AppHandle;
 
-use crate::{communication_manager::{CommsIF, DeviceName}, models::packet::Packet, packet_parser::SerialPacketParser, packet_structure_manager::PacketStructureManager};
+use crate::{communication_manager::CommsIF, models::packet::Packet, packet_parser::SerialPacketParser, packet_structure_manager::PacketStructureManager};
 
 const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct SerialPortDriver {
-    previous_available_ports: Vec<DeviceName>,
     port: Option<Box<dyn serialport::SerialPort>>,
     packet_parser: SerialPacketParser,
     baud: u32,
     id: usize,
-    app_handle: Option<AppHandle>,
     packet_structure_manager: Arc<PacketStructureManager>,
 }
 
@@ -74,21 +71,6 @@ impl CommsIF for SerialPortDriver{
         Ok(())
     }
 
-    /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
-    fn get_new_available_ports(&mut self) -> Option<Vec<DeviceName>> {
-        match self.get_available_ports() {
-            Ok(new_ports) => {
-                if new_ports == self.previous_available_ports {
-                    None
-                } else {
-                    self.previous_available_ports = new_ports.clone();
-                    Some(new_ports)
-                }
-            },
-            Err(_) => None
-        }
-    }
-
     /// Returns true if there is an active port
     fn is_init(&mut self) -> bool {
         self.port.is_some()
@@ -121,39 +103,4 @@ impl CommsIF for SerialPortDriver{
         packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
         return Ok(());
     }
-}
-impl SerialPortDriver {
-
-    /// Returns a list of all accessible serial ports
-    /// 
-    /// # Errors
-    /// 
-    /// Returns an error if no ports were successfully found, 
-    pub fn get_available_ports(&self) -> Result<Vec<DeviceName>, serialport::Error> {
-        let ports = serialport::available_ports()?
-            .into_iter()
-            .filter_map(|port| match port.port_type {
-                serialport::SerialPortType::UsbPort(usb_info) => {
-                    // On macOS, each serial port shows up as both eg.:
-                    //  - /dev/cu.usbserial-AK06O4AO
-                    //  - /dev/tty.usbserial-AK06O4AO
-                    // For our use, these are equivalent, so we'll filter one out to avoid confusion.
-                    if cfg!(target_os = "macos") && port.port_name.starts_with("/dev/cu.usbserial-") {
-                        None
-                    } else {
-                        Some(DeviceName {
-                            name: port.port_name,
-                            manufacturer_name: usb_info.manufacturer,
-                            product_name: usb_info.product,
-                        })
-                    }
-                },
-                serialport::SerialPortType::PciPort
-                | serialport::SerialPortType::BluetoothPort
-                | serialport::SerialPortType::Unknown => None,
-            })
-            .collect();
-        Ok(ports)
-    }
-
 }

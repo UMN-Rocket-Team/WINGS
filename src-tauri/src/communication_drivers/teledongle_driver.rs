@@ -2,67 +2,19 @@ use std::{str::from_utf8, sync::Arc};
 
 use anyhow::bail;
 
-use crate::{communication_manager::{CommsIF,DeviceName}, models::packet::Packet, altos_packet_parser::AltosPacketParser, packet_structure_manager::PacketStructureManager};
+use crate::{communication_manager::CommsIF, models::packet::Packet, altos_packet_parser::AltosPacketParser, packet_structure_manager::PacketStructureManager};
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 pub struct TeleDongleDriver {
-    previous_available_ports: Vec<DeviceName>,
     port: Option<Box<dyn serialport::SerialPort>>,
     packet_parser: AltosPacketParser,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<PacketStructureManager>,
 }
-impl TeleDongleDriver {
-    /// Returns a list of all accessible serial ports
-    /// 
-    /// # Errors
-    /// 
-    /// Returns an error if no ports were successfully found, 
-    fn get_available_ports(&self) -> Result<Vec<DeviceName>, serialport::Error> {
-        let ports = serialport::available_ports()?
-            .into_iter()
-            .filter_map(|port| match port.port_type {
-                serialport::SerialPortType::UsbPort(usb_info) => {
-                    // On macOS, each serial port shows up as both eg.:
-                    //  - /dev/cu.usbserial-AK06O4AO
-                    //  - /dev/tty.usbserial-AK06O4AO
-                    // For our use, these are equivalent, so we'll filter one out to avoid confusion.
-                    if cfg!(target_os = "macos") && port.port_name.starts_with("/dev/cu.usbserial-") {
-                        None
-                    } else {
-                        Some(DeviceName {
-                            name: port.port_name,
-                            manufacturer_name: usb_info.manufacturer,
-                            product_name: usb_info.product,
-                        })
-                    }
-                },
-                serialport::SerialPortType::PciPort
-                | serialport::SerialPortType::BluetoothPort
-                | serialport::SerialPortType::Unknown => None,
-            })
-            .collect();
-        Ok(ports)
-    }
-}
-impl CommsIF for TeleDongleDriver {
 
-    /// Return Some() if the ports have changed since the last call, otherwise None if they are the same.
-    fn get_new_available_ports(&mut self) -> Option<Vec<DeviceName>> {
-        match self.get_available_ports() {
-            Ok(new_ports) => {
-                if new_ports == self.previous_available_ports {
-                    None
-                } else {
-                    self.previous_available_ports = new_ports.clone();
-                    Some(new_ports)
-                }
-            },
-            Err(_) => None
-        }
-    }
+impl CommsIF for TeleDongleDriver {
 
     /// Set the path of the active port
     /// If path is empty, any active port is closed

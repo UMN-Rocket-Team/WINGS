@@ -54,9 +54,6 @@ pub trait CommsIF {
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()>;
     fn get_device_packets(&mut self, data_vector: &mut Vec<Packet>) -> anyhow::Result<()>;
-
-    //for future plug and play implementations, could be deleted if necessary
-    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>>;
     fn is_init(&mut self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
@@ -69,7 +66,8 @@ impl CommunicationManager {
         comms_manager.ps_manager = Arc::new(ps_manager);
         Mutex::new(comms_manager)
     }
-    //for plug and play
+
+    ///checks for serial ports to connect to, streamlining radio setup
     pub fn get_all_potential_devices(&mut self) -> Option<Vec<DeviceName>> {
         let available_ports;
         match serialport::available_ports() {
@@ -234,7 +232,7 @@ impl CommunicationManager {
     fn find(&mut self, index: usize, print_flag: bool) -> Option<usize> {
         let mut i = 0;
         while i < self.comms_objects.len() {
-            if(print_flag){
+            if print_flag {
                 println!("{},{}",self.comms_objects[i].get_id(), index);
             }
             if self.comms_objects[i].get_id() == index {
@@ -269,28 +267,32 @@ impl CommunicationManager {
     }
 }
 
-mod tests {
 
-    //appears unused, but it's just used by ignored tests
-    use crate::{
-        communication_manager::CommunicationManager,
-        state::packet_structure_manager_state::default_packet_structure_manager,
-    };
-    use std::sync::Arc;
+mod tests {
 
     #[test]
     #[ignore]
     fn test_if_serial_recognized() {
+        use crate::communication_manager::CommunicationManager;
+
         let mut test_interface = CommunicationManager::default();
         let device_names = test_interface.get_all_potential_devices();
         assert!(device_names.is_some());
         assert!(device_names.unwrap().len() > 0);
     }
-    const BAUD: u32 = 57600;
 
     #[test]
     #[ignore]
     fn test_serial_receive() {
+
+        use crate::{
+            communication_manager::CommunicationManager,
+            state::packet_structure_manager_state::default_packet_structure_manager,
+        };
+        use std::sync::Arc;
+        
+        const BAUD: u32 = 57600;
+
         let mut test_interface = CommunicationManager::default();
         let device_names = test_interface.get_all_potential_devices();
         assert!(device_names.clone().is_some());
