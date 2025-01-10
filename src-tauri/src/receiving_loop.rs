@@ -122,7 +122,7 @@ mod tests {
 
     use std::sync::Arc;
 
-    use crate::{communication_manager, file_handling::log_handlers::FileHandlingState, state::packet_structure_manager_state::default_packet_structure_manager};
+    use crate::{file_handling::log_handlers::FileHandlingState, state::packet_structure_manager_state::default_packet_structure_manager};
 
     use super::*; // lets the unit tests use everything in this file
     use tauri::Manager;
