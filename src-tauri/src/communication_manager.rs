@@ -2,7 +2,6 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
 use serde::Serialize;
-use tauri::{AppHandle, Manager};
 
 use crate::{
     communication_drivers::{
@@ -19,7 +18,6 @@ pub struct DeviceName {
     pub manufacturer_name: Option<String>,
     pub product_name: Option<String>,
 }
-const HANDLE_EXPECT: &str = "This is assigned at initialization"; // reason to expect the app_handle in the code
 #[derive(Serialize)]
 pub struct DisplayComDevice {
     id: usize,
@@ -109,13 +107,14 @@ impl CommunicationManager {
             return Some(device_names);
         }
     }
+
     /// Get data from the currently selected device
     ///
     /// # Error
     ///
     /// Returns an error if the device being addressed isn't initialized correctly
     pub fn get_data(&mut self, id: usize, return_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        let index = self.find(id);
+        let index = self.find(id,false);
         match index {
             Some(index) => {
                 let mut result = vec![];
@@ -143,7 +142,7 @@ impl CommunicationManager {
     ///
     /// Returns an error if the device being addressed isn't initialized correctly
     pub fn write_data(&mut self, packet: &[u8], id: usize) -> anyhow::Result<()> {
-        let index = self.find(id);
+        let index = self.find(id,false);
         match index {
             Some(index) => match self.comms_objects[index].write_port(packet) {
                 Ok(_) => Ok(()),
@@ -163,7 +162,7 @@ impl CommunicationManager {
     ///
     /// Was unable to initialize the device object
     pub fn init_device(&mut self, port_name: &str, baud: u32, id: usize) -> anyhow::Result<()> {
-        let index = self.find(id);
+        let index = self.find(id,false);
         match index {
             Some(index) => match self.comms_objects[index].init_device(
                 port_name,
@@ -171,7 +170,7 @@ impl CommunicationManager {
                 self.ps_manager.clone(),
             ) {
                 Ok(_) => Ok(()),
-                Err(message) => Err(message),
+                Err(message) => Err(message)
             },
             None => bail!(format!(
                 "could not find a device with that ID: {} {}",
@@ -187,7 +186,7 @@ impl CommunicationManager {
     ///
     /// Was unable to initialize the device object
     pub fn delete_device(&mut self, id: usize) -> anyhow::Result<()> {
-        let index = self.find(id);
+        let index = self.find(id,true);
         match index {
             Some(index) => {
                 self.comms_objects.remove(index);
@@ -232,9 +231,12 @@ impl CommunicationManager {
     }
 
     //translates the device ID to array index
-    fn find(&mut self, index: usize) -> Option<usize> {
+    fn find(&mut self, index: usize, print_flag: bool) -> Option<usize> {
         let mut i = 0;
         while i < self.comms_objects.len() {
+            if(print_flag){
+                println!("{},{}",self.comms_objects[i].get_id(), index);
+            }
             if self.comms_objects[i].get_id() == index {
                 return Some(i);
             }

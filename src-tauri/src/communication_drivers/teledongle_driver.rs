@@ -1,7 +1,6 @@
 use std::{str::from_utf8, sync::Arc};
 
 use anyhow::bail;
-use tauri::{AppHandle, Manager};
 
 use crate::{communication_manager::{CommsIF,DeviceName}, models::packet::Packet, altos_packet_parser::AltosPacketParser, packet_structure_manager::PacketStructureManager};
 const PRINT_PARSING: bool = false;
