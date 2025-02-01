@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_driver::AimDriver, byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
+        aim_driver::AimDriver, byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDrivercsv_reader_driver::CSVReadDriver,,
     }, file_handling::log_handlers::LogHandler, models::packet::Packet, packet_structure_manager::PacketStructureManager
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
@@ -252,7 +252,7 @@ impl CommunicationManager {
     }
 
     /// Adds an byte reading device object to the manager
-    pub fn add_file_manager(&mut self) -> usize {
+    pub fn add_byte_file_manager(&mut self)->usize{
         let mut new_device: ByteReadDriver = ByteReadDriver::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
@@ -269,6 +269,16 @@ impl CommunicationManager {
         self.comms_objects
             .push(Box::new(new_device) as Box<dyn CommsIF + Send>);
         return self.comms_objects[self.comms_objects.len() - 1].get_id();
+
+    }
+    /// Adds a csv reading device object to the manager
+    pub fn add_csv_file_manager(&mut self)->usize{
+        let mut new_device: CSVReadDriver = Default::default();
+        new_device.set_id(self.id_iterator);
+        self.id_iterator+=1;
+        self.comms_objects.push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        return self.comms_objects[self.comms_objects.len() - 1].get_id();
+
     }
 
     //translates the device ID to array index

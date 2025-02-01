@@ -6,3 +6,5 @@ pub mod teledongle_packet_parser;
 pub mod byte_reader_driver;
 pub mod aim_driver;
 pub mod aim_parser;
+pub mod byte_reader_driver;
+pub mod csv_reader_driver;
