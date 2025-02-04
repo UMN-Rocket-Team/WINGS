@@ -17,7 +17,12 @@ const ThemeSwitcher: Component = () => {
             <button
                 class=""
                 onclick={() => {
-                    const webview = new WebviewWindow('Wings');
+                    const id = Math.floor(Math.random() * 1000);
+
+                    const webview = new WebviewWindow(
+                        `${id}`, // Label must be unique
+                        { url: `/newFlight/${id}` }
+                    );
                 
                     // since the webview window is created asynchronously,
                     // Tauri emits the `tauri://created` and `tauri://error` to notify you of the creation response
