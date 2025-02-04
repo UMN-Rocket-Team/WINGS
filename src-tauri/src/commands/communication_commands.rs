@@ -73,8 +73,8 @@ pub fn add_file_manager(
     file_path: &str,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
-    use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        let new_id =communication_manager.add_file_manager();
+    use_struct::<CommunicationManager,()>(&communication_manager_state, &mut |communication_manager| {
+        let new_id =communication_manager.add_csv_file_manager();
         let _ = communication_manager.init_device(file_path, 0, new_id);
         update_coms(&app_handle, communication_manager);
     })

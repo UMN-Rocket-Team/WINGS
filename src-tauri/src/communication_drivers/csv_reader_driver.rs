@@ -98,5 +98,33 @@ impl CommsIF for CSVReadDriver {
 
 #[cfg(test)]
 mod tests {
-    
+    use crate::{models::packet_structure::PacketStructure, packet_structure_manager::PacketStructureManager};
+    use crate::{
+        communication_manager::{CommunicationManager, DeviceName}, models::packet::Packet, state::generic_state::{use_struct, CommunicationManagerState}
+    };
+    use tauri::{AppHandle, Manager};
+
+    use super::*;//lets the unit tests use everything in this file
+
+    // test for basic packet recognition and parsing
+    #[test]
+    fn test_basic_parsing() {
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0, // gets overridden
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+            metafields: vec![],
+        };
+        p_structure.ez_make("u8 u8 u8", &["Height","Speed","Temperature"]);
+        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
+        let mut csv_read_driver = CSVReadDriver::default();
+        let conf_struct = ConfigStruct{default_baud:0,packet_structure_manager:packet_structure_manager};
+        let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
+        .manage(conf_struct)
+        .build(tauri::generate_context!())
+        .expect("failed to build app");
+        csv_read_driver.init_device("test.csv",0, app_handle);
+    }
 }
