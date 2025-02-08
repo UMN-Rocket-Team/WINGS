@@ -3,11 +3,11 @@
 // Communications device driver for reading csv files
 // 
 // ****
-use std::{fs::File, io::Read};
+use std::{fs::File, io::Read,sync::Arc};
 use anyhow::{bail, Context};
 use serde::de::value;
 use tauri::{AppHandle, Manager};
-use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::{self, Packet, PacketFieldValue}, packet_parser::SerialPacketParser, state::generic_state::{get_clone, ConfigState}};
+use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::{self, Packet, PacketFieldValue}, packet_parser::SerialPacketParser,packet_structure_manager::PacketStructureManager,};
 use csv::{self, ByteRecord};
 const PRINT_PARSING: bool = false;
 
@@ -17,13 +17,13 @@ pub struct CSVReadDriver {
     file: Option<File>,
     id: usize,
     //packet_parser: SerialPacketParser,
-    config: ConfigStruct
-
+    //config: ConfigStruct
+    packet_structure_manager: Arc<PacketStructureManager>,
 }
 
 impl CommsIF for CSVReadDriver {
-    fn init_device(&mut self,port_name: &str, _baud: u32, app_handle: AppHandle) -> anyhow::Result<()> {
-        self.config = get_clone(&app_handle.state::<ConfigState>())?;
+    fn init_device(&mut self,port_name: &str, _baud: u32, ps_manager: Arc<PacketStructureManager>) -> anyhow::Result<()> {
+        self.packet_structure_manager = ps_manager; 
         match File::open(port_name){
             Ok(new_file) => {
                 self.file = Some(new_file); 
@@ -76,9 +76,7 @@ impl CommsIF for CSVReadDriver {
         packet_vector.push(new_packet);
         Ok(())
     }
-    fn get_new_available_ports(&mut self) -> std::option::Option<Vec<DeviceName>> {
-        return None;
-    }
+    
     fn is_init(&mut self) -> bool {
         self.file.is_some()
     }
