@@ -5,7 +5,6 @@
 
 mod commands;
 mod models;
-mod packet_parser;
 mod packet_generator;
 mod packet_structure_events;
 mod packet_structure_manager;
@@ -16,7 +15,6 @@ mod sending_loop;
 mod communication_manager;
 mod data_processing;
 mod file_handling;
-mod altos_packet_parser;
 
 use std::sync::Mutex;
 

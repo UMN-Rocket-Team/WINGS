@@ -6,7 +6,7 @@ use serde::Serialize;
 use crate::{
     communication_drivers::{
         byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver,
-        teledongle_driver::TeleDongleDriver,
+        altos_driver::TeleDongleDriver,
     },
     models::packet::Packet,
     packet_structure_manager::PacketStructureManager,

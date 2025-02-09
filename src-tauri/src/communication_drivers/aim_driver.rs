@@ -4,19 +4,16 @@ use anyhow::bail;
 
 use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
 
-use super::serial_packet_parser::SerialPacketParser;
-
 const PRINT_PARSING: bool = false;
 #[derive(Default)]
-pub struct SerialPortDriver {
+pub struct AimDriver {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: SerialPacketParser,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<PacketStructureManager>,
 }
 
-impl CommsIF for SerialPortDriver{
+impl CommsIF for AimDriver{
     
     /// Attempts to set the port for comms with the rfd driver
     /// 
@@ -60,17 +57,7 @@ impl CommsIF for SerialPortDriver{
     /// 
     /// bails and returns an error if there is no active port
     fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        let active_port = match self.port.as_mut() {
-            Some(port) => port,
-            None => bail!("No read port has been set")
-        };
-
-        let mut buffer = [0; 4096];
-        let bytes_read = active_port.read(&mut buffer)?;
-
-        self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
-        Ok(())
+        todo!()
     }
 
     /// Returns true if there is an active port
@@ -101,8 +88,6 @@ impl CommsIF for SerialPortDriver{
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
-        return Ok(());
+        todo!()
     }
 }

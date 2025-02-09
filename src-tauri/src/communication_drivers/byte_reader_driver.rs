@@ -6,11 +6,12 @@
 use crate::{
     communication_manager::CommsIF,
     models::packet::Packet,
-    packet_parser::SerialPacketParser,
     packet_structure_manager::PacketStructureManager,
 };
 use anyhow::{bail, Context};
 use std::{fs::File, io::Read, sync::Arc};
+
+use super::serial_packet_parser::SerialPacketParser;
 
 const PRINT_PARSING: bool = false;
 
