@@ -13,12 +13,12 @@ type comDevice = {
     selection: string,
 }
 export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevice[]>([]);
-export let comDevicesIterator = 0;
+let comDevicesIterator = 0;
 const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
 const [baud, setBaud] = createSignal(57600);
 const [isSimulating, setSimulating] = createSignal(false);
-export const [mode, selectMode] = createSignal(SendingModes.FromCSV);
+const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
 export const IterateComDevicesIterator = () => {
     return comDevicesIterator++;

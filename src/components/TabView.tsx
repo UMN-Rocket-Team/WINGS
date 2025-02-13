@@ -3,7 +3,7 @@ import { Component, createSignal, For, ParentProps } from "solid-js";
 /**
  * The properties required for the {@link TabView} component.
  */
-export type TabViewProps = {
+type TabViewProps = {
     /**
      * The list of tabs to display
      */

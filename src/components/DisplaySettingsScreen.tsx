@@ -29,10 +29,11 @@ export type DisplayStruct = {
     displayElement: number,
     packetsDisplayed: boolean[] // If user has PacketStructureViewModels()[i] dropdown open, then displayedPackets[i] == true
 }
-export const settingsModalArray = [
+const settingsModalArray = [
     GraphSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element), 
     ReadoutSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element),
     BooleanSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element)];
+    
 export const displayArray = [
     GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
     ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element,
