@@ -4,4 +4,4 @@ dist
 .DS_Store
 *.csv
 *.wings
-src-tauri/test utilities/raw_data.json
+*raw_data.json
