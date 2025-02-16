@@ -3,7 +3,7 @@ import { BooleanStruct } from "../modals/BooleanSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { unDecimatedPackets } from "../backend_interop/buffers";
 import { PacketComponentType, PacketField, PacketComponent } from "../backend_interop/types";
-import { useModal } from "../modals/ModalProvider";
+import { useModal } from "../core/ModalProvider";
 
 const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
     enum Colors {

@@ -1,5 +1,5 @@
-import { ModalProps } from "./ModalProvider";
-import DefaultModalLayout from "./DefaultModalLayout";
+import { ModalProps } from "../core/ModalProvider";
+import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, createSignal, Show, onMount } from "solid-js";
 import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";

@@ -2,7 +2,7 @@ import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { addAltusMetrum, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
-import { useModal } from "../modals/ModalProvider";
+import { useModal } from "../core/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
 import { createStore } from "solid-js/store";
 import { Store } from "tauri-plugin-store-api";

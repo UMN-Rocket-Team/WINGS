@@ -1,5 +1,5 @@
 import { Component, For, JSX, onMount } from "solid-js";
-import { ModalProps, useModal } from "../modals/ModalProvider";
+import { ModalProps, useModal } from "../core/ModalProvider";
 import { createStore, SetStoreFunction } from "solid-js/store";
 import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";

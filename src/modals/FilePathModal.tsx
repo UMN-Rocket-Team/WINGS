@@ -1,5 +1,5 @@
 import { ModalProps } from "./ModalProvider";
-import DefaultModalLayout from "./DefaultModalLayout";
+import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX } from "solid-js";
 import { runImportPacketWindow } from "../core/file_handling";
 

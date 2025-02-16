@@ -1,5 +1,5 @@
 import { createContext, useContext, ParentComponent, createSignal, Accessor } from "solid-js";
-import Theme from "../core/theme";
+import Theme from "../theme/theme";
 
 /**
  * The global state managed by the {@link ThemeContext}.
