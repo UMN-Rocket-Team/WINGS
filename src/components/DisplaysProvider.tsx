@@ -1,4 +1,4 @@
-import { createContext, onMount, ParentComponent } from "solid-js";
+import { createContext, onMount, ParentComponent, useContext } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
 import { DisplayStruct } from "./DisplaySettingsScreen";
 import { store } from "../core/file_handling";
@@ -15,7 +15,6 @@ export type DisplaysContextValue = {
      * Sets displays array to new given value
      */
     setDisplays: SetStoreFunction<DisplayStruct[]>,
-
 }
 
 const DisplaysContext = createContext<DisplaysContextValue>({
@@ -74,3 +73,10 @@ export const DisplaysProvider: ParentComponent = (props) => {
         </DisplaysContext.Provider>
     );
 };
+
+/**
+ * Use the displays state provided by the {@link DisplaysContext}.
+ * 
+ * @returns the current {@link DisplaysContextValue}
+ */
+export const useDisplays = (): DisplaysContextValue => useContext(DisplaysContext);
