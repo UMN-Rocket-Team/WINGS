@@ -37,7 +37,7 @@ export const displayArray = [
     GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
     ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element,
     Boolean as (graph: DisplayStruct) => JSX.Element];
-const { displays, setDisplays }: DisplaysContextValue = useDisplays();
+    
 let graphCounter = 1;
 let readoutCounter = 1;
 let indicatorCounter = 1;
@@ -53,6 +53,7 @@ let indicatorCounter = 1;
  * @param props an object that contains the number of this screen
  */
 const FieldsScreen: Component = () => {
+    const { displays, setDisplays }: DisplaysContextValue = useDisplays();
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
 
