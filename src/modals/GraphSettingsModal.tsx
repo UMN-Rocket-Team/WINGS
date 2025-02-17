@@ -1,7 +1,7 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { For, JSX, createSignal, Show, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
+import { DisplayStruct, SettingsModalProps } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import settingsIcon from "../assets/settings.png";
@@ -9,6 +9,7 @@ import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg"
 import { produce } from "solid-js/store";
 import { store } from "../core/file_handling";
+import { DisplaysContextValue, useDisplays } from "../components/DisplaysProvider";
 
 
 /**
@@ -31,6 +32,7 @@ export interface GraphStruct extends DisplayStruct {
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
 const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
+    const { displays, setDisplays }: DisplaysContextValue = useDisplays();
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */

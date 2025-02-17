@@ -1,7 +1,7 @@
 import { ModalProps } from "./ModalProvider";
 import DefaultModalLayout from "./DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
+import { DisplayStruct, SettingsModalProps } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { produce } from "solid-js/store";
@@ -9,6 +9,7 @@ import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
+import { DisplaysContextValue, useDisplays } from "../components/DisplaysProvider";
 
 export interface BooleanSettingsModalProps extends SettingsModalProps {
     displayStruct: BooleanStruct;
@@ -28,6 +29,8 @@ export interface BooleanStruct extends DisplayStruct {
 }
 
 const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX.Element => {
+    const { displays, setDisplays }: DisplaysContextValue = useDisplays();
+    
     const { PacketStructureViewModels } = useBackend();
     const signs = ["<", "=", ">"];
     // used to restore previous name when user enters something invalid

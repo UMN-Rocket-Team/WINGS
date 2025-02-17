@@ -8,6 +8,7 @@ import ReadoutDisplayElement from "./Readout";
 import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import Boolean from "./Boolean";
 import { store } from "../core/file_handling";
+import { DisplaysContextValue, useDisplays } from "./DisplaysProvider";
 
 /**
  * general set of props to give each display settingsModal
@@ -36,7 +37,7 @@ export const displayArray = [
     GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
     ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element,
     Boolean as (graph: DisplayStruct) => JSX.Element];
-
+const { displays, setDisplays }: DisplaysContextValue = useDisplays();
 let graphCounter = 1;
 let readoutCounter = 1;
 let indicatorCounter = 1;
