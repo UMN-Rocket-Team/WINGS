@@ -5,17 +5,20 @@ import Homepage from "./tabs/Homepage";
 import { ModalProvider } from "./modals/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Router, Route } from "@solidjs/router"
+import { DisplaysProvider } from "./components/DisplaysProvider";
 
 const App = (): JSX.Element => {
     return (
         <ThemeProvider>
             <BackendProvider>
-                <ModalProvider>
-                    <Router>
-                        <Route path="/" component={Homepage} />
-                        <Route path="/newFlight" component={TabPage} />
-                    </Router>
-                </ModalProvider>
+                <DisplaysProvider>
+                    <ModalProvider>
+                        <Router>
+                            <Route path="/" component={Homepage} />
+                            <Route path="/newFlight" component={TabPage} />
+                        </Router>
+                    </ModalProvider>
+                </DisplaysProvider>
             </BackendProvider>
         </ThemeProvider>
     );
