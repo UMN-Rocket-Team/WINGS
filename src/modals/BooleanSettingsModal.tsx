@@ -202,7 +202,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                             />   
 
                                             <select value={getComponentField()?.sign} class="mr-1 cursor-pointer max-h-6" onInput={(e) => {
-                                                const target = e.target as HTMLInputElement;
+                                                const target = e.target as HTMLSelectElement;
                                                 setDisplays(produce(s => {
                                                     const struct = (s[props.index] as BooleanStruct);
                                                     const componentField = struct.fields.find(
@@ -236,7 +236,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
 
                                     <Show when={structField()}>
                                         <select value={getComponentField()?.sign} class="ml-2 max-h-6 cursor-pointer" onInput={(e) => {
-                                            const target = e.target as HTMLInputElement;
+                                            const target = e.target as HTMLSelectElement;
                                             setDisplays(produce(s => {
                                                 const struct = (s[props.index] as BooleanStruct);
                                                 const componentField = struct.fields.find(
