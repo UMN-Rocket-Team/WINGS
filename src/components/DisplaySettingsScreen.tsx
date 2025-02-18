@@ -21,7 +21,7 @@ export type SettingsModalProps = {
 /**
  * An object that identifies the name and corresponding packet for a display element, along with its settings modal and display element
  */
-export type DisplayStruct = {
+export interface DisplayStruct{
     displayName: string,
     packetID: number,
     type: string,
@@ -102,17 +102,12 @@ const FieldsScreen: Component = () => {
             dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
             onClick={() => {   
                 if (PacketStructureViewModels.length != 0){
-                    setDisplays([...displays, {
-                        displayName: `Graph ${graphCounter}`, 
-                        packetID: PacketStructureViewModels[0].id, 
-                        type: `Graph`,
-                        settingsModal: 0,
-                        displayElement: 0,
-                        packetsDisplayed: Array(PacketStructureViewModels.length).fill(false),
-                        x: 0, 
-                        y: [0], 
-                        colors: ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"], 
-                    } as GraphStruct]);
+
+                    let graph = new GraphStruct()
+                    graph.displayName = `Graph ${graphCounter}`;
+                    graph.packetID= PacketStructureViewModels[0].id;
+
+                    setDisplays([...displays, graph]);
                     graphCounter++;
                     store.set("display", displays);
                 }
@@ -125,15 +120,12 @@ const FieldsScreen: Component = () => {
             dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white"
             onclick={() => {
                 if (PacketStructureViewModels.length !== 0){
-                    setDisplays([...displays, {
-                        displayName: `Readout ${readoutCounter}`,
-                        packetID: PacketStructureViewModels[0].id,
-                        type: `Readout`,
-                        fields: [],
-                        settingsModal: 1,
-                        displayElement: 1,
-                        packetsDisplayed: Array(PacketStructureViewModels.length).fill(false)
-                    } as unknown as ReadoutStruct]);
+                    
+                    let graph = new ReadoutStruct()
+                    graph.displayName = `Readout ${readoutCounter}`;
+                    graph.packetID= PacketStructureViewModels[0].id;
+
+                    setDisplays([...displays, graph]);
                     readoutCounter++;
                     store.set("display", displays);
                 }
@@ -146,16 +138,12 @@ const FieldsScreen: Component = () => {
                 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
                 onClick={() => {   
                 if (PacketStructureViewModels.length != 0){
-                    setDisplays([...displays, {
-                        displayName: `Indicator ${indicatorCounter}`,
-                        packetID: PacketStructureViewModels[0].id,
-                        type: `Indicator`,
-                        fields: [],
-                        settingsModal: 2,
-                        displayElement: 2,
-                        packetsDisplayed: Array(PacketStructureViewModels.length).fill(false)
-                    } as BooleanStruct]);
 
+                    let graph = new BooleanStruct();
+                    graph.displayName = `Indicator ${indicatorCounter}`;
+                    graph.packetID= PacketStructureViewModels[0].id;
+                    
+                    setDisplays([...displays, graph]);
                     indicatorCounter++;
                     store.set("display", displays);
                 }

@@ -18,8 +18,14 @@ interface ReadoutStructField {
     packetFieldIndex: number;
     unit: string;
 }
-export interface ReadoutStruct extends DisplayStruct {
-    fields: ReadoutStructField[];
+export class ReadoutStruct implements DisplayStruct {
+    displayName = `Readout`;
+    packetID = -1;
+    type = `Readout`;
+    fields: ReadoutStructField[] = [];
+    settingsModal = 1;
+    displayElement = 1;
+    packetsDisplayed: boolean[] = [];
 }
 
 const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element => {

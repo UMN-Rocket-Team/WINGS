@@ -19,10 +19,17 @@ export interface GraphModalProps extends SettingsModalProps {
     displayStruct: GraphStruct;
     /** Index of graph so that handleSelect[Y/X] can be called correctly! */
 }
-export interface GraphStruct extends DisplayStruct {
-    x: number; //fieldIndex
-    y: number[];
-    colors: string[];
+
+export class GraphStruct implements DisplayStruct {
+    displayName = `Graph`;
+    packetID = -1;
+    type= `Graph`;
+    settingsModal= 0;
+    displayElement= 0;
+    packetsDisplayed: boolean[] = [];
+    x= 0;
+    y= [0];
+    colors= ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"];
 }
 
 /**

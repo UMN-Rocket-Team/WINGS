@@ -21,10 +21,17 @@ interface BooleanStructField {
     sign: string;
     isRange: boolean;
     packetID: number;
+    
 }
 
-export interface BooleanStruct extends DisplayStruct {
-    fields: BooleanStructField[];
+export class BooleanStruct implements DisplayStruct {
+    displayName= `Indicator`;
+    packetID=  -1;
+    type= `Indicator`;
+    fields: BooleanStructField[] = [];
+    settingsModal= 2;
+    displayElement= 2;
+    packetsDisplayed: boolean[]= [];
 }
 
 const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX.Element => {
