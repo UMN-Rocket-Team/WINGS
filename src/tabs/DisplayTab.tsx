@@ -1,9 +1,12 @@
 import { Component, For, JSX } from "solid-js";
-import { DisplayStruct, displayArray, displays } from "../components/DisplaySettingsScreen";
+import { DisplayStruct, displayArray } from "../components/DisplaySettingsScreen";
 import GraphDisplayElement from "../components/SolidChart";
 import ReadoutDisplayElement from "../components/Readout";
+import { DisplaysContextValue, useDisplays } from "../components/DisplaysProvider";
 
 const DisplayTab: Component = (): JSX.Element => {
+    const { displays }: DisplaysContextValue = useDisplays();
+
     return (
         <div class="flex flex-col flex-grow gap-4 rounded-lg dark:text-white">
             {/* Views */}

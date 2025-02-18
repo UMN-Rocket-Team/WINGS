@@ -1,6 +1,5 @@
-import { Component, For, JSX, onMount } from "solid-js";
+import { Component, For, JSX } from "solid-js";
 import { ModalProps, useModal } from "../modals/ModalProvider";
-import { createStore, SetStoreFunction } from "solid-js/store";
 import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import GraphDisplayElement from "./SolidChart";
@@ -9,6 +8,7 @@ import ReadoutDisplayElement from "./Readout";
 import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import Boolean from "./Boolean";
 import { store } from "../core/file_handling";
+import { DisplaysContextValue, useDisplays } from "./DisplaysProvider";
 
 /**
  * general set of props to give each display settingsModal
@@ -37,8 +37,7 @@ export const displayArray = [
     GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
     ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element,
     Boolean as (graph: DisplayStruct) => JSX.Element];
-
-export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
+    
 let graphCounter = 1;
 let readoutCounter = 1;
 let indicatorCounter = 1;
@@ -54,44 +53,9 @@ let indicatorCounter = 1;
  * @param props an object that contains the number of this screen
  */
 const FieldsScreen: Component = () => {
+    const { displays, setDisplays }: DisplaysContextValue = useDisplays();
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
-
-    onMount(async () => {
-        /**
-         * a store of all displays currently on the frontend
-         */
-        let importedDisplays: DisplayStruct[] = await store.get("display") ?? [];
-
-        //safety check to remove any non-expected display types
-        for (let displayString in importedDisplays){
-            let display = importedDisplays[displayString];
-    
-            if (display.type === `Graph`){
-                let graph = display as GraphStruct;
-                if(graph.settingsModal !== 0 || graph.displayElement !== 0 || graph.x === undefined || graph.y === undefined || graph.colors === undefined){
-                    importedDisplays.splice(importedDisplays.indexOf(display),1);
-                }
-
-            } else if (display.type === `Readout`){
-                let read = display as ReadoutStruct;
-                if(read.settingsModal !== 1 || read.displayElement !== 1 || read.fields === undefined){
-                    importedDisplays.splice(importedDisplays.indexOf(display),1);
-                }
-
-            } else if (display.type === `Indicator`) {
-                let read = display as ReadoutStruct;
-                if(read.settingsModal !== 2 || read.displayElement !== 2 || read.fields === undefined){
-                    importedDisplays.splice(importedDisplays.indexOf(display),1);
-                }
-            }
-            else{
-                console.log(importedDisplays.indexOf(display));
-                importedDisplays.splice(importedDisplays.indexOf(display),1);
-            }
-        }
-        setDisplays(importedDisplays);
-    });
 
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2 mb-5">
