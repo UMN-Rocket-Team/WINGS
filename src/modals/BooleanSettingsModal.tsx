@@ -31,7 +31,7 @@ export class BooleanStruct implements DisplayStruct {
     fields: BooleanStructField[] = [];
     settingsModal= 2;
     displayElement= 2;
-    packetsDisplayed: boolean[]= [];
+    packetsDisplayed: boolean[]= [false];
 }
 
 const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX.Element => {

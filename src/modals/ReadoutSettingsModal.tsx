@@ -25,7 +25,7 @@ export class ReadoutStruct implements DisplayStruct {
     fields: ReadoutStructField[] = [];
     settingsModal = 1;
     displayElement = 1;
-    packetsDisplayed: boolean[] = [];
+    packetsDisplayed: boolean[] = [false];
 }
 
 const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element => {

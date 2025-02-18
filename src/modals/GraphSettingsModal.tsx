@@ -26,7 +26,7 @@ export class GraphStruct implements DisplayStruct {
     type= `Graph`;
     settingsModal= 0;
     displayElement= 0;
-    packetsDisplayed: boolean[] = [];
+    packetsDisplayed: boolean[] = [false];
     x= 0;
     y= [0];
     colors= ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"];
@@ -130,7 +130,6 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
             (s[graphIndex] as GraphStruct).colors[colorIndex] = color));
         store.set("display", displays);
     }
-
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
 

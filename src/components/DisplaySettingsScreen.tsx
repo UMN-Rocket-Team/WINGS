@@ -67,7 +67,7 @@ const FieldsScreen: Component = () => {
         //safety check to remove any non-expected display types
         for (let displayString in importedDisplays){
             let display = importedDisplays[displayString];
-    
+            display.packetsDisplayed = display.packetsDisplayed ?? []
             if (display.type === `Graph`){
                 let graph = display as GraphStruct;
                 if(graph.settingsModal !== 0 || graph.displayElement !== 0 || graph.x === undefined || graph.y === undefined || graph.colors === undefined){
@@ -164,7 +164,7 @@ const FieldsScreen: Component = () => {
                                     onClick={() => {showModal<SettingsModalProps, {}>(settingsModalArray[display.settingsModal] ?? 0, {
                                         displayStruct: display,
                                         index:index(),
-                                    })}
+                                    } as SettingsModalProps)}
                                 }>
                                     <h3 class="text-black dark:text-white">{display.displayName}</h3>
                                 </button>
