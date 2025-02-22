@@ -8,7 +8,6 @@ import {clearParsedPackets, parsedPackets} from "../backend_interop/buffers";
 import {writeFile} from "@tauri-apps/api/fs";
 import {save} from "@tauri-apps/api/dialog";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
-import {useModal} from "../modals/ModalProvider";
 import PacketEditor from "../components/PacketsEditor";
 
 /**

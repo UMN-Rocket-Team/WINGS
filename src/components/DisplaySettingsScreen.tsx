@@ -9,6 +9,7 @@ import ReadoutDisplayElement from "./Readout";
 import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import Boolean from "./Boolean";
 import { store } from "../core/file_handling";
+import { displayRegistry, DisplayStruct, DisplayTypeDefinition } from "../core/display_registry";
 
 /**
  * general set of props to give each display settingsModal
@@ -18,31 +19,8 @@ export type SettingsModalProps = {
     index: number,
 }
 
-/**
- * An object that identifies the name and corresponding packet for a display element, along with its settings modal and display element
- */
-export interface DisplayStruct{
-    displayName: string,
-    packetID: number,
-    type: string,
-    settingsModal: number,
-    displayElement: number,
-    packetsDisplayed: boolean[] // If user has PacketStructureViewModels()[i] dropdown open, then displayedPackets[i] == true
-}
-const settingsModalArray = [
-    GraphSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element), 
-    ReadoutSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element),
-    BooleanSettingsModal as ((props: ModalProps<SettingsModalProps>) => JSX.Element)];
-    
-export const displayArray = [
-    GraphDisplayElement as (graph: DisplayStruct) => JSX.Element, 
-    ReadoutDisplayElement as (graph: DisplayStruct) => JSX.Element,
-    Boolean as (graph: DisplayStruct) => JSX.Element];
-
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
-let graphCounter = 1;
-let readoutCounter = 1;
-let indicatorCounter = 1;
+let counter = 1;
 
 
 /**
@@ -97,59 +75,24 @@ const FieldsScreen: Component = () => {
     return (
         <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2 mb-5">
             {/*Field Select Button*/}
-            <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
-            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
-            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
-            onClick={() => {   
-                if (PacketStructureViewModels.length != 0){
-
-                    let graph = new GraphStruct()
-                    graph.displayName = `Graph ${graphCounter}`;
-                    graph.packetID= PacketStructureViewModels[0].id;
-
-                    setDisplays([...displays, graph]);
-                    graphCounter++;
-                    store.set("display", displays);
-                }
-            }}>
-                New Graph
-            </button>
-
-            <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
-            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2
-            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white"
-            onclick={() => {
-                if (PacketStructureViewModels.length !== 0){
-                    
-                    let graph = new ReadoutStruct()
-                    graph.displayName = `Readout ${readoutCounter}`;
-                    graph.packetID= PacketStructureViewModels[0].id;
-
-                    setDisplays([...displays, graph]);
-                    readoutCounter++;
-                    store.set("display", displays);
-                }
-            }}>
-                New Readout
-            </button>
-            
-            <button class="class=m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
-                focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2
-                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
-                onClick={() => {   
-                if (PacketStructureViewModels.length != 0){
-
-                    let graph = new BooleanStruct();
-                    graph.displayName = `Indicator ${indicatorCounter}`;
-                    graph.packetID= PacketStructureViewModels[0].id;
-                    
-                    setDisplays([...displays, graph]);
-                    indicatorCounter++;
-                    store.set("display", displays);
-                }
-            }}>
-                New Indicator
-            </button>
+            <div>
+                {Array.from(displayRegistry.values()).map((typeDef) => (
+                    <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+                    focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
+                    dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
+                    onClick={() => {
+                        const newDisplay = new typeDef.structClass();
+                        newDisplay.displayName = `${typeDef.displayName} ${counter}`;
+                        newDisplay.packetID= PacketStructureViewModels[0].id;
+                        setDisplays([...displays, newDisplay]);
+                        counter++;
+                        store.set("display", displays);
+                    }}
+                    >
+                    New {typeDef.displayName}
+                    </button>
+                ))}
+            </div>
 
             {/*Fields*/}
             <div

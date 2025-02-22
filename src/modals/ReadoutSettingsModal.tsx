@@ -1,14 +1,15 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
+import {SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { produce } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
+import { DisplayStruct } from "../core/display_registry";
 
 export interface ReadoutModalProps extends SettingsModalProps {
     displayStruct: ReadoutStruct;
@@ -21,14 +22,14 @@ interface ReadoutStructField {
 export class ReadoutStruct implements DisplayStruct {
     displayName = `Readout`;
     packetID = -1;
-    type = `Readout`;
+    type = `readout`;
     fields: ReadoutStructField[] = [];
     settingsModal = 1;
     displayElement = 1;
     packetsDisplayed: boolean[] = [false];
 }
 
-const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element => {
+const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
 
     // used to restore previous name when user enters something invalid
@@ -37,6 +38,8 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
+    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as ReadoutStruct);
+    
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
         infoIconRef?.addEventListener("mouseout", (e) => {
@@ -89,7 +92,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
         if (props.displayStruct.packetID !== packetId) {
             return undefined;
         }
-        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex);
+        return displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex);
     };
 
     const setActive = (packetId: number, fieldIndex: number, active: boolean) => {

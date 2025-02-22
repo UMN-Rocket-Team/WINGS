@@ -1,14 +1,15 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
+import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { produce } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
+import { DisplayStruct } from "../core/display_registry";
 
 export interface BooleanSettingsModalProps extends SettingsModalProps {
     displayStruct: BooleanStruct;
@@ -27,14 +28,14 @@ interface BooleanStructField {
 export class BooleanStruct implements DisplayStruct {
     displayName= `Indicator`;
     packetID=  -1;
-    type= `Indicator`;
+    type= `indicator`;
     fields: BooleanStructField[] = [];
     settingsModal= 2;
     displayElement= 2;
     packetsDisplayed: boolean[]= [false];
 }
 
-const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX.Element => {
+const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
     const signs = ["<", "=", ">"];
     // used to restore previous name when user enters something invalid
@@ -43,6 +44,8 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
+    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as BooleanStruct);
+    
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
         infoIconRef?.addEventListener("mouseout", (e) => {
@@ -92,7 +95,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
     }
 
     const getStructField = (packetID: number, fieldIndex: number): BooleanStructField | undefined => {
-        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex && i.packetID === packetID);
+        return displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex && i.packetID === packetID);
     };
 
     const setActive = (packetID: number, fieldIndex: number, active: boolean) => {

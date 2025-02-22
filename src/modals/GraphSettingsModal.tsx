@@ -1,18 +1,19 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, createSignal, Show, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
+import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg"
-import { produce } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import { store } from "../core/file_handling";
+import { DisplayStruct } from "../core/display_registry";
 
 
 /**
- * generic interface for all g
+ * generic interface for all 
  */
 export interface GraphModalProps extends SettingsModalProps {
     /** Graph that is being passed */
@@ -23,7 +24,7 @@ export interface GraphModalProps extends SettingsModalProps {
 export class GraphStruct implements DisplayStruct {
     displayName = `Graph`;
     packetID = -1;
-    type= `Graph`;
+    type= `graph`;
     settingsModal= 0;
     displayElement= 0;
     packetsDisplayed: boolean[] = [false];
@@ -37,12 +38,15 @@ export class GraphStruct implements DisplayStruct {
  * 
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
-const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => {
+const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
+    if (props.displayStruct.type !== "graph") return null;
+
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
     const [graphCurrName, setName] = createSignal(props.displayStruct.displayName);
 
+    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as GraphStruct);
 
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
@@ -137,7 +141,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                 <Show when={displayInfo()}>
                     <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                         Customizable graph for visualizing data.
-                    </div>            
+                    </div>
                 </Show>
 
                 <div class='flex flex-row leading-none justify-between mb-4'>
@@ -163,7 +167,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                                     return (
                                         <label class="flex items-center justify-center space-x-2">
                                             {field.name}
-                                            <input type="color" class="rounded-full" value={props.displayStruct.colors[i() % props.displayStruct.colors.length]} onInput={(event) => {
+                                            <input type="color" class="rounded-full" value={(props.displayStruct as GraphStruct).colors[i() % (props.displayStruct as GraphStruct).colors.length]} onInput={(event) => {
                                                 updateColor((event.target as HTMLInputElement).value, i(), props.index);
                                             }} />
                                         </label>
@@ -213,7 +217,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                                                     <label class="flex items-center space-x-2">
                                                         <input type="radio"
                                                             class="form-radio"
-                                                            checked={props.displayStruct.x === field.index && props.displayStruct.packetID === PacketStructureViewModel.id} // Check based on the state
+                                                            checked={displayStruct.x === field.index && displayStruct.packetID === PacketStructureViewModel.id} // Check based on the state
                                                             onClick={(event) =>
                                                                 handleSelectX((event.target as HTMLInputElement).checked, field.index, props.index, PacketStructureViewModel.id)
                                                             }
@@ -234,7 +238,7 @@ const GraphSettingsModal = (props: ModalProps<GraphModalProps>): JSX.Element => 
                                                     <label class="flex items-center space-x-2">
                                                         <input type="checkbox"
                                                             class="form-checkbox"
-                                                            checked={props.displayStruct.y.some(selectedField => selectedField === field.index) && props.displayStruct.packetID === PacketStructureViewModel.id}
+                                                            checked={displayStruct.y.some(selectedField => selectedField === field.index) && displayStruct.packetID === PacketStructureViewModel.id}
                                                             onClick={(event) => {
                                                                 handleSelectY((event.target as HTMLInputElement).checked, field.index, props.index, PacketStructureViewModel.id);
                                                             }} />
