@@ -1,7 +1,7 @@
 import { Accessor, Component } from "solid-js";
-import { PacketComponent } from "../backend_interop/types";
+import { PacketComponent, PacketDelimiter, PacketField } from "../backend_interop/types";
 import ErrorModal, { ErrorModalProps } from "../modals/ErrorModal";
-import { ModalProps } from "../modals/ModalProvider";
+import { ModalProps } from "../core/ModalProvider";
 
 /**
  * Creates a generic function that will invoke a backend API setter function. This function is defined in a `.ts` file separate from `PacketsTab.tsx` since `.tsx` syntax interferes
@@ -15,7 +15,7 @@ import { ModalProps } from "../modals/ModalProvider";
 export const createInvokeApiSetterFunction = (selectedPacketStructureID: Accessor<number | null>, selectedPacketStructureComponent: Accessor<PacketComponent | null>, showModal: (component: Component<ModalProps<ErrorModalProps>>, modalProps: ErrorModalProps) => void) => {
     return async <T>(apiSetter: (packetStructureId: number, fieldIndex: number, value: T) => Promise<unknown>, value: T) => {
         try {
-            await apiSetter(selectedPacketStructureID()!, selectedPacketStructureComponent()!.data.index, value);//dont call this function with a PacketGap and it will be fine
+            await apiSetter(selectedPacketStructureID()!, (selectedPacketStructureComponent()!.data as PacketField | PacketDelimiter).index , value);//dont call this function with a PacketGap and it will be fine
         } catch (error) {
             showModal(ErrorModal, {
                 error: "Failed to modify value",

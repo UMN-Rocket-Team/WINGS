@@ -1,5 +1,5 @@
 import {ModalProps} from "./ModalProvider";
-import DefaultModalLayout from "./DefaultModalLayout";
+import DefaultModalLayout from "../core/DefaultModalLayout";
 import {JSX} from "solid-js";
 
 /**

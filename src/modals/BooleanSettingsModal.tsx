@@ -1,15 +1,16 @@
-import { ModalProps } from "./ModalProvider";
-import DefaultModalLayout from "./DefaultModalLayout";
+import { ModalProps } from "../core/ModalProvider";
+import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps } from "../components/DisplaySettingsScreen";
+import { SettingsModalProps } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { produce } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
 import { DisplaysContextValue, useDisplays } from "../components/DisplaysProvider";
+import { DisplayStruct } from "../core/display_registry";
 
 export interface BooleanSettingsModalProps extends SettingsModalProps {
     displayStruct: BooleanStruct;
@@ -18,19 +19,26 @@ export interface BooleanSettingsModalProps extends SettingsModalProps {
 interface BooleanStructField {
     // index of field in packet
     packetFieldIndex: number;
-    unit: {left: string; right: string};
+    unit: { left: string; right: string };
     sign: string;
     isRange: boolean;
     packetID: number;
+
 }
 
-export interface BooleanStruct extends DisplayStruct {
-    fields: BooleanStructField[];
+export class BooleanStruct implements DisplayStruct {
+    displayName = `Indicator`;
+    packetID = -1;
+    type = `indicator`;
+    fields: BooleanStructField[] = [];
+    settingsModal = 2;
+    displayElement = 2;
+    packetsDisplayed: boolean[] = [false];
 }
 
-const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX.Element => {
+const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
     const { displays, setDisplays }: DisplaysContextValue = useDisplays();
-    
+
     const { PacketStructureViewModels } = useBackend();
     const signs = ["<", "=", ">"];
     // used to restore previous name when user enters something invalid
@@ -38,6 +46,8 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
 
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
+
+    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as BooleanStruct);
 
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
@@ -78,17 +88,17 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
         // Need to clear fields before removing display
         setDisplays(produce(s => {
             const struct = s[props.index] as BooleanStruct;
-            struct.fields =[];
+            struct.fields = [];
         }));
         store.set("display", displays);
-        
+
         setDisplays(displays.filter((_, index) => index !== props.index));
         store.set("display", displays);
         props.closeModal({});
     }
 
     const getStructField = (packetID: number, fieldIndex: number): BooleanStructField | undefined => {
-        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex && i.packetID === packetID);
+        return displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex && i.packetID === packetID);
     };
 
     const setActive = (packetID: number, fieldIndex: number, active: boolean) => {
@@ -98,7 +108,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
             if (active) {
                 struct.fields.push({
                     packetFieldIndex: fieldIndex,
-                    unit: {left: '', right: ''},
+                    unit: { left: '', right: '' },
                     sign: "<",
                     isRange: false,
                     packetID: packetID
@@ -115,18 +125,18 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
             <Show when={displayInfo()}>
                 <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                     <p class="max-w-prose">Monitors chosen variables and displays lights that indicate whether data satisfies input inequalities or not.</p>
-                </div>            
+                </div>
             </Show>
 
             <div class='flex flex-row leading-none justify-between mb-4'>
                 <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]" 
+                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]"
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
                 </h3>
 
-                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)} 
+                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)}
                     class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
             </div>
 
@@ -154,10 +164,10 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                             }));
                             store.set("display", displays);
                         }}>
-                        <img alt="Dropdown" src={dropdownIcon} 
-                            class={`h-4 dark:invert`} 
+                        <img alt="Dropdown" src={dropdownIcon}
+                            class={`h-4 dark:invert`}
                             style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
-                            draggable={false}/>
+                            draggable={false} />
                         <h3 class='font-bold'>{packetViewModel.name}</h3>
                     </div>
 
@@ -173,7 +183,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                     );
                                     return componentField;
                                 }
-                                
+
                                 return <label class="flex flex-row justify-center">
                                     <Show when={structField()}>
                                         <Show when={getComponentField()?.isRange}>
@@ -190,15 +200,15 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                                         );
 
                                                         if (componentField) {
-                                                            componentField.unit = {...componentField.unit, left: target.value};
+                                                            componentField.unit = { ...componentField.unit, left: target.value };
                                                         }
                                                     }));
                                                     store.set("display", displays);
                                                 }}
-                                            />   
+                                            />
 
                                             <select value={getComponentField()?.sign} class="mr-1 cursor-pointer max-h-6" onInput={(e) => {
-                                                const target = e.target as HTMLInputElement;
+                                                const target = e.target as HTMLSelectElement;
                                                 setDisplays(produce(s => {
                                                     const struct = (s[props.index] as BooleanStruct);
                                                     const componentField = struct.fields.find(
@@ -208,12 +218,12 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                                     if (componentField) {
                                                         componentField.sign = target.value;
                                                     }
-                                                }));    
-                                                store.set("display", displays);                               
+                                                }));
+                                                store.set("display", displays);
                                             }}>
                                                 <option value="<" selected>{"<"}</option>
-                                            </select>  
-                                        </Show>                                
+                                            </select>
+                                        </Show>
                                     </Show>
 
                                     <label class="ml-2 cursor-pointer flex items-center max-h-full">
@@ -232,7 +242,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
 
                                     <Show when={structField()}>
                                         <select value={getComponentField()?.sign} class="ml-2 max-h-6 cursor-pointer" onInput={(e) => {
-                                            const target = e.target as HTMLInputElement;
+                                            const target = e.target as HTMLSelectElement;
                                             setDisplays(produce(s => {
                                                 const struct = (s[props.index] as BooleanStruct);
                                                 const componentField = struct.fields.find(
@@ -242,13 +252,13 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                                 if (componentField) {
                                                     componentField.sign = target.value;
                                                 }
-                                            }));    
-                                            store.set("display", displays);                               
+                                            }));
+                                            store.set("display", displays);
                                         }}>
-                                            {!getComponentField()?.isRange ? 
-                                                <For each={signs}>{(sign) =>{return <option value={sign}>{sign}</option>}}</For> : 
+                                            {!getComponentField()?.isRange ?
+                                                <For each={signs}>{(sign) => { return <option value={sign}>{sign}</option> }}</For> :
                                                 <option value="<" selected>{"<"}</option>}
-                                        </select>                                
+                                        </select>
 
                                         <input
                                             type="number"
@@ -261,16 +271,16 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                                     const componentField = struct.fields.find(
                                                         i => i.packetFieldIndex === packetField.index && i.packetID === packetViewModel.id
                                                     );
-                                                    
+
                                                     if (componentField) {
-                                                        componentField.unit = {...componentField.unit, right: target.value};
+                                                        componentField.unit = { ...componentField.unit, right: target.value };
                                                     }
                                                 }));
                                                 store.set("display", displays);
                                             }}
                                         />
 
-                                        <label for={`range-select-${packetViewModel.id}-${packetField.index}`} 
+                                        <label for={`range-select-${packetViewModel.id}-${packetField.index}`}
                                             class="ml-2 cursor-pointer flex items-center max-h-6">
                                             Range?
                                             <input
@@ -296,7 +306,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
                                         </label>
                                     </Show>
                                 </label>
-                            }}</For>                            
+                            }}</For>
                         </div>
                     </Show>
 
@@ -306,7 +316,7 @@ const BooleanSettingsModal = (props: ModalProps<BooleanSettingsModalProps>): JSX
         </div>
     </DefaultModalLayout>;
 
-    
+
 };
 
 export default BooleanSettingsModal;

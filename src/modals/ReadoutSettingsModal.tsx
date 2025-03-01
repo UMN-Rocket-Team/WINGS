@@ -1,15 +1,16 @@
-import { ModalProps } from "./ModalProvider";
-import DefaultModalLayout from "./DefaultModalLayout";
+import { ModalProps } from "../core/ModalProvider";
+import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import { DisplayStruct, SettingsModalProps } from "../components/DisplaySettingsScreen";
+import { SettingsModalProps } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { produce } from "solid-js/store";
+import { createStore, produce } from "solid-js/store";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
 import { DisplaysContextValue, useDisplays } from "../components/DisplaysProvider";
+import { DisplayStruct } from "../core/display_registry";
 
 export interface ReadoutModalProps extends SettingsModalProps {
     displayStruct: ReadoutStruct;
@@ -19,19 +20,27 @@ interface ReadoutStructField {
     packetFieldIndex: number;
     unit: string;
 }
-export interface ReadoutStruct extends DisplayStruct {
-    fields: ReadoutStructField[];
+export class ReadoutStruct implements DisplayStruct {
+    displayName = `Readout`;
+    packetID = -1;
+    type = `readout`;
+    fields: ReadoutStructField[] = [];
+    settingsModal = 1;
+    displayElement = 1;
+    packetsDisplayed: boolean[] = [false];
 }
 
-const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element => {
-    const { displays, setDisplays }: DisplaysContextValue = useDisplays();
+const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
+    const { displays, setDisplays }: DisplaysContextValue = useDisplays();
 
     // used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
 
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
+
+    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as ReadoutStruct);
 
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
@@ -72,10 +81,10 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
         // Need to clear fields before removing display
         setDisplays(produce(s => {
             const struct = s[props.index] as ReadoutStruct;
-            struct.fields =[];
+            struct.fields = [];
         }));
         store.set("display", displays);
-        
+
         setDisplays(displays.filter((_, index) => index !== props.index));
         store.set("display", displays);
         props.closeModal({});
@@ -85,7 +94,7 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
         if (props.displayStruct.packetID !== packetId) {
             return undefined;
         }
-        return props.displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex);
+        return displayStruct.fields.find(i => i.packetFieldIndex === fieldIndex);
     };
 
     const setActive = (packetId: number, fieldIndex: number, active: boolean) => {
@@ -115,18 +124,18 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
             <Show when={displayInfo()}>
                 <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                     <p class="max-w-prose">Displays incoming data for chosen variables.</p>
-                </div>            
+                </div>
             </Show>
-            
+
             <div class='flex flex-row leading-none justify-between mb-4'>
                 <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]" 
+                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]"
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
                 </h3>
 
-                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)} 
+                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)}
                     class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
             </div>
 
@@ -154,10 +163,10 @@ const ReadoutSettingsModal = (props: ModalProps<ReadoutModalProps>): JSX.Element
                             }));
                             store.set("display", displays);
                         }}>
-                        <img alt="Dropdown" src={dropdownIcon} 
-                            class={`h-4 dark:invert`} 
+                        <img alt="Dropdown" src={dropdownIcon}
+                            class={`h-4 dark:invert`}
                             style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
-                            draggable={false}/>
+                            draggable={false} />
                         <h3 class='font-bold'>{packetViewModel.name}</h3>
                     </div>
 

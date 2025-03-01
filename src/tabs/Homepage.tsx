@@ -1,8 +1,8 @@
 import {useNavigate} from "@solidjs/router";
 import {Component} from "solid-js";
 import Credits from "../components/Credits";
-import {useModal} from "../modals/ModalProvider";
-import ThemeSwitcher from "../components/ThemeSwitcher";
+import {useModal} from "../core/ModalProvider";
+import ThemeSwitcher from "../theme/ThemeSwitcher";
 import logo from "../assets/logo.png";
 import {open} from '@tauri-apps/api/dialog';
 import {open as openHref} from '@tauri-apps/api/shell';

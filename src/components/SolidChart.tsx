@@ -15,7 +15,14 @@ Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointEleme
  * 
  * @param graph a graphStruct that is the graph that is being created
  */
-const GraphDisplayElement: Component<GraphStruct> = (graph: GraphStruct) => {
+const GraphDisplayElement: Component<GraphStruct> = (props) => {
+    // Type guard
+    if (props.type !== "graph") return <div>Invalid graph configuration</div>;
+  
+    // Safe cast after type check
+    const graph = props as GraphStruct;
+
+
     const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
     let canvas: HTMLCanvasElement;
