@@ -21,9 +21,10 @@ const ThemeSwitcher: Component = () => {
 
                     const webview = new WebviewWindow(
                         `${id}`, // Label must be unique
-                        { url: `/newFlight/${id}` }
+                        // { url: `/newFlight/${id}` },
+                        { url: `/newFlight/displays/randomid` }
                     );
-                
+
                     // since the webview window is created asynchronously,
                     // Tauri emits the `tauri://created` and `tauri://error` to notify you of the creation response
                     webview.once('tauri://created', function () {
@@ -37,8 +38,8 @@ const ThemeSwitcher: Component = () => {
                 }}>
                 test123
             </button>
-            <button class="p-2 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-200 border-rounded" 
-                    onclick={() => setTheme(theme() === "light" ? "dark" : "light")}>
+            <button class="p-2 border-none bg-transparent hover:bg-gray-200 hover:dark:bg-dark-200 border-rounded"
+                onclick={() => setTheme(theme() === "light" ? "dark" : "light")}>
                 {/* For some reason, when the theme is changed, a match is removed for long enough that the page is re-layed-out when the button does not have an icon */}
                 {/* Workaround: place icons in a fixed-size container so no resize can occur */}
                 <div style={{ width: "28px", height: "28px" }}>
@@ -51,7 +52,7 @@ const ThemeSwitcher: Component = () => {
                         </Match>
                     </Switch>
                 </div>
-            </button>            
+            </button>
         </div>
 
     );

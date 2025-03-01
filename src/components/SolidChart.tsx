@@ -39,15 +39,15 @@ const GraphDisplayElement: Component<GraphStruct> = (graph: GraphStruct) => {
     let datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
-            label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,
-            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
+            label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField)?.name,
+            data: initialParsedPackets.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
             backgroundColor: graph.colors[i % graph.colors.length],
             borderColor: graph.colors[i % graph.colors.length],
             spanGaps: true,
         };
         datasets.push(dataValue);
     }
-    const data = {datasets};
+    const data = { datasets };
 
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
@@ -84,12 +84,12 @@ const GraphDisplayElement: Component<GraphStruct> = (graph: GraphStruct) => {
                         }
                     },
                     display: true,
-                //     min: -90,
-                //     max: 50
-                // },
-                // y: {
-                //     min: -90,
-                //     max: 50
+                    //     min: -90,
+                    //     max: 50
+                    // },
+                    // y: {
+                    //     min: -90,
+                    //     max: 50
                 }
             },
         }
@@ -123,7 +123,7 @@ const GraphDisplayElement: Component<GraphStruct> = (graph: GraphStruct) => {
 
     onMount(() => {
         chart = new Chart(canvas, config);
-        
+
         if (parsedPackets[graph.packetID] === undefined) {
             parsedPackets[graph.packetID] = [];
         }

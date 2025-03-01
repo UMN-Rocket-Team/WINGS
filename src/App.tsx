@@ -6,6 +6,7 @@ import { ModalProvider } from "./modals/ModalProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Router, Route } from "@solidjs/router"
 import { DisplaysProvider } from "./components/DisplaysProvider";
+import GraphWindow from "./components/GraphWindow";
 
 const App = (): JSX.Element => {
     return (
@@ -16,6 +17,7 @@ const App = (): JSX.Element => {
                         <Router>
                             <Route path="/" component={Homepage} />
                             <Route path="/newFlight" component={TabPage} />
+                            <Route path="/newFlight/displays/:id" component={GraphWindow} />
                         </Router>
                     </ModalProvider>
                 </DisplaysProvider>
