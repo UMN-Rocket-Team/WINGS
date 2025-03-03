@@ -15,6 +15,7 @@ export abstract class DisplayStruct {
     settingsModal!: number;
     displayElement!: number;
     packetsDisplayed: boolean[] = [false];
+    displayID?: number;
 }
 
 export interface DisplayTypeDefinition {
@@ -24,9 +25,9 @@ export interface DisplayTypeDefinition {
     settingsModal: Component<ModalProps<SettingsModalProps>>;
     displayComponent: Component<DisplayStruct>;
 }
-  
+
 export const displayRegistry = new Map<string, DisplayTypeDefinition>();
-  
+
 displayRegistry.set("graph", {
     type: "graph",
     displayName: "Graph",
