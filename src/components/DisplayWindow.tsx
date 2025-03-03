@@ -3,7 +3,7 @@ import { useParams } from "@solidjs/router";
 import { DisplaysContextValue, useDisplays } from "./DisplaysProvider";
 import { displayRegistry, DisplayStruct } from "../core/display_registry";
 
-const DisplayTab: Component = (): JSX.Element => {
+const DisplayWindow: Component = (): JSX.Element => {
     const params = useParams();
     const { displays }: DisplaysContextValue = useDisplays();
 
@@ -29,4 +29,4 @@ const DisplayTab: Component = (): JSX.Element => {
     );
 };
 
-export default DisplayTab;
+export default DisplayWindow;

@@ -1,10 +1,10 @@
 import { createContext, onMount, ParentComponent, useContext } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
-import { DisplayStruct } from "./DisplaySettingsScreen";
 import { store } from "../core/file_handling";
 import { GraphStruct } from "../modals/GraphSettingsModal";
 import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import { BooleanStruct } from "../modals/BooleanSettingsModal";
+import { DisplayStruct } from "../core/display_registry";
 
 export type DisplaysContextValue = {
     /**
