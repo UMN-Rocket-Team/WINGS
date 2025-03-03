@@ -37,39 +37,23 @@ const FieldsScreen: Component = () => {
     const { showModal } = useModal();
 
     onMount(async () => {
-        /**
-         * a store of all displays currently on the frontend
-         */
-        let importedDisplays: DisplayStruct[] = await store.get("display") ?? [];
-
-        //safety check to remove any non-expected display types
-        for (let displayString in importedDisplays){
-            let display = importedDisplays[displayString];
-            display.packetsDisplayed = display.packetsDisplayed ?? []
-            if (display.type === `Graph`){
-                let graph = display as GraphStruct;
-                if(graph.settingsModal !== 0 || graph.displayElement !== 0 || graph.x === undefined || graph.y === undefined || graph.colors === undefined){
-                    importedDisplays.splice(importedDisplays.indexOf(display),1);
-                }
-
-            } else if (display.type === `Readout`){
-                let read = display as ReadoutStruct;
-                if(read.settingsModal !== 1 || read.displayElement !== 1 || read.fields === undefined){
-                    importedDisplays.splice(importedDisplays.indexOf(display),1);
-                }
-
-            } else if (display.type === `Indicator`) {
-                let read = display as ReadoutStruct;
-                if(read.settingsModal !== 2 || read.displayElement !== 2 || read.fields === undefined){
-                    importedDisplays.splice(importedDisplays.indexOf(display),1);
-                }
-            }
-            else{
-                console.log(importedDisplays.indexOf(display));
-                importedDisplays.splice(importedDisplays.indexOf(display),1);
-            }
-        }
-        setDisplays(importedDisplays);
+        const rawDisplays: unknown[]= await store.get("display") ?? [];
+        
+        const validatedDisplays = rawDisplays
+          .filter((d: unknown): d is DisplayStruct => 
+            typeof d === "object" && 
+            d !== null && 
+            "type" in d && 
+            displayRegistry.has((d as DisplayStruct).type)
+          )
+          .map(d => {
+            const typeDef = displayRegistry.get(d.type)!;
+            const instance = new typeDef.structClass();
+            Object.assign(instance, d);
+            return instance;
+          });
+      
+        setDisplays(validatedDisplays);
     });
 
     return (
