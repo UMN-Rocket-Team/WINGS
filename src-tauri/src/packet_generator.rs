@@ -19,7 +19,7 @@ use crate::models::{packet::PacketFieldValue, packet_structure::PacketStructure}
 /// However some errors will not be caught such as packets overlapping each other, so please
 /// make sure your structures are valid first :)
 
-pub fn generate_packet(packet_structure: &PacketStructure, field_data: StringRecord) -> Result<Vec<u8>, String> {
+pub fn generate_packet(packet_structure: &PacketStructure, field_data: StringRecord) -> anyhow::Result<Vec<u8>> {
     // Don't grow this after making it. It's already the exact right size.
     let mut result = vec![0; packet_structure.size()];
 
@@ -34,14 +34,14 @@ pub fn generate_packet(packet_structure: &PacketStructure, field_data: StringRec
     for field in &packet_structure.fields {
         let given_value = match field_data.get(field.index) {
             Some(value) => value,
-            None => return Err(format!("Field {} refers to missing index: {}", field.name, field.index))
+            None => return Err(anyhow::anyhow!("Field {} refers to missing index: {}", field.name, field.index))
         };
         let parsed_value: PacketFieldValue = match field.r#type.make_from_string(given_value){
             Ok(value) => value,
-            Err(_)=> return Err(format!("Field {} refers to missing index: {}", field.name, field.index)),
+            Err(_)=> return Err(anyhow::anyhow!("Field {} refers to missing index: {}", field.name, field.index)),
         };
-        let bytes = parsed_value.to_le_bytes();
-        for i in 0..field.r#type.size() {
+        let bytes = parsed_value.to_le_bytes(field.r#type)?;
+        for i in 0..field.r#type.size()? {
             // guaranteed to not panic due to buffer size calculation previously
             result[field.offset_in_packet + i] = bytes[i];
         }
@@ -60,56 +60,45 @@ mod tests {
 
     #[test]
     fn empty_packet() {
-        let structure = PacketStructure {
-            id: 0,
-            name: "Empty Packet".to_string(),
-            delimiters: vec![],
-            fields: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let structure = PacketStructure::make_default("Empty Packet".to_string());
         let packet = generate_packet(&structure, StringRecord::from(vec![""])).unwrap();
         assert_eq!(packet.len(), 0);
     }
 
     #[test]
     fn delimiter() {
-        let structure = PacketStructure {
-            id: 0,
-            name: "Test Packet".to_string(),
-            delimiters: vec![
+        let structure = PacketStructure::make_from_fields_and_delims(
+            0, 
+            "Test Packet".to_string(), 
+            vec![], 
+            vec![
                 PacketDelimiter {
                     index: 0,
                     name: "Test Delimiter".to_string(),
                     offset_in_packet: 1,
                     identifier: vec![42, 43, 45]
                 }
-            ],
-            fields: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+            ]
+        );
         let packet = generate_packet(&structure, StringRecord::from(vec![""])).unwrap();
         assert_eq!(packet, [0, 42, 43, 45]);
     }
 
     #[test]
     fn field() {
-        let structure = PacketStructure {
-            id: 0,
-            name: "Test Packet".to_string(),
-            delimiters: vec![],
-            fields: vec![
+        let structure = PacketStructure::make_from_fields_and_delims(
+            0, 
+            "Test Packet".to_string(), 
+            vec![
                 PacketField {
                     index: 0,
                     name: "Test Field".to_string(),
                     offset_in_packet: 5,
                     r#type: PacketFieldType::UnsignedInteger
                 }
-            ],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+            ], 
+        vec![]
+        );
         let packet = generate_packet(&structure, StringRecord::from(vec!["305419896"])).unwrap();
         assert_eq!(packet, [
             // padding bytes
@@ -121,46 +110,30 @@ mod tests {
 
     #[test]
     fn field_index_out_of_bounds() {
-        let structure = PacketStructure {
-            id: 0,
-            name: "Test Packet".to_string(),
-            delimiters: vec![],
-            fields: vec![
-                PacketField {
-                    index: 0,
-                    name: "Test Field".to_string(),
-                    offset_in_packet: 0,
-                    r#type: PacketFieldType::UnsignedByte
-                }
-            ],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let structure = PacketStructure::make_from_fields_and_delims(
+            0, 
+            "Test Packet".to_string(), 
+            vec![
+                    PacketField {
+                        index: 0,
+                        name: "Test Field".to_string(),
+                        offset_in_packet: 0,
+                        r#type: PacketFieldType::UnsignedByte
+                    }
+                ], 
+            vec![]
+        );
         // notice that we provide no packet values when we should provide some
         let packet = generate_packet(&structure, StringRecord::from(vec![""]));
-        assert_eq!(packet.unwrap_err(), "Field Test Field refers to missing index: 0");
+        assert_eq!(format!("{}",packet.unwrap_err()), "Field Test Field refers to missing index: 0");
     }
 
     #[test]
     fn fields_and_delimiters() {
-        let structure = PacketStructure {
-            id: 100000, // should be unused ...
-            name: "Test Packet".to_string(),
-            delimiters: vec![
-                PacketDelimiter {
-                    index: 0,
-                    name: "Test Delimiter".to_string(),
-                    offset_in_packet: 0,
-                    identifier: vec![1, 2, 3]
-                },
-                PacketDelimiter {
-                    index: 200, // should be ignored
-                    name: "Test Delimiter 2".to_string(),
-                    offset_in_packet: 15,
-                    identifier: vec![4, 5, 6]
-                }
-            ],
-            fields: vec![
+        let structure = PacketStructure::make_from_fields_and_delims(
+            100000, 
+            "Test Packet".to_string(), 
+            vec![
                 PacketField {
                     index: 0,
                     name: "Test Field 1".to_string(),
@@ -173,11 +146,22 @@ mod tests {
                     offset_in_packet: 7,
                     r#type: PacketFieldType::SignedLong
                 }
-            ],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
-
+            ], 
+            vec![
+                PacketDelimiter {
+                    index: 0,
+                    name: "Test Delimiter".to_string(),
+                    offset_in_packet: 0,
+                    identifier: vec![1, 2, 3]
+                },
+                PacketDelimiter {
+                    index: 200, // should be ignored
+                    name: "Test Delimiter 2".to_string(),
+                    offset_in_packet: 15,
+                    identifier: vec![4, 5, 6]
+                }
+            ]
+        );
         let packet = generate_packet(&structure, StringRecord::from(vec![
             "3.0",
             "6.0",

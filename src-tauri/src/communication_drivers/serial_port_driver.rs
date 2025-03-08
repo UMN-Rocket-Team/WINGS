@@ -69,7 +69,7 @@ impl CommsIF for SerialPortDriver{
         let bytes_read = active_port.read(&mut buffer)?;
 
         self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
         Ok(())
     }
 
@@ -102,7 +102,7 @@ impl CommsIF for SerialPortDriver{
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
         return Ok(());
     }
 }

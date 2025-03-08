@@ -33,14 +33,7 @@ impl PacketStructureViewModel {
                 PacketComponent::Gap(_gap) => {} //gaps are view only and can be ignored
             };
         }
-        return PacketStructure {
-            id: self.id,
-            name: self.name.clone(),
-            fields: packet_fields,
-            delimiters: packet_delimiters,
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        return PacketStructure::make_from_fields_and_delims(self.id, self.name.clone(), packet_fields, packet_delimiters);
     }
 }
 
@@ -70,7 +63,7 @@ impl PacketComponent {
 
     fn len(&self) -> usize {
         match self {
-            PacketComponent::Field(field) => field.r#type.size(),
+            PacketComponent::Field(field) => field.r#type.size().unwrap_or(0),
             PacketComponent::Delimiter(delimiter) => delimiter.identifier.len() / 2,
             PacketComponent::Gap(gap) => gap.size,
         }
@@ -162,21 +155,18 @@ mod tests {
 
     #[test]
     fn delimiter() {
-        let packet_structure = PacketStructure {
-            id: 0,
-            name: String::from("Test packet"),
-            fields: vec![],
-            delimiters: vec![
-                PacketDelimiter {
-                    index: 0,
-                    name: String::from("Test delimiter"),
-                    identifier: vec![0xde, 0xad, 0xbe, 0xef],
-                    offset_in_packet: 0
-                }
-            ],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let packet_structure = PacketStructure::make_from_fields_and_delims(
+            0,  
+            String::from("Test packet"), 
+            vec![], 
+            vec![
+            PacketDelimiter {
+                index: 0,
+                name: String::from("Test delimiter"),
+                identifier: vec![0xde, 0xad, 0xbe, 0xef],
+                offset_in_packet: 0
+            }
+        ]);
         let view_model = create_packet_view_model(&packet_structure);
         assert_eq!(view_model, PacketStructureViewModel {
             id: 0,
@@ -195,30 +185,23 @@ mod tests {
 
     #[test]
     fn starts_with_gap() {
-        let packet_structure = PacketStructure {
-            id: 0,
-            name: String::from("Test packet"),
-            fields: vec![],
-            delimiters: vec![
-                // There is a gap before the first field/delimiter
-                PacketDelimiter {
-                    index: 0,
-                    name: String::from("Test delimiter 1"),
-                    identifier: vec![0x34],
-                    offset_in_packet: 10
-                },
-                // There is also a gap between these, which we will use to test that the
-                // gap index is updated correctly
-                PacketDelimiter {
-                    index: 1,
-                    name: String::from("Test delimiter 2"),
-                    identifier: vec![0x56],
-                    offset_in_packet: 12
-                }
-            ],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let packet_structure = PacketStructure::make_from_fields_and_delims(0, String::from("Test packet"), vec![], vec![
+            // There is a gap before the first field/delimiter
+            PacketDelimiter {
+                index: 0,
+                name: String::from("Test delimiter 1"),
+                identifier: vec![0x34],
+                offset_in_packet: 10
+            },
+            // There is also a gap between these, which we will use to test that the
+            // gap index is updated correctly
+            PacketDelimiter {
+                index: 1,
+                name: String::from("Test delimiter 2"),
+                identifier: vec![0x56],
+                offset_in_packet: 12
+            }
+        ]);
         let view_model = create_packet_view_model(&packet_structure);
         assert_eq!(view_model, PacketStructureViewModel {
             id: 0,
@@ -258,24 +241,16 @@ mod tests {
             identifier: vec![i],
             offset_in_packet: i as usize
         };
-        let packet_structure = PacketStructure {
-            id: 0,
-            name: String::from("Test packet"),
-            fields: vec![],
-            delimiters: vec![
-                make_structure_delimiter(0),
-                make_structure_delimiter(2),
-                make_structure_delimiter(4),
-                make_structure_delimiter(6),
-                make_structure_delimiter(8),
-                make_structure_delimiter(10),
-                make_structure_delimiter(12),
-                make_structure_delimiter(14),
-            ],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
-
+        let packet_structure = PacketStructure::make_from_fields_and_delims(0, String::from("Test packet"), vec![], vec![
+            make_structure_delimiter(0),
+            make_structure_delimiter(2),
+            make_structure_delimiter(4),
+            make_structure_delimiter(6),
+            make_structure_delimiter(8),
+            make_structure_delimiter(10),
+            make_structure_delimiter(12),
+            make_structure_delimiter(14),
+        ]);
         let view_model = create_packet_view_model(&packet_structure);
         let make_view_gap = |i: u8| PacketComponent::Gap(PacketGap {
             size: 1,

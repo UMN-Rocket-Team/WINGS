@@ -14,63 +14,52 @@ pub struct Packet {
     pub(crate) field_meta_data: Vec<PacketFieldValue>,
 }
 
-#[derive(PartialEq, Serialize, Clone, Debug, Copy)]
+#[derive(PartialEq, Serialize, Clone, Debug)]
 #[serde(untagged)]
 pub enum PacketFieldValue {
     /// Ensure that this enum is in sync with PacketFieldType
-
-    #[serde(rename = "Unsigned Byte")]
-    UnsignedByte(u8),
-    #[serde(rename = "Signed Byte")]
-    SignedByte(i8),
-    #[serde(rename = "Unsigned Short")]
-    UnsignedShort(u16),
-    #[serde(rename = "Signed Short")]
-    SignedShort(i16),
-    #[serde(rename = "Unsigned Integer")]
-    UnsignedInteger(u32),
-    #[serde(rename = "Signed Integer")]
-    SignedInteger(i32),
-    #[serde(rename = "Unsigned Long")]
-    UnsignedLong(u64),
-    #[serde(rename = "Signed Long")]
-    SignedLong(i64),
-    Float(f32),
-    Double(f64),
+    String(String),
+    Bool(bool),
+    Number(f64)
 }
 
 #[allow(dead_code)]
 impl PacketFieldValue {
     /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
-    pub fn to_le_bytes(&self) -> Vec<u8> {
+    pub fn to_le_bytes(&self,field_type: PacketFieldType) -> anyhow::Result<Vec<u8>> {
         // Need to return a vec here instead of a [u8] as the size is not constant
         match self {
-            PacketFieldValue::UnsignedByte(i) => u8::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::SignedByte(i) => i8::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::UnsignedShort(i) => u16::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::SignedShort(i) => i16::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::UnsignedInteger(i) => u32::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::SignedInteger(i) => i32::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::UnsignedLong(i) => u64::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::SignedLong(i) => i64::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::Float(i) => f32::to_le_bytes(*i).to_vec(),
-            PacketFieldValue::Double(i) => f64::to_le_bytes(*i).to_vec()
+            PacketFieldValue::String(i) => return Ok(i.as_bytes().to_vec()),
+            PacketFieldValue::Bool(i) => return Ok(vec![*i as u8]),
+            PacketFieldValue::Number(i) => {
+                match field_type{
+                    PacketFieldType::UnsignedByte => Ok(u8::to_le_bytes(*i as u8).to_vec()),
+                    PacketFieldType::SignedByte => Ok(i8::to_le_bytes(*i as i8).to_vec()),
+                    PacketFieldType::UnsignedShort => Ok(u16::to_le_bytes(*i as u16).to_vec()),
+                    PacketFieldType::SignedShort => Ok(i16::to_le_bytes(*i as i16).to_vec()),
+                    PacketFieldType::UnsignedInteger => Ok(u32::to_le_bytes(*i as u32).to_vec()),
+                    PacketFieldType::SignedInteger => Ok(i32::to_le_bytes(*i as i32).to_vec()),
+                    PacketFieldType::UnsignedLong => Ok(u64::to_le_bytes(*i as u64).to_vec()),
+                    PacketFieldType::SignedLong => Ok(i64::to_le_bytes(*i as i64).to_vec()),
+                    PacketFieldType::Float => Ok(f32::to_le_bytes(*i as f32).to_vec()),
+                    PacketFieldType::Double => Ok(f64::to_le_bytes(*i as f64).to_vec()),
+                    PacketFieldType::UnsignedTwoFour => {
+                        u32::to_le_bytes(*i as u32).to_vec();
+                        todo!("make these only spit out 3 u8s");
+                    },
+                    PacketFieldType::SignedTwoFour => Ok(i32::to_le_bytes(*i as i32).to_vec()),
+                    _ => Err(anyhow::anyhow!("Numbervalue being processed as String or bool"))
+                }
+            },
         }
     }
 
     /// Returns the matching PacketFieldType for this parsed value.
     pub fn get_field_type(&self) -> PacketFieldType {
         match self {
-            PacketFieldValue::UnsignedByte(_) => PacketFieldType::UnsignedByte,
-            PacketFieldValue::SignedByte(_) => PacketFieldType::SignedByte,
-            PacketFieldValue::UnsignedShort(_) => PacketFieldType::UnsignedShort,
-            PacketFieldValue::SignedShort(_) => PacketFieldType::SignedShort,
-            PacketFieldValue::UnsignedInteger(_) => PacketFieldType::UnsignedInteger,
-            PacketFieldValue::SignedInteger(_) => PacketFieldType::SignedInteger,
-            PacketFieldValue::UnsignedLong(_) => PacketFieldType::UnsignedLong,
-            PacketFieldValue::SignedLong(_) => PacketFieldType::SignedLong,
-            PacketFieldValue::Float(_) => PacketFieldType::Float,
-            PacketFieldValue::Double(_) => PacketFieldType::Double,
+            PacketFieldValue::String(_) => PacketFieldType::String,
+            PacketFieldValue::Bool(_) => PacketFieldType::Bool,
+            PacketFieldValue::Number(_) => PacketFieldType::Double,
         }
     }
     
@@ -78,38 +67,54 @@ impl PacketFieldValue {
 
 impl PacketFieldType {
     /// takes raw bytes and assigns them the PacketFieldType which they match
-    pub fn parse(&self, bytes: &[u8]) -> PacketFieldValue {
+    pub fn parse(&self, bytes: &[u8]) -> anyhow::Result<PacketFieldValue> {
         match self {
             PacketFieldType::UnsignedByte => {
-                PacketFieldValue::UnsignedByte(u8::from_le_bytes(slice_to_fixed_size::<1>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(u8::from_le_bytes(slice_to_fixed_size::<1>(bytes)).into()))
+                            }
             PacketFieldType::SignedByte => {
-                PacketFieldValue::SignedByte(i8::from_le_bytes(slice_to_fixed_size::<1>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(i8::from_le_bytes(slice_to_fixed_size::<1>(bytes)).into()))
+                            }
             PacketFieldType::UnsignedShort => {
-                PacketFieldValue::UnsignedShort(u16::from_le_bytes(slice_to_fixed_size::<2>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(u16::from_le_bytes(slice_to_fixed_size::<2>(bytes)).into()))
+                            }
             PacketFieldType::SignedShort => {
-                PacketFieldValue::SignedShort(i16::from_le_bytes(slice_to_fixed_size::<2>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(i16::from_le_bytes(slice_to_fixed_size::<2>(bytes)).into()))
+                            }
             PacketFieldType::UnsignedInteger => {
-                PacketFieldValue::UnsignedInteger(u32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(u32::from_le_bytes(slice_to_fixed_size::<4>(bytes)).into()))
+                            }
             PacketFieldType::SignedInteger => {
-                PacketFieldValue::SignedInteger(i32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(i32::from_le_bytes(slice_to_fixed_size::<4>(bytes)).into()))
+                            }
             PacketFieldType::UnsignedLong => {
-                PacketFieldValue::UnsignedLong(u64::from_le_bytes(slice_to_fixed_size::<8>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(u64::from_le_bytes(slice_to_fixed_size::<8>(bytes)) as f64))
+                            }
             PacketFieldType::SignedLong => {
-                PacketFieldValue::SignedLong(i64::from_le_bytes(slice_to_fixed_size::<8>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(i64::from_le_bytes(slice_to_fixed_size::<8>(bytes)) as f64))
+                            }
             PacketFieldType::Float => {
-                PacketFieldValue::Float(f32::from_le_bytes(slice_to_fixed_size::<4>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(f32::from_le_bytes(slice_to_fixed_size::<4>(bytes)).into()))
+                            }
             PacketFieldType::Double => {
-                PacketFieldValue::Double(f64::from_le_bytes(slice_to_fixed_size::<8>(bytes)))
-            }
+                                Ok(PacketFieldValue::Number(f64::from_le_bytes(slice_to_fixed_size::<8>(bytes)).into()))
+                            }
+            PacketFieldType::UnsignedTwoFour => {
+                        let mut raw:u32 = 0;
+                        raw |= (bytes[0] as u32) << 16;
+                        raw |= (bytes[1] as u32) << 8;
+                        raw |= bytes[2] as u32;
+                        Ok(PacketFieldValue::Number(raw.into()))
+                    },
+            PacketFieldType::SignedTwoFour => {
+                        let mut raw:u32 = 0;
+                        raw |= (bytes[0] as u32) << 16;
+                        raw |= (bytes[1] as u32) << 8;
+                        raw |= bytes[2] as u32;
+                        Ok(PacketFieldValue::Number(raw.into()))
+                    },
+            PacketFieldType::String => Ok(PacketFieldValue::String(String::from_utf8(bytes.to_vec())?)),
+            PacketFieldType::Bool => Ok(PacketFieldValue::Bool(bytes[0] !=0)),
         }
     }
 
@@ -118,31 +123,39 @@ impl PacketFieldType {
     /// # Errors
     /// 
     /// errors if the input cant be parsed
-    pub fn make_from_string(&self, input: &str) -> Result<PacketFieldValue,Error>{
+    pub fn make_from_string(&self, input: &str) -> anyhow::Result<PacketFieldValue>{
         Ok(
             match self{
-                PacketFieldType::UnsignedByte =>PacketFieldValue::UnsignedByte(input.parse::<u8>()?),
-                PacketFieldType::SignedByte => PacketFieldValue::SignedByte(input.parse::<i8>()?),
-                PacketFieldType::UnsignedShort => PacketFieldValue::UnsignedShort(input.parse::<u16>()?),
-                PacketFieldType::SignedShort => PacketFieldValue::SignedShort(input.parse::<i16>()?),
-                PacketFieldType::UnsignedInteger => PacketFieldValue::UnsignedInteger(input.parse::<u32>()?),
-                PacketFieldType::SignedInteger => PacketFieldValue::SignedInteger(input.parse::<i32>()?),
-                PacketFieldType::UnsignedLong => PacketFieldValue::UnsignedLong(input.parse::<u64>()?),
-                PacketFieldType::SignedLong => PacketFieldValue::SignedLong(input.parse::<i64>()?),
-                PacketFieldType::Float => PacketFieldValue::Float(input.parse::<f32>()?),
-                PacketFieldType::Double => PacketFieldValue::Double(input.parse::<f64>()?),
+                PacketFieldType::UnsignedByte |
+                PacketFieldType::SignedByte |
+                PacketFieldType::UnsignedShort |
+                PacketFieldType::SignedShort |
+                PacketFieldType::UnsignedTwoFour |
+                PacketFieldType::SignedTwoFour |
+                PacketFieldType::UnsignedInteger |
+                PacketFieldType::SignedInteger |
+                PacketFieldType::UnsignedLong |
+                PacketFieldType::SignedLong |
+                PacketFieldType::Float |
+                PacketFieldType::Double => PacketFieldValue::Number(input.parse::<f64>()?),
+                PacketFieldType::Bool => PacketFieldValue::Bool(input.to_lowercase() == "true" || input.to_lowercase() == "t"),
+                PacketFieldType::String => PacketFieldValue::String(input.to_owned()),
             }
         )
     }
     /// returns the size of the data included within the packetFieldType
-    pub fn size(&self) -> usize {
+    pub fn size(&self) -> anyhow::Result<usize> {
         match self {
-            PacketFieldType::UnsignedByte | PacketFieldType::SignedByte => 1,
-            PacketFieldType::UnsignedShort | PacketFieldType::SignedShort => 2,
-            PacketFieldType::UnsignedInteger | PacketFieldType::SignedInteger => 4,
-            PacketFieldType::UnsignedLong | PacketFieldType::SignedLong => 8,
-            PacketFieldType::Float => 4,
-            PacketFieldType::Double => 8,
+            PacketFieldType::UnsignedByte | PacketFieldType::SignedByte => Ok(1),
+            PacketFieldType::UnsignedShort | PacketFieldType::SignedShort => Ok(2),
+            PacketFieldType::UnsignedInteger | PacketFieldType::SignedInteger => Ok(4),
+            PacketFieldType::UnsignedLong | PacketFieldType::SignedLong => Ok(8),
+            PacketFieldType::Float => Ok(4),
+            PacketFieldType::Double => Ok(8),
+            PacketFieldType::UnsignedTwoFour => Ok(3),
+            PacketFieldType::SignedTwoFour => Ok(3),
+            PacketFieldType::String => Err(anyhow::anyhow!("size of string is unknown from this context")),
+            PacketFieldType::Bool => Ok(1),
         }
     }
 }
@@ -159,7 +172,7 @@ mod tests {
     fn make_0_uint() {
         let unsigned_integer_type = PacketFieldType::SignedInteger;
         let parsed = unsigned_integer_type.make_from_string("0").unwrap();
-        assert_eq!(parsed,PacketFieldValue::SignedInteger(0));
+        assert_eq!(parsed,PacketFieldValue::Number(0.0));
     }
 
     //tests that signed ints can be made
@@ -167,7 +180,7 @@ mod tests {
     fn make_negative_int() {
         let unsigned_integer_type = PacketFieldType::SignedInteger;
         let parsed = unsigned_integer_type.make_from_string("-1").unwrap();
-        assert_eq!(parsed,PacketFieldValue::SignedInteger(-1));
+        assert_eq!(parsed,PacketFieldValue::Number(-1.0));
     }
 
     //test that floats can be made
@@ -175,7 +188,7 @@ mod tests {
     fn make_00_float() {
         let unsigned_integer_type = PacketFieldType::Float;
         let parsed = unsigned_integer_type.make_from_string("0.0").unwrap();
-        assert_eq!(parsed,PacketFieldValue::Float(0.0));
+        assert_eq!(parsed,PacketFieldValue::Number(0.0));
     }
 
     //test that floats can be made from non decimal input
@@ -183,7 +196,7 @@ mod tests {
     fn make_0_float() {
         let unsigned_integer_type = PacketFieldType::Float;
         let parsed = unsigned_integer_type.make_from_string("0").unwrap();
-        assert_eq!(parsed,PacketFieldValue::Float(0.0));
+        assert_eq!(parsed,PacketFieldValue::Number(0.0));
     }
 
     //test that negative floats can be made
@@ -191,6 +204,6 @@ mod tests {
     fn make_negative_float() {
         let unsigned_integer_type = PacketFieldType::Float;
         let parsed = unsigned_integer_type.make_from_string("-1").unwrap();
-        assert_eq!(parsed,PacketFieldValue::Float(-1.0));
+        assert_eq!(parsed,PacketFieldValue::Number(-1.0));
     }
 }
