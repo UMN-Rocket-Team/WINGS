@@ -27,7 +27,7 @@ impl SerialPacketParser {
         &mut self,
         packet_structure_manager: &PacketStructureManager,
         print_flag: bool
-    ) -> Vec<Packet> {
+    ) -> anyhow::Result<Vec<Packet>> {
         if print_flag {
             println!("Unparsed data length: {}", self.unparsed_data.len());
         }
@@ -105,14 +105,14 @@ impl SerialPacketParser {
 
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
-                    vec![PacketFieldValue::UnsignedByte(0); packet_structure.fields.len()];
+                    vec![PacketFieldValue::Number(0.0); packet_structure.fields.len()];
                 for k in 0..packet_structure.fields.len() {
                     let field = &packet_structure.fields[k];
                     let field_start_index = packet_start_index + field.offset_in_packet;
                     field_data[k] = field.r#type.parse(
                         &self.unparsed_data
-                            [field_start_index..(field_start_index + field.r#type.size())],
-                    );
+                            [field_start_index..(field_start_index + field.r#type.size()?)],
+                    )?
                 }
                 if print_flag {
                     println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
@@ -138,7 +138,7 @@ impl SerialPacketParser {
             println!("LPI: {}", last_parsed_index);
         }
         self.unparsed_data.drain(0..last_parsed_index);
-        packets
+        Ok(packets)
     }
 }
 
@@ -169,14 +169,7 @@ mod tests {
     #[test]
     fn test_basic_parsing(){
         let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
@@ -192,27 +185,20 @@ mod tests {
                     0x00,0x00,0x00,0x00,
                     0x1E,0xAB,0x11,0xCA];
         packet_parser.push_data(&data,false);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false).expect("");
         assert_eq!(parsed[0].structure_id,id);//does the packet have the right ID?
-        assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
-        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
-        assert_eq!(parsed[0].field_data[2],PacketFieldValue::UnsignedShort(2));
-        assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
-        assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
+        assert_eq!(parsed[0].field_data[0],PacketFieldValue::Number(0.0));//does the data parse correctly?
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::Number(1.0));
+        assert_eq!(parsed[0].field_data[2],PacketFieldValue::Number(2.0));
+        assert_eq!(parsed[0].field_data[3],PacketFieldValue::Number(3.0));
+        assert_eq!(parsed[0].field_data[4],PacketFieldValue::Number(4.0));
     }
     
     /// test that data isn't mistaken for packets
     #[test]
     fn can_data_be_mistaken_for_delimiters(){
         let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
@@ -231,26 +217,19 @@ mod tests {
                     0x1E,0xAB,0x11,0xCA,
                     0x1E,0xAB,0x11,0xCA];
         packet_parser.push_data(&data, false);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false).expect("");
         assert_eq!(parsed.len(),1);//is only the first packet parsed?
-        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));//does some of the data still get parsed correctly?
-        assert_eq!(parsed[0].field_data[2],PacketFieldValue::UnsignedShort(2));
-        assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
-        assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::Number(1.0));//does some of the data still get parsed correctly?
+        assert_eq!(parsed[0].field_data[2],PacketFieldValue::Number(2.0));
+        assert_eq!(parsed[0].field_data[3],PacketFieldValue::Number(3.0));
+        assert_eq!(parsed[0].field_data[4],PacketFieldValue::Number(4.0));
     }
 
     /// test for packets of slightly longer or shorter length than expected
     #[test]
     fn bad_data_test(){
         let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0,
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
@@ -277,7 +256,7 @@ mod tests {
                     0x00,0x00,0x00,0x00,
                     0x1E,0xAB,0x11,0xCA];
         packet_parser.push_data(&data,false);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false).expect("");
         assert_eq!(parsed.len(),0);//did we accidentally parse any packets?
     }
     
@@ -285,14 +264,7 @@ mod tests {
     #[test]
     fn consecutive_parsing_test(){
         let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
@@ -325,40 +297,26 @@ mod tests {
                     0xBA,0xBB,0xE1,];//garbage data
         packet_parser.push_data(&data,false);
         packet_parser.push_data(&data,false);//push data 2 more times
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false).expect("");
         assert_eq!(parsed.len(),5);//did we catch all the packets?
-        assert_eq!(parsed[2].field_data[1],PacketFieldValue::UnsignedShort(1));//did we parse the first group of packets correctly
-        assert_eq!(parsed[2].field_data[2],PacketFieldValue::UnsignedShort(2));
-        assert_eq!(parsed[2].field_data[3],PacketFieldValue::UnsignedByte(3));
-        assert_eq!(parsed[2].field_data[4],PacketFieldValue::UnsignedByte(4));
-        assert_eq!(parsed[4].field_data[1],PacketFieldValue::UnsignedShort(5));//did we parse the second group of packets correctly
-        assert_eq!(parsed[4].field_data[2],PacketFieldValue::UnsignedShort(6));
-        assert_eq!(parsed[4].field_data[3],PacketFieldValue::UnsignedByte(7));
-        assert_eq!(parsed[4].field_data[4],PacketFieldValue::UnsignedByte(8));
+        assert_eq!(parsed[2].field_data[1],PacketFieldValue::Number(1.0));//did we parse the first group of packets correctly
+        assert_eq!(parsed[2].field_data[2],PacketFieldValue::Number(2.0));
+        assert_eq!(parsed[2].field_data[3],PacketFieldValue::Number(3.0));
+        assert_eq!(parsed[2].field_data[4],PacketFieldValue::Number(4.0));
+        assert_eq!(parsed[4].field_data[1],PacketFieldValue::Number(5.0));//did we parse the second group of packets correctly
+        assert_eq!(parsed[4].field_data[2],PacketFieldValue::Number(6.0));
+        assert_eq!(parsed[4].field_data[3],PacketFieldValue::Number(7.0));
+        assert_eq!(parsed[4].field_data[4],PacketFieldValue::Number(8.0));
     }
     
     /// test parsing with multiple packet structures, make sure to look at ID's
     #[test]
     fn multiple_structures(){
         let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut wacky_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Wacky Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![],
-        };
+        let mut wacky_structure = PacketStructure::make_default("Wacky Structure".to_owned());
         wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
@@ -382,42 +340,28 @@ mod tests {
                     0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                     0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,];
         packet_parser.push_data(&data2,true);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,true);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,true).expect("");
         assert_eq!(parsed.len(),2); // are packets parsed?
         assert_eq!(parsed[0].structure_id,id1);//does the packet have the right ID?
-        assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
-        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedShort(1));
-        assert_eq!(parsed[0].field_data[2],PacketFieldValue::UnsignedShort(2));
-        assert_eq!(parsed[0].field_data[3],PacketFieldValue::UnsignedByte(3));
-        assert_eq!(parsed[0].field_data[4],PacketFieldValue::UnsignedByte(4));
+        assert_eq!(parsed[0].field_data[0],PacketFieldValue::Number(0.0));//does the data parse correctly?
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::Number(1.0));
+        assert_eq!(parsed[0].field_data[2],PacketFieldValue::Number(2.0));
+        assert_eq!(parsed[0].field_data[3],PacketFieldValue::Number(3.0));
+        assert_eq!(parsed[0].field_data[4],PacketFieldValue::Number(4.0));
         assert_eq!(parsed[1].structure_id,id2);//does the packet have the right ID?
-        assert_eq!(parsed[1].field_data[0],PacketFieldValue::SignedShort(1));//does the data parse correctly?
-        assert_eq!(parsed[1].field_data[1],PacketFieldValue::UnsignedByte(2));
-        assert_eq!(parsed[1].field_data[2],PacketFieldValue::UnsignedLong(3));
+        assert_eq!(parsed[1].field_data[0],PacketFieldValue::Number(1.0));//does the data parse correctly?
+        assert_eq!(parsed[1].field_data[1],PacketFieldValue::Number(2.0));
+        assert_eq!(parsed[1].field_data[2],PacketFieldValue::Number(3.0));
     }
 
     // test parsing with multiple ps's that have the same first delimiter
     #[test]
     fn same_first_delim(){
         let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut wacky_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure Variation"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut wacky_structure = PacketStructure::make_default("Test Structure Variation".to_owned());
         wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &["";3]);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
@@ -444,32 +388,25 @@ mod tests {
                     0x1E,0xAB,0x11,0xCA,
                     0xBA,0xBB,0xE1];
         packet_parser.push_data(&data2,true);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,true);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,true).expect("");
         assert_eq!(parsed.len(),2); // are packets parsed?
         assert_eq!(parsed[0].structure_id,id2);//does the packet have the right ID?
-        assert_eq!(parsed[0].field_data[0],PacketFieldValue::SignedLong(5));//does the data parse correctly?
-        assert_eq!(parsed[0].field_data[1],PacketFieldValue::UnsignedInteger(0x10000));
-        assert_eq!(parsed[0].field_data[2],PacketFieldValue::SignedByte(3));
+        assert_eq!(parsed[0].field_data[0],PacketFieldValue::Number(5.0));//does the data parse correctly?
+        assert_eq!(parsed[0].field_data[1],PacketFieldValue::Number(0x10000 as f64));
+        assert_eq!(parsed[0].field_data[2],PacketFieldValue::Number(3.0));
         assert_eq!(parsed[1].structure_id,id1);//does the packet have the right ID?
-        assert_eq!(parsed[1].field_data[0],PacketFieldValue::SignedLong(0));//does the data parse correctly?
-        assert_eq!(parsed[1].field_data[1],PacketFieldValue::UnsignedShort(1));
-        assert_eq!(parsed[1].field_data[2],PacketFieldValue::UnsignedShort(2));
-        assert_eq!(parsed[1].field_data[3],PacketFieldValue::UnsignedByte(3));
-        assert_eq!(parsed[1].field_data[4],PacketFieldValue::UnsignedByte(4));
+        assert_eq!(parsed[1].field_data[0],PacketFieldValue::Number(0.0));//does the data parse correctly?
+        assert_eq!(parsed[1].field_data[1],PacketFieldValue::Number(1.0));
+        assert_eq!(parsed[1].field_data[2],PacketFieldValue::Number(2.0));
+        assert_eq!(parsed[1].field_data[3],PacketFieldValue::Number(3.0));
+        assert_eq!(parsed[1].field_data[4],PacketFieldValue::Number(4.0));
     }
 
     // test for when packets dont make it into the pushed data state
     #[test]
     fn delimiter_led_packet_half_in_buffer(){
         let packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![]
-        };
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
         p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &["";5]);
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -480,7 +417,7 @@ mod tests {
                     0x02,0x00,
                     0x03];
         packet_parser.push_data(&data,false);
-        let parsed = packet_parser.parse_packets(&packet_structure_manager,false);
+        let parsed = packet_parser.parse_packets(&packet_structure_manager,false).expect("");
         assert_eq!(parsed,vec![]);//did we not parse anything?
     }
 

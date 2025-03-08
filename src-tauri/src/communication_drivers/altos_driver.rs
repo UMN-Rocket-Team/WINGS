@@ -76,7 +76,7 @@ impl CommsIF for TeleDongleDriver {
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
         self.packet_parser.push_data(&decoded, PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
         Ok(())
     }
 
@@ -128,7 +128,7 @@ impl CommsIF for TeleDongleDriver {
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(&data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)); 
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
         return Ok(());
     }
 }

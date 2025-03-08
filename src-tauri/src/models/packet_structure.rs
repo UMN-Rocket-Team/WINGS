@@ -9,36 +9,73 @@ use serde::{Deserialize, Serialize};
 /// Represents an entire "Data Packet Structure" 
 /// 
 /// This is the data packet format in which the ground station should expect to recieve new data
+/// 
+/// id is defined at runtime and used to track packet structures
+/// 
+/// name is given by the user, and should follow a specific format (todo!())
+/// 
+/// fields represent any data in the packet
+/// 
+/// delimiters represent any constant values in the packet 
+/// 
+/// crc represents a delimiter derived from a checksum of previous elements
+/// 
+/// size represents the overall size of the packet
 pub struct PacketStructure {
     pub(crate) id: usize,
     pub(crate) name: String,
     pub(crate) fields: Vec<PacketField>,
     pub(crate) delimiters: Vec<PacketDelimiter>,
-    pub(crate) metafields: Vec<PacketMetaDataFields>,
-    pub(crate) packet_crc: Vec<PacketCRC> 
+    pub(crate) packet_crc: Vec<PacketCRC>,
+    pub(crate) size: Option<usize>,
 }
 
 impl PacketStructure {
-
+    pub fn make_default(name: String) -> PacketStructure{
+        return PacketStructure {
+            id: 0, // gets overridden
+            name: name,
+            fields: vec![],
+            delimiters: vec![],
+            packet_crc: vec![],
+            size: None,
+        };
+    }
+    pub fn make_from_fields_and_delims(id: usize, name: String, fields: Vec<PacketField>, delims: Vec<PacketDelimiter>) -> PacketStructure{
+        return PacketStructure {
+            id: id, // gets overridden
+            name: name,
+            fields: fields,
+            delimiters: delims,
+            packet_crc: vec![],
+            size: None,
+        };
+    }
     /// Returns the size of the PacketStructure
     /// 
     /// size is found by going through every element in the packetStructure, and finding the largest sum of an elements offset and size.
     /// this produces the same result as returning the largest offset with the size of that element added on
     pub fn size(&self) -> usize {
-        let mut max_end: usize = 0;
+        match self.size{
+            Some(i) => i,
+            None => {
+                let mut max_end: usize = 0;
 
-        for field in &self.fields {
-            max_end = max(max_end, field.offset_in_packet + field.r#type.size());
+                for field in &self.fields {
+                    let size = field.r#type.size().unwrap_or(0);
+                    max_end = max(max_end, field.offset_in_packet + size);
+                }
+        
+                for delimiter in &self.delimiters {
+                    max_end = max(
+                        max_end,
+                        delimiter.offset_in_packet + delimiter.identifier.len(),
+                    );
+                }
+        
+                max_end
+            },
         }
-
-        for delimiter in &self.delimiters {
-            max_end = max(
-                max_end,
-                delimiter.offset_in_packet + delimiter.identifier.len(),
-            );
-        }
-
-        max_end
     }
 
     /// fills the packet calling it using string inputs,
@@ -144,6 +181,10 @@ pub enum PacketFieldType {
     UnsignedShort,
     #[serde(rename = "Signed Short")]
     SignedShort,
+    #[serde(rename = "Unsigned 24")]
+    UnsignedTwoFour,
+    #[serde(rename = "Signed 24")]
+    SignedTwoFour,
     #[serde(rename = "Unsigned Integer")]
     UnsignedInteger,
     #[serde(rename = "Signed Integer")]
@@ -154,6 +195,8 @@ pub enum PacketFieldType {
     SignedLong,
     Float,
     Double,
+    String,
+    Bool,
 }
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum PacketMetadataType {

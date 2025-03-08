@@ -71,7 +71,7 @@ impl CommsIF for ByteReadDriver {
                     write_buffer.extend_from_slice(
                         &self
                             .packet_parser
-                            .parse_packets(&self.packet_structure_manager, PRINT_PARSING),
+                            .parse_packets(&self.packet_structure_manager, PRINT_PARSING)?,
                     );
                     Ok(())
                 }
@@ -113,7 +113,7 @@ impl CommsIF for ByteReadDriver {
         packet_vector.extend_from_slice(
             &self
                 .packet_parser
-                .parse_packets(&self.packet_structure_manager, PRINT_PARSING),
+                .parse_packets(&self.packet_structure_manager, PRINT_PARSING)?,
         );
         return Ok(());
     }
