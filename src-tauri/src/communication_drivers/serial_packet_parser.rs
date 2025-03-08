@@ -114,19 +114,6 @@ impl SerialPacketParser {
                             [field_start_index..(field_start_index + field.r#type.size())],
                     );
                 }
-                //START AltusMetrum, timestamp code
-                if packet_structure.name == "telemega_kalman" || packet_structure.name == "TeleMetrum v1.x Sensor Data" || packet_structure.name == "TeleMetrum v2 Sensor Data"{
-                    let mut timestamp = serde_json::from_str::<u64>(&(serde_json::to_string(&field_data[0]).unwrap_or_default())).unwrap_or_default() + self.iterator;
-                    if timestamp < self.last{
-                        println!("turnover");
-                        self.iterator += 65535;
-                        timestamp += 65535;
-                    }
-                    self.last = timestamp;
-                    field_data[0] = models::packet::PacketFieldValue::UnsignedLong(timestamp);
-                }
-                
-                //END AltusMetrum, timestamp code
                 if print_flag {
                     println!("MATCHED: {:02X?}", &self.unparsed_data[packet_start_index..(packet_start_index + packet_structure.size())]);
                 }
