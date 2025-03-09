@@ -1,4 +1,3 @@
-use anyhow::Error;
 use serde::Serialize;
 
 use crate::models::packet_structure::PacketFieldType;

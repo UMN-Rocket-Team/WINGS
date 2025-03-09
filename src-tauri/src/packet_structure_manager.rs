@@ -1,5 +1,5 @@
 use std::{
-    cmp::{max, min}, collections::BTreeMap, ops::DerefMut, vec
+    cmp::{max, min}, collections::BTreeMap, vec
 };
 
 use serde::{Deserialize, Serialize};
@@ -115,7 +115,7 @@ impl PacketStructureManager {
         packet_structure: &mut PacketStructure,
     ) -> Result<usize, Error> {
 
-        let mut next_packet_id = 0;
+        let mut next_packet_id = LOWEST_ID;
         for registered_packet_structure in self.packet_structures.iter() {
             if registered_packet_structure.name == packet_structure.name {
                 return Err(Error::NameAlreadyRegistered(registered_packet_structure.id));
@@ -540,14 +540,6 @@ mod tests {
     // add a unit test that checks for updated minimum and maximum trackers
     #[test]
     fn test_set_field_name() {
-        let packet_field_type = PacketFieldType::Double;
-        let packet_field = PacketField {
-            index: 0,
-            name: String::from("not name"),
-            r#type: packet_field_type,
-            offset_in_packet: 0
-        };
-
         // add our test packet
         let mut packet_structure_manager = PacketStructureManager::default();
         let id = packet_structure_manager.register_packet_structure(&mut PacketStructure::make_default(String::from("First Name"))).unwrap();

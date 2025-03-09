@@ -68,7 +68,7 @@ impl CommsIF for ByteReadDriver {
     }
 
     fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        if self.is_init() {
+        if self.file.is_some() {
             let mut buffer = [0; 4096];
             match self
                 .file
@@ -95,7 +95,7 @@ impl CommsIF for ByteReadDriver {
         }
     }
 
-    fn is_init(&mut self) -> bool {
+    fn is_init(&self) -> bool {
         self.file.is_some()
     }
     fn set_id(&mut self, id: usize) {

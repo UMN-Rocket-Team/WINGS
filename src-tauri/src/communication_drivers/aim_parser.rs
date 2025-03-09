@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::SystemTime};
+use std::time::SystemTime;
 
 use crate::{models::{packet::{Packet, PacketFieldValue}, packet_structure::PacketFieldType}, packet_structure_manager::PacketStructureManager};
 
@@ -332,13 +332,11 @@ mod tests {
     use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
 
     use super::AimParser;
-    //  lets the unit tests use everything in this file
-    /// test for basic packet recognition and parsing
+
+    /// user validated test for basic packet recognition and parsing
     #[test]
     fn test_parse_from_json(){
         let path = Path::new(".\\test utilities\\out.txt");
-        //let path2: &Path = Path::new(".\\test utilities\\timestep_02.csv");
-        //let mut file = std::fs::OpenOptions::new().append(true).create(true).open(path2).expect("failed to open file");
         let json: serde_json::Value = serde_json::from_str(&fs::read_to_string(path).unwrap()).expect("JSON was not well-formatted");
         let mut json_string_array = vec![];
         match json {
@@ -370,56 +368,6 @@ mod tests {
                 }
             }
         }     
-    }
-    fn parse_json(collector: &mut Vec<String>,last_str: &mut Vec<String>,value: &serde_json::Value,indent:u8, path : String){
-        let bruh_list = ["_source","layers","usbhid.data_tree","usbhid.data.array"];
-
-        match value{
-            serde_json::Value::Null => {
-            },
-            serde_json::Value::Bool(bool) => {
-                //print!("\n{}/b:{}",path,bool)
-            },
-            serde_json::Value::Number(number) => {
-                //print!("\n{}/n:{}",path,number)
-            },
-            serde_json::Value::String(str) => {
-                if path.contains("usbhid.data.array"){
-                    if !path.contains("usbhid.data.array.usage"){
-                        if !(str.starts_with("12") || str.starts_with("13")){
-                            let new_str = &str;
-                            if !str.starts_with("02:00"){
-                                collector.push(str.to_string());
-                                println!("{}",str);
-                            }
-                            (*last_str).push(new_str.to_string());
-
-                        }
-                    }
-                }
-            },
-            serde_json::Value::Array(values) => {
-                let mut j = 0;
-                for i in values{
-                    if j > -1{
-                        parse_json(collector,last_str,i,indent+1, path.to_owned() + "/a");
-                        j +=1;
-                    }
-                }
-            },
-            serde_json::Value::Object(map) => {
-                let mut i = 0;
-                for (str,val ) in map {
-                    if i > -1 {
-                        if bruh_list.contains(&str.as_str()) {
-                            parse_json(collector,last_str,val,indent+1,path.to_owned() + "/o:" + &str);
-                            i+=1;
-                        }
-                    }
-                }
-            },
-        }
-
     }
 }
 

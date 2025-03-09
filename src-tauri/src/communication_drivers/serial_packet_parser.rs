@@ -1,15 +1,13 @@
 use std::cmp::max;
 
 use crate::{
-    models::{self, packet::{Packet, PacketFieldValue}},
+    models::packet::{Packet, PacketFieldValue},
     packet_structure_manager::PacketStructureManager,
 };
 
 #[derive(Default)]
 pub struct SerialPacketParser {
     unparsed_data: Vec<u8>,
-    iterator: u64,
-    last: u64,
 }
 
 /// responsible converting raw data to packets

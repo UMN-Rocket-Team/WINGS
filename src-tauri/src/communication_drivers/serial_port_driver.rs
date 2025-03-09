@@ -88,7 +88,7 @@ impl CommsIF for SerialPortDriver{
     }
 
     /// Returns true if there is an active port
-    fn is_init(&mut self) -> bool {
+    fn is_init(&self) -> bool {
         self.port.is_some()
     }
     fn set_id(&mut self, id: usize){

@@ -15,6 +15,7 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
     pub name: String,
+    pub value: String,
     pub manufacturer_name: Option<String>,
     pub product_name: Option<String>,
 }
@@ -59,7 +60,7 @@ pub trait CommsIF {
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()>;
     fn get_device_packets(&mut self, data_vector: &mut Vec<Packet>) -> anyhow::Result<()>;
-    fn is_init(&mut self) -> bool;
+    fn is_init(&self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
     fn get_type(&self) -> String;
@@ -83,8 +84,16 @@ impl CommunicationManager {
         device_names = available_ports.into_iter()
             .filter_map(|port| match port.port_type {
                 serialport::SerialPortType::UsbPort(usb_info) => {
+                    let mut display_name = port.port_name.clone();
+                    if usb_info.manufacturer.is_some(){
+                        display_name = usb_info.manufacturer.clone().unwrap() + " " + &display_name;
+                    } 
+                    if usb_info.product.is_some(){
+                        display_name = usb_info.product.clone().unwrap() + " " + &display_name;
+                    }
                     Some(DeviceName {
-                        name: port.port_name,
+                        name: display_name,
+                        value: port.port_name,
                         manufacturer_name: usb_info.manufacturer,
                         product_name: usb_info.product,
                     })
@@ -94,11 +103,18 @@ impl CommunicationManager {
         
         let mut hid_devices: Vec<DeviceName> = available_hid_devices.filter_map(
             |device| 
-            Some(DeviceName {
-                name: device.path().to_str().unwrap_or_default().to_owned(),
-                manufacturer_name: Some(device.manufacturer_string().unwrap_or_default().to_owned()),
-                product_name: Some(device.product_string().unwrap_or_default().to_owned()), 
-            })
+            {
+                let man_string =device.manufacturer_string().unwrap_or_default().to_owned();
+                if man_string == "Microsoft" || man_string == "Logitech" ||  man_string == ""{
+                    return None;
+                }
+                return Some(DeviceName {
+                    name: man_string+ " " + device.product_string().unwrap_or_default(),
+                    value: device.path().to_str().unwrap_or_default().to_owned(),
+                    manufacturer_name: Some(device.manufacturer_string().unwrap_or_default().to_owned()),
+                    product_name: Some(device.product_string().unwrap_or_default().to_owned()), 
+                });
+            }
         ).collect();
         device_names.append(&mut hid_devices);
                 
@@ -110,32 +126,32 @@ impl CommunicationManager {
         }
     }
 
+    /// Checks if there is an initialized device with the given id
     /// Get data from the currently selected device
     ///
     /// # Error
     ///
     /// Returns an error if the device being addressed isn't initialized correctly
     pub fn get_data(&mut self, id: usize, return_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        let index = self.find(id,false);
-        match index {
-            Some(index) => {
-                let mut result = vec![];
+        let index = self.find(id,false).ok_or(anyhow::anyhow!("could not find a device with given id"))?;
+        let mut raw_bytes = vec![];
 
-                if self.comms_objects[index].is_init() {
-                    match self.comms_objects[index].get_device_packets(&mut result) {
-                        Ok(_) => return_buffer.append(&mut result),
-                        Err(error) => return Err(error),
-                    }
-                }
-
-                Ok(())
-            }
-            None => bail!(format!(
-                "could not find a device with that ID: {} {}",
-                id,
-                self.comms_objects.len()
-            )),
+        if !self.comms_objects[index].is_init() {
+            return Err(anyhow::anyhow!("object not initialized"))
         }
+
+        let result = self.comms_objects[index].get_device_raw_data(&mut raw_bytes);
+        if result.is_err(){
+            return Err(result.unwrap_err().context("failed to get raw data"))
+        }
+
+        //todo!() add save functionality for the raw data here
+
+        let result = self.comms_objects[index].parse_device_data(&mut raw_bytes,return_buffer);
+        if result.is_err(){
+            return Err(result.unwrap_err().context("failed to get raw data"))
+        }
+        Ok(())
     }
 
     /// Write data to the currently selected device
@@ -271,10 +287,12 @@ impl CommunicationManager {
     }
 
     //should be get_device_ids
-    pub fn get_devices(&self) -> Vec<usize> {
+    pub fn get_initialized_devices(&self) -> Vec<usize> {
         let mut return_me = vec![];
         for device in &self.comms_objects {
-            return_me.push(device.get_id());
+            if device.is_init(){
+                return_me.push(device.get_id());
+            }
         }
         return_me
     }
