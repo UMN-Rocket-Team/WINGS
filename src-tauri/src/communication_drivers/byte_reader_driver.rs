@@ -9,7 +9,7 @@ use crate::{
     packet_structure_manager::PacketStructureManager,
 };
 use anyhow::{bail, Context};
-use std::{fs::File, io::Read, sync::Arc};
+use std::{fs::File, io::Read, sync::{Arc, Mutex}};
 
 use super::serial_packet_parser::SerialPacketParser;
 
@@ -29,14 +29,14 @@ pub struct ByteReadDriver {
     file: Option<File>,
     id: usize,
     packet_parser: SerialPacketParser,
-    packet_structure_manager: Arc<PacketStructureManager>,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 impl CommsIF for ByteReadDriver {
     fn init_device(
         &mut self,
         file_name: &str,
         _baud: u32,
-        ps_manager: Arc<PacketStructureManager>,
+        ps_manager: Arc<Mutex<PacketStructureManager>>,
     ) -> anyhow::Result<()> {
         self.packet_structure_manager = ps_manager;
         match File::open(file_name) {
@@ -71,7 +71,7 @@ impl CommsIF for ByteReadDriver {
                     write_buffer.extend_from_slice(
                         &self
                             .packet_parser
-                            .parse_packets(&self.packet_structure_manager, PRINT_PARSING)?,
+                            .parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?,
                     );
                     Ok(())
                 }
@@ -113,7 +113,7 @@ impl CommsIF for ByteReadDriver {
         packet_vector.extend_from_slice(
             &self
                 .packet_parser
-                .parse_packets(&self.packet_structure_manager, PRINT_PARSING)?,
+                .parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?,
         );
         return Ok(());
     }

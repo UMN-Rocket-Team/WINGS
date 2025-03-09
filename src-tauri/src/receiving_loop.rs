@@ -201,7 +201,7 @@ mod tests {
         let _ = use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
             new_id = communication_manager.add_serial_device();
             new_id_2 = communication_manager.add_altus_metrum();
-            communication_manager.ps_manager = Arc::new(default_packet_structure_manager());
+            communication_manager.ps_manager = Arc::new(default_packet_structure_manager().into());
         });
         //run the main receiving loop and print if any data is received
         loop{

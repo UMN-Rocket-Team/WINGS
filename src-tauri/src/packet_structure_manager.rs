@@ -1,6 +1,5 @@
 use std::{
-    cmp::{max, min},
-    vec,
+    cmp::{max, min}, collections::BTreeMap, ops::DerefMut, vec
 };
 
 use serde::{Deserialize, Serialize};
@@ -8,6 +7,11 @@ use serde::{Deserialize, Serialize};
 use crate::models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     };
+
+// We can start IDs from anywhere, but we start from 1 so that any code that
+// accidentally assumes IDs are an array index will be more likely to break
+// early.
+const LOWEST_ID: usize = 1;
 
 /// Represents all possible errors that can be encountered when managing packet structures.
 #[derive(Debug, Clone, PartialEq)]
@@ -65,8 +69,10 @@ pub struct PacketStructureManager {
     pub(crate) maximum_packet_structure_size: usize,
     pub(crate) maximum_first_delimiter: usize,
 
-    // Every packet structure is given an increasing ID
-    next_packet_id: usize,
+    //for translating between packet names and Ids
+    name_to_id: BTreeMap<String, usize>,
+    //for translating between packet Ids and names
+    id_to_name: BTreeMap<usize, String>
 }
 
 impl Default for PacketStructureManager {
@@ -76,33 +82,52 @@ impl Default for PacketStructureManager {
             minimum_packet_structure_size: usize::MAX,
             maximum_packet_structure_size: 0,
             maximum_first_delimiter: 0,
-
-            // We can start IDs from anywhere, but we start from 1 so that any code that
-            // accidentally assumes IDs are an array index will be more likely to break
-            // early.
-            next_packet_id: 1
+            name_to_id: Default::default(),
+            id_to_name: Default::default(),
         }
     }
 }
 
 #[allow(warnings)]
 impl PacketStructureManager {
+    /// finds a packet_id by name, if it doesnt exist, one is made and registered
+    /// 
+    /// Searches for an id corresponding to the given name,
+    ///If it cant find a packet structure with that name it will make one and try to register it
+    /// if the registration command says that there is a packet with the same name(which there should not be), we return that instead
+    pub fn get_packet_structure_by_name(&mut self,name: &str)->usize{
+        match self.name_to_id.get(name){
+            Some(id) => return *id,
+            None => {
+                match self.register_packet_structure(&mut PacketStructure::make_default(name.to_owned())){
+                    Ok(new_id) => return new_id,
+                    Err(Error::NameAlreadyRegistered(registered_id)) => return registered_id,
+                    Err(err) => panic!("encountered unknown error: {:?}", err)
+                }
+            },
+        }
+    }
+
     /// Takes the given PacketStructure and makes a copy within the manager for future use
     /// Note: this also needs to be unit tested
     pub fn register_packet_structure(
         &mut self,
         packet_structure: &mut PacketStructure,
     ) -> Result<usize, Error> {
+
+        let mut next_packet_id = 0;
         for registered_packet_structure in self.packet_structures.iter() {
-            if *registered_packet_structure.name == packet_structure.name {
+            if registered_packet_structure.name == packet_structure.name {
                 return Err(Error::NameAlreadyRegistered(registered_packet_structure.id));
-            } else if registered_packet_structure.delimiters == packet_structure.delimiters {
-                return Err(Error::DelimitersAlreadyRegistered(registered_packet_structure.id));
+            } else if  registered_packet_structure.id >= next_packet_id{
+                //calculating lowest available ID
+                next_packet_id = registered_packet_structure.id + 1;
             }
         }
+        packet_structure.id = next_packet_id;
 
-        packet_structure.id = self.next_packet_id;
-        self.next_packet_id += 1;
+        self.name_to_id.insert(packet_structure.name.clone(), packet_structure.id);
+        self.id_to_name.insert(packet_structure.id, packet_structure.name.clone());
 
         self.packet_structures.push(packet_structure.clone());
         self.update_tracked_values();
@@ -139,6 +164,17 @@ impl PacketStructureManager {
 
     /// Sets the name of a specific packet structure
     pub fn set_packet_name(&mut self, packet_structure_id: usize, name: &str) -> Result<(), Error> {
+
+        //checking that the packet exists
+        for registered_packet_structure in self.packet_structures.iter() {
+            if registered_packet_structure.name == name  && registered_packet_structure.id != packet_structure_id{
+                return Err(Error::NameAlreadyRegistered(registered_packet_structure.id));
+            }
+        }
+
+        self.name_to_id.insert(name.to_owned(), packet_structure_id);
+        self.id_to_name.insert(packet_structure_id, name.to_owned());
+
         let packet_structure = self.get_packet_structure_mut(packet_structure_id)?;
         packet_structure.name = String::from(name);
         Ok(())
@@ -443,7 +479,7 @@ impl PacketStructureManager {
     /// this isn't the most efficient way of doing this since 
     /// not all of these values need to be updated every time the function is called.
     /// choose to write it this way since its more general and can be reused a lot in the code
-    /// keep in mind that the packet structure manager does not need to be super fast since its not done while the groundstation is running
+    /// keep in mind that the packet structure manager does not need to be super fast since its not used while the groundstation is running
     /// 
     /// call this function whenever a packet structures length is changed, or a delimiters location is changed
     fn update_tracked_values(&mut self){

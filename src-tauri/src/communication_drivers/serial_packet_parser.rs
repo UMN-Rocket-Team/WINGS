@@ -120,7 +120,6 @@ impl SerialPacketParser {
                 packets.push(Packet {
                     structure_id: packet_structure.id,
                     field_data,
-                    field_meta_data: vec![],
                 });
 
                 // This points to the index *after* the packet ends.
