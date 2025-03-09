@@ -18,13 +18,27 @@ pub struct SerialPortDriver {
 
 impl CommsIF for SerialPortDriver{
     
+    ///creates a new instance of a comms device with the given packet structure manager
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    ) -> Self 
+    where
+        Self: Sized {
+        return SerialPortDriver{
+            port: None,
+            packet_parser: Default::default(),
+            baud: 0,
+            id: 0,
+            packet_structure_manager: packet_structure_manager
+        }
+    }
+
     /// Attempts to set the port for comms with the rfd driver
     /// 
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<Mutex<PacketStructureManager>>)  -> anyhow::Result<()> {
-        self.packet_structure_manager = ps_manager.clone();
+    fn init_device(&mut self, port_name: &str , baud: u32)  -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -105,4 +119,5 @@ impl CommsIF for SerialPortDriver{
         packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
         return Ok(());
     }
+
 }

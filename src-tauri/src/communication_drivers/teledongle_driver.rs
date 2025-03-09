@@ -4,7 +4,7 @@ use anyhow::bail;
 
 use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
 
-use super::altos_packet_parser::AltosPacketParser;
+use super::teledongle_packet_parser::AltosPacketParser;
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
@@ -18,14 +18,28 @@ pub struct TeleDongleDriver {
 
 impl CommsIF for TeleDongleDriver {
 
+     ///creates a new instance of a comms device with the given packet structure manager
+     fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    ) -> Self 
+    where
+        Self: Sized {
+        return TeleDongleDriver{
+            port: None,
+            packet_parser: Default::default(),
+            baud: 0,
+            id: 0,
+            packet_structure_manager: packet_structure_manager
+        }
+    }
+
     /// Set the path of the active port
     /// If path is empty, any active port is closed
     /// 
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str, _baud: u32, ps_manager: Arc<Mutex<PacketStructureManager>>) -> anyhow::Result<()> {
-        self.packet_structure_manager = ps_manager;
+    fn init_device(&mut self, port_name: &str, _baud: u32) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {

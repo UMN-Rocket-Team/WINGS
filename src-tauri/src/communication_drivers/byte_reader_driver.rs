@@ -32,13 +32,26 @@ pub struct ByteReadDriver {
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 impl CommsIF for ByteReadDriver {
+
+     ///creates a new instance of a comms device with the given packet structure manager
+     fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    ) -> Self 
+    where
+        Self: Sized {
+        return ByteReadDriver{
+            file: None,
+            packet_parser: Default::default(),
+            id: 0,
+            packet_structure_manager: packet_structure_manager
+        }
+    }
+
     fn init_device(
         &mut self,
         file_name: &str,
         _baud: u32,
-        ps_manager: Arc<Mutex<PacketStructureManager>>,
     ) -> anyhow::Result<()> {
-        self.packet_structure_manager = ps_manager;
         match File::open(file_name) {
             Ok(new_file) => {
                 self.file = Some(new_file);

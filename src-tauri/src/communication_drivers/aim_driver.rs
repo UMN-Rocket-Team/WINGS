@@ -1,35 +1,67 @@
-use std::sync::{Arc, Mutex};
+use std::{default, ffi::{CStr, CString}, sync::{Arc, Mutex}, thread::sleep, time::Duration};
 
 use anyhow::bail;
+use hidapi::{HidApi, HidDevice};
 
 use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
-#[derive(Default)]
+
+use super::aim_parser::AimParser;
 pub struct AimDriver {
-    port: Option<Box<dyn serialport::SerialPort>>,
+    device: Option<HidDevice>,
+    packet_parser: AimParser,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    last_read: [u8;64] 
 }
 
 impl CommsIF for AimDriver{
     
-    /// Attempts to set the port for comms with the rfd driver
-    /// 
-    /// # Errors
-    /// 
-    /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<Mutex<PacketStructureManager>>)  -> anyhow::Result<()> {
-        self.packet_structure_manager = ps_manager.clone();
+     ///creates a new instance of a comms device with the given packet structure manager
+     fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    ) -> Self 
+    where
+        Self: Sized {
+        let parser = AimParser::default(&mut packet_structure_manager.lock().expect("ps_manager_poisoned"));
+        return AimDriver{
+            device: None,
+            packet_structure_manager: packet_structure_manager,
+            packet_parser: parser,
+            baud: 0,
+            id: 0,
+            last_read: [0;64],
+        }
+    }
+
+    /// used to connect the object with a specific device
+    fn init_device(&mut self, port_name: &str , baud: u32)  -> anyhow::Result<()> {
         if port_name.is_empty() {
-            self.port = None;
+            self.device = None;
         } else {
             self.baud = baud;
-            let mut new_port = serialport::new(port_name, self.baud).open()?;
-            new_port.clear(serialport::ClearBuffer::All)?;
-            // Short non-zero timeout is needed to receive data from the serialport when
-            // the buffer isn't full yet.
-            new_port.set_timeout(std::time::Duration::from_millis(1))?;
-            self.port = Some(new_port);
+            let hid_api = HidApi::new()?;
+            self.device = hid_api.open_path(CString::new(port_name)?.as_c_str()).ok();
+
+            let mut output: [u8;64] = [0;64];
+            let mut input: [u8;64] = [0;64];
+            output[0] = 3;
+            output[1] = 3;
+
+            match &self.device {
+                Some(base_station) => {
+                    let _ = base_station.write(&mut output);
+                    sleep(Duration::from_millis(100));
+                    let result = base_station.read(&mut input);
+                    match result{
+                        Ok(_) => {},
+                        Err(error) => {
+                            bail!(anyhow::anyhow!(error).context("failed to connect to entacore"))
+                        },
+                    }
+                },
+                None => bail!("no device stored within output of HID API"),
+            }
         }
         Ok(())
     }
@@ -40,27 +72,16 @@ impl CommsIF for AimDriver{
     /// 
     /// returns an error if the device isn't initialized 
     fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()> {
-        let test_port = match self.port.as_mut() {
-            Some(some_port) => some_port,
-            None => bail!("No active test port")
-        };
-        
-        test_port.write(packet)?;
-        Ok(())
+        Err(anyhow::anyhow!("Wings does not currently support sending packets to an aim xtra"))
     }
 
-    /// Reads bytes from the active port and adds new bytes to the write_buffer
-    /// 
-    /// # Errors
-    /// 
-    /// bails and returns an error if there is no active port
     fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
         todo!()
     }
 
     /// Returns true if there is an active port
     fn is_init(&mut self) -> bool {
-        self.port.is_some()
+        self.device.is_some()
     }
     fn set_id(&mut self, id: usize){
         self.id = id;
@@ -70,22 +91,46 @@ impl CommsIF for AimDriver{
     }
     
     fn get_type(&self) -> String {
-        return "SerialPort".to_owned();
+        return "AimDevice".to_owned();
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
-        let active_port = match self.port.as_mut() {
-            Some(port) => port,
-            None => bail!("No read port has been set")
-        };
+        // let active_port = match self.device.as_mut() {
+        //     Some(port) => port,
+        //     None => bail!("No read port has been set")
+        // };
 
-        let mut buffer = [0; 4096];
-        let bytes_read = active_port.read(&mut buffer)?;
-        data_vector.extend_from_slice(&buffer[..bytes_read]);
+        // let mut buffer = [0; 4096];
+        // let bytes_read = active_port.read(&mut buffer)?;
+        // data_vector.extend_from_slice(&buffer[..bytes_read]);
+        match &self.device {
+            Some(base_station) => {
+                let mut output: [u8;64] = [0;64];
+                let mut input: [u8;64] = [0;64];
+                output[0] = 0x03;
+                output[1] = 0x12;
+                let _ = base_station.write(&mut output);
+                let result = base_station.read_timeout(&mut input, 1);
+                match result{
+                    Ok(num_bytes) => {
+                        if self.last_read != input{
+                            data_vector.extend_from_slice(&input);
+                            self.last_read = input;
+                        }
+                    },
+                    Err(_) => {
+                        //doing nothing because we didn't read a packet
+                    }
+                }
+                sleep(Duration::from_secs(1));
+            }
+            None => bail!("not initialized"),
+        }
         return Ok(());
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        todo!()
+        self.packet_parser.parse_transmission(data_vector,packet_vector);
+        return Ok(());
     }
 }
