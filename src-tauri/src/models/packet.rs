@@ -11,9 +11,16 @@ use crate::models::packet_structure::PacketFieldType;
 pub struct Packet {
     pub(crate) structure_id: usize,
     pub(crate) field_data: Vec<PacketFieldValue>,
-    pub(crate) field_meta_data: Vec<PacketFieldValue>,
 }
 
+impl Packet{
+    pub fn default(type_id: usize, values: Vec<PacketFieldValue>) -> Packet{
+        Packet{
+            structure_id: type_id,
+            field_data: values
+        }
+    }
+}
 #[derive(PartialEq, Serialize, Clone, Debug)]
 #[serde(untagged)]
 pub enum PacketFieldValue {
@@ -25,6 +32,12 @@ pub enum PacketFieldValue {
 
 #[allow(dead_code)]
 impl PacketFieldValue {
+    pub fn edit_number(&mut self, callback: &mut dyn FnMut(&mut f64) -> f64) {
+        match self {
+            PacketFieldValue::Number(i) => {*i = callback(i)},
+            _ => {},
+        }
+    }
     /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
     pub fn to_le_bytes(&self,field_type: PacketFieldType) -> anyhow::Result<Vec<u8>> {
         // Need to return a vec here instead of a [u8] as the size is not constant

@@ -1,4 +1,4 @@
-use std::{str::from_utf8, sync::Arc};
+use std::{str::from_utf8, sync::{Arc, Mutex}};
 
 use anyhow::bail;
 
@@ -13,7 +13,7 @@ pub struct TeleDongleDriver {
     packet_parser: AltosPacketParser,
     baud: u32,
     id: usize,
-    packet_structure_manager: Arc<PacketStructureManager>,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for TeleDongleDriver {
@@ -24,7 +24,7 @@ impl CommsIF for TeleDongleDriver {
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str, _baud: u32, ps_manager: Arc<PacketStructureManager>) -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str, _baud: u32, ps_manager: Arc<Mutex<PacketStructureManager>>) -> anyhow::Result<()> {
         self.packet_structure_manager = ps_manager;
         if port_name.is_empty() {
             self.port = None;
@@ -76,7 +76,7 @@ impl CommsIF for TeleDongleDriver {
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
         self.packet_parser.push_data(&decoded, PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
         Ok(())
     }
 
@@ -128,7 +128,7 @@ impl CommsIF for TeleDongleDriver {
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(&data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
         return Ok(());
     }
 }

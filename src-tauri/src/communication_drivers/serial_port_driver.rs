@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
 
@@ -13,7 +13,7 @@ pub struct SerialPortDriver {
     packet_parser: SerialPacketParser,
     baud: u32,
     id: usize,
-    packet_structure_manager: Arc<PacketStructureManager>,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for SerialPortDriver{
@@ -23,7 +23,7 @@ impl CommsIF for SerialPortDriver{
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<PacketStructureManager>)  -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<Mutex<PacketStructureManager>>)  -> anyhow::Result<()> {
         self.packet_structure_manager = ps_manager.clone();
         if port_name.is_empty() {
             self.port = None;
@@ -69,7 +69,7 @@ impl CommsIF for SerialPortDriver{
         let bytes_read = active_port.read(&mut buffer)?;
 
         self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
+        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
         Ok(())
     }
 
@@ -102,7 +102,7 @@ impl CommsIF for SerialPortDriver{
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager, PRINT_PARSING)?); 
+        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
         return Ok(());
     }
 }

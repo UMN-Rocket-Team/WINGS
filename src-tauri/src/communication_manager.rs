@@ -32,7 +32,7 @@ pub struct CommunicationManager {
     pub comms_objects: Vec<Box<dyn CommsIF + Send>>,
     pub id_iterator: usize,
     pub old_device_names: Vec<DeviceName>,
-    pub ps_manager: Arc<PacketStructureManager>,
+    pub ps_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 pub trait CommsIF {
@@ -40,7 +40,7 @@ pub trait CommsIF {
         &mut self,
         port_name: &str,
         baud: u32,
-        packet_structure_manager: Arc<PacketStructureManager>,
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
     ) -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()>;
 
@@ -61,9 +61,9 @@ pub trait CommsIF {
 }
 
 impl CommunicationManager {
-    pub fn default_state(ps_manager: PacketStructureManager) -> CommunicationManagerState{
+    pub fn default_state(ps_manager: Arc<Mutex<PacketStructureManager>>) -> CommunicationManagerState{
         let mut comms_manager = CommunicationManager::default();
-        comms_manager.ps_manager = Arc::new(ps_manager);
+        comms_manager.ps_manager = ps_manager;
         Mutex::new(comms_manager)
     }
 
@@ -298,7 +298,7 @@ mod tests {
         assert!(device_names.clone().is_some());
         assert!(device_names.clone().unwrap().len() > 0);
         test_interface.add_serial_device();
-        test_interface.ps_manager = Arc::new(default_packet_structure_manager());
+        test_interface.ps_manager = Arc::new(default_packet_structure_manager().into());
         let result = test_interface.init_device(&device_names.unwrap()[0].name, BAUD, 0);
         if result.is_err() {
             println!("{}", result.unwrap_err());

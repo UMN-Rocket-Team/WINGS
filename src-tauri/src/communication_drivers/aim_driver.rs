@@ -1,16 +1,14 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
 
 use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
-
-const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct AimDriver {
     port: Option<Box<dyn serialport::SerialPort>>,
     baud: u32,
     id: usize,
-    packet_structure_manager: Arc<PacketStructureManager>,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for AimDriver{
@@ -20,7 +18,7 @@ impl CommsIF for AimDriver{
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<PacketStructureManager>)  -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str , baud: u32, ps_manager: Arc<Mutex<PacketStructureManager>>)  -> anyhow::Result<()> {
         self.packet_structure_manager = ps_manager.clone();
         if port_name.is_empty() {
             self.port = None;

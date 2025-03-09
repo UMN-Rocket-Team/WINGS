@@ -16,7 +16,7 @@ mod communication_manager;
 mod data_processing;
 mod file_handling;
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use communication_manager::CommunicationManager;
@@ -45,7 +45,7 @@ use crate::commands::{
 fn main() {
     //initializing all states
     let config = ConfigStruct::default();
-    let comms = CommunicationManager::default_state(config.packet_structure_manager.clone());
+    let comms = CommunicationManager::default_state(Arc::new(config.packet_structure_manager.clone().into()));
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             delete_device, 
