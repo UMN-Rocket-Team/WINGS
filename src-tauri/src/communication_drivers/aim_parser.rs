@@ -86,7 +86,7 @@ impl AimParser {
     /// processes the raw data queue, returning a Vector(aka. array) of the processed packets
     pub fn parse_transmission(
         &mut self,
-        transmission: Vec<u8>,
+        transmission: &mut Vec<u8>,
         packets:&mut Vec<Packet>
     ) -> anyhow::Result<()> {
         let time_received = self.init_time.elapsed()?.as_millis() as f64;
@@ -362,7 +362,7 @@ mod tests {
                     }
                     let mut aim = AimParser::default(&mut PacketStructureManager::default());
                     let mut ans = vec![];
-                    aim.parse_transmission(byte_array,&mut ans).expect("parser");
+                    aim.parse_transmission(&mut byte_array,&mut ans).expect("parser");
                     collector.push(ans);
                },
                 _ => {

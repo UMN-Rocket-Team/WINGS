@@ -1,12 +1,12 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
+use hidapi::HidApi;
 use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver,
-        altos_driver::TeleDongleDriver,
+        aim_driver::AimDriver, teledongle_driver::TeleDongleDriver, byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver
     },
     models::packet::Packet,
     packet_structure_manager::PacketStructureManager,
@@ -36,11 +36,16 @@ pub struct CommunicationManager {
 }
 
 pub trait CommsIF {
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    ) -> Self 
+    where
+        Self: Sized;
+
     fn init_device(
         &mut self,
         port_name: &str,
         baud: u32,
-        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
     ) -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()>;
 
@@ -69,35 +74,34 @@ impl CommunicationManager {
 
     ///checks for serial ports to connect to, streamlining radio setup
     pub fn get_all_potential_devices(&mut self) -> Option<Vec<DeviceName>> {
-        let available_ports;
-        match serialport::available_ports() {
-            Ok(ports) => available_ports = ports,
-            Err(_) => return None,
-        }
-        let device_names: Vec<DeviceName> = available_ports
-            .into_iter()
+        let mut device_names: Vec<DeviceName>;
+        let available_ports = serialport::available_ports().ok()?;
+        let mut hid_api = HidApi::new().ok()?;
+        _ = hid_api.refresh_devices();
+        let available_hid_devices = hid_api.device_list();
+        
+        device_names = available_ports.into_iter()
             .filter_map(|port| match port.port_type {
                 serialport::SerialPortType::UsbPort(usb_info) => {
-                    // On macOS, each serial port shows up as both eg.:
-                    //  - /dev/cu.usbserial-AK06O4AO
-                    //  - /dev/tty.usbserial-AK06O4AO
-                    // For our use, these are equivalent, so we'll filter one out to avoid confusion.
-                    if cfg!(target_os = "macos") && port.port_name.starts_with("/dev/cu.usbserial-")
-                    {
-                        None
-                    } else {
-                        Some(DeviceName {
-                            name: port.port_name,
-                            manufacturer_name: usb_info.manufacturer,
-                            product_name: usb_info.product,
-                        })
-                    }
+                    Some(DeviceName {
+                        name: port.port_name,
+                        manufacturer_name: usb_info.manufacturer,
+                        product_name: usb_info.product,
+                    })
                 }
-                serialport::SerialPortType::PciPort
-                | serialport::SerialPortType::BluetoothPort
-                | serialport::SerialPortType::Unknown => None,
+                _ => None,
+            }).collect();
+        
+        let mut hid_devices: Vec<DeviceName> = available_hid_devices.filter_map(
+            |device| 
+            Some(DeviceName {
+                name: device.path().to_str().unwrap_or_default().to_owned(),
+                manufacturer_name: Some(device.manufacturer_string().unwrap_or_default().to_owned()),
+                product_name: Some(device.product_string().unwrap_or_default().to_owned()), 
             })
-            .collect();
+        ).collect();
+        device_names.append(&mut hid_devices);
+                
         if device_names == self.old_device_names {
             return None;
         } else {
@@ -165,7 +169,6 @@ impl CommunicationManager {
             Some(index) => match self.comms_objects[index].init_device(
                 port_name,
                 baud,
-                self.ps_manager.clone(),
             ) {
                 Ok(_) => Ok(()),
                 Err(message) => Err(message)
@@ -200,7 +203,7 @@ impl CommunicationManager {
 
     /// Adds an rfd device object to the manager
     pub fn add_serial_device(&mut self) -> usize {
-        let mut new_device: SerialPortDriver = Default::default();
+        let mut new_device: SerialPortDriver = SerialPortDriver::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -210,7 +213,7 @@ impl CommunicationManager {
 
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self) -> usize {
-        let mut new_device: TeleDongleDriver = Default::default();
+        let mut new_device: TeleDongleDriver = TeleDongleDriver::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -220,7 +223,17 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_file_manager(&mut self) -> usize {
-        let mut new_device: ByteReadDriver = Default::default();
+        let mut new_device: ByteReadDriver = ByteReadDriver::new(self.ps_manager.clone());
+        new_device.set_id(self.id_iterator);
+        self.id_iterator += 1;
+        self.comms_objects
+            .push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        return self.comms_objects[self.comms_objects.len() - 1].get_id();
+    }
+
+    /// Adds an byte reading device object to the manager
+    pub fn add_aim(&mut self) -> usize {
+        let mut new_device: AimDriver = AimDriver::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
