@@ -18,11 +18,13 @@ export type SerialUpdateResult = {
  */
 export type DeviceNames = {
     /**
-     * The name of the serial port. On Windows, can be `COM[0-9]+`. On Unix, can be a file path like `/dev/ttyUSB[0-9]+`.
-     * 
-     * Used to identify a serial port to the backend.
+     * The name of the Device that will be displayed to the user
      */
     name: string,
+    /**
+     * Used to identify a device to the backend.
+     */
+    value: string;
     /**
      * The name of the manufacturer of either the port or device
      */

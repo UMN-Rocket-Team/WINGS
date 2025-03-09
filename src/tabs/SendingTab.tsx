@@ -1,6 +1,6 @@
 import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAltusMetrum, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
@@ -92,18 +92,21 @@ const SendingTab: Component = () => {
                     addPath&#40;s&#41;
                 </button>
                 <button onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addRfd() }}>
-                    addRfd
+                    add SerialPort
                 </button>
                 <button onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAltusMetrum() }}>
-                    addAltusMetrum
+                    add AltusMetrum Product
+                </button>
+                <button onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAim() }}>
+                    add AimXtra
                 </button>
                 <For each={comDeviceList()}>
                     {(device, device_index) =>
                         <label for="DeviceInput" class="px-2 m-0">
-                            <span>{device.device_type} {device.id} Device: </span>
+                            <span>{device.device_type} {device.id} </span>
                             <input name="Device" id="DeviceInput" class="w-1/2" autocomplete="off"
                                 list="dataDevices" value={comDeviceSelections[device_index()].selection}
-                                onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value, baud(), device.id)} />
+                                onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).dataset.value!, baud(), device.id)} />
                             <button onClick={() => {
                                 setComDeviceSelections(comDeviceSelections.filter((_, index) => device_index() != index));
                                 deleteDevice(device.id)
@@ -116,7 +119,7 @@ const SendingTab: Component = () => {
 
                 <datalist id="dataDevices">
                     <For each={availablePortNames()}>
-                        {(Device) => <option value={Device.name} />}
+                        {(Device) => <option value={Device.name} data-value={Device.value}/>}
                     </For>
                 </datalist>
             </div>

@@ -18,7 +18,6 @@ mod file_handling;
 
 use std::sync::{Arc, Mutex};
 
-use commands::sending_commands::{start_sending_loop, stop_sending_loop};
 use communication_manager::CommunicationManager;
 use data_processing::DataProcessorState;
 use file_handling::{config_struct::ConfigStruct, log_handlers::FileHandlingState};
@@ -36,8 +35,9 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd, add_file_manager},
-    file_commands::set_read
+    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd, add_file_manager,add_aim},
+    file_commands::set_read,
+    sending_commands::{start_sending_loop, stop_sending_loop},
 };
 
 /// The main function initializes various states and sets up event handlers and plugins for the Tauri
@@ -69,6 +69,7 @@ fn main() {
             add_altus_metrum,
             add_rfd,
             add_file_manager,
+            add_aim,
             set_read
         ])
         .manage(default_packet_structure_manager())

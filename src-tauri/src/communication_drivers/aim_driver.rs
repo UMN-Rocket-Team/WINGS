@@ -1,4 +1,4 @@
-use std::{default, ffi::{CStr, CString}, sync::{Arc, Mutex}, thread::sleep, time::Duration};
+use std::{ffi::CString, sync::{Arc, Mutex}, thread::sleep, time::Duration};
 
 use anyhow::bail;
 use hidapi::{HidApi, HidDevice};
@@ -11,7 +11,6 @@ pub struct AimDriver {
     packet_parser: AimParser,
     baud: u32,
     id: usize,
-    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
     last_read: [u8;64] 
 }
 
@@ -26,7 +25,6 @@ impl CommsIF for AimDriver{
         let parser = AimParser::default(&mut packet_structure_manager.lock().expect("ps_manager_poisoned"));
         return AimDriver{
             device: None,
-            packet_structure_manager: packet_structure_manager,
             packet_parser: parser,
             baud: 0,
             id: 0,
@@ -71,16 +69,16 @@ impl CommsIF for AimDriver{
     /// # Errors
     /// 
     /// returns an error if the device isn't initialized 
-    fn write_port(&mut self, packet: &[u8])  -> anyhow::Result<()> {
+    fn write_port(&mut self, _: &[u8])  -> anyhow::Result<()> {
         Err(anyhow::anyhow!("Wings does not currently support sending packets to an aim xtra"))
     }
 
-    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
+    fn get_device_packets(&mut self, _: &mut Vec<Packet>) -> anyhow::Result<()> {
         todo!()
     }
 
     /// Returns true if there is an active port
-    fn is_init(&mut self) -> bool {
+    fn is_init(&self) -> bool {
         self.device.is_some()
     }
     fn set_id(&mut self, id: usize){
@@ -91,7 +89,7 @@ impl CommsIF for AimDriver{
     }
     
     fn get_type(&self) -> String {
-        return "AimDevice".to_owned();
+        return "AimXtra".to_owned();
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
@@ -112,7 +110,7 @@ impl CommsIF for AimDriver{
                 let _ = base_station.write(&mut output);
                 let result = base_station.read_timeout(&mut input, 1);
                 match result{
-                    Ok(num_bytes) => {
+                    Ok(_) => {
                         if self.last_read != input{
                             data_vector.extend_from_slice(&input);
                             self.last_read = input;
@@ -130,7 +128,6 @@ impl CommsIF for AimDriver{
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        self.packet_parser.parse_transmission(data_vector,packet_vector);
-        return Ok(());
+        return self.packet_parser.parse_transmission(data_vector,packet_vector);
     }
 }

@@ -16,6 +16,8 @@ export const addFileManager = async (filePath: string) => await invoke<void>("ad
 
 export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum");
 
+export const addAim = async () => await invoke<void>("add_aim");
+
 export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes, writeId: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, writeId});
 
 export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
