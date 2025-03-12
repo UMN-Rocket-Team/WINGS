@@ -16,6 +16,7 @@ pub struct MainLoop {
 impl MainLoop {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
+        app_handle.state::<CommunicationManagerState>().lock().unwrap().ps_manager.lock().unwrap().set_app(app_handle.clone());
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(50), move || {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),

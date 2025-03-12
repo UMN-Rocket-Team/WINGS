@@ -3,10 +3,11 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
+use tauri::AppHandle;
 
-use crate::models::packet_structure::{
+use crate::{models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
-    };
+    }, packet_structure_events::emit_packet_structure_update_event};
 
 // We can start IDs from anywhere, but we start from 1 so that any code that
 // accidentally assumes IDs are an array index will be more likely to break
@@ -60,7 +61,7 @@ impl Error {
 
 /// A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
 #[readonly::make]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct PacketStructureManager {
     pub(crate) packet_structures: Vec<PacketStructure>,
 
@@ -72,7 +73,10 @@ pub struct PacketStructureManager {
     //for translating between packet names and Ids
     name_to_id: BTreeMap<String, usize>,
     //for translating between packet Ids and names
-    id_to_name: BTreeMap<usize, String>
+    id_to_name: BTreeMap<usize, String>,
+
+    //for updating the frontend with changes
+    app: Option<AppHandle>
 }
 
 impl Default for PacketStructureManager {
@@ -84,28 +88,44 @@ impl Default for PacketStructureManager {
             maximum_first_delimiter: 0,
             name_to_id: Default::default(),
             id_to_name: Default::default(),
+            app: None,
         }
     }
 }
 
 #[allow(warnings)]
 impl PacketStructureManager {
+    pub fn set_app(&mut self,app: AppHandle){
+        self.app = Some(app.clone());
+    }
     /// finds a packet_id by name, if it doesn't exist, one is made and registered
     /// 
     /// Searches for an id corresponding to the given name,
     ///If it cant find a packet structure with that name it will make one and try to register it
     /// if the registration command says that there is a packet with the same name(which there should not be), we return that instead
     pub fn get_packet_structure_by_name(&mut self,name: &str)->usize{
+        let return_id;
+        
         match self.name_to_id.get(name){
-            Some(id) => return *id,
+            Some(id) => return_id = *id,
             None => {
                 match self.register_packet_structure(&mut PacketStructure::make_default(name.to_owned())){
                     Ok(new_id) => return new_id,
-                    Err(Error::NameAlreadyRegistered(registered_id)) => return registered_id,
+                    Err(Error::NameAlreadyRegistered(registered_id)) => return_id = registered_id,
                     Err(err) => panic!("encountered unknown error: {:?}", err)
                 }
             },
         }
+        //update frontend if the structure manager is connected to the app
+        if self.app.is_some(){
+            emit_packet_structure_update_event(
+                &self.app.clone().unwrap(),
+                vec![return_id],
+                None,
+                &self,
+            );
+        }
+        return return_id;
     }
 
     //enforces a packet to have the number of fields that you need it to have
