@@ -6,10 +6,8 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_driver::AimDriver, teledongle_driver::TeleDongleDriver, byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver
-    },
-    models::packet::Packet,
-    packet_structure_manager::PacketStructureManager,
+        aim_driver::AimDriver, byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
+    }, file_handling::log_handlers::LogHandler, models::packet::Packet, packet_structure_manager::PacketStructureManager
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
@@ -132,7 +130,7 @@ impl CommunicationManager {
     /// # Error
     ///
     /// Returns an error if the device being addressed isn't initialized correctly
-    pub fn get_data(&mut self, id: usize, return_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
+    pub fn get_data(&mut self, id: usize, return_buffer: &mut Vec<Packet>, log: &mut LogHandler) -> anyhow::Result<()> {
         let index = self.find(id,false).ok_or(anyhow::anyhow!("could not find a device with given id"))?;
         let mut raw_bytes = vec![];
 
@@ -142,10 +140,14 @@ impl CommunicationManager {
 
         let result = self.comms_objects[index].get_device_raw_data(&mut raw_bytes);
         if result.is_err(){
-            return Err(result.unwrap_err().context("failed to get raw data"))
+            return Err(result.unwrap_err().context("failed to get raw data"));
         }
 
         //todo!() add save functionality for the raw data here
+        let result = log.write_bytes(&raw_bytes,id,self.comms_objects[index].get_type());
+        if result.is_err(){
+            eprintln!("{}", result.unwrap_err().context("failed to write data"));
+        }
 
         let result = self.comms_objects[index].parse_device_data(&mut raw_bytes,return_buffer);
         if result.is_err(){
@@ -301,6 +303,7 @@ impl CommunicationManager {
 
 mod tests {
 
+
     #[test]
     #[ignore]
     fn test_if_serial_recognized() {
@@ -315,7 +318,7 @@ mod tests {
     #[test]
     #[ignore]
     fn test_serial_receive() {
-
+        use crate::file_handling::log_handlers::LogHandler;
         use crate::{
             communication_manager::CommunicationManager,
             state::packet_structure_manager_state::default_packet_structure_manager,
@@ -325,6 +328,8 @@ mod tests {
         const BAUD: u32 = 57600;
 
         let mut test_interface = CommunicationManager::default();
+        let mut log_handler = LogHandler::default();
+        log_handler.enable_debug();
         let device_names = test_interface.get_all_potential_devices();
         assert!(device_names.clone().is_some());
         assert!(device_names.clone().unwrap().len() > 0);
@@ -336,7 +341,7 @@ mod tests {
         };
         loop {
             let mut buff = vec![];
-            let result = test_interface.get_data(0, &mut buff);
+            let result = test_interface.get_data(0, &mut buff,&mut log_handler);
             println!("             {:#?}", result);
             println!("{:#?}", buff);
         }
