@@ -46,6 +46,7 @@ fn main() {
     //initializing all states
     let config = ConfigStruct::default();
     let comms = CommunicationManager::default_state(Arc::new(config.packet_structure_manager.clone().into()));
+    
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             delete_device, 
@@ -73,7 +74,7 @@ fn main() {
             set_read
         ])
         .manage(default_packet_structure_manager())
-        .manage(Mutex::new(config))
+        .manage(Mutex::new(config))//todo!() get rid of this and just pass its arguments directly
         .manage(comms)
         .manage(SendingLoopState::default())
         .manage(DataProcessorState::default())

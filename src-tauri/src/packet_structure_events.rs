@@ -14,7 +14,7 @@ pub enum PacketStructureViewModelUpdate {
     Delete(usize)
 }
 
-fn emit_packet_structure_update_event(
+pub fn emit_packet_structure_update_event(
     app_handle: &tauri::AppHandle,
     created_or_updated_packet_view_model_ids: Vec<usize>,
     deleted_packet_view_model_ids: Option<Vec<usize>>,
