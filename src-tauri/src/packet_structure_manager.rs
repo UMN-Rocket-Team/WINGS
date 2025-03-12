@@ -90,7 +90,7 @@ impl Default for PacketStructureManager {
 
 #[allow(warnings)]
 impl PacketStructureManager {
-    /// finds a packet_id by name, if it doesnt exist, one is made and registered
+    /// finds a packet_id by name, if it doesn't exist, one is made and registered
     /// 
     /// Searches for an id corresponding to the given name,
     ///If it cant find a packet structure with that name it will make one and try to register it
@@ -108,6 +108,29 @@ impl PacketStructureManager {
         }
     }
 
+    //enforces a packet to have the number of fields that you need it to have
+
+    pub fn enforce_packet_fields(&mut self,name: &str, names: Vec<&str>)->usize {
+        let id = self.get_packet_structure_by_name(name);
+        let ps = self.get_packet_structure_mut(id);
+        let ps = ps.expect("Attempted to register packet structure, but cannot retrieve it");
+        if ps.fields.len() < names.len() {
+            ps.byte_defined = false; //we're giving the new fields arbitrary types, so this means we can no longer use the packet for direct parsing
+            for i in ps.fields.len()..names.len() {
+                let packet_field_count = ps.fields.len();
+                let end_of_packet = ps.size();
+                ps
+                .fields
+                .push(PacketField {
+                    index: packet_field_count,
+                    name: names[i].to_owned(),
+                    offset_in_packet: end_of_packet,
+                    r#type: PacketFieldType::UnsignedInteger,
+                });
+            }
+        }
+        return id;
+    }
     /// Takes the given PacketStructure and makes a copy within the manager for future use
     /// Note: this also needs to be unit tested
     pub fn register_packet_structure(

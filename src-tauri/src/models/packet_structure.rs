@@ -24,6 +24,7 @@ use serde::{Deserialize, Serialize};
 pub struct PacketStructure {
     pub(crate) id: usize,
     pub(crate) name: String,
+    pub(crate) byte_defined: bool, //marks wether or not a packet describes its full binary layout
     pub(crate) fields: Vec<PacketField>,
     pub(crate) delimiters: Vec<PacketDelimiter>,
     pub(crate) packet_crc: Vec<PacketCRC>,
@@ -35,6 +36,7 @@ impl PacketStructure {
         return PacketStructure {
             id: 0, // gets overridden
             name: name,
+            byte_defined: false,
             fields: vec![],
             delimiters: vec![],
             packet_crc: vec![],
@@ -45,6 +47,7 @@ impl PacketStructure {
         return PacketStructure {
             id: id, // gets overridden
             name: name,
+            byte_defined: false,
             fields: fields,
             delimiters: delims,
             packet_crc: vec![],
@@ -92,6 +95,7 @@ impl PacketStructure {
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
     pub fn ez_make(&mut self, input: &str, names: &[&str],) {
+        self.byte_defined = true;
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
