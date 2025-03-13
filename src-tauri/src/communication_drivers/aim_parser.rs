@@ -60,31 +60,31 @@ impl AimParser {
             init_time: SystemTime::now(),
             packet_ids: PacketIdList{
                 meta: ps_manager.enforce_packet_fields(META,vec!["System time","RSSI","SNR"]),
-                accel_z: ps_manager.enforce_packet_fields(ACCEL_Z,vec!["Z acceleration"]),
-                pressure: ps_manager.enforce_packet_fields(PRESSURE,vec!["Pressure(Pa)"]),
-                comp_batt: ps_manager.enforce_packet_fields(COMP_BATT,vec!["ADC(V)"]),
-                eject_batt: ps_manager.enforce_packet_fields(EJECT_BATT,vec!["ADC(V)"]),
-                temp: ps_manager.enforce_packet_fields(TEMP,vec!["Temperature"]),
-                line_a: ps_manager.enforce_packet_fields(LINE_A,vec!["ADC","Is_On","Is_Input"]),
-                line_b: ps_manager.enforce_packet_fields(LINE_B,vec!["ADC","Is_On","Is_Input"]),
-                line_c: ps_manager.enforce_packet_fields(LINE_C,vec!["ADC","Is_On","Is_Input"]),
-                line_d: ps_manager.enforce_packet_fields(LINE_D,vec!["ADC","Is_On","Is_Input"]),
-                accel_xy: ps_manager.enforce_packet_fields(ACCEL_XY,vec!["X acceleration","Y acceleration"]),
-                gyro: ps_manager.enforce_packet_fields(GYRO,vec!["X rotation","Y rotation","Z rotation"]),
-                mag: ps_manager.enforce_packet_fields(MAG,vec!["X flux","Y flux","Z flux"]),
-                gps: ps_manager.enforce_packet_fields(GPS,vec!["Lat","Long","MSL(mm)","lock","sat_num"]),
-                rssi: ps_manager.enforce_packet_fields(RSSI,vec!["RSSI"]),
-                status: ps_manager.enforce_packet_fields(STATUS,vec!["State",
+                accel_z: ps_manager.enforce_packet_fields(ACCEL_Z,vec!["System time","Delta time","Z acceleration"]),
+                pressure: ps_manager.enforce_packet_fields(PRESSURE,vec!["System time","Delta time","Pressure(Pa)"]),
+                comp_batt: ps_manager.enforce_packet_fields(COMP_BATT,vec!["System time","Delta time","ADC(V)"]),
+                eject_batt: ps_manager.enforce_packet_fields(EJECT_BATT,vec!["System time","Delta time","ADC(V)"]),
+                temp: ps_manager.enforce_packet_fields(TEMP,vec!["System time","Delta time","Temperature"]),
+                line_a: ps_manager.enforce_packet_fields(LINE_A,vec!["System time","Delta time","ADC","Is_On","Is_Input"]),
+                line_b: ps_manager.enforce_packet_fields(LINE_B,vec!["System time","Delta time","ADC","Is_On","Is_Input"]),
+                line_c: ps_manager.enforce_packet_fields(LINE_C,vec!["System time","Delta time","ADC","Is_On","Is_Input"]),
+                line_d: ps_manager.enforce_packet_fields(LINE_D,vec!["System time","Delta time","ADC","Is_On","Is_Input"]),
+                accel_xy: ps_manager.enforce_packet_fields(ACCEL_XY,vec!["System time","Delta time","X acceleration","Y acceleration"]),
+                gyro: ps_manager.enforce_packet_fields(GYRO,vec!["System time","Delta time","X rotation","Y rotation","Z rotation"]),
+                mag: ps_manager.enforce_packet_fields(MAG,vec!["System time","Delta time","X flux","Y flux","Z flux"]),
+                gps: ps_manager.enforce_packet_fields(GPS,vec!["System time","Delta time","Lat","Long","MSL(mm)","lock","sat_num"]),
+                rssi: ps_manager.enforce_packet_fields(RSSI,vec!["System time","Delta time","RSSI"]),
+                status: ps_manager.enforce_packet_fields(STATUS,vec!["System time","Delta time","State",
                     "Line D on", "Line C on", "Line B on", "Line A on",
                     "Line A continuity", "Line B continuity", "Line C continuity", "Line D continuity",
                     "Line A input", "Line B input", "Line C input", "Line D input",
                     ]),
-                identifier: ps_manager.enforce_packet_fields(IDENTIFIER,vec!["Identifier"]),
+                identifier: ps_manager.enforce_packet_fields(IDENTIFIER,vec!["System time","Delta time","Identifier"]),
                 gps_time: ps_manager.enforce_packet_fields(GPS_TIME,vec![
-                    "iTOW", "GPS Week", "Valid time","Valid leap secs","leap secs"]),
-                timestamp: ps_manager.enforce_packet_fields(TIMESTAMP,vec!["Timestamp"]),
+                    "System time","Delta time","iTOW", "GPS Week", "Valid time","Valid leap secs","leap secs"]),
+                timestamp: ps_manager.enforce_packet_fields(TIMESTAMP,vec!["System time","Delta time","Timestamp"]),
                 orientation: ps_manager.enforce_packet_fields(ORIENTATION,vec![
-                    "Quat x","Quat y","Quat z","Quat w"])
+                    "System time","Delta time","Quat x","Quat y","Quat z","Quat w"])
             },
             
         }
@@ -95,6 +95,9 @@ impl AimParser {
         transmission: &mut Vec<u8>,
         packets:&mut Vec<Packet>
     ) -> anyhow::Result<()> {
+        if transmission.len() <=63 {
+            return Err(anyhow::anyhow!("invalid input for parser"));
+        }
         let time_received = self.init_time.elapsed()?.as_millis() as f64;
         let length = transmission[1];
         let rssi = i16::from_be_bytes(transmission[2..4].try_into().expect("Given slice has incorrect length!")) as f64;
@@ -115,7 +118,7 @@ impl AimParser {
             let delimiter = transmission[i +1];
             let delta_time = transmission[i];
             let type_id: usize;
-            let mut data: Vec<PacketFieldValue> = vec![PacketFieldValue::Number(time_received),PacketFieldValue::Number(delta_time.into())];
+            let mut data: Vec<PacketFieldValue> = vec![PacketFieldValue::Number(time_received),PacketFieldValue::Number(time_received + (delta_time as f64))];
 
             match delimiter {
                 0x02 =>{

@@ -105,11 +105,12 @@ const SendingTab: Component = () => {
                         <label for="DeviceInput" class="px-2 m-0">
                             <span>{device.device_type} {device.id} </span>
                             <input name="Device" id="DeviceInput" class="w-1/2" autocomplete="off"
-                                list="dataDevices" value={comDeviceSelections[device_index()].selection}
-                                onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).dataset.value!, baud(), device.id)} />
+                                list="dataDevices" value={comDeviceSelections[device_index()].selection ?? ""}
+                                onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)} />
+                            {/*TODO needs to be pressed twice or else everything breaks, also need 2 aims for packets to update */}
                             <button onClick={() => {
+                                deleteDevice(device.id);
                                 setComDeviceSelections(comDeviceSelections.filter((_, index) => device_index() != index));
-                                deleteDevice(device.id)
                             }}>
                                 X
                             </button>
@@ -119,7 +120,7 @@ const SendingTab: Component = () => {
 
                 <datalist id="dataDevices">
                     <For each={availablePortNames()}>
-                        {(Device) => <option value={Device.name} data-value={Device.value}/>}
+                        {(Device) => <option value={Device.name}/>}
                     </For>
                 </datalist>
             </div>
