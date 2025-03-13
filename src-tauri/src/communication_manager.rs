@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::{collections::HashMap, sync::{Arc, Mutex}};
 
 use anyhow::bail;
 use hidapi::HidApi;
@@ -32,6 +32,7 @@ pub struct CommunicationManager {
     pub id_iterator: usize,
     pub old_device_names: Vec<DeviceName>,
     pub ps_manager: Arc<Mutex<PacketStructureManager>>,
+    name_to_value: HashMap<String,String>,
 }
 
 pub trait CommsIF {
@@ -120,6 +121,9 @@ impl CommunicationManager {
             return None;
         } else {
             self.old_device_names = device_names.clone();
+            for device in device_names.clone(){
+                self.name_to_value.insert(device.name,device.value);
+            }
             return Some(device_names);
         }
     }
@@ -185,7 +189,7 @@ impl CommunicationManager {
         let index = self.find(id,false);
         match index {
             Some(index) => match self.comms_objects[index].init_device(
-                port_name,
+                self.name_to_value.get(port_name).ok_or(anyhow::anyhow!("Could not find a device with that name"))?,
                 baud,
             ) {
                 Ok(_) => Ok(()),

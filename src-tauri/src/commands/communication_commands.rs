@@ -40,6 +40,7 @@ pub fn init_device_port(
     id: usize,
 ) -> Result<(), String> {
     result_to_string(use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
+        println!("initializing! {} {} {}",port_name,baud,id);
         communication_manager.init_device(port_name, baud, id)
     }))
 }
@@ -86,7 +87,6 @@ pub fn add_aim(
 ) -> Result<(), String> {
     use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         communication_manager.add_aim();
-        //todo!() this is a lazy solution, in the future this should only be called once during runtime (after all devices are initialized)
         update_coms(&app_handle, communication_manager);
     })
 }

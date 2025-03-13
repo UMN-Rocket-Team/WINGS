@@ -108,7 +108,7 @@ impl CommsIF for AimDriver{
                 output[0] = 0x03;
                 output[1] = 0x12;
                 let _ = base_station.write(&mut output);
-                let result = base_station.read_timeout(&mut input, 1);
+                let result = base_station.read_timeout(&mut input, 10);
                 match result{
                     Ok(_) => {
                         if self.last_read != input{
