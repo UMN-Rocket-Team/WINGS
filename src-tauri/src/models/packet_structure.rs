@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 /// 
 /// id is defined at runtime and used to track packet structures
 /// 
-/// name is given by the user, and should follow a specific format (todo!())
+/// name is given by the user, and should follow a specific format
 /// 
 /// fields represent any data in the packet
 /// 

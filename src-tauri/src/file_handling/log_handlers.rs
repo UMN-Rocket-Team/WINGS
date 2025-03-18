@@ -218,9 +218,3 @@ impl LogHandler {
 pub fn device_info_to_file_format(device_type: String, device_id: usize) -> String{
     return format!("{}_{}_log",device_type,device_id)
 }
-
-#[cfg(test)]
-mod tests {
-    //TODO
-    //write a systems test to check all functions within file_handling
-}

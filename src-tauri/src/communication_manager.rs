@@ -146,8 +146,6 @@ impl CommunicationManager {
         if result.is_err(){
             return Err(result.unwrap_err().context("failed to get raw data"));
         }
-
-        //todo!() add save functionality for the raw data here
         let result = log.write_bytes(&raw_bytes,id,self.comms_objects[index].get_type());
         if result.is_err(){
             eprintln!("{}", result.unwrap_err().context("failed to write data"));

@@ -186,6 +186,6 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
     );
 };
 
-// TODO WORK ON ADDING A LEGEND AND BETTER AXIS NAMING AND COLOR CHANGING!
+// TODO WORK ON ADDING A LEGEND AND BETTER COLOR CHANGING!
 
 export default GraphDisplayElement;
