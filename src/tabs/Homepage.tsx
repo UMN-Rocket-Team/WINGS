@@ -76,9 +76,9 @@ const Homepage: Component = () => {
                             onClick={() => navigate("/newFlight")}>
                         Create New Flight
                     </button>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" onClick={loadFlight}>
+                    {/* <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" onClick={loadFlight}>
                         Load Flight File...
-                    </button>
+                    </button> */}
                 </div>
             </div>
             <div class="flex w-full justify-center relative">

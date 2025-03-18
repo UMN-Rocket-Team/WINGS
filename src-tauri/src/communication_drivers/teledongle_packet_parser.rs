@@ -476,7 +476,4 @@ mod parser_tests {
         assert_eq!(parsed,vec![]);//did we not parse anything?
     }
 
-    //todo:
-    // test packet structures that dont start/end with delimiters
-    // check for value edge cases(like stuff that causes unsafe subtraction)
 }

@@ -417,8 +417,4 @@ mod tests {
         let parsed = packet_parser.parse_packets(&packet_structure_manager,false).expect("");
         assert_eq!(parsed,vec![]);//did we not parse anything?
     }
-
-    //todo:
-    // test packet structures that dont start/end with delimiters
-    // check for value edge cases(like stuff that causes unsafe subtraction)
 }

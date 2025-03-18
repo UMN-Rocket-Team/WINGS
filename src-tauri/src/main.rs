@@ -74,7 +74,7 @@ fn main() {
             set_read
         ])
         .manage(default_packet_structure_manager())
-        .manage(Mutex::new(config))//todo!() get rid of this and just pass its arguments directly
+        .manage(Mutex::new(config))
         .manage(comms)
         .manage(SendingLoopState::default())
         .manage(DataProcessorState::default())
