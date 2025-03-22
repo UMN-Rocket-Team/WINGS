@@ -11,10 +11,6 @@ import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
-export interface BooleanSettingsModalProps extends SettingsModalProps {
-    displayStruct: BooleanStruct;
-}
-
 interface BooleanStructField {
     // index of field in packet
     packetFieldIndex: number;
@@ -30,8 +26,6 @@ export class BooleanStruct implements DisplayStruct {
     packetID=  -1;
     type= `indicator`;
     fields: BooleanStructField[] = [];
-    settingsModal= 2;
-    displayElement= 2;
     packetsDisplayed: boolean[]= [false];
 }
 

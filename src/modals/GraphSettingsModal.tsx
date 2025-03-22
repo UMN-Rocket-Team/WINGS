@@ -11,22 +11,10 @@ import { createStore, produce } from "solid-js/store";
 import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
-
-/**
- * generic interface for all 
- */
-export interface GraphModalProps extends SettingsModalProps {
-    /** Graph that is being passed */
-    displayStruct: GraphStruct;
-    /** Index of graph so that handleSelect[Y/X] can be called correctly! */
-}
-
 export class GraphStruct implements DisplayStruct {
     displayName = `Graph`;
     packetID = -1;
     type= `graph`;
-    settingsModal= 0;
-    displayElement= 0;
     packetsDisplayed: boolean[] = [false];
     x= 0;
     y= [0];

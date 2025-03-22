@@ -11,9 +11,6 @@ import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
-export interface ReadoutModalProps extends SettingsModalProps {
-    displayStruct: ReadoutStruct;
-}
 interface ReadoutStructField {
     // index of field in packet
     packetFieldIndex: number;
@@ -24,8 +21,6 @@ export class ReadoutStruct implements DisplayStruct {
     packetID = -1;
     type = `readout`;
     fields: ReadoutStructField[] = [];
-    settingsModal = 1;
-    displayElement = 1;
     packetsDisplayed: boolean[] = [false];
 }
 

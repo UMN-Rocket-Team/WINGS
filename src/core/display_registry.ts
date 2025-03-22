@@ -8,23 +8,52 @@ import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsMo
 import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import ReadoutDisplayElement from "../components/Readout";
 
+/**
+ * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent
+ */
 export abstract class DisplayStruct {
+
+    // Use this value as the key string in the displayRegistry
     abstract readonly type: string;
+
+    // User defined name for this component
     displayName = "Unnamed";
+
+    // packet structure id of that packet type that is being display
     packetID = 1;
-    settingsModal!: number;
-    displayElement!: number;
+
+    // a list of what packets have been "opened" on the SettingsModal
     packetsDisplayed: boolean[] = [false];
 }
 
+/**
+* DisplayTypeDefinition
+* contains of all elements of a display type including the JSX components
+*/
 export interface DisplayTypeDefinition {
+
+    // Use this value as the key string in the displayRegistry
     readonly type: string;
+
+    // How the frontend will be refering to this element
     displayName: string;
+
+    // Returns a new struct for this display element
     structClass: new () => DisplayStruct;
+
+    // This is the modal component that should be displayed to edit the Display Struct 
+    //
+    // Settings ModalProps is just a DisplayStruct, along with the index of the displayStruct within the array that it is stored
     settingsModal: Component<ModalProps<SettingsModalProps>>;
+
+    // Display Component is the JSX component that will actually be on the display tab 
     displayComponent: Component<DisplayStruct>;
 }
   
+/**
+* displayRegistry is a Map of all display types to their Type definitions
+* use this to easily get access to all of the information about a specific display type
+*/
 export const displayRegistry = new Map<string, DisplayTypeDefinition>();
   
 displayRegistry.set("graph", {
