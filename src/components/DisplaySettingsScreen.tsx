@@ -19,8 +19,12 @@ export type SettingsModalProps = {
     index: number,
 }
 
+/**
+ * holds all display structs for future reference
+ */
 export const [displays, setDisplays] = createStore<DisplayStruct[]>([]);
-let counter = 1;
+
+let counter = 1; //iterates to give each graph a different number in its display name ie Indicator 1, indicator 2, indicator 3
 
 
 /**

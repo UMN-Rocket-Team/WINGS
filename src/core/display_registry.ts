@@ -7,6 +7,8 @@ import GraphDisplayElement from "../components/SolidChart";
 import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import ReadoutDisplayElement from "../components/Readout";
+import TemplateSettingsModal, { TemplateStruct } from "../modals/TemplateSettingsModal";
+import TemplateDisplayElement from "../components/TemplateDisplayComponent";
 
 /**
  * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent
@@ -27,15 +29,15 @@ export abstract class DisplayStruct {
 }
 
 /**
-* DisplayTypeDefinition
-* contains of all elements of a display type including the JSX components
-*/
+ * DisplayTypeDefinition
+ * contains of all elements of a display type including the JSX components
+ */
 export interface DisplayTypeDefinition {
 
     // Use this value as the key string in the displayRegistry
     readonly type: string;
 
-    // How the frontend will be refering to this element
+    // How the frontend will be referring to this element
     displayName: string;
 
     // Returns a new struct for this display element
@@ -49,13 +51,24 @@ export interface DisplayTypeDefinition {
     // Display Component is the JSX component that will actually be on the display tab 
     displayComponent: Component<DisplayStruct>;
 }
-  
+
 /**
-* displayRegistry is a Map of all display types to their Type definitions
-* use this to easily get access to all of the information about a specific display type
-*/
+ * displayRegistry is a Map of all display types to their Type definitions
+ * use this to easily get access to all of the information about a specific display type
+ */
 export const displayRegistry = new Map<string, DisplayTypeDefinition>();
   
+
+// Example of registering a new class
+//
+// displayRegistry.set("template", {
+//     type: "template",
+//     displayName: "Template",
+//     structClass: TemplateStruct,
+//     settingsModal: TemplateSettingsModal,
+//     displayComponent: TemplateDisplayElement as Component<DisplayStruct>
+// });
+
 displayRegistry.set("graph", {
     type: "graph",
     displayName: "Graph",
