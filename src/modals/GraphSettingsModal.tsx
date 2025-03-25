@@ -1,7 +1,7 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, createSignal, Show, onMount } from "solid-js";
-import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
+// import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import settingsIcon from "../assets/settings.png";

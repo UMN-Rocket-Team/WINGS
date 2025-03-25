@@ -1,4 +1,4 @@
-import { Component, JSX } from "solid-js";
+import { Component } from "solid-js";
 import { ModalProps } from "./ModalProvider";
 import { SettingsModalProps } from "../components/DisplaySettingsScreen";
 import Boolean from "../components/Boolean";
