@@ -1,5 +1,5 @@
 import { Component, For, JSX, Show } from "solid-js";
-import { FlexviewObject, flexviewObjects } from "../components/DisplaySettingsScreen";
+import { displays, FlexviewObject, flexviewObjects } from "../components/DisplaySettingsScreen";
 import GraphDisplayElement from "../components/SolidChart";
 import ReadoutDisplayElement from "../components/Readout";
 import { displayRegistry, DisplayStruct, DisplayTypeDefinition } from "../core/display_registry";
@@ -9,13 +9,13 @@ const RecursiveFlexviewViewer = (props: {
 }) => {
     if (props.object.type === 'display') {
         const display = props.object;
-        const typeDef = displayRegistry.get(display.struct.type)!;
+        const typeDef = displayRegistry.get(displays[display.index].type)!;
         const DisplayComponent = typeDef?.displayComponent;
         return (
             <div
-                class="w-full h-full flex items-center justify-center border border-2 border-gray p-2"
+                class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray p-2"
             >
-                <DisplayComponent {...display.struct} />
+                <DisplayComponent {...displays[display.index]} />
             </div>
         );
     }
@@ -24,7 +24,7 @@ const RecursiveFlexviewViewer = (props: {
         const layout = props.object;
         return (
             <div
-                class="w-full h-full flex items-center justify-center border border-2 border-gray p-2 gap-2"
+                class="overflow-hidden w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2"
                 style={{
                     "flex-direction": layout.direction
                 }}
@@ -37,6 +37,7 @@ const RecursiveFlexviewViewer = (props: {
                 >
                     <For each={layout.children}>{(childObjectId, childObjectIndex) => <>
                         <div
+                            class = {"flex-shrink"} 
                             style={layout.direction === 'column' ? {
                                 width: '100%',
                                 height: `${layout.weights[childObjectIndex()] * 100}%`
@@ -62,7 +63,7 @@ const RecursiveFlexviewViewer = (props: {
 
 const DisplayTab: Component = (): JSX.Element => {
     return (
-        <div class="flex flex-col flex-grow gap-4 rounded-lg dark:text-white">
+        <div class="flex flex-col flex-grow flex-shrink gap-4 rounded-lg dark:text-white">
             {/* Views */}
             {/* <div class="grid gap-2 h-full" style={{ "grid-auto-rows": "1fr", "grid-template-columns": `repeat(${Math.min(2, displays.length)}, 1fr)` }}>
                 <For each={displays}>
