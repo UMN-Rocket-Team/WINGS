@@ -25,6 +25,7 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
 
     const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
+    let containerElement: HTMLDivElement;
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
@@ -56,12 +57,22 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
     }
     const data = {datasets};
 
+    const resizeObserver = new ResizeObserver((changes) => {
+        for (const change of changes) {
+            chart.resize(change.contentRect.width, change.contentRect.height);
+        }
+    });
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
         type: "line",
         data: data,
         options: {
-            responsive: true,
+            // Chart.js' responsive mode is not very good. Instead, we manually use
+            // chart.resize() to update the chart's size to match a container element
+            // that we control. Fixes issue where the size of the graph could only
+            // increase and never go down.
+            responsive: false,
+
             maintainAspectRatio: false,
             animation: false,
             parsing: false,
@@ -129,8 +140,10 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
     }, { defer: true });
 
     onMount(() => {
-        chart = new Chart(canvas, config);
-        
+        // canvas is set by ref, so elements will be defined by this point
+        chart = new Chart(canvas!, config);
+        resizeObserver.observe(containerElement!);
+
         if (parsedPackets[graph.packetID] === undefined) {
             parsedPackets[graph.packetID] = [];
         }
@@ -150,10 +163,22 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
 
     onCleanup(() => {
         chart?.destroy();
+        resizeObserver.disconnect();
     });
 
     return (
-        <canvas ref={canvas!} />
+        <div
+            ref={containerElement!}
+            // Using absolute here means that the canvas' size will not affect
+            // the size of the container it's in. This prevents getting into a
+            // situation where the container can never shrink because the canvas
+            // has a fixed size applied to it.
+            class="w-full h-full absolute overflow-hidden"
+        >
+            <canvas
+                ref={canvas!}
+            />
+        </div>
     );
 };
 
