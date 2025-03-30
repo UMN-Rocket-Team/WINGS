@@ -79,125 +79,130 @@ const RecursiveFlexviewEditor = (props: {
             totalWeight += w
         }
         return (
-            <div
-                class="w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2"
-                style={{
-                    "flex-direction": layout.direction
-                }}
-            >
-                <div>
-                {/*Element Buttons*/}
-                {Array.from(displayRegistry.values()).map((typeDef) => (
-                    <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
-                        focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
-                        dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
-                        onClick={() => {
-                            const newDisplay = new typeDef.structClass();
-                            newDisplay.displayName = `${typeDef.displayName} ${counter}`;
-                            newDisplay.packetID= PacketStructureViewModels[0].id;
-                            
-                            let displayArrayIndex = displays.length;
-                            let flexViewObjectsIndex = flexviewObjects.length;
-                            //insert into displayArrays
-                            setDisplays(displayArrayIndex, newDisplay);
+            <div>
+                <div class="w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2">
+                    {/*Element Buttons*/}
+                    {Array.from(displayRegistry.values()).map((typeDef) => (
+                        <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+                            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
+                            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
+                            onClick={() => {
+                                const newDisplay = new typeDef.structClass();
+                                newDisplay.displayName = `${typeDef.displayName} ${counter}`;
+                                newDisplay.packetID= PacketStructureViewModels[0].id;
+                                
+                                let displayArrayIndex = displays.length;
+                                let flexViewObjectsIndex = flexviewObjects.length;
+                                //insert into displayArrays
+                                setDisplays(displayArrayIndex, newDisplay);
 
-                            // creating a new flexview object and pushing it to the FlexViewObjects Store
-                            setFlexviewObjects(flexViewObjectsIndex, {
-                                type: 'display',
-                                index: displayArrayIndex
-                            });
+                                // creating a new flexview object and pushing it to the FlexViewObjects Store
+                                setFlexviewObjects(flexViewObjectsIndex, {
+                                    type: 'display',
+                                    index: displayArrayIndex
+                                });
 
-                            //editing this layout in the Flexview Object Store to add the item above as its child
-                            setFlexviewObjects(props.objectIndex, {
-                                type: layout.type,
-                                children: [...layout.children,flexViewObjectsIndex],
-                                weights: [...layout.weights,1],
-                                direction: layout.direction
-                            });
-                            counter++;
-                            store.set("display", flexviewObjects);
-                        }}
-                        >
-                        New {typeDef.displayName}
-                        </button>
-                    ))}
-
-                    {/*Division Buttons*/}
-                    <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
-                        focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
-                        dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
-                        onClick={() => {
-                            let flexViewObjectsIndex = flexviewObjects.length;
-                            // creating a new flexview layout and pushing it to the FlexViewObjects Store
-                            setFlexviewObjects(flexViewObjectsIndex, {
-                                type: 'layout',
-                                children: [],
-                                weights: [],
-                                direction: 'column'
-                            });
-
-                            //editing this layout in the Flexview Object Store to add the item above as its child
-                            setFlexviewObjects(props.objectIndex, {
-                                type: 'layout',
-                                children: [...layout.children,flexViewObjectsIndex],
-                                weights: [...layout.weights,1],
-                                direction: layout.direction
-                            });
-                            counter++;
-                            store.set("display", flexviewObjects);
-                        }}
-                        >
-                        - Div
-                        </button>
-                    <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
-                        focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
-                        dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
-                        onClick={() => {
-                            let flexViewObjectsIndex = flexviewObjects.length;
-                            // creating a new flexview layout and pushing it to the FlexViewObjects Store
-                            setFlexviewObjects(flexViewObjectsIndex, {
-                                type: 'layout',
-                                children: [],
-                                weights: [],
-                                direction: 'row'
-                            });
-
-                            //editing this layout in the Flexview Object Store to add the item above as its child
-                            setFlexviewObjects(props.objectIndex, {
-                                type: 'layout',
-                                children: [...layout.children,flexViewObjectsIndex],
-                                weights: [...layout.weights,1],
-                                direction: layout.direction
-                            });
-                            counter++;
-                            store.set("display", flexviewObjects);
-                        }}
-                        >
-                        | Div
-                        </button>
-                </div>
-                <Show
-                    when={layout.children.length > 0}
-                    fallback={(
-                        <p>Empty layout</p>
-                    )}
-                >
-                    <For each={layout.children}>{(childObjectId, childObjectIndex) => <>
-                        <div
-                            style={layout.direction === 'column' ? {
-                                width: '100%',
-                                height: `${(layout.weights[childObjectIndex()]/totalWeight) * 100}%`
-                            } : {
-                                width: `${(layout.weights[childObjectIndex()]/totalWeight) * 100}%`,
-                                height: '100%'
+                                //editing this layout in the Flexview Object Store to add the item above as its child
+                                setFlexviewObjects(props.objectIndex, {
+                                    type: layout.type,
+                                    children: [...layout.children,flexViewObjectsIndex],
+                                    weights: [...layout.weights,1],
+                                    direction: layout.direction
+                                });
+                                counter++;
+                                store.set("display", flexviewObjects);
                             }}
-                        >
-                            <RecursiveFlexviewEditor
-                                objectIndex={childObjectId}
-                            />
-                        </div>
-                    </>}</For>
-                </Show>
+                            >
+                            New {typeDef.displayName}
+                            </button>
+                        ))}
+
+                        {/*Division Buttons*/}
+                        <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+                            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
+                            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
+                            onClick={() => {
+                                let flexViewObjectsIndex = flexviewObjects.length;
+                                // creating a new flexview layout and pushing it to the FlexViewObjects Store
+                                setFlexviewObjects(flexViewObjectsIndex, {
+                                    type: 'layout',
+                                    children: [],
+                                    weights: [],
+                                    direction: 'column'
+                                });
+
+                                //editing this layout in the Flexview Object Store to add the item above as its child
+                                setFlexviewObjects(props.objectIndex, {
+                                    type: 'layout',
+                                    children: [...layout.children,flexViewObjectsIndex],
+                                    weights: [...layout.weights,1],
+                                    direction: layout.direction
+                                });
+                                counter++;
+                                store.set("display", flexviewObjects);
+                            }}
+                            >
+                            - Div
+                            </button>
+                        <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
+                            focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
+                            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white" 
+                            onClick={() => {
+                                let flexViewObjectsIndex = flexviewObjects.length;
+                                // creating a new flexview layout and pushing it to the FlexViewObjects Store
+                                setFlexviewObjects(flexViewObjectsIndex, {
+                                    type: 'layout',
+                                    children: [],
+                                    weights: [],
+                                    direction: 'row'
+                                });
+
+                                //editing this layout in the Flexview Object Store to add the item above as its child
+                                setFlexviewObjects(props.objectIndex, {
+                                    type: 'layout',
+                                    children: [...layout.children,flexViewObjectsIndex],
+                                    weights: [...layout.weights,1],
+                                    direction: layout.direction
+                                });
+                                counter++;
+                                store.set("display", flexviewObjects);
+                            }}
+                            >
+                            | Div
+                            </button>
+                </div>
+                <div
+                    class="w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2"
+                    style={{
+                        "flex-direction": layout.direction
+                    }}
+                >
+                    
+                    
+                
+                    <Show
+                        when={layout.children.length > 0}
+                        fallback={(
+                            <p>Empty layout</p>
+                        )}
+                    >
+                        <For each={layout.children}>{(childObjectId, childObjectIndex) =>
+                            <div
+                                style={layout.direction === 'column' ? {
+                                    width: '100%',
+                                    height: `${(layout.weights[childObjectIndex()]/totalWeight) * 100}%`
+                                } : {
+                                    width: `${(layout.weights[childObjectIndex()]/totalWeight) * 100}%`,
+                                    height: '100%'
+                                }}
+                            >
+                                <RecursiveFlexviewEditor
+                                    objectIndex={childObjectId}
+                                />
+                            </div>}
+                        </For>
+                    </Show>
+                </div>
             </div>
         );
     }
@@ -238,7 +243,7 @@ const FieldsScreen: Component = () => {
     // });
 
     return (
-        <div class="relative bg-neutral-300 dark:bg-neutral-700 p-2 mb-5">
+        <div class=" flex flex-grow relative p-2 mb-5 w-full h-full">
             {/*Field Select Button*/}
             {/* <div>
                 {Array.from(displayRegistry.values()).map((typeDef) => (
