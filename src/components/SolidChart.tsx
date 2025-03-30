@@ -177,6 +177,10 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
         >
             <canvas
                 ref={canvas!}
+                // Using absolute positioning prevents the canvas' size from affecting
+                // the size of the container it is in. Chart.js will give the canvas a
+                // fixed width so that would prevent the container from shrinking.
+                class="absolute"
             />
         </div>
     );
