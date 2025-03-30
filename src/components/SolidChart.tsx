@@ -169,14 +169,14 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
     return (
         <div
             ref={containerElement!}
-            // Using absolute here means that the canvas' size will not affect
-            // the size of the container it's in. This prevents getting into a
-            // situation where the container can never shrink because the canvas
-            // has a fixed size applied to it.
-            class="w-full h-full absolute overflow-hidden"
+            class="relative w-full h-full overflow-hidden"
         >
             <canvas
                 ref={canvas!}
+                // Using absolute positioning prevents the canvas' size from affecting
+                // the size of the container it is in. Chart.js will give the canvas a
+                // fixed width so that would prevent the container from shrinking.
+                class="absolute"
             />
         </div>
     );
