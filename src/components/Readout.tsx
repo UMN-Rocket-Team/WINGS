@@ -1,7 +1,8 @@
-import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Component, For, JSX, createEffect, createSignal } from "solid-js";
 import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets, parsedPackets } from "../backend_interop/buffers";
+import { unDecimatedPackets } from "../backend_interop/buffers";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 
 let _canvas: HTMLCanvasElement | null = null;

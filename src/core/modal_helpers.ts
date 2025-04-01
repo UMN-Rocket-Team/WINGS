@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { JSX, Setter } from "solid-js";
 import { ModalMetadata, ModalProps } from "../core/ModalProvider";
 

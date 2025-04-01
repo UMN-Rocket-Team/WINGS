@@ -11,7 +11,6 @@ import {setParsedPackets} from "../backend_interop/buffers";
 import {useBackend} from "../backend_interop/BackendProvider";
 import {Packet, PacketStructureViewModel} from "../backend_interop/types";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
-import webIcon from "../assets/web.svg";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
@@ -54,7 +53,7 @@ const Homepage: Component = () => {
 
                 navigate("/savedFlight");
             })
-            .catch((err) => showModal<ErrorModalProps, {}>(ErrorModal, {
+            .catch((err) => showModal<ErrorModalProps, object>(ErrorModal, {
                 error: "Failed to Load Flight File",
                 description: err
             }));
@@ -91,7 +90,7 @@ const Homepage: Component = () => {
                         </svg>
                         <button
                             class="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 hover:dark:bg-gray-800 dark:text-white rounded-lg"
-                            onclick={() => {
+                            onClick={() => {
                                 openHref("https://rkt.aem.umn.edu/").then(() => {});
                             }}>
                             Website
@@ -99,7 +98,7 @@ const Homepage: Component = () => {
                     </div>
                     <button
                         class="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 hover:dark:bg-gray-800 dark:text-white rounded-lg"
-                        onClick={() => showModal<{}, {}>(Credits, {})}>Credits
+                        onClick={() => showModal<object, object>(Credits, {})}>Credits
                     </button>
                 </div>
             </div>
