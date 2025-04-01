@@ -1,7 +1,6 @@
-import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
-import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
+import { Component, For, JSX, createEffect, createSignal } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets, parsedPackets } from "../backend_interop/buffers";
+import { unDecimatedPackets} from "../backend_interop/buffers";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { TemplateStruct } from "../modals/TemplateSettingsModal";
 
@@ -44,14 +43,13 @@ const TemplateDisplayElement: Component<TemplateStruct> = (props): JSX.Element =
     createEffect(() => {
         // Update this effect whenever the parsed packet count changes (meaning new
         // packets got parsed)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _ignored = parsedPacketCount();
         update();
     });
 
     const getPacket = () => PacketStructureViewModels.find(i => i.id === props.packetID)!;
     const getFieldComponents = () => getPacket().components.filter(i => i.type === PacketComponentType.Field);
-
-    update();
 
     return <div class="h-100% gap-2 flex flex-col align-center justify-center text-center">
         <For each={props.fields}>{(item, index) => {

@@ -1,4 +1,4 @@
-import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
+import { Component, batch, createSignal, For } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { addAltusMetrum, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
@@ -186,12 +186,13 @@ const SendingTab: Component = () => {
                     />
                     <span>ms</span>
                 </label>
-                <label>Select Mode:</label>
-                <select value={mode()} onChange={e => selectMode((e.currentTarget as HTMLSelectElement).value as SendingModes)}>
-                    <For each={Object.values(SendingModes).filter(k => isNaN(Number(k)))}>
-                        {(mode) => <option value={mode}>{mode}</option>}
-                    </For>
-                </select>
+                <label>Select Mode:
+                    <select value={mode()} onChange={e => selectMode((e.currentTarget as HTMLSelectElement).value as SendingModes)}>
+                        <For each={Object.values(SendingModes).filter(k => isNaN(Number(k)))}>
+                            {(mode) => <option value={mode}>{mode}</option>}
+                        </For>
+                    </select>
+                </label>
                 <button
                     class="py-2 px-4 rounded border-0 text-black"
                     classList={{

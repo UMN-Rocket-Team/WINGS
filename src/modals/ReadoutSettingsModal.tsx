@@ -1,3 +1,9 @@
+/* eslint-disable solid/style-prop */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable solid/reactivity */
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
@@ -33,14 +39,14 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
-    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as ReadoutStruct);
+    const [displayStruct] = createStore(props.displayStruct as ReadoutStruct);
     
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
-        infoIconRef?.addEventListener("mouseout", (e) => {
+        infoIconRef?.addEventListener("mouseout", (_e) => {
             setDisplayInfo(false);
         });
-        infoIconRef?.addEventListener("mouseover", (e) => {
+        infoIconRef?.addEventListener("mouseover", (_e) => {
             setDisplayInfo(true);
         });
     });
@@ -173,7 +179,7 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                         type="checkbox"
                                         class="mr-1 cursor-pointer"
                                         checked={!!structField()}
-                                        onchange={(e) => {
+                                        onChange={(e) => {
                                             const target = e.target as HTMLInputElement;
                                             setActive(packetViewModel.id, packetField.index, target.checked);
                                         }}
@@ -186,7 +192,7 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                             type="text"
                                             value={structField()!.unit}
                                             class="ml-2"
-                                            onchange={(e) => {
+                                            onChange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setDisplays(produce(s => {
                                                     const struct = s[props.index] as ReadoutStruct;

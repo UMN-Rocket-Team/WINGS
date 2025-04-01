@@ -1,3 +1,9 @@
+/* eslint-disable solid/style-prop */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable solid/reactivity */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
@@ -42,10 +48,10 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
     
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
-        infoIconRef?.addEventListener("mouseout", (e) => {
+        infoIconRef?.addEventListener("mouseout", (_e) => {
             setDisplayInfo(false);
         });
-        infoIconRef?.addEventListener("mouseover", (e) => {
+        infoIconRef?.addEventListener("mouseover", (_e) => {
             setDisplayInfo(true);
         });
     });
@@ -182,7 +188,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                 type="number"
                                                 value={structField()!.unit?.left}
                                                 class="w-16 max-h-6"
-                                                onchange={(e) => {
+                                                onChange={(e) => {
                                                     const target = e.target as HTMLInputElement;
                                                     setDisplays(produce(s => {
                                                         const struct = (s[props.index] as BooleanStruct);
@@ -222,7 +228,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                             type="checkbox"
                                             checked={!!structField()}
                                             class="mr-1 cursor-pointer"
-                                            onchange={(e) => {
+                                            onChange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setActive(packetViewModel.id, packetField.index, target.checked);
                                             }}
@@ -255,7 +261,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                             type="number"
                                             value={structField()!.unit?.right}
                                             class="w-16 max-h-6"
-                                            onchange={(e) => {
+                                            onChange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setDisplays(produce(s => {
                                                     const struct = (s[props.index] as BooleanStruct);
@@ -279,7 +285,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                 id={`range-select-${packetViewModel.id}-${packetField.index}`}
                                                 checked={getComponentField()?.isRange}
                                                 class="ml-1 cursor-pointer"
-                                                onchange={(e) => {
+                                                onChange={(e) => {
                                                     const target = e.target as HTMLInputElement;
                                                     setDisplays(produce(s => {
                                                         const struct = (s[props.index] as BooleanStruct);
