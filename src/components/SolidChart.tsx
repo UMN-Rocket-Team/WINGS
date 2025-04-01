@@ -104,7 +104,11 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
                         wheel: {
                             enabled: true
                         },
-                        mode: 'x'
+                        mode: 'x',
+                        drag: {
+                            enabled: true,
+                            modifierKey: 'ctrl'
+                        }
                     },
                     limits: {
                         x: {
