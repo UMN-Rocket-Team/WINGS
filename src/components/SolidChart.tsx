@@ -173,7 +173,7 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
             // the size of the container it's in. This prevents getting into a
             // situation where the container can never shrink because the canvas
             // has a fixed size applied to it.
-            class="w-full h-full absolute overflow-hidden"
+            class="w-full h-full"
         >
             <canvas
                 ref={canvas!}

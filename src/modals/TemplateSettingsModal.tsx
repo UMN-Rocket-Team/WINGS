@@ -67,7 +67,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
 
     const setDisplayName = (newName: string, index: number) => {
         setDisplays(produce(s => {
-            s[index].displayName = newName;
+            s[index]!.displayName = newName;
         }));
         store.set("display", displays);
     }

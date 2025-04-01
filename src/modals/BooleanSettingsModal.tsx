@@ -70,7 +70,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
 
     const setDisplayName = (newName: string, index: number) => {
         setDisplays(produce(s => {
-            s[index].displayName = newName;
+            s[index]!.displayName = newName;
         }));
         store.set("display", displays);
     }

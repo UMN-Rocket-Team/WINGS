@@ -70,9 +70,9 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
     const handleSelectY = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
         if (isChecked) {
             setDisplays(produce((s) => {
-                if (s[graphIndex].packetID != packet_id) {
+                if (s[graphIndex]!.packetID != packet_id) {
                     (s[graphIndex] as GraphStruct).y = [];
-                    s[graphIndex].packetID = packet_id;
+                    s[graphIndex]!.packetID = packet_id;
                     (s[graphIndex] as GraphStruct).x = 0; //sets x back to 0 to avoid overflow problems
                 }
                 (s[graphIndex] as GraphStruct).y.push(fieldIndex);
@@ -87,9 +87,9 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
     const handleSelectX = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
         if (isChecked) {
             setDisplays(produce((s) => {
-                if (s[graphIndex].packetID != packet_id) {
+                if (s[graphIndex]!.packetID != packet_id) {
                     (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(_ => false); //sets all y values to false
-                    s[graphIndex].packetID = packet_id;
+                    s[graphIndex]!.packetID = packet_id;
                 }
                 (s[graphIndex] as GraphStruct).x = fieldIndex;
             }));
@@ -102,7 +102,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
 
     const setGraphName = (newName: string, index: number) => {
         setDisplays(produce((s) =>
-            s[index].displayName = newName));
+            s[index]!.displayName = newName));
         store.set("display", displays);
     }
 
@@ -110,7 +110,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
         let newGraphs: DisplayStruct[] = [];
         for (let i = 0; i < displays.length; i++) {
             if (index !== i) {
-                newGraphs.push(displays[i]);
+                newGraphs.push(displays[i]!);
             }
         }
         setDisplays(newGraphs);

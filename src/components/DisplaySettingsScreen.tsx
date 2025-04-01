@@ -1,13 +1,9 @@
 import { Component, For, JSX, Match, onMount, Show, Switch } from "solid-js";
 import { ModalProps, useModal } from "../core/ModalProvider";
-import { createStore, SetStoreFunction } from "solid-js/store";
-import GraphSettingsModal, { GraphStruct } from "../modals/GraphSettingsModal";
+import { createStore, Part, SetStoreFunction } from "solid-js/store";
 import { useBackend } from "../backend_interop/BackendProvider";
-import GraphDisplayElement from "./SolidChart";
-import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
-import ReadoutDisplayElement from "./Readout";
-import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
-import Boolean from "./Boolean";
+import settingsIcon from "../assets/settings.png";
+import closeIcon from "../assets/close.svg";
 import { store } from "../core/file_handling";
 import { displayRegistry, DisplayStruct, DisplayTypeDefinition } from "../core/display_registry";
 
@@ -34,9 +30,9 @@ export interface FlexviewLayout {
     weights: number[];
 }
 
-export type FlexviewObject = FlexviewDisplay | FlexviewLayout;
+export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 
-export const [displays, setDisplays] = createStore<DisplayStruct[]>([])
+export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>([])
 
 export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>([
     {
@@ -54,33 +50,34 @@ const RecursiveFlexviewEditor = (props: {
 }) => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
-    if (flexviewObjects[props.objectIndex].type === 'display') {
+    if (flexviewObjects[props.objectIndex]!.type === 'display') {
         const display = flexviewObjects[props.objectIndex] as FlexviewDisplay;
         return (
 
             <div
-                class="w-full h-full flex items-center justify-center border-2 border-gray p-2"
-                onClick={() => {showModal<SettingsModalProps, {}>(displayRegistry.get(displays[display.index].type)!.settingsModal ?? 0, {
-                    displayStruct: displays[display.index],
-                    index: display.index
-                } as SettingsModalProps)}
-            }>
-                {displays[display.index].displayName}
+                class="flex items-center justify-center p-2 flex-grow"
+            >
+                <h1>
+                    {displays[display.index]!.displayName}
+                </h1>
             </div>
         );
     }
 
-    if (flexviewObjects[props.objectIndex].type === 'layout') {
+    if (flexviewObjects[props.objectIndex]!.type === 'layout') {
         const layout = flexviewObjects[props.objectIndex] as FlexviewLayout;
 
         // getting the total of all weights so that we can normalize them later
-        let totalWeight = 0
-        for (let w of layout.weights){
-            totalWeight += w
+        let totalWeight = () => {
+            let weightSum = 0;
+            for (let w of layout.weights){
+                weightSum += w
+            }
+            return weightSum;
         }
         return (
-            <div>
-                <div class="w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2">
+            <div class = "flex-grow flex flex-col p-2 gap-2">
+                <div class="flex items-center justify-center border-2 border-gray w-full overflow-auto p-2" >
                     {/*Element Buttons*/}
                     {Array.from(displayRegistry.values()).map((typeDef) => (
                         <button type="button" class="m-1 text-black bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-4
@@ -172,7 +169,7 @@ const RecursiveFlexviewEditor = (props: {
                             </button>
                 </div>
                 <div
-                    class="w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2"
+                    class="flex flex-grow items-stretch overflow-auto gap-2"
                     style={{
                         "flex-direction": layout.direction
                     }}
@@ -186,20 +183,68 @@ const RecursiveFlexviewEditor = (props: {
                             <p>Empty layout</p>
                         )}
                     >
-                        <For each={layout.children}>{(childObjectId, childObjectIndex) =>
-                            <div
+                        <For each={layout.children}>{(TotalArrayObjectIndex, childArrayObjectIndex) =>
+                            { 
+                                const weight_calc = () => `${(layout.weights[childArrayObjectIndex()]/totalWeight()) * 100}%`;
+                            return(<div
+                                class = "border-2 border-gray relative flex flex-col"
                                 style={layout.direction === 'column' ? {
-                                    width: '100%',
-                                    height: `${(layout.weights[childObjectIndex()]/totalWeight) * 100}%`
+                                    height: weight_calc()
                                 } : {
-                                    width: `${(layout.weights[childObjectIndex()]/totalWeight) * 100}%`,
-                                    height: '100%'
+                                    width: weight_calc()
                                 }}
-                            >
+                            >   <div class = "flex overflow-auto">
+                                    <img alt="Class" src={closeIcon} draggable={false} onClick={() => {
+
+                                        // Editing this layout in the Flexview Object Store to remove its child.
+                                        setFlexviewObjects(props.objectIndex, {
+                                            type: 'layout',
+                                            children: layout.children.toSpliced(childArrayObjectIndex(),1),
+                                            weights: layout.weights.toSpliced(childArrayObjectIndex(),1),
+                                            direction: layout.direction
+                                        });
+                                        
+                                        // Removing display from the display array (if this is a display)
+                                        if (flexviewObjects[TotalArrayObjectIndex]!.type === 'display') {
+                                            setDisplays(((flexviewObjects[TotalArrayObjectIndex] as FlexviewDisplay).index), undefined);
+                                        }
+
+                                        // removing this object from the FlexviewObjects
+                                        setFlexviewObjects(TotalArrayObjectIndex, undefined);
+                                    }} 
+                                        class="w-[25px] dark:invert z-[1] cursor-pointer m-5" />
+                                    <Show when={layout.weights.length > 1}>
+                                        <input class = "w-[50px] m-5"
+                                            value = {layout.weights[childArrayObjectIndex()]}
+                                            type = "number"
+                                            onChange = {event => {
+                                            setFlexviewObjects(props.objectIndex, {
+                                                type: 'layout',
+                                                children: layout.children,
+                                                weights: layout.weights.toSpliced(childArrayObjectIndex(),1,parseInt((event.target as HTMLInputElement).value)),
+                                                direction: layout.direction
+                                            });
+                                        }}></input>
+                                    </Show>
+                                    <Show when={flexviewObjects[TotalArrayObjectIndex]!.type == "display"}>
+                                        <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => {
+                                            let childDisplay = flexviewObjects[TotalArrayObjectIndex] as FlexviewDisplay;
+                                            return(
+                                                showModal<SettingsModalProps, {}>(
+                                                    displayRegistry.get(displays[childDisplay.index]!.type)!.settingsModal ?? 0, {
+                                                        displayStruct: displays[childDisplay.index],
+                                                        index: childDisplay.index
+                                                    } as SettingsModalProps
+                                                )
+                                            );
+                                        }} 
+                                            class="w-[25px] dark:invert z-[1] cursor-pointer m-5"/>
+                                    </Show>
+                                </div>
                                 <RecursiveFlexviewEditor
-                                    objectIndex={childObjectId}
+                                    objectIndex={TotalArrayObjectIndex}
                                 />
-                            </div>}
+                            </div>)}}
                         </For>
                     </Show>
                 </div>
