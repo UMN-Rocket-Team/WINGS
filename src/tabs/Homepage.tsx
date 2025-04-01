@@ -11,7 +11,7 @@ import {setParsedPackets} from "../backend_interop/buffers";
 import {useBackend} from "../backend_interop/BackendProvider";
 import {Packet, PacketStructureViewModel} from "../backend_interop/types";
 import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
-import webIcon from "../assets/web.svg";
+import {splashes} from './splashes';
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
@@ -66,9 +66,14 @@ const Homepage: Component = () => {
                 <ThemeSwitcher/>
             </div>
             <div class="flex flex-col items-center h-[100%] my-8 px-16 gap-4 bg-gray-100 dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-800">
-                <div class="flex items-center justify-start gap-4">
-                    <img src={logo} class="h-[50%]" alt="Wings Logo" draggable={false} />
-                    <span class="font-black text-[30vh] text-gray-900 dark:text-white">Wings</span>
+                <div class="relative">
+                    <div class="flex items-center justify-center gap-4 h-full w-full">
+                        <img src={logo} class="h-[50%]" alt="Wings Logo" draggable={false} />
+                        <span class="font-black text-[30vh] text-gray-900 dark:text-white">Wings</span>
+                    </div>
+                    <span class="text-[yellow] text-center bouncy font-minecraft absolute top-[300px] right-[100px]">
+                        {splashes[Math.floor(splashes.length * Math.random())]}
+                    </span>
                 </div>
                 <span class="dark:text-white text-center text-2xl">The Ground Station of the University of Minnesota Twin Cities Rocket Team</span>
                 <div class="flex gap-4 flex-col md:flex-row">
@@ -91,7 +96,7 @@ const Homepage: Component = () => {
                         </svg>
                         <button
                             class="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 hover:dark:bg-gray-800 dark:text-white rounded-lg"
-                            onclick={() => {
+                            onClick={() => {
                                 openHref("https://rkt.aem.umn.edu/").then(() => {});
                             }}>
                             Website

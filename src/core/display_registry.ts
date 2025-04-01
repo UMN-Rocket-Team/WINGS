@@ -9,6 +9,8 @@ import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsMo
 import ReadoutDisplayElement from "../components/Readout";
 import TemplateSettingsModal, { TemplateStruct } from "../modals/TemplateSettingsModal";
 import TemplateDisplayElement from "../components/TemplateDisplayComponent";
+import WebEmbedSettingsModal, { WebEmbedStruct } from "../modals/WebEmbedSettingsModal";
+import WebEmbed from "../components/WebEmbed";
 
 /**
  * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent
@@ -91,4 +93,12 @@ displayRegistry.set("indicator", {
     structClass: BooleanStruct,
     settingsModal: BooleanSettingsModal,
     displayComponent: Boolean as Component<DisplayStruct>
+});
+
+displayRegistry.set("web_embed", {
+    type: "web_embed",
+    displayName: "Web Embed",
+    structClass: WebEmbedStruct,
+    settingsModal: WebEmbedSettingsModal,
+    displayComponent: WebEmbed as Component<DisplayStruct>
 });

@@ -29,3 +29,26 @@ body {
 .dark {
     color-scheme: dark;
 }
+
+@font-face {
+    font-family: "Minecraft Seven Classic";
+    src: url(/src/assets/minecraft-seven-classic.ttf);
+}
+
+@keyframes bouncy {
+    0% {
+        transform: rotate(-15deg) scale(1);
+    }
+    50% {
+        transform: rotate(-12deg) scale(1.5);
+    }
+    100% {
+        transform: rotate(-15deg) scale(1);
+    }
+}
+.bouncy {
+    animation: bouncy 1s linear 0s infinite;
+}
+.font-minecraft {
+    font-family: 'Minecraft Seven Classic';
+}

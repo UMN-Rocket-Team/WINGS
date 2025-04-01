@@ -101,6 +101,10 @@ export const BackendProvider: ParentComponent = (props) => {
                     pushParsedPackets(result.parsedPackets);
                     setParsedPacketCount(parsedPacketCount() + result.parsedPackets.length);
                     // console.log(parsedPacketCount());
+
+                    const msg = new SpeechSynthesisUtterance();
+                    msg.text = "yummy packets";
+                    window.speechSynthesis.speak(msg);
                 }
                 setGotData(result.gotData);
                 console.log(gotData());

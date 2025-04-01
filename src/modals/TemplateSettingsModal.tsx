@@ -118,7 +118,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
             <Show when={displayInfo()}>
                 <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                     <p class="max-w-prose">This is a Template Settings Modal, and should not be shown to the user</p>
-                </div>            
+                </div>
             </Show>
             
             {/*name of the display, along with the Extra settings button*/}
