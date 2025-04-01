@@ -7,24 +7,34 @@ import { displayRegistry, DisplayStruct, DisplayTypeDefinition } from "../core/d
 const RecursiveFlexviewViewer = (props: {
     object: FlexviewObject
 }) => {
-    if (props.object.type === 'display') {
-        const display = props.object;
-        const typeDef = displayRegistry.get(displays[display.index].type)!;
+    if (props.object!.type === 'display') {
+        const display = props.object!;
+        const typeDef = displayRegistry.get(displays[display.index]!.type)!;
         const DisplayComponent = typeDef?.displayComponent;
         return (
             <div
-                class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray p-2"
+                class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray-300 p-2"
             >
-                <DisplayComponent {...displays[display.index]} />
+                <DisplayComponent {...displays[display.index]!} />
             </div>
         );
     }
 
-    if (props.object.type === 'layout') {
-        const layout = props.object;
+    if (props.object!.type === 'layout') {
+        const layout = props.object!;
+
+        // getting the total of all weights so that we can normalize them later
+        let totalWeight = () => {
+            let weightSum = 0;
+            for (let w of layout.weights){
+                weightSum += w
+            }
+            return weightSum;
+        }
+
         return (
             <div
-                class="overflow-hidden w-full h-full flex items-center justify-center border-2 border-gray p-2 gap-2"
+                class="overflow-hidden w-full h-full flex items-stretch justify-center border-2 border-gray-600 p-2 gap-2"
                 style={{
                     "flex-direction": layout.direction
                 }}
@@ -35,22 +45,20 @@ const RecursiveFlexviewViewer = (props: {
                         <p>Empty layout</p>
                     )}
                 >
-                    <For each={layout.children}>{(childObjectId, childObjectIndex) => <>
-                        <div
-                            class = {"flex-shrink"} 
+                    <For each={layout.children}>{(childObjectId, childObjectIndex) =>
+                        { 
+                            const weight_calc = () => `${(layout.weights[childObjectIndex()]/totalWeight()) * 100}%`;
+                        return(<div
                             style={layout.direction === 'column' ? {
-                                width: '100%',
-                                height: `${layout.weights[childObjectIndex()] * 100}%`
+                                height: weight_calc()
                             } : {
-                                width: `${layout.weights[childObjectIndex()] * 100}%`,
-                                height: '100%'
+                                width: weight_calc()
                             }}
                         >
                             <RecursiveFlexviewViewer
                                 object={flexviewObjects[childObjectId]}
                             />
-                        </div>
-                    </>}</For>
+                        </div>)}}</For>
                 </Show>
             </div>
         );

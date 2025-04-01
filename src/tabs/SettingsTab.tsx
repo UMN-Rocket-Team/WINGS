@@ -1,13 +1,10 @@
-import {Component, createSignal, For} from "solid-js";
+import {Component} from "solid-js";
 import FieldsScreen from "../components/DisplaySettingsScreen";
 import logo from "../assets/logo.png";
 import {useBackend} from "../backend_interop/BackendProvider";
 import {useNavigate} from "@solidjs/router";
-import {Packet} from "../backend_interop/types";
-import {clearParsedPackets, parsedPackets} from "../backend_interop/buffers";
-import {writeFile} from "@tauri-apps/api/fs";
+import {clearParsedPackets} from "../backend_interop/buffers";
 import {save} from "@tauri-apps/api/dialog";
-import ErrorModal, {ErrorModalProps} from "../modals/ErrorModal";
 import PacketEditor from "../components/PacketsEditor";
 
 /**
@@ -37,7 +34,7 @@ const SettingsTab: Component = () => {
                 <div class="flex-grow grid grid-cols-1 p-2 gap-2 overflow-auto bg-neutral-300 dark:bg-neutral-700" style={{ "width": "100%" }}>
                     <FieldsScreen/>
                 </div>
-                <div class="flex flex-grow grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
+                <div class="grid grid-cols-1 p-2 gap-2" style={{ "width": "100%" }}>
                     <PacketEditor/>
                 </div>
             </div>
