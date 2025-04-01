@@ -212,7 +212,7 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
             />
             {/* rounded-lg bg-red-500 hover:bg-red-600 flex items-center justify-center p-3 */}
             <button
-                class="absolute top-2 right-2 bg-gray-500 text-white p-3 text-sm rounded hover:bg-gray-600"
+                class="absolute top-2 right-2 bg-gray-500 text-white p-3 text-xs rounded hover:bg-gray-600"
                 onClick={() => chart?.resetZoom('none')}
             >
                 Reset Zoom
