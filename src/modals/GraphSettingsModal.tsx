@@ -14,11 +14,11 @@ import { DisplayStruct } from "../core/display_registry";
 export class GraphStruct implements DisplayStruct {
     displayName = `Graph`;
     packetID = -1;
-    type= `graph`;
+    type = `graph`;
     packetsDisplayed: boolean[] = [false];
-    x= 0;
-    y= [0];
-    colors= ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"];
+    x = 0;
+    y = [0];
+    colors = ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"];
 }
 
 /**
@@ -128,19 +128,19 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
             <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit'>
                 <Show when={displayInfo()}>
                     <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
-                        Customizable graph for visualizing data.
+                        Customizable graph for visualizing data. Ability to zoom in on data, drag through data. Hold ctrl + drag over display for drag and zoom.
                     </div>
                 </Show>
 
                 <div class='flex flex-row leading-none justify-between mb-4'>
                     <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                    <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]" 
+                    <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]"
                         onBlur={handleInput} onKeyDown={handleKeyDown}>
                         {graphCurrName()}
                     </h3>
 
-                    <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)} 
+                    <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)}
                         class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
                 </div>
 
@@ -187,10 +187,10 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                                     }));
                                     store.set("display", displays);
                                 }}>
-                                <img alt="Dropdown" src={dropdownIcon} 
-                                    class={`h-4 dark:invert`} 
+                                <img alt="Dropdown" src={dropdownIcon}
+                                    class={`h-4 dark:invert`}
                                     style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
-                                    draggable={false}/>
+                                    draggable={false} />
                                 <h3 class='font-bold'>{PacketStructureViewModel.name}</h3>
                             </div>
 
@@ -216,7 +216,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                                             }}
                                         </For>
                                     </div>
-                                    
+
                                     <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4'>
                                         <h2 class="font-bold">Y-Axis</h2>
                                         <For each={PacketStructureViewModel.components.filter(component => component.type === PacketComponentType.Field)}>
@@ -236,7 +236,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                                             }}
                                         </For>
                                     </div>
-                                </div>                                
+                                </div>
                             </Show>
                         </div>
                     }
