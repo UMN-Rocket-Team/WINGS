@@ -1,5 +1,6 @@
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
+import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-luxon';
 import { useBackend } from "../backend_interop/BackendProvider";
 import { parsedPackets } from "../backend_interop/buffers";
@@ -8,7 +9,7 @@ import { GraphStruct } from "../modals/GraphSettingsModal";
 
 // Register the necessary components with ChartJS so that they can be used later
 // Note: any components that are not registered here will act like no-ops if they are attempted to be used later!
-Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip);
+Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointElement, LineElement, Title, Tooltip, zoomPlugin);
 
 /**
  * A component that displays the parsed data for a given graphStruct in a line chart
@@ -18,7 +19,7 @@ Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointEleme
 const GraphDisplayElement: Component<GraphStruct> = (props) => {
     // Type guard
     if (props.type !== "graph") return <div>Invalid graph configuration</div>;
-  
+
     // Safe cast after type check
     const graph = props as GraphStruct;
 
@@ -48,14 +49,14 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
             label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,
-            data: initialParsedPackets.map(packetData => ({x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
+            data: initialParsedPackets.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
             backgroundColor: graph.colors[i % graph.colors.length],
             borderColor: graph.colors[i % graph.colors.length],
             spanGaps: true,
         };
         datasets.push(dataValue);
     }
-    const data = {datasets};
+    const data = { datasets };
 
     const resizeObserver = new ResizeObserver((changes) => {
         for (const change of changes) {
@@ -90,6 +91,29 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
                 title: {
                     display: true,
                     text: graph.displayName,
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x'
+                    },
+                    zoom: {
+                        pinch: {
+                            enabled: true
+                        },
+                        wheel: {
+                            enabled: true
+                        },
+                        mode: 'x'
+                    },
+                    limits: {
+                        x: {
+                            minDelay: 0,
+                            maxDelay: 4000,
+                            minDuration: 1000,
+                            maxDuration: 20000
+                        }
+                    }
                 }
             },
             scales: {
@@ -102,12 +126,12 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
                         }
                     },
                     display: true,
-                //     min: -90,
-                //     max: 50
-                // },
-                // y: {
-                //     min: -90,
-                //     max: 50
+                    //     min: -90,
+                    //     max: 50
+                    // },
+                    // y: {
+                    //     min: -90,
+                    //     max: 50
                 }
             },
         }
