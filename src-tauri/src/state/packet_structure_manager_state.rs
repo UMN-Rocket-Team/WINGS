@@ -6,6 +6,12 @@ use crate::{
 pub fn default_packet_structure_manager() -> PacketStructureManager {
     let mut packet_structure_manager = PacketStructureManager::default();
 
+    let mut daq_structure = PacketStructure::default();
+    daq_structure.ez_make("4869205468657265 F32 F32 F32 F32 476f6f6462796521",
+        &["LoadCell","Pressure","Temp1","Temp2"]);
+    daq_structure.name = "daq".to_owned();
+    packet_structure_manager.register_packet_structure(&mut daq_structure).expect("Failed to register draw packet");
+
     let mut draw_structure = PacketStructure::default();
     draw_structure.ez_make("ba5eba11 d5a1d5a1 F64 F64 F64 d5a1d5a1 ca11ab1e",
         &["Timestamp","rkt_speed","rkt_speed_also"]);
