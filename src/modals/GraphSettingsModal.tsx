@@ -1,9 +1,3 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable solid/style-prop */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable solid/reactivity */
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, createSignal, Show, onMount } from "solid-js";
@@ -33,13 +27,14 @@ export class GraphStruct implements DisplayStruct {
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
 const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
+    if (props.displayStruct.type !== "graph") return null;
 
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
     const [graphCurrName, setName] = createSignal(props.displayStruct.displayName);
 
-    const [displayStruct] = createStore(props.displayStruct as GraphStruct);
+    const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as GraphStruct);
 
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
@@ -112,7 +107,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
     }
 
     const deleteGraph = (index: number) => {
-        const newGraphs: DisplayStruct[] = [];
+        let newGraphs: DisplayStruct[] = [];
         for (let i = 0; i < displays.length; i++) {
             if (index !== i) {
                 newGraphs.push(displays[i]!);

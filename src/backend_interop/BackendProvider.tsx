@@ -1,5 +1,3 @@
-/* eslint-disable solid/reactivity */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext} from "solid-js";
 import {createStore, SetStoreFunction} from "solid-js/store";
 import {pushParsedPackets} from "./buffers";

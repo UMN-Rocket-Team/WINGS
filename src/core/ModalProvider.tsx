@@ -7,7 +7,7 @@ import { createShowModalFunction } from "../core/modal_helpers";
  * `BaseType` is the type of the properties that will be passed to the child component and are provided by a call to `useModal`.
  * `ResultType` is the type of the result of showing the modal.
  */
-export type ModalProps<BaseType = object, ResultType = object> = BaseType & {
+export type ModalProps<BaseType = {}, ResultType = {}> = BaseType & {
     closeModal: (result: ResultType) => void,
 };
 

@@ -1,4 +1,5 @@
 import { Packet, PacketData } from "./types";
+import { createSignal } from "solid-js";
 
 /**
  * The global map between packet ids and the list of received packet data for the packet with that id
@@ -29,7 +30,7 @@ const decVars: Record<number, PacketStructureId> = [];
  * @param packets the newly parsed packets to insert into the global map
  */
 export const pushParsedPackets = (packets: Packet[]): void => {
-    const sortedNewParsedPackets: Record<number, PacketData[]> = [];
+    let sortedNewParsedPackets: Record<number, PacketData[]> = [];
 
     for (const packet of packets) {
         if (sortedNewParsedPackets[packet.structureId] === undefined) {
@@ -45,7 +46,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
     for (const structureId in sortedNewParsedPackets) {
         // 
         if (parsedPackets[+structureId] === undefined || decVars[+structureId] === undefined) {
-            const decimationVars: PacketStructureId = {
+            let decimationVars: PacketStructureId = {
                 structureId: structureId,
                 ptr1: 1,
                 ptr2: 1,
@@ -63,7 +64,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
         if (decVars[+structureId].ptr2 + sortedNewParsedPackets[+structureId].length > (2 * decVars[+structureId].wall)) {
             // Need to do a while loop here to add the elements to the end of the array till it hits 2wall
             // This loop will only run once, when we are at the max capacity of the array for the first time
-            let ctr = 0;
+            var ctr = 0;
             while (decVars[+structureId].ptr2 < (2 * decVars[+structureId].wall)) {
                 unDecimatedPackets[+structureId].push(sortedNewParsedPackets[+structureId][ctr]); // For Readout.tsx
                 
@@ -76,7 +77,7 @@ export const pushParsedPackets = (packets: Packet[]): void => {
             // ctr = if we have 3 packets to add, and we have ptr2 = 999 before, we add 1 packet and have 2 left and ctr = 1 so basically
             // ctr = number of packets added and the index for the next packet to add
             // packets_left = sortedNewParsedPackets[structureId].length - ctr (3 - 1 = 2) perfect
-            const packets_left = sortedNewParsedPackets[+structureId].length - ctr;
+            var packets_left = sortedNewParsedPackets[+structureId].length - ctr;
 
             // At this point ptr2 is at 2wall == 1000 and we need to start the decimation process
             // While this function is not the most efficient, it is the most readable and the most correct without adding extra complexity

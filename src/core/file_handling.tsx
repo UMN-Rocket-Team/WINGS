@@ -30,8 +30,8 @@ const runExport = async (selectedFilePath: string | null, packetView: PacketStru
  */
 const exportToLocation = async (selectedFilePath: string | null, packetView: PacketStructureViewModel) => {
     if (selectedFilePath != null) {
-        const data: string = JSON.stringify(packetView);
-        const filePathString: string = selectedFilePath as string;
+        let data: string = JSON.stringify(packetView);
+        let filePathString: string = selectedFilePath as string;
         
         await writeTextFile({ contents: data, path: filePathString});
         return(filePathString);
@@ -46,7 +46,7 @@ const exportToLocation = async (selectedFilePath: string | null, packetView: Pac
  */
 const updatePersistentFilePaths = async (filePathString: string) => {
     //adds new file directory to persistent data
-    let prevSaves: string[] | null = await store.get("recentSaves");
+    let prevSaves: String[] | null = await store.get("recentSaves");
     if( Array.isArray(prevSaves)){
 
         //limit length
@@ -94,7 +94,7 @@ export const importPacketsFromDirectories = async (filePaths: string | string[] 
  * @return {PacketStructureViewModel} the PacketStructureViewModels stored at the given directories
  */
 export const openPackets = async (selectedFilePaths: string | string[] | null) => {
-    const openedPackets: PacketStructureViewModel[] = [];
+    let openedPackets: PacketStructureViewModel[] = [];
     if (Array.isArray(selectedFilePaths)) {
         for (const path of selectedFilePaths) {
             openedPackets.push(await readPathAsPacket(path));
@@ -114,9 +114,9 @@ export const openPackets = async (selectedFilePaths: string | string[] | null) =
  * @return {PacketStructureViewModel} the PacketStructureViewModel stored at the given file path
  */
 const readPathAsPacket = async (path: string) => {
-    const contents: string = await readTextFile(path as string);
+    let contents: string = await readTextFile(path as string);
     
-    const parsedContents: PacketStructureViewModel = JSON.parse(contents);
+    let parsedContents: PacketStructureViewModel = JSON.parse(contents);
     return parsedContents;
 }
 

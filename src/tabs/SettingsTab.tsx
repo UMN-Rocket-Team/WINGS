@@ -11,7 +11,7 @@ import PacketEditor from "../components/PacketsEditor";
  * Main Tab for hosting all groundstation settings
  */
 const SettingsTab: Component = () => {
-    const {parsedPacketCount } = useBackend();
+    const { availableDeviceNames: availablePortNames, PacketStructureViewModels, parsedPacketCount } = useBackend();
     const navigate = useNavigate();
     
     const saveFlight = async () => {
@@ -44,7 +44,7 @@ const SettingsTab: Component = () => {
                 <div class="flex items-center">
                     {/* Homepage button */}
                     <button onClick={() => navigate("/")} class="flex items-center justify-center border-transparent bg-transparent">
-                        <img src={logo} class="h-20" alt="Home" draggable={false} />
+                        <img src={logo} class="h-20" alt="Home" draggable={false}></img>
                     </button>
                     {/* <button type="button" >Dark</button> */}
                 </div>

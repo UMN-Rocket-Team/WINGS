@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
 import 'chartjs-adapter-luxon';
@@ -17,6 +16,9 @@ Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointEleme
  * @param graph a graphStruct that is the graph that is being created
  */
 const GraphDisplayElement: Component<GraphStruct> = (props) => {
+    // Type guard
+    if (props.type !== "graph") return <div>Invalid graph configuration</div>;
+  
     // Safe cast after type check
     const graph = props as GraphStruct;
 
@@ -27,14 +29,22 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
     let canvas: HTMLCanvasElement;
     let chart: Chart;
 
-    // const colors: string[] = ["#FFD700", "black", "blue", "red"];
+    // Decimation variables:
+    var ptr1 = 1;
+    var ptr2 = 1;
+    var wall = 500;
+    var multiple = 2;
+    var next = 1;
+
+    const colors: string[] = ["#FFD700", "black", "blue", "red"];
     //adds an empty array if we haven't received data in the packet type we want
     if (parsedPackets[graph.packetID] === undefined) {
         parsedPackets[graph.packetID] = [];
     }
 
     const initialParsedPackets = parsedPackets[graph.packetID];
-    const datasets = []
+    const ratio = initialParsedPackets.length / 100;
+    let datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
             label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,

@@ -7,6 +7,8 @@ import GraphDisplayElement from "../components/SolidChart";
 import BooleanSettingsModal, { BooleanStruct } from "../modals/BooleanSettingsModal";
 import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsModal";
 import ReadoutDisplayElement from "../components/Readout";
+import TemplateSettingsModal, { TemplateStruct } from "../modals/TemplateSettingsModal";
+import TemplateDisplayElement from "../components/TemplateDisplayComponent";
 
 /**
  * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent

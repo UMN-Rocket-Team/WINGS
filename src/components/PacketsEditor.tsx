@@ -1,13 +1,12 @@
-/* eslint-disable solid/reactivity */
 import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_editor_helpers";
-import { runExportPacketWindow, importPacketsFromDirectories} from "../core/file_handling";
+import { runImportPacketWindow, runExportPacketWindow, importPacketsFromDirectories} from "../core/file_handling";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { useModal } from "../core/ModalProvider";
 import ErrorModal from "../modals/ErrorModal";
-import FileModal from "../modals/FilePathModal";
+import FileModal, { FileModalProps } from "../modals/FilePathModal";
 import { Store } from "tauri-plugin-store-api";
 
 /**
@@ -49,7 +48,7 @@ const PacketEditor: Component = () => {
     const selectedDelimiterData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Delimiter ? selectedPacketStructureComponent()?.data as PacketDelimiter : null);
     const selectedGapData = createMemo(() => selectedPacketStructureComponent()?.type === PacketComponentType.Gap ? selectedPacketStructureComponent()?.data as PacketGap : null);
 
-    const invokeApiSetter = () => createInvokeApiSetterFunction(selectedPacketStructureID, selectedPacketStructureComponent, showModal);
+    const invokeApiSetter = createInvokeApiSetterFunction(selectedPacketStructureID, selectedPacketStructureComponent, showModal);
 
     async function showErrorModalOnError(func: () => Promise<unknown>, errorTitle: string): Promise<void> {
         try {
@@ -203,32 +202,39 @@ const PacketEditor: Component = () => {
                                 <h2 class="m-0 font-bold">Field Information</h2>
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
-                                        <label for="fieldName">Name
-                                            <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
-                                                onInput={async e => await invokeApiSetter()(setFieldName, (e.target as HTMLInputElement).value)} 
-                                                />
-                                        </label>
+                                        <label for="fieldName">Name</label>
+                                        <input class="inputBox" type="text" value={selectedFieldData()!.name} id="fieldName"
+                                            onInput={async e => await invokeApiSetter(setFieldName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <span>Offset in Packet: {selectedFieldData()!.offsetInPacket} byte{selectedFieldData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                     <div class="flex flex-col">
-                                        <label for="fieldType">Type
-                                            <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
-                                                onInput={async e => await invokeApiSetter()(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
-                                                <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
-                                                    {(fieldType) => <option value={fieldType}>{fieldType}</option>}
-                                                </For>
-                                            </select>
-                                        </label>
+                                        <label for="fieldType">Type</label>
+                                        {/* <form class="max-w-sm mx-auto"> */}
+                                            {/* <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label> */}
+                                        {/* <select id="fieldType" 
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}
+                                        >
+                                            <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
+                                                {(fieldType) => <option value={fieldType}>{fieldType}</option>}
+                                            </For>
+                                        </select> */}
+
+                                        <select class="inputBox" value={selectedFieldData()!.type} id="fieldType"
+                                            onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}>
+                                            <For each={Object.values(PacketFieldType).filter(k => isNaN(Number(k)))}>
+                                                {(fieldType) => <option value={fieldType}>{fieldType}</option>}
+                                            </For>
+                                        </select>
                                     </div>
                                     <div class="flex flex-col">
-                                        <label for="fieldMetadataType">Metadata Type
-                                            <select class="inputBox" value={selectedFieldData()!.metadataType} id="fieldMetadataType"
-                                                onInput={async e => await invokeApiSetter()(setFieldMetadataType, (e.target as HTMLSelectElement).value as PacketMetadataType)}>
-                                                <For each={Object.values(PacketMetadataType).filter(k => isNaN(Number(k)))}>
-                                                    {(metadataType) => <option value={metadataType}>{metadataType}</option>}
-                                                </For>
-                                            </select>
-                                        </label>
+                                        <label for="fieldMetadataType">Metadata Type</label>
+                                        <select class="inputBox" value={selectedFieldData()!.metadataType} id="fieldMetadataType"
+                                            onInput={async e => await invokeApiSetter(setFieldMetadataType, (e.target as HTMLSelectElement).value as PacketMetadataType)}>
+                                            <For each={Object.values(PacketMetadataType).filter(k => isNaN(Number(k)))}>
+                                                {(metadataType) => <option value={metadataType}>{metadataType}</option>}
+                                            </For>
+                                        </select>
                                     </div>
                                 </div>
                             </Match>
@@ -237,20 +243,18 @@ const PacketEditor: Component = () => {
                                 <h2 class="m-0 font-bold text-xl">Delimiter Information</h2>
                                 <div class="flex flex-col gap-2">
                                     <div class="flex flex-col">
-                                        <label for="delimiterName" class="text-gray-700 dark:text-gray-400 text-sm">Name
+                                        <label for="delimiterName" class="text-gray-700 dark:text-gray-400 text-sm">Name</label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.name} id="delimiterName"
-                                            onInput={async e => await invokeApiSetter()(setDelimiterName, (e.target as HTMLInputElement).value)} />
-                                        </label>
+                                            onInput={async e => await invokeApiSetter(setDelimiterName, (e.target as HTMLInputElement).value)} />
                                     </div>
                                     <div>
-                                        <label for="delimiterIdentifier">Identifier: 
+                                        <label for="delimiterIdentifier">Identifier: </label>
                                         <input class="inputBox" type="text" value={selectedDelimiterData()!.identifier} id="delimiterIdentifier"
                                             onChange={async e => {
                                                 const el = e.target as HTMLInputElement;
                                                 el.value = el.value.replace(/[^\da-f]/g, '');
-                                                await invokeApiSetter()(setDelimiterIdentifier, el.value);
+                                                await invokeApiSetter(setDelimiterIdentifier, el.value);
                                             }} />
-                                        </label>
                                     </div>
                                     <span>Offset in Packet: {selectedDelimiterData()!.offsetInPacket} byte{selectedDelimiterData()!.offsetInPacket == 1 ? "" : "s"}</span>
                                 </div>
@@ -259,7 +263,7 @@ const PacketEditor: Component = () => {
                             <Match when={selectedGapData() !== null}>
                                 <h2 class="m-0">Gap Information</h2>
                                 <div class="flex flex-col">
-                                    <label for="gapSize">Size
+                                    <label for="gapSize">Size</label>
                                     <input class="inputBox" type="number" value={selectedGapData()!.size} min={1} id="gapSize"
                                         onInput={async e => {
                                             const el = e.target as HTMLInputElement;
@@ -272,7 +276,6 @@ const PacketEditor: Component = () => {
                                                 'Failed to change gap size'
                                             );
                                         }} />
-                                    </label>
                                 </div>
                             </Match>
                         </Switch>
@@ -286,9 +289,9 @@ const PacketEditor: Component = () => {
                                 <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
                                 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 bg-gray-100 text-black
                                 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
-                                    onClick={async () => await invokeApiSetter()(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
+                                    onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
                                 >
-                                    Delete {(selectedPacketStructureComponent()?.data as PacketField | PacketDelimiter)?.name ?? "Field"}
+                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Field"}
                                 </button>
                             </Match>
                             {/* Selected packet structure delimiter editor */}
@@ -296,9 +299,9 @@ const PacketEditor: Component = () => {
                                 <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
                                 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 bg-gray-100 text-black
                                 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
-                                    onClick={async () => await invokeApiSetter()(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
+                                    onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
                                 >
-                                    Delete {(selectedPacketStructureComponent()?.data  as PacketField | PacketDelimiter)?.name ?? "Delimiter"}
+                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Delimiter"}
                                 </button>
                             </Match>
                             {/* Selected packet structure gap editor */}
@@ -308,7 +311,7 @@ const PacketEditor: Component = () => {
                                 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
                                     onClick={async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, 0)}
                                 >
-                                    Delete Gap
+                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
                                 </button>
                             </Match>
                     </Switch>
