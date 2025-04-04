@@ -144,11 +144,21 @@ impl CommunicationManager {
 
         let result = self.comms_objects[index].get_device_raw_data(&mut raw_bytes);
         if result.is_err(){
-            return Err(result.unwrap_err().context("failed to get raw data"));
+            let error = result.unwrap_err();
+            if !(format!("{}", error.root_cause()) == "Operation timed out"){
+                return Err(error.context("failed to get raw data"));
+            }
+            else{
+                return Ok(());
+            }
         }
         let result = log.write_bytes(&raw_bytes,id,self.comms_objects[index].get_type());
         if result.is_err(){
-            eprintln!("{}", result.unwrap_err().context("failed to write data"));
+            let new_result = result.unwrap_err().context("failed to write raw data");
+            let context = new_result.chain();
+            for i in context{
+                eprintln!("Binary File Write{:#?}", i);
+            }
         }
 
         let result = self.comms_objects[index].parse_device_data(&mut raw_bytes,return_buffer);

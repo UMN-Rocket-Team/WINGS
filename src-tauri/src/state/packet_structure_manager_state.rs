@@ -7,14 +7,14 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     let mut packet_structure_manager = PacketStructureManager::default();
 
     let mut daq_structure = PacketStructure::default();
-    daq_structure.ez_make("4869205468657265 F32 F32 F32 F32 476f6f6462796521",
-        &["LoadCell","Pressure","Temp1","Temp2"]);
+    daq_structure.ez_make("4869205468657265 F64 F64 F64 F64 F64 476f6f6462796521",
+        &["Timestamp", "LoadCell","Pressure","Temp1","Temp2"], false);
     daq_structure.name = "daq".to_owned();
-    packet_structure_manager.register_packet_structure(&mut daq_structure).expect("Failed to register draw packet");
+    packet_structure_manager.register_packet_structure(&mut daq_structure).expect("Failed to register daq packet");
 
     let mut draw_structure = PacketStructure::default();
     draw_structure.ez_make("ba5eba11 d5a1d5a1 F64 F64 F64 d5a1d5a1 ca11ab1e",
-        &["Timestamp","rkt_speed","rkt_speed_also"]);
+        &["Timestamp","rkt_speed","rkt_speed_also"],false);
     draw_structure.name = "draw".to_owned();
     packet_structure_manager.register_packet_structure(&mut draw_structure).expect("Failed to register draw packet");
 
@@ -26,7 +26,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     &[ "Timestamp",
         "fixType", "satsInView",
         "GPS_TimeStamp", "lat", "long", "altitude"
-    ]);
+    ],true);
     leep_gps_data_structure.name = "leep_gps".to_owned();
     packet_structure_manager.register_packet_structure(&mut leep_gps_data_structure).expect("Failed to register leep gps data packet");
 
@@ -34,7 +34,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     leep_volt_data_structure.ez_make("b5a6 u32 07 F32",
     &[ "Timestamp",
         "voltage"
-    ]);
+    ],true);
     leep_volt_data_structure.name = "leep_volt".to_owned();
     packet_structure_manager.register_packet_structure(&mut leep_volt_data_structure).expect("Failed to register leep gps data packet");
     //################################
@@ -52,7 +52,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
             "acc100g_X","acc100g_Y","acc100g_Z",
             "accBNO_X" ,"accBNO_Y" ,"accBNO_Z",
             "gyroBNO_X","gyroBNO_Y","gyroBNO_Z",
-            "magBNO_X" ,"magBNO_Y" ,"magBNO_Z"]);
+            "magBNO_X" ,"magBNO_Y" ,"magBNO_Z"],true);
     ufc_raw_data_structure.name = "UFC_raw_data".to_owned();
     packet_structure_manager.register_packet_structure(&mut ufc_raw_data_structure).expect("Failed to register raw data packet");
 
@@ -63,7 +63,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
         "acc100g_X","acc100g_Y","acc100g_Z",
         "acc16g_X" ,"acc16g_Y" ,"acc16g_Z",
         "gyroX"    ,"gyroY"    ,"gyroZ",
-        "magX"     ,"magY"     ,"magZ",]);
+        "magX"     ,"magY"     ,"magZ",],true);
     ufc_real_units_structure.name = "UFC_real_data".to_owned();
     packet_structure_manager.register_packet_structure(&mut ufc_real_units_structure).expect("Failed to register real data packet");
 
@@ -73,7 +73,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
 &["Timestamp",
         "acc_X" ,"acc_Y" ,"acc_Z",
         "gyro_X","gyro_Y","gyro_Z",
-        "mag_X" ,"mag_Y" ,"mag_Z",]);
+        "mag_X" ,"mag_Y" ,"mag_Z",],true);
         ufc_bno_structure.name = "UFC_BNO_data".to_owned();
     packet_structure_manager.register_packet_structure(&mut ufc_bno_structure).expect("Failed to register bno packet");
 
@@ -81,7 +81,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     let mut ufc_baro_structure = PacketStructure::default();
     ufc_baro_structure.ez_make("ba5eba11 0008 _2 i64 F32 F32 _4 ca11ab1e",
 &["Timestamp",
-        "therm","press"]);
+        "therm","press"],true);
         ufc_baro_structure.name = "UFC_temp_baro_data".to_owned();
     packet_structure_manager.register_packet_structure(&mut ufc_baro_structure).expect("Failed to register temp-baro packet");
 
@@ -99,13 +99,13 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
             "verticalAccuracy","horizontalAccuracy",
             "pDOP",
             "vel_north","vel_east","vel_down",
-            "velAccuracy"]);
+            "velAccuracy"],true);
     ufc_gps_structure.name = "UFC_gps_data".to_owned();
     packet_structure_manager.register_packet_structure(&mut ufc_gps_structure).expect("Failed to register gps packet");
 
     let mut ufc_test_structure = PacketStructure::default();
     ufc_test_structure.ez_make("ba5eba11 0040 _2 i64 u16 u16 u8 u8 _4 ca11ab1e",
-    &["Timestamp","rkt_speed","rkt_speed_also","rkt_budget","var8"]);
+    &["Timestamp","rkt_speed","rkt_speed_also","rkt_budget","var8"],true);
     ufc_test_structure.name = "UFC_test_packet".to_owned();
     packet_structure_manager.register_packet_structure(&mut ufc_test_structure).expect("Failed to register test packet");
     //################################
@@ -123,7 +123,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
         "Angle from vertical in degrees","accel","pressure (Pa * 10)","temperature (°C * 100)",
         "accel_x","accel_y","accel_z",
         "gyro_x","gyro_y","gyro_z",
-        "mag_x","mag_y","mag_z"]);
+        "mag_x","mag_y","mag_z"],true);
     telemega_imu_data.name = "Altus TeleMega IMU Sensor Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut telemega_imu_data).expect("Failed to register telemetrum imu packet");
 
@@ -135,7 +135,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
         "sense_1","sense_2","sense_3","sense_4","sense_5","sense_6",
         "ground_pres","ground_accel",
         "accel_plus_g","accel_minus_g",
-        "acceleration","speed","height"]);
+        "acceleration","speed","height"],true);
     telemega_kalman_structure.name = "Altus TeleMega Kalman and Voltage Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut telemega_kalman_structure).expect("Failed to register telemetrum kalman packet");
 
@@ -146,7 +146,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     "accelerometer",
     "pressure sensor (Pa * 10)","temperature sensor (°C * 100)",
     "acceleration m/s² * 16","speed m/s * 16","height m",
-    "battery voltage","drogue continuity sense","main continuity sense"]);
+    "battery voltage","drogue continuity sense","main continuity sense"],true);
     metrum_sensor_data.name = "Altus TeleMetrum v2 Sensor Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut metrum_sensor_data).expect("Failed to register sensor2 packet");
 
@@ -155,7 +155,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     metrum_calibration_data.ez_make("2C0E u16 0B _3 i32 i16 i16 i16", 
     &["Timestamp",
             "ground_pres","ground_accel",
-            "accel_plus_g","accel_minus_g"]);
+            "accel_plus_g","accel_minus_g"],true);
     metrum_calibration_data.name = "Altus TeleMetrum v2 Calibration Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut metrum_calibration_data).expect("Failed to register telemetrum calibration packet");
 
@@ -166,7 +166,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
             "Device type","Flight number",
             "Config major version","Config minor version",
             "Apogee deploy delay in seconds","Main deploy alt in meters","Maximum flight log size (kB)",
-            "Radio ID String","Software Version String"]);
+            "Radio ID String","Software Version String"],true);
     altus_config_packet.name = "Altus Configuration Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut altus_config_packet).expect("Failed to register altusmetrum config packet");
 
@@ -179,7 +179,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
             "year","month","day","hour","minute","second",
             "pdop * 5","hdop * 5","vdop * 5","mode",
             "ground_speed cm/s", "climb_rate cm/s",
-            "course / 2"]);
+            "course / 2"],true);
     altus_gps_packet.name = "Altus GPS Location".to_owned();
     packet_structure_manager.register_packet_structure(&mut altus_gps_packet).expect("Failed to register altusmetrum gps packet");
 
@@ -198,7 +198,7 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
             "sat_9_svid", "sat_9_c_n_1",
             "sat_10_svid", "sat_10_c_n_1",
             "sat_11_svid", "sat_11_c_n_1",
-            "sat_12_svid", "sat_12_c_n_1"]);
+            "sat_12_svid", "sat_12_c_n_1"],true);
     altus_satellite_packet.name = "Altus GPS Satellite Data".to_owned();
     packet_structure_manager.register_packet_structure(&mut altus_satellite_packet).expect("Failed to register altusmetrum satellite packet");
 
