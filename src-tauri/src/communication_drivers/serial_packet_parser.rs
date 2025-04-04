@@ -167,7 +167,7 @@ mod tests {
     fn test_basic_parsing(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5],true);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -196,7 +196,7 @@ mod tests {
     fn can_data_be_mistaken_for_delimiters(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5],true);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -227,7 +227,7 @@ mod tests {
     fn bad_data_test(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5],true);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -262,7 +262,7 @@ mod tests {
     fn consecutive_parsing_test(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5],true);
         packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -311,10 +311,10 @@ mod tests {
     fn multiple_structures(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5],true);
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut wacky_structure = PacketStructure::make_default("Wacky Structure".to_owned());
-        wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &["";3]);
+        wacky_structure.ez_make("i16 fa1a1a1a u8 u64", &["";3],true);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -356,10 +356,10 @@ mod tests {
     fn same_first_delim(){
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e", &["";5],true);
         let id1 = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut wacky_structure = PacketStructure::make_default("Test Structure Variation".to_owned());
-        wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &["";3]);
+        wacky_structure.ez_make("ba5eba11 0020 0008 i64 u32 i8 _4 deadbeef", &["";3],true);
         let id2 = packet_structure_manager.register_packet_structure(&mut wacky_structure).unwrap();
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
@@ -404,7 +404,7 @@ mod tests {
     fn delimiter_led_packet_half_in_buffer(){
         let packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
-        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &["";5]);
+        p_structure.ez_make("ba5eba11 0010 0008 i64 u16 u16 u8 u8", &["";5],true);
         let mut packet_parser = SerialPacketParser::default();
         let data = [0x11,0xBA,0x5E,0xBA,
                     0x10,0x00,

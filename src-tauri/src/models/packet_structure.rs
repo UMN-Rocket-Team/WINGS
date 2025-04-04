@@ -94,7 +94,7 @@ impl PacketStructure {
     /// 
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
-    pub fn ez_make(&mut self, input: &str, names: &[&str],) {
+    pub fn ez_make(&mut self, input: &str, names: &[&str], reverse_delimeter: bool) {
         self.byte_defined = true;
         let mut curr_offset = 0;
         for substr in input.split(" ") {
@@ -102,7 +102,10 @@ impl PacketStructure {
             if first_char.is_digit(16) && (first_char.is_lowercase() || first_char.is_ascii_digit()){
 
                 let mut new_identifier = hex::decode(substr).unwrap();
-                new_identifier.reverse();//this is the way firmware broadcasts the identifiers
+                
+                if reverse_delimeter{
+                    new_identifier.reverse();//this is the way firmware broadcasts the identifiers
+                }
 
                 let offset = new_identifier.len();//calculates size of the delimiter in memory
                 curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable

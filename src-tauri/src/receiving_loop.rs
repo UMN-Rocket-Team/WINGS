@@ -99,7 +99,10 @@ fn iterate_receiving_loop(
             match communication_manager.get_data(device,&mut result.parsed_packets,&mut log_state.lock().unwrap()) {
                 Ok(_) => {},
                 Err(err) => {
-                    eprintln!("coms manager: {}", err);
+                    let context = err.chain();
+                    for i in context{
+                        eprintln!("coms manager: {:#?}", i);
+                    }
                 }
             }
         }

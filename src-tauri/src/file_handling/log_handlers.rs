@@ -43,12 +43,13 @@ impl Default for LogHandler {
     fn default() -> Self {
         let mut path_buf = tauri::api::path::data_dir().expect("no data dir found on this system");
         path_buf.push(BASE_DIRECTORY);
-        let _ = fs::create_dir(path_buf.as_path());
         let time = Utc::now();
         path_buf.push(&format!("{}", time.format(DAY_FORMAT)));
-        let _ = fs::create_dir(path_buf.as_path());
-        path_buf.push(&format!("{}", time.format(TIME_FORMAT)));
-        let _ = fs::create_dir(path_buf.as_path());
+        path_buf.push(&format!("{}", time.format(TIME_FORMAT)).replace(":","-"));
+        fs::create_dir_all(path_buf.as_path()).expect(&format!("failed to register: {:#?}",&path_buf));
+        let mut raw_path_buf = path_buf.clone();
+        raw_path_buf.push("raw");
+        fs::create_dir_all(raw_path_buf.as_path()).expect(&format!("failed to register: {:#?}",&path_buf));
         let general_directory = path_buf.clone();
         println!("{:#?}", path_buf);
         Self {
@@ -202,8 +203,9 @@ impl LogHandler {
             None => {
                 let mut path = self.base_path.clone();
                 path.push("raw");
-                path.push(format!("raw_log_{}_{}.wings",self.time.format(LOG_TIME_FORMAT),device_info_to_file_format(device_type.clone(), device_id)));
-                self.byte_writer.insert((device_type.clone(),device_id), File::open(path)?);
+                path.push(format!("raw_log_{}_{}",self.time.format(LOG_TIME_FORMAT),device_info_to_file_format(device_type.clone(), device_id)));
+                path.set_extension("wings");
+                self.byte_writer.insert((device_type.clone(),device_id), File::create(path)?);
                 self.byte_writer.get(&(device_type,device_id)).ok_or(anyhow::anyhow!("failed to register new file"))?
             },
         };
