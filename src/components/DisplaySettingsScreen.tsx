@@ -217,7 +217,10 @@ const RecursiveFlexviewEditor = (props: {
                                         <input class = "w-[50px] m-5"
                                             value = {layout.weights[childArrayObjectIndex()]}
                                             type = "number"
+                                            min = "1"
                                             onChange = {event => {
+                                            if (Number(event.target.value) < 1) 
+                                                event.target.value =  "1";
                                             setFlexviewObjects(props.objectIndex, {
                                                 type: 'layout',
                                                 children: layout.children,
