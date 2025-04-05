@@ -3,7 +3,7 @@ import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineContro
 import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-luxon';
 import { useBackend } from "../backend_interop/BackendProvider";
-import { parsedPackets } from "../backend_interop/buffers";
+import { unDecimatedPackets } from "../backend_interop/buffers";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { GraphStruct } from "../modals/GraphSettingsModal";
 
@@ -39,17 +39,17 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
 
     const colors: string[] = ["#FFD700", "black", "blue", "red"];
     //adds an empty array if we haven't received data in the packet type we want
-    if (parsedPackets[graph.packetID] === undefined) {
-        parsedPackets[graph.packetID] = [];
+    if (unDecimatedPackets[graph.packetID] === undefined) {
+        unDecimatedPackets[graph.packetID] = [];
     }
 
-    const initialParsedPackets = parsedPackets[graph.packetID];
-    const ratio = initialParsedPackets.length / 100;
+    const initialunDecimatedPackets = unDecimatedPackets[graph.packetID];
+    const ratio = initialunDecimatedPackets.length / 100;
     let datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
             label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,
-            data: initialParsedPackets.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
+            data: initialunDecimatedPackets.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })) ?? [],
             backgroundColor: graph.colors[i % graph.colors.length],
             borderColor: graph.colors[i % graph.colors.length],
             spanGaps: true,
@@ -141,17 +141,17 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
         }
     };
 
-    let lastPacketCount = initialParsedPackets?.length ?? 0;
+    let lastPacketCount = initialunDecimatedPackets?.length ?? 0;
 
     // // Add new data to the chart whenever new data is parsed by the packet parser
     createEffect(() => {
         // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
-        if (parsedPackets[graph.packetID] === undefined) {
-            parsedPackets[graph.packetID] = [];
+        if (unDecimatedPackets[graph.packetID] === undefined) {
+            unDecimatedPackets[graph.packetID] = [];
         }
-        const packetData = parsedPackets[graph.packetID];
+        const packetData = unDecimatedPackets[graph.packetID];
 
         if (packetData === undefined || chart === undefined) {
             return;
@@ -172,10 +172,10 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
         chart = new Chart(canvas!, config);
         resizeObserver.observe(containerElement!);
 
-        if (parsedPackets[graph.packetID] === undefined) {
-            parsedPackets[graph.packetID] = [];
+        if (unDecimatedPackets[graph.packetID] === undefined) {
+            unDecimatedPackets[graph.packetID] = [];
         }
-        const packetData = parsedPackets[graph.packetID];
+        const packetData = unDecimatedPackets[graph.packetID];
         if (packetData === undefined) {
             return;
         }
@@ -201,7 +201,7 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
             // the size of the container it's in. This prevents getting into a
             // situation where the container can never shrink because the canvas
             // has a fixed size applied to it.
-            class="w-full h-full"
+            class="relative w-full h-full"
         >
             <canvas
                 ref={canvas!}
@@ -210,7 +210,6 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
                 // fixed width so that would prevent the container from shrinking.
                 class="absolute"
             />
-            {/* rounded-lg bg-red-500 hover:bg-red-600 flex items-center justify-center p-3 */}
             <button
                 class="absolute top-2 right-2 bg-gray-500 text-white p-3 text-xs rounded hover:bg-gray-600"
                 onClick={() => chart?.resetZoom('none')}
