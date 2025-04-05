@@ -1,6 +1,6 @@
-import {Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext} from "solid-js";
-import {createStore, SetStoreFunction} from "solid-js/store";
-import {pushParsedPackets} from "./buffers";
+import { Accessor, createContext, createSignal, onCleanup, onMount, ParentComponent, useContext } from "solid-js";
+import { createStore, SetStoreFunction } from "solid-js/store";
+import { pushParsedPackets } from "./buffers";
 import {
     PacketStructureViewModel,
     Packet, //for inserting fake packets when testing graphs
@@ -11,7 +11,7 @@ import {
     SendingLoopState,
     DisplayComDevice
 } from "./types";
-import {emit, listen, UnlistenFn} from "@tauri-apps/api/event";
+import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
 import { comDeviceSelections, IterateComDevicesIterator, setComDeviceSelections } from "../tabs/SendingTab";
 
 /**
@@ -57,7 +57,7 @@ const BackendContext = createContext<BackendContextValue>({
     availableDeviceNames: (): DeviceNames[] => [],
     parsedPacketCount: () => 0,
     PacketStructureViewModels: [],
-    setPacketStructureViewModels: () => {},
+    setPacketStructureViewModels: () => { },
     sendingLoopState: () => null,
     comDeviceList: (): DisplayComDevice[] => [],
     gotData: () => false,
@@ -87,11 +87,11 @@ export const BackendProvider: ParentComponent = (props) => {
         // Save the result of each listen call so that in the event that this component is unmounted the listeners
         // can be safely unregistered
         unlistenFunctions = [
-            await listen<string>("error", ({payload: message}) => {
+            await listen<string>("error", ({ payload: message }) => {
                 // Log informative errors reported by the Rust backend for debugging purposes
                 //console.error(message);
             }),
-            await listen<SerialUpdateResult>("serial-update", ({payload: result}) => {
+            await listen<SerialUpdateResult>("serial-update", ({ payload: result }) => {
                 //console.log(result);
                 if (result.newAvailablePortNames) {
                     setAvailableDeviceNames(result.newAvailablePortNames);
@@ -103,8 +103,7 @@ export const BackendProvider: ParentComponent = (props) => {
                     // console.log(parsedPacketCount());
                 }
                 setGotData(result.gotData);
-                console.log(gotData());
-            
+
             }),
             await listen<PacketStructureViewModelUpdate[]>("packet-structures-update", event => {
                 //console.log(event);
@@ -134,26 +133,26 @@ export const BackendProvider: ParentComponent = (props) => {
                             );
                             break;
                     }
-                    
+
                 }
             }),
-            await listen<DisplayComDevice[]>("com-device-update", ({payload}) => {
-                if(Array.isArray(payload)){
+            await listen<DisplayComDevice[]>("com-device-update", ({ payload }) => {
+                if (Array.isArray(payload)) {
                     setComDeviceList(payload as Array<DisplayComDevice>);
 
                     //check for a de-sync to prevent the front end from crashing
                     const difference = comDeviceList().length - comDeviceSelections.length
                     console.log("difference %d:", difference)
-                    if (difference > 0){
-                        for(let i = 0; i < difference; i++){
-                            setComDeviceSelections([...comDeviceSelections,{id: IterateComDevicesIterator(), selection: "Plug and Play"}])
+                    if (difference > 0) {
+                        for (let i = 0; i < difference; i++) {
+                            setComDeviceSelections([...comDeviceSelections, { id: IterateComDevicesIterator(), selection: "Plug and Play" }])
                         }
                     }
 
                 }
-                
+
             }),
-            await listen<SendingLoopState>("sending-loop-update", ({payload}) => {
+            await listen<SendingLoopState>("sending-loop-update", ({ payload }) => {
                 setSendingLoopState(payload);
             })
         ];
@@ -188,13 +187,13 @@ export const BackendProvider: ParentComponent = (props) => {
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted
-        if (unlistenFunctions !== undefined){
+        if (unlistenFunctions !== undefined) {
             for (const unlistenFunction of unlistenFunctions) {
                 unlistenFunction();
             }
         }
     });
-    
+
     const context = {
         availableDeviceNames: availableDeviceNames,
         parsedPacketCount: parsedPacketCount,
