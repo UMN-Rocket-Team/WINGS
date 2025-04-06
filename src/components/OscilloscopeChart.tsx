@@ -18,7 +18,7 @@ Chart.register(LineController, CategoryScale, LinearScale, TimeScale, PointEleme
  */
 const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (props) => {
     // Type guard
-    if (props.type !== "graph") return <div>Invalid graph configuration</div>;
+    if (props.type !== "oscilloscopeGraph") return <div>Invalid graph configuration</div>;
 
     // Safe cast after type check
     const graph = props as OscilloscopeGraphStruct;
@@ -181,9 +181,6 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
         }
 
         // Adds previous data
-        for (let i = 0; i < datasets.length; i++) {
-            console.log(config.data.datasets[i].data);
-        }
         lastPacketCount = packetData.length;
         chart.update();
 
