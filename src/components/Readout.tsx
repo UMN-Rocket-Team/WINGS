@@ -131,23 +131,48 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
 
         <For each={readout.fields}>{(item, index) => {
             const field = () => getFieldComponents()[item.packetFieldIndex].data as PacketField;
+
             const getValue = (): string => {
                 if (values().length <= index()) {
-                    return 'N/A';
+                    return 'N/A'
                 }
                 const value = values()[index()];
+                const value_string = value.toFixed(7)
+                const delimited_array = value_string.split(".")
+                console.log(delimited_array)
+                const pre_dec = delimited_array[0].substring(delimited_array[0].length - 5,delimited_array[0].length)
+                const post_dec = delimited_array[1].substring(0,3)
+
+                const prePadding = " ".repeat(Math.max(5 - pre_dec.length,0))
+                const postPadding = " ".repeat(Math.max(3 - post_dec.length,0))
+                const postUnitPadding = " ".repeat(Math.max(10 - item.unit.length,0))
                 if (item.unit) {
-                    return `${value} ${item.unit}`;
+                    return prePadding + pre_dec + "." + post_dec + postPadding + " " + `${item.unit}` + postUnitPadding;
                 }
-                return '' + value;
+                return (prePadding + pre_dec + "." + post_dec + postPadding + " ".repeat(11));
             };
+            
             return <>
-                <div>{field().name}</div>
-                <div class="grow-1 max-h-120px" style={{
-                    // override default macOS font with one where all the numbers are the same size
-                    "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif'
+                <div 
+                class = "kode-mono-readoutFont dark:text-gray-200"
+                style={{
+                    "font-size": "20px"
                 }}>
-                    <AutoAdjustFontSize text={getValue()} />
+                    {field().name}
+                </div>
+                <div class="grow-1 max-h-120px kode-mono-readoutFont">
+                    <div
+                        class="w-full h-full relative flex align-center justify-center leading-1em dark:text-gray-200"
+                        style={{
+                            "font-size": "30px"
+                        }}
+                    >
+                        <div style={{
+                            'white-space': "pre-wrap"
+                        }}>
+                            {getValue()}
+                        </div>
+                    </div>
                 </div>
             </>;
         }}</For>
