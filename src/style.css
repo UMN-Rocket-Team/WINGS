@@ -23,8 +23,12 @@ body {
 }
 
 @font-face {
-    font-family: "Kode Mono";
+    font-family: 'Kode Mono';
     src: url(.\src\assets\KodeMono-VariableFont_wght.ttf);
+}
+
+.font-mono-Kode {
+    font-family: 'Kode Mono', monospace;
 }
 
 /* Apply dark mode styles from the browser. Improves scroll bars, buttons, links, etc. */
