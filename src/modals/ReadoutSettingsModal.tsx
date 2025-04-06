@@ -5,7 +5,6 @@ import {SettingsModalProps, displays, setDisplays } from "../components/DisplayS
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { createStore, produce } from "solid-js/store";
-import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { store } from "../core/file_handling";
@@ -30,7 +29,6 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
     // used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
 
-    const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
     const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as ReadoutStruct);
@@ -68,19 +66,6 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
             s[index]!.displayName = newName;
         }));
         store.set("display", displays);
-    }
-
-    const deleteDisplay = () => {
-        // Need to clear fields before removing display
-        setDisplays(produce(s => {
-            const struct = s[props.index] as ReadoutStruct;
-            struct.fields =[];
-        }));
-        store.set("display", displays);
-        
-        setDisplays(displays.filter((_, index) => index !== props.index));
-        store.set("display", displays);
-        props.closeModal({});
     }
 
     const getStructField = (packetId: number, fieldIndex: number): ReadoutStructField | undefined => {
@@ -127,24 +112,7 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
                 </h3>
-
-                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)} 
-                    class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
             </div>
-
-            <Show when={displaySettings()}>
-                <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
-                    <div class="relative flex items-center justify-center mt-10">
-                        <button
-                            class="rounded-lg bg-red-500 hover:bg-red-600 flex items-center justify-center p-3"
-                            onClick={() => {
-                                deleteDisplay();
-                            }}>
-                            <h3>Remove Display</h3>
-                        </button>
-                    </div>
-                </div>
-            </Show>
 
             <For each={PacketStructureViewModels}>{(packetViewModel, packetIdx) => (
                 <div class='flex flex-col mb-4'>
