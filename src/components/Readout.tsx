@@ -154,14 +154,13 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
             
             return <>
                 <div 
-                    class = "dark:text-gray-200"
+                    class = "dark:text-gray-200 font-mono-Kode"
                     style={{
                         "font-size": "20px",
-                        "font-family" : 'Kode Mono'
                     }}>
                     {field().name}
                 </div>
-                <div class="grow-1 max-h-120px kode-mono-readoutFont">
+                <div class="grow-1 max-h-120px font-mono-Kode">
                     <div
                         class="w-full h-full relative flex align-center justify-center leading-1em dark:text-gray-200"
                         style={{
