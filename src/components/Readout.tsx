@@ -133,7 +133,7 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
             const field = () => getFieldComponents()[item.packetFieldIndex].data as PacketField;
 
             const getValue = (): string => {
-                if (values().length <= index()) {
+                if (values().length <= index() || Number.isNaN(values()[index()])) {
                     return 'N/A'
                 }
                 const value = values()[index()];
@@ -154,10 +154,11 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
             
             return <>
                 <div 
-                class = "kode-mono-readoutFont dark:text-gray-200"
-                style={{
-                    "font-size": "20px"
-                }}>
+                    class = "dark:text-gray-200"
+                    style={{
+                        "font-size": "20px",
+                        "font-family" : 'Kode Mono'
+                    }}>
                     {field().name}
                 </div>
                 <div class="grow-1 max-h-120px kode-mono-readoutFont">
