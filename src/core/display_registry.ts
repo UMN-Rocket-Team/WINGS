@@ -9,6 +9,8 @@ import ReadoutSettingsModal, { ReadoutStruct } from "../modals/ReadoutSettingsMo
 import ReadoutDisplayElement from "../components/Readout";
 import TemplateSettingsModal, { TemplateStruct } from "../modals/TemplateSettingsModal";
 import TemplateDisplayElement from "../components/TemplateDisplayComponent";
+import OscilloscopeGraphSettingsModal, { OscilloscopeGraphStruct } from "../modals/OscilloscopeGraphSettingsModal";
+import OscilloscopeGraphDisplayElement from "../components/OscilloscopeChart";
 
 /**
  * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent
@@ -92,3 +94,11 @@ displayRegistry.set("indicator", {
     settingsModal: BooleanSettingsModal,
     displayComponent: Boolean as Component<DisplayStruct>
 });
+
+displayRegistry.set("oscilloscopeGraph", {
+    type: "oscilloscopeGraph",
+    displayName: "Oscilloscope Graph", 
+    structClass: OscilloscopeGraphStruct,
+    settingsModal: OscilloscopeGraphSettingsModal,
+    displayComponent: OscilloscopeGraphDisplayElement as Component<DisplayStruct>
+})
