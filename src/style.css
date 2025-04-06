@@ -24,7 +24,7 @@ body {
 
 @font-face {
     font-family: 'Kode Mono';
-    src: url(.\src\assets\KodeMono-VariableFont_wght.ttf);
+    src: url(/src/assets/KodeMono-VariableFont_wght.ttf);
 }
 
 .font-mono-Kode {

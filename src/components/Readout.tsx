@@ -125,7 +125,9 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
     update();
 
     return <div class="h-100% gap-2 flex flex-col align-center justify-center text-center">
-        <div class="font-bold m-b-2 text-lg">
+        <div class="font-bold m-b-2 text-lg font-mono-Kode" style={{
+                        "font-size": "30px",
+                    }}>
             {readout.displayName}
         </div>
 
@@ -154,13 +156,13 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
             
             return <>
                 <div 
-                    class = "dark:text-gray-200 font-mono-Kode"
+                    class = "dark:text-gray-200 font-mono-Kode font-semibold"
                     style={{
                         "font-size": "20px",
                     }}>
                     {field().name}
                 </div>
-                <div class="grow-1 max-h-120px font-mono-Kode">
+                <div class="grow-1 max-h-120px font-mono-Kode font-semibold">
                     <div
                         class="w-full h-full relative flex align-center justify-center leading-1em dark:text-gray-200"
                         style={{
