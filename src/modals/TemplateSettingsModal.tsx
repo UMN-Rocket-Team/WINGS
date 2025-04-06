@@ -31,7 +31,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
     // Used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
 
-    const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings (on the top left of the modal) being displayed?
+    const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings (on the top right of the modal) being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
 
@@ -70,19 +70,6 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
             s[index]!.displayName = newName;
         }));
         store.set("display", displays);
-    }
-
-    const deleteDisplay = () => {
-        // Need to clear fields before removing display
-        setDisplays(produce(s => {
-            const struct = s[props.index] as TemplateStruct;
-            struct.fields =[];
-        }));
-        store.set("display", displays);
-        
-        setDisplays(displays.filter((_, index) => index !== props.index));
-        store.set("display", displays);
-        props.closeModal({});
     }
 
     const getStructField = (packetId: number, fieldIndex: number): Number | undefined => {
@@ -135,19 +122,12 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
             </div>
 
             {/*
-            Extra settings, which always contain the button to delete the display, 
-            they can also contain other settings that apply to the entire modal, like toggling a debug mode and 
+            Extra settings for the modal, can be removed if not needed. 
             */}
             <Show when={displaySettings()}>
                 <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
                     <div class="relative flex items-center justify-center mt-10">
-                        <button
-                            class="rounded-lg bg-red-500 hover:bg-red-600 flex items-center justify-center p-3"
-                            onClick={() => {
-                                deleteDisplay();
-                            }}>
-                            <h3>Remove Display</h3>
-                        </button>
+                        {/* Put children here */}
                     </div>
                 </div>
             </Show>
