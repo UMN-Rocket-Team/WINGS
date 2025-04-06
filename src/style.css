@@ -4,8 +4,6 @@
 
 @import "tailwindcss/utilities";
 
-@import url('https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap');
-
 /* Ensures the content always fills the entire height of the screen */
 :root, body, #root {
     height: 100%;
@@ -24,11 +22,9 @@ body {
     flex-direction: column;
 }
 
-.kode-mono-readoutFont {
-  font-family: "Kode Mono", monospace;
-  font-optical-sizing: auto;
-  font-weight: 700;
-  font-style: normal;
+@font-face {
+    font-family: "Kode Mono";
+    src: url(.\src\assets\KodeMono-VariableFont_wght.ttf);
 }
 
 /* Apply dark mode styles from the browser. Improves scroll bars, buttons, links, etc. */
