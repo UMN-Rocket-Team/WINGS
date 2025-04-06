@@ -163,16 +163,6 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                                 }}
                             </For>
                         </div>
-                        <div class="relative flex items-center justify-center mt-2">
-                            <button
-                                class="rounded-lg bg-red-500 hover:bg-red-600 flex items-center justify-center p-3"
-                                onClick={() => {
-                                    deleteGraph(props.index);
-                                    props.closeModal({});
-                                }}>
-                                <h3>Remove Display</h3>
-                            </button>
-                        </div>
                     </div>
                 </Show>
 
