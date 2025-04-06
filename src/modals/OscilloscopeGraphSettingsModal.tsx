@@ -12,9 +12,9 @@ import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
 export class OscilloscopeGraphStruct implements DisplayStruct {
-    displayName = `Graph`;
+    displayName = `Oscilloscope Graph`;
     packetID = -1;
-    type = `graph`;
+    type = `oscilloscopeGraph`;
     packetsDisplayed: boolean[] = [false];
     x = 0;
     y = [0];
@@ -27,7 +27,7 @@ export class OscilloscopeGraphStruct implements DisplayStruct {
  * @param props an object that contains a function to close the modal, the list of fields that are selected, and a callback to select a field
  */
 const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
-    if (props.displayStruct.type !== "graph") return null;
+    if (props.displayStruct.type !== "oscilloscopeGraph") return null;
 
     const { PacketStructureViewModels } = useBackend();
 
