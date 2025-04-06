@@ -85,7 +85,7 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
             {boolean.displayName}
         </div>
 
-        <div class="flex flex-wrap top-10 bottom-8 left-0 right-0 m-auto p-4 items-center justify-center gap-6 content-center w-9/10">
+        <div class="flex flex-wrap top-10 bottom-8 left-0 right-0 m-auto p-4 items-center justify-center gap-4 content-start w-9/10 overflow-auto max-h-[80vh]">
             <For each={boolean.fields}>{(item, index) => {
                 const packetComponent = getFieldComponents(item.packetID)[item.packetFieldIndex];
                 const field = () => packetComponent.data as PacketField;
@@ -138,18 +138,19 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
                 }
 
                 return <>
-                    <div class="w-[112px] aspect-square rounded-xl border-0 px-4 py-2 flex flex-col justify-center items-center max-h-[112px]"
+                    <div class="w-[112px] aspect-square rounded-xl border-0 px-2 py-2 flex flex-col justify-center items-center"
                             style={`box-shadow: 0px 0px 6px 6px ${!(getColor() === Colors.GREY) && getColor()}; 
                                 background-color: ${getColor()}`}> 
-                        <div>
-                            <div class="break-words w-full line-clamp-4 overflow-hidden text-ellipsis">{field().name}</div>
+                        <div class="break-words w-full overflow-visible">
+                            <div class="whitespace-normal"><b>{field().name}</b></div>
 
-                            <div class="grow max-h-[120px] break-words" style={{
-                                // override default macOS font with one where all the numbers are the same size
-                                "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif'
-                            }}>
+                            <div
+                                class="wrap-break-word font-sans text-ellipsis"
+                                style={{ "word-wrap": "break-word", "white-space": "pre-wrap",
+                                    "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif'
+                                }}>
                                 {getValue()}
-                            </div>                                   
+                            </div>
                         </div>
                     </div>
                 </>;
