@@ -19,10 +19,11 @@ mod file_handling;
 use std::sync::{Arc, Mutex};
 
 use communication_manager::CommunicationManager;
-use data_processing::DataProcessorState;
+use data_processing::{DataProcessor, DataProcessorState};
 use file_handling::{config_struct::ConfigStruct, log_handlers::FileHandlingState};
 use packet_structure_events::send_initial_packet_structure_update_event;
 
+use packet_structure_manager::PacketStructureManager;
 use sending_loop::SendingLoopState;
 use state::packet_structure_manager_state::default_packet_structure_manager;
 use tauri::Manager;
@@ -45,8 +46,9 @@ use crate::commands::{
 fn main() {
     //initializing all states
     let config = ConfigStruct::default();
-    let comms = CommunicationManager::default_state(Arc::new(config.packet_structure_manager.clone().into()));
-    
+    let ps_manager: Arc<Mutex<PacketStructureManager>> = Arc::new(config.packet_structure_manager.clone().into());
+    let data = DataProcessor::default_state(ps_manager.clone());
+    let comms = CommunicationManager::default_state(ps_manager.clone());
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             delete_device, 
@@ -76,15 +78,15 @@ fn main() {
         .manage(default_packet_structure_manager())
         .manage(Mutex::new(config))
         .manage(comms)
+        .manage(data)
         .manage(SendingLoopState::default())
-        .manage(DataProcessorState::default())
         .manage(FileHandlingState::default())
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
 
             app.listen_global("initialized", move |_| {
-                send_initial_packet_structure_update_event(app_handle_1.clone());
+                send_initial_packet_structure_update_event(app_handle_1.clone(),ps_manager.clone());
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
                 // program and accessed upon termination

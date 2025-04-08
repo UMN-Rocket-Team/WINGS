@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, file_handling::log_handlers::FileHandlingState, models::packet::Packet, state::generic_state::use_struct
+    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, data_processing::{DataProcessor, DataProcessorState}, file_handling::log_handlers::FileHandlingState, models::packet::Packet, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}
 };
 
 pub struct MainLoop {
@@ -16,11 +16,13 @@ pub struct MainLoop {
 impl MainLoop {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
-        app_handle.state::<CommunicationManagerState>().lock().unwrap().ps_manager.lock().unwrap().set_app(app_handle.clone());
+        let ps_manager_arc = app_handle.state::<CommunicationManagerState>().lock().unwrap().ps_manager.clone();
+        use_state_in_mutex(&ps_manager_arc, &mut |psm| psm.set_app(app_handle.clone())).expect("failed to unwrap mutex");
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(0), move || {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
                                             app_handle.state::<FileHandlingState>(),
+                                            app_handle.state::<DataProcessorState>(),
             ) {
                 Ok(result) => {
                     //sends packets to frontend
@@ -83,20 +85,20 @@ pub struct RefreshAndReadResult {
 fn iterate_receiving_loop(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     log_state: tauri::State<'_, FileHandlingState>,
+    data_state: tauri::State<'_,DataProcessorState>,
 ) -> Result<RefreshAndReadResult, Error> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
         parsed_packets: vec![],
         got_data: false,
     };
-
     // ##########################
     // Get Data
     // ##########################
     match use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         result.new_available_port_names = communication_manager.get_all_potential_devices();
         for device in communication_manager.get_initialized_devices(){
-            match communication_manager.get_data(device,&mut result.parsed_packets,&mut log_state.lock().unwrap()) {
+            match communication_manager.get_data(device,&mut  result.parsed_packets,&mut log_state.lock().unwrap()){
                 Ok(_) => {},
                 Err(err) => {
                     let context = err.chain();
@@ -105,6 +107,10 @@ fn iterate_receiving_loop(
                     }
                 }
             }
+        }
+        match use_struct(&data_state, &mut |data_processor| data_processor.daq_processing( &mut result.parsed_packets)){
+            Ok(_) => {},
+            Err(err) => return Err(anyhow!(err)),
         }
         Ok(())
     }) {
@@ -139,7 +145,7 @@ mod tests {
             .build(tauri::generate_context!())
             .expect("failed to build app");
         assert!(iterate_receiving_loop(
-            app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>()).is_ok())
+            app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>(), app_handle.state::<DataProcessorState>()).is_ok())
     }
 
     #[test]
@@ -162,7 +168,7 @@ mod tests {
         //run the main receiving loop and print if any data is received
         loop{
             let output = iterate_receiving_loop(
-                app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>());
+                app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>(),app_handle.state::<DataProcessorState>());
             match output{
                 Ok(output) => {
                     match output.new_available_port_names {
@@ -210,7 +216,7 @@ mod tests {
         //run the main receiving loop and print if any data is received
         loop{
             let output = iterate_receiving_loop(
-                app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>());
+                app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>(),app_handle.state::<DataProcessorState>());
             match output{
                 Ok(output) => {
                     match output.new_available_port_names {

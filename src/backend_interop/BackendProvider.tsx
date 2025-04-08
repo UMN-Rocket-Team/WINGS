@@ -163,27 +163,27 @@ export const BackendProvider: ParentComponent = (props) => {
     });
 
     // Uncomment for fake data
-    setInterval(() => {
-        const testPacket = PacketStructureViewModels.find(i => i.name.includes("test"));
-        if (!testPacket) {
-            throw new Error('Fake data cannot work because "test" packet is missing!');
-        }
-        const parsedPackets: Packet[] = [
-            {
-                structureId: testPacket?.id,
-                fieldData: [
-                    Date.now(), // Timestamp
-                    Math.random() *10000, // rkt_speed
-                    20, // rkt_speed_also
-                    30, // rkt_budget
-                    40, // var8
-                ],
-                metaData: [],
-            }
-        ];
-        pushParsedPackets(parsedPackets);
-        setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
-    }, 1000);
+    // setInterval(() => {
+    //     const testPacket = PacketStructureViewModels.find(i => i.name.includes("test"));
+    //     if (!testPacket) {
+    //         throw new Error('Fake data cannot work because "test" packet is missing!');
+    //     }
+    //     const parsedPackets: Packet[] = [
+    //         {
+    //             structureId: testPacket?.id,
+    //             fieldData: [
+    //                 Date.now(), // Timestamp
+    //                 Math.random() *10000, // rkt_speed
+    //                 20, // rkt_speed_also
+    //                 30, // rkt_budget
+    //                 40, // var8
+    //             ],
+    //             metaData: [],
+    //         }
+    //     ];
+    //     pushParsedPackets(parsedPackets);
+    //     setParsedPacketCount(parsedPacketCount() + parsedPackets.length);
+    // }, 1000);
 
     onCleanup((): void => {
         // Unlisten to each of the events that were listened to when this component was mounted

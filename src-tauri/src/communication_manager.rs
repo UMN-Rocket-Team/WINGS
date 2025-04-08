@@ -68,7 +68,7 @@ pub trait CommsIF {
 impl CommunicationManager {
     pub fn default_state(ps_manager: Arc<Mutex<PacketStructureManager>>) -> CommunicationManagerState{
         let mut comms_manager = CommunicationManager::default();
-        comms_manager.ps_manager = ps_manager;
+        comms_manager.ps_manager = ps_manager.clone();
         Mutex::new(comms_manager)
     }
 

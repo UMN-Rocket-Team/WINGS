@@ -22,7 +22,7 @@ impl CommsIF for AimDriver{
     ) -> Self 
     where
         Self: Sized {
-        let parser = AimParser::default(&mut packet_structure_manager.lock().expect("ps_manager_poisoned"));
+        let parser = AimParser::default(&mut packet_structure_manager.lock().expect("ps_manager_poisoned").clone());
         return AimDriver{
             device: None,
             packet_parser: parser,

@@ -12,6 +12,12 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     daq_structure.name = "daq".to_owned();
     packet_structure_manager.register_packet_structure(&mut daq_structure).expect("Failed to register daq packet");
 
+    let mut daq_structure = PacketStructure::default();
+    daq_structure.ez_make("aa692054686572aa F64 F64 F64 F64 F64 F64 aa6f6f64627965aa",
+        &["Time","PSI","Newtons","Impulse","Burn_time","Max_pressure"], false);
+    daq_structure.name = "daq_adv".to_owned();
+    packet_structure_manager.register_packet_structure(&mut daq_structure).expect("Failed to register daq packet");
+
     let mut draw_structure = PacketStructure::default();
     draw_structure.ez_make("ba5eba11 d5a1d5a1 F64 F64 F64 d5a1d5a1 ca11ab1e",
         &["Timestamp","rkt_speed","rkt_speed_also"],false);

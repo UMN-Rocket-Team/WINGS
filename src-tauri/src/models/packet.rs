@@ -37,6 +37,14 @@ impl PacketFieldValue {
             _ => {},
         }
     }
+    pub fn new_number(&mut self, callback: &mut dyn FnMut(&mut f64) -> f64)-> PacketFieldValue {
+        let mut new_number = self.clone();
+        match &mut new_number {
+            PacketFieldValue::Number(i) => {*i = callback(i)},
+            _ => {},
+        }
+        return new_number
+    }
     /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
     pub fn to_le_bytes(&self,field_type: PacketFieldType) -> anyhow::Result<Vec<u8>> {
         // Need to return a vec here instead of a [u8] as the size is not constant

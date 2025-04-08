@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use crate::{file_handling::config_struct::{ConfigState, ConfigStruct}, models::packet_view_model::PacketStructureViewModel, state::generic_state::use_struct};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
@@ -32,13 +34,12 @@ pub fn emit_packet_structure_update_event(
             packet_view_model_updates.push(PacketStructureViewModelUpdate::Delete(packet_view_model_id));
         }
     }
-
     app_handle
         .emit_all("packet-structures-update", &packet_view_model_updates)
         .unwrap();
 }
 
-pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
+pub fn send_initial_packet_structure_update_event(app_handle: AppHandle,packet_structure_manager: Arc<Mutex<PacketStructureManager>>) {
     match use_struct::<ConfigStruct,()>(
         &app_handle.state::<ConfigState>(),
         &mut |config| {
