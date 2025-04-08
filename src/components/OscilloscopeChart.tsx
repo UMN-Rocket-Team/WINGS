@@ -68,12 +68,7 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
         type: "line",
         data: data,
         options: {
-            // Chart.js' responsive mode is not very good. Instead, we manually use
-            // chart.resize() to update the chart's size to match a container element
-            // that we control. Fixes issue where the size of the graph could only
-            // increase and never go down.
             responsive: false,
-
             maintainAspectRatio: false,
             animation: false,
             parsing: false,
@@ -92,33 +87,6 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
                     display: true,
                     text: graph.displayName,
                 },
-                zoom: {
-                    pan: {
-                        enabled: true,
-                        mode: 'x'
-                    },
-                    zoom: {
-                        pinch: {
-                            enabled: true
-                        },
-                        wheel: {
-                            enabled: true
-                        },
-                        mode: 'x',
-                        drag: {
-                            enabled: true,
-                            modifierKey: 'ctrl'
-                        }
-                    },
-                    limits: {
-                        x: {
-                            minDelay: 0,
-                            maxDelay: 4000,
-                            minDuration: 1000,
-                            maxDuration: 20000
-                        }
-                    }
-                }
             },
             scales: {
                 x: {
@@ -130,12 +98,8 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
                         }
                     },
                     display: true,
-                    //     min: -90,
-                    //     max: 50
-                    // },
-                    // y: {
-                    //     min: -90,
-                    //     max: 50
+                    min: Date.now() - 10000, 
+                    max: Date.now(),
                 }
             },
         }
@@ -143,9 +107,7 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
 
     let lastPacketCount = initialunDecimatedPackets?.length ?? 0;
 
-    // // Add new data to the chart whenever new data is parsed by the packet parser
     createEffect(() => {
-        // Update this effect whenever the parsed packet count changes
         const _unused = parsedPacketCount();
 
         if (unDecimatedPackets[graph.packetID] === undefined) {
@@ -162,10 +124,12 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
             // console.log(config.data.datasets[i].data.length);
         }
 
+        // Update x-axis range
+        chart.options.scales!.x!.min = Date.now() - 10000;
+        chart.options.scales!.x!.max = Date.now();
 
-        lastPacketCount = packetData.length;
         chart.update();
-    }, { defer: true });
+    });
 
     onMount(() => {
         // canvas is set by ref, so elements will be defined by this point
