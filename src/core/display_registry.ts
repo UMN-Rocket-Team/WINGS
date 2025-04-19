@@ -11,6 +11,8 @@ import TemplateSettingsModal, { TemplateStruct } from "../modals/TemplateSetting
 import TemplateDisplayElement from "../components/TemplateDisplayComponent";
 import OscilloscopeGraphSettingsModal, { OscilloscopeGraphStruct } from "../modals/OscilloscopeGraphSettingsModal";
 import OscilloscopeGraphDisplayElement from "../components/OscilloscopeChart";
+import RocketSettingsModal, { RocketStruct } from "../modals/RocketSettingsModal";
+import RocketElement from "../components/Rocket";
 
 /**
  * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent
@@ -101,4 +103,12 @@ displayRegistry.set("oscilloscopeGraph", {
     structClass: OscilloscopeGraphStruct,
     settingsModal: OscilloscopeGraphSettingsModal,
     displayComponent: OscilloscopeGraphDisplayElement as Component<DisplayStruct>
-})
+});
+
+displayRegistry.set("rocket", {
+    type: "rocket",
+    displayName: "Rocket",
+    structClass: RocketStruct,
+    settingsModal: RocketSettingsModal,
+    displayComponent: RocketElement as Component<DisplayStruct>
+});
