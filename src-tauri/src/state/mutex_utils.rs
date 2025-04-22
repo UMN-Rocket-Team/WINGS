@@ -14,6 +14,7 @@ pub fn use_state_in_mutex<State, ReturnType>(
     callback: &mut dyn FnMut(&mut State) -> ReturnType,
 ) -> Result<ReturnType, String>
 {
+    //println!("locking! {:?}", std::any::type_name::<State>());
     let locked_mutex_result = mutex.lock();
 
     if locked_mutex_result.is_err() {
@@ -21,6 +22,7 @@ pub fn use_state_in_mutex<State, ReturnType>(
     }
 
     let state = &mut *locked_mutex_result.unwrap();
-
-    Ok(callback(state))
+    let result = callback(state);
+    //println!("unlocking! {}", std::any::type_name::<State>());
+    Ok(result)
 }

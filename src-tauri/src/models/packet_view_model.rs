@@ -123,7 +123,7 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
     // This loop checks for a gap *after* the component at index `i`.
     // The last component by definition can't have a gap after it.
     // Must iterate backwards because we are adding items as we loop.
-    for i in (0..(components.len() - 1)).rev() {
+    for i in (0..(components.len().checked_sub(1).unwrap_or(0))).rev() {
         let component = &components[i];
 
         let current_component_end = component.get_offset_in_packet() + component.len();

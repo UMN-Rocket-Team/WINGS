@@ -2,7 +2,7 @@ use std::{str::from_utf8, sync::{Arc, Mutex}};
 
 use anyhow::bail;
 
-use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
+use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex};
 
 use super::teledongle_packet_parser::AltosPacketParser;
 const PRINT_PARSING: bool = false;
@@ -90,7 +90,10 @@ impl CommsIF for TeleDongleDriver {
         // Clone to a vec so we can return it easily, especially as we don't
         // know how large it will end up being at compile time.
         self.packet_parser.push_data(&decoded, PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
+        use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
+            write_buffer.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
+            Ok(())
+        }).expect("poison!")?;
         Ok(())
     }
 
@@ -142,7 +145,10 @@ impl CommsIF for TeleDongleDriver {
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(&data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
+        use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
+            packet_vector.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
+            Ok(())
+        }).expect("poison!")?;
         return Ok(());
     }
 }

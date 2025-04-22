@@ -6,7 +6,7 @@
 use crate::{
     communication_manager::CommsIF,
     models::packet::Packet,
-    packet_structure_manager::PacketStructureManager,
+    packet_structure_manager::PacketStructureManager, state::{mutex_utils::use_state_in_mutex},
 };
 use anyhow::{bail, Context};
 use std::{fs::File, io::Read, sync::{Arc, Mutex}};
@@ -81,11 +81,14 @@ impl CommsIF for ByteReadDriver {
                         return Ok(());
                     }
                     self.packet_parser.push_data(&buffer, PRINT_PARSING);
-                    write_buffer.extend_from_slice(
-                        &self
-                            .packet_parser
-                            .parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?,
-                    );
+                    use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager: &mut PacketStructureManager| -> anyhow::Result<()>{
+                        write_buffer.extend_from_slice(
+                            &self
+                                .packet_parser
+                                .parse_packets(ps_manager, PRINT_PARSING)?
+                        );
+                        Ok(())
+                    }).expect("poison!");
                     Ok(())
                 }
                 Err(err) => bail!(err),
@@ -123,11 +126,13 @@ impl CommsIF for ByteReadDriver {
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(
+        return use_state_in_mutex(&self.packet_structure_manager, &mut|ps_manager| -> anyhow::Result<()>{
+            packet_vector.extend_from_slice(
             &self
                 .packet_parser
-                .parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?,
-        );
-        return Ok(());
+                .parse_packets(ps_manager, PRINT_PARSING)?
+            );
+            return Ok(());
+        }).expect("poison!");
     }
 }

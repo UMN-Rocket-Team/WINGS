@@ -54,8 +54,8 @@ pub struct PacketIdList {
 
 /// responsible converting raw data to packets
 impl AimParser {
-
     pub fn default(ps_manager: &mut PacketStructureManager) -> AimParser{
+        println!("Creating Aim!");
         return AimParser{
             init_time: SystemTime::now(),
             packet_ids: PacketIdList{

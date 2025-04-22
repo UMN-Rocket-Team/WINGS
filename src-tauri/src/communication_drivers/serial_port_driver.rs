@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
 
-use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
+use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}};
 
 use super::serial_packet_parser::SerialPacketParser;
 
@@ -83,7 +83,10 @@ impl CommsIF for SerialPortDriver{
         let bytes_read = active_port.read(&mut buffer)?;
 
         self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        write_buffer.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
+        use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
+            write_buffer.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
+            Ok(())
+        }).expect("poison!")?;
         Ok(())
     }
 
@@ -116,7 +119,10 @@ impl CommsIF for SerialPortDriver{
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        packet_vector.extend_from_slice(&self.packet_parser.parse_packets(&self.packet_structure_manager.lock().unwrap(), PRINT_PARSING)?); 
+        use_state_in_mutex(&self.packet_structure_manager, &mut|parser|-> anyhow::Result<()> {
+            packet_vector.extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?); 
+            Ok(())
+        }).expect("Poison!")?;
         return Ok(());
     }
 

@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, data_processing::{DataProcessor, DataProcessorState}, file_handling::log_handlers::FileHandlingState, models::packet::Packet, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}
+    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, data_processing::DataProcessorState, file_handling::log_handlers::FileHandlingState, models::packet::Packet, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}
 };
 
 pub struct MainLoop {
@@ -16,8 +16,10 @@ pub struct MainLoop {
 impl MainLoop {
     pub fn new(app_handle: AppHandle) -> Self {
         let timer = Timer::new();
-        let ps_manager_arc = app_handle.state::<CommunicationManagerState>().lock().unwrap().ps_manager.clone();
-        use_state_in_mutex(&ps_manager_arc, &mut |psm| psm.set_app(app_handle.clone())).expect("failed to unwrap mutex");
+        use_state_in_mutex(&app_handle.state::<CommunicationManagerState>(), &mut |comms_manager| {
+            let ps_manager_arc = comms_manager.ps_manager.clone();
+            use_state_in_mutex(&ps_manager_arc, &mut |psm| psm.set_app(app_handle.clone())).expect("poison!");
+        }).expect("poison!");
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(0), move || {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
@@ -98,15 +100,17 @@ fn iterate_receiving_loop(
     match use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         result.new_available_port_names = communication_manager.get_all_potential_devices();
         for device in communication_manager.get_initialized_devices(){
-            match communication_manager.get_data(device,&mut  result.parsed_packets,&mut log_state.lock().unwrap()){
-                Ok(_) => {},
-                Err(err) => {
-                    let context = err.chain();
-                    for i in context{
-                        eprintln!("coms manager: {:#?}", i);
+            use_struct(&log_state, &mut|log|{
+                match communication_manager.get_data(device,&mut  result.parsed_packets,log){
+                    Ok(_) => {},
+                    Err(err) => {
+                        let context = err.chain();
+                        for i in context{
+                            eprintln!("coms manager: {:#?}", i);
+                        }
                     }
                 }
-            }
+            }).expect("failed to use da log state")
         }
         match use_struct(&data_state, &mut |data_processor| data_processor.daq_processing( &mut result.parsed_packets)){
             Ok(_) => {},

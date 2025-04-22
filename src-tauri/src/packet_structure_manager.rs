@@ -110,7 +110,7 @@ impl PacketStructureManager {
             Some(id) => return_id = *id,
             None => {
                 match self.register_packet_structure(&mut PacketStructure::make_default(name.to_owned())){
-                    Ok(new_id) => return new_id,
+                    Ok(new_id) => {return_id = new_id},
                     Err(Error::NameAlreadyRegistered(registered_id)) => return_id = registered_id,
                     Err(err) => panic!("encountered unknown error: {:?}", err)
                 }

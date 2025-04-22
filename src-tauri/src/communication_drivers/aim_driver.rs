@@ -3,7 +3,7 @@ use std::{ffi::CString, sync::{Arc, Mutex}, thread::sleep, time::Duration};
 use anyhow::bail;
 use hidapi::{HidApi, HidDevice};
 
-use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager};
+use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}};
 
 use super::aim_parser::AimParser;
 pub struct AimDriver {
@@ -18,18 +18,20 @@ impl CommsIF for AimDriver{
     
      ///creates a new instance of a comms device with the given packet structure manager
      fn new(
-        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_structure_manager: Arc<std::sync::Mutex<PacketStructureManager>>,
     ) -> Self 
     where
         Self: Sized {
-        let parser = AimParser::default(&mut packet_structure_manager.lock().expect("ps_manager_poisoned").clone());
-        return AimDriver{
-            device: None,
-            packet_parser: parser,
-            baud: 0,
-            id: 0,
-            last_read: [0;64],
-        }
+        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
+            let parser = AimParser::default(ps_manager);
+            return AimDriver{
+                device: None,
+                packet_parser: parser,
+                baud: 0,
+                id: 0,
+                last_read: [0;64],
+            }
+        }).expect("poison!")
     }
 
     /// used to connect the object with a specific device
