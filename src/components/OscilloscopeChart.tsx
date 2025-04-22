@@ -43,6 +43,8 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
         unDecimatedPackets[graph.packetID] = [];
     }
 
+    const timeWindowSize = graph.timeWindowSize * 1000; // Convert to ms
+
     const initialunDecimatedPackets = unDecimatedPackets[graph.packetID];
     const ratio = initialunDecimatedPackets.length / 100;
     let datasets = []
@@ -63,6 +65,8 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
             chart.resize(change.contentRect.width, change.contentRect.height);
         }
     });
+
+    const packetData = unDecimatedPackets[graph.packetID];
 
     const config: ChartConfiguration<keyof ChartTypeRegistry, Point[], unknown> = {
         type: "line",
@@ -98,8 +102,8 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
                         }
                     },
                     display: true,
-                    min: Date.now() - 10000, 
-                    max: Date.now(),
+                    min: initialunDecimatedPackets[initialunDecimatedPackets.length - 1]?.fieldData[graph.x] - timeWindowSize, 
+                    max: initialunDecimatedPackets[initialunDecimatedPackets.length - 1]?.fieldData[graph.x],
                 }
             },
         }
@@ -114,19 +118,20 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
             unDecimatedPackets[graph.packetID] = [];
         }
         const packetData = unDecimatedPackets[graph.packetID];
+        
 
         if (packetData === undefined || chart === undefined) {
             return;
         }
+        console.log(datasets.length);
         for (let i = 0; i < datasets.length; i++) {
-            // config.data.datasets[i].data.push(...packetData.slice(lastPacketCount).map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] })));
             config.data.datasets[i].data = packetData.map(packetData => ({ x: packetData.fieldData[graph.x], y: packetData.fieldData[graph.y[i]] }));
-            // console.log(config.data.datasets[i].data.length);
         }
 
+        const xData = packetData[packetData.length - 1]?.fieldData[graph.x]; 
         // Update x-axis range
-        chart.options.scales!.x!.min = Date.now() - 10000;
-        chart.options.scales!.x!.max = Date.now();
+        chart.options.scales!.x!.min = xData - timeWindowSize;
+        chart.options.scales!.x!.max = xData;
 
         chart.update();
     });
@@ -171,12 +176,6 @@ const OscilloscopeGraphDisplayElement: Component<OscilloscopeGraphStruct> = (pro
                 // fixed width so that would prevent the container from shrinking.
                 class="absolute"
             />
-            <button
-                class="absolute top-2 right-2 bg-gray-500 text-white p-3 text-xs rounded hover:bg-gray-600"
-                onClick={() => chart?.resetZoom('none')}
-            >
-                Reset Zoom
-            </button>
         </div>
     );
 };
