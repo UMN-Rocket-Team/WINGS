@@ -19,6 +19,7 @@ export class OscilloscopeGraphStruct implements DisplayStruct {
     x = 0;
     y = [0];
     colors = ["#FFD700", "#0000FF", "#000000", "#FF0000", "#00FF00"];
+    timeWindowSize = 20; // Time window size in seconds
 }
 
 /**
@@ -33,9 +34,8 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
     const [graphCurrName, setName] = createSignal(props.displayStruct.displayName);
-
+    const [currTimeWindow, setCurrTimeWindow] = createSignal((props.displayStruct as OscilloscopeGraphStruct).timeWindowSize);
     const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as OscilloscopeGraphStruct);
-
     const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
@@ -122,13 +122,26 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
             (s[graphIndex] as OscilloscopeGraphStruct).colors[colorIndex] = color));
         store.set("display", displays);
     }
+    
+    /**
+     * @brief Updates the time window size the oscilloscope graph
+     * @param newWindowSize The new size of the time window (in seconds)
+     * @param graphIdx The index of the graph in the displays array to update
+     */
+    const updateTimeWindow = (newWindowSize: number, graphIdx: number) => {
+        setDisplays(produce((s) =>
+            (s[graphIdx] as OscilloscopeGraphStruct)!.timeWindowSize = newWindowSize));
+        store.set("display", displays);
+    }
+
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
 
             <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit'>
                 <Show when={displayInfo()}>
                     <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
-                        Customizable graph for visualizing data. Ability to zoom in on data, drag through data. Hold ctrl + drag over display for drag and zoom.
+                        Customizable graph for visualizing data. Displays new data on the right while pushing out old data to the left, 
+                        creating a sliding window effect. Useful for realtime display of time-series data. Time window is customizable.
                     </div>
                 </Show>
 
@@ -162,6 +175,26 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
                                     );
                                 }}
                             </For>
+                        </div>
+                        <div class="flex flex-col bg-neutral-300 dark:bg-neutral-700 p-4 text-center items-center">
+                            <h2 class="font-bold">Time Window (in seconds)</h2>
+                            <input
+                                type="number"
+                                min="1"
+                                value={currTimeWindow()}
+                                class="w-16 max-h-6"
+                                onchange={(e) => {
+                                    const target = e.target as HTMLInputElement;
+                                    let newTimeWindow = Number(target.value);
+                                    if (newTimeWindow < 1) {
+                                        target.value = "1";
+                                        newTimeWindow = 1;
+                                    }
+
+                                    updateTimeWindow(newTimeWindow, props.index);
+                                    setCurrTimeWindow(newTimeWindow);
+                                }}
+                            />
                         </div>
                     </div>
                 </Show>
