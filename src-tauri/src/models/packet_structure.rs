@@ -95,6 +95,7 @@ impl PacketStructure {
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
     pub fn ez_make(&mut self, input: &str, names: &[&str], reverse_delimeter: bool) {
+        print!("{}\n",input);
         self.byte_defined = true;
         let mut curr_offset = 0;
         for substr in input.split(" ") {
@@ -137,7 +138,7 @@ impl PacketStructure {
                         "i64" => {offset = 8; t = PacketFieldType::SignedLong},
                         "F32" => {offset = 4; t = PacketFieldType::Float},
                         "F64" => {offset = 8; t = PacketFieldType::Double},
-                        &_ => {offset = 0; t = PacketFieldType::UnsignedByte},
+                        &_ => {panic!("invalid packet field: {}", substr)},
                 }
                 curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
                 let new_field = PacketField{

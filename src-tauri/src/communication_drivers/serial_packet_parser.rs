@@ -1,7 +1,7 @@
 use std::cmp::max;
 
 use crate::{
-    models::packet::{Packet, PacketFieldValue},
+    models::packet::{self, Packet, PacketFieldValue},
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -40,6 +40,9 @@ impl SerialPacketParser {
             // Try to find a matching packet for the data
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
+                if !packet_structure.byte_defined{
+                    continue;
+                }
                 if print_flag {
                     println!("At index {}, matching structure {}", i, j);
                 }

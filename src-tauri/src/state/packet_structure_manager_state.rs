@@ -47,67 +47,42 @@ pub fn default_packet_structure_manager() -> PacketStructureManager {
     //UFC Hardcoded packets start here
     //################################
     
-    //UFC Raw
-    let mut ufc_raw_data_structure = PacketStructure::default();
-    ufc_raw_data_structure.ez_make("ba5eba11 0001 _2 i64 i16 i16 i16 u16 u16 u16 u16 u16 u16 u16 u16 u8 u8 u8 i16 i16 i16 i16 i16 i16 i16 i16 i16 _4 ca11ab1e",
-    &["Timestamp",
-            "acc16g_X" ,"acc16g_Y" ,"acc16g_Z",
-            "gyroX"    ,"gyroY"    ,"gyroZ",
-            "magX"     ,"magY"     ,"magZ",
-            "therm","press",
-            "acc100g_X","acc100g_Y","acc100g_Z",
-            "accBNO_X" ,"accBNO_Y" ,"accBNO_Z",
-            "gyroBNO_X","gyroBNO_Y","gyroBNO_Z",
-            "magBNO_X" ,"magBNO_Y" ,"magBNO_Z"],true);
-    ufc_raw_data_structure.name = "UFC_raw_data".to_owned();
-    packet_structure_manager.register_packet_structure(&mut ufc_raw_data_structure).expect("Failed to register raw data packet");
+    
+    let mut ufc_alt_structure = PacketStructure::default();
+    ufc_alt_structure.ez_make("ba5eba11 u32 u8 u8 u16 F32 F32 ca11ab1e",
+    &["Timestamp","pkt_type","state","pkt_len","temperature","pressure"],true);
+    ufc_alt_structure.name = "ufc_alt_structure".to_owned();
+    packet_structure_manager.register_packet_structure(&mut ufc_alt_structure).expect("Failed to register test packet");
 
-    //UFC Real
-    let mut ufc_real_units_structure = PacketStructure::default();
-    ufc_real_units_structure.ez_make("ba5eba11 0002 _2 i64 F32 F32 F32 F32 F32 F32 i16 i16 i16 F32 F32 F32 _4 ca11ab1e",
-&["Timestamp",
-        "acc100g_X","acc100g_Y","acc100g_Z",
-        "acc16g_X" ,"acc16g_Y" ,"acc16g_Z",
-        "gyroX"    ,"gyroY"    ,"gyroZ",
-        "magX"     ,"magY"     ,"magZ",],true);
-    ufc_real_units_structure.name = "UFC_real_data".to_owned();
-    packet_structure_manager.register_packet_structure(&mut ufc_real_units_structure).expect("Failed to register real data packet");
-
-    //UFC BNO
     let mut ufc_bno_structure = PacketStructure::default();
-    ufc_bno_structure.ez_make("ba5eba11 0004 _2 i64 F32 F32 F32 F32 F32 F32 F32 F32 F32 _4 ca11ab1e",
-&["Timestamp",
-        "acc_X" ,"acc_Y" ,"acc_Z",
-        "gyro_X","gyro_Y","gyro_Z",
-        "mag_X" ,"mag_Y" ,"mag_Z",],true);
-        ufc_bno_structure.name = "UFC_BNO_data".to_owned();
-    packet_structure_manager.register_packet_structure(&mut ufc_bno_structure).expect("Failed to register bno packet");
+    ufc_bno_structure.ez_make("ba5eba11 u32 u8 u8 u16 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
+    &["Timestamp","pkt_type","state","pkt_len",
+    "acc_x","acc_y","acc_z",
+    "gyro_x","gyro_y","gyro_z",
+    "eul_heading","eul_roll","eul_pitch"],true);
+    ufc_bno_structure.name = "ufc_bno_structure".to_owned();
+    packet_structure_manager.register_packet_structure(&mut ufc_bno_structure).expect("Failed to register test packet");
 
-    //UFC Temp Baro
-    let mut ufc_baro_structure = PacketStructure::default();
-    ufc_baro_structure.ez_make("ba5eba11 0008 _2 i64 F32 F32 _4 ca11ab1e",
-&["Timestamp",
-        "therm","press"],true);
-        ufc_baro_structure.name = "UFC_temp_baro_data".to_owned();
-    packet_structure_manager.register_packet_structure(&mut ufc_baro_structure).expect("Failed to register temp-baro packet");
-
-    //UFC GPS 
     let mut ufc_gps_structure = PacketStructure::default();
-    ufc_gps_structure.ez_make("ba5eba11 0010 _2 i64 u32 u8 u8 u8 i32 u32 F32 F32 u32 u32 u8 u8 u32 u32 F32 i32 i32 i32 u32 _4 ca11ab1e",
-    &["Timestamp",
-            "time_of_week",
-            "time_hour","time_min","time_sec",
-            "time_nanosec",
-            "time_accuracy",
-            "pos_lat","pos_lon",
-            "height_msl","height_elip",
-            "fixType","numSatellites",
-            "verticalAccuracy","horizontalAccuracy",
-            "pDOP",
-            "vel_north","vel_east","vel_down",
-            "velAccuracy"],true);
-    ufc_gps_structure.name = "UFC_gps_data".to_owned();
-    packet_structure_manager.register_packet_structure(&mut ufc_gps_structure).expect("Failed to register gps packet");
+    ufc_gps_structure.ez_make("ba5eba11 u32 u8 u8 u16 u32 u8 u8 u8 _1 i32 u32 F32 F32 u32 u32 u8 _2 u32 u32 F32 i32 i32 i32 u32 ca11ab1e",
+    &["Timestamp","pkt_type","state","pkt_len","time_of_week","time_hour",
+    "time_min","time_sec","time_nanosec","timeAccuracy","pos_lat",
+    "pos_lon","height_msl","height_elip","fixType","numSatellites",
+    "verticalAccuracy","horizontalAccuracy","pDOP","vel_north",
+    "vel_east","vel_down","vel_accuracy"],true);
+    ufc_gps_structure.name = "ufc_gps_structure".to_owned();
+    packet_structure_manager.register_packet_structure(&mut ufc_gps_structure).expect("Failed to register test packet");
+
+    let mut ufc_sense_structure = PacketStructure::default();
+    ufc_sense_structure.ez_make("ba5eba11 u32 u8 u8 u16 F32 F32 F32 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
+    &["Timestamp","pkt_type","state","pkt_len",
+    "low_accel_x","low_accel_y","low_accel_z",
+    "high_accel_x","high_accel_y","high_accel_z",
+    "mag_x","mag_y","mag_z",
+    "gyro_x","gyro_y","gyro_z"
+    ],true);
+    ufc_sense_structure.name = "ufc_sense_structure".to_owned();
+    packet_structure_manager.register_packet_structure(&mut ufc_sense_structure).expect("Failed to register test packet");
 
     let mut ufc_test_structure = PacketStructure::default();
     ufc_test_structure.ez_make("ba5eba11 0040 _2 i64 u16 u16 u8 u8 _4 ca11ab1e",
