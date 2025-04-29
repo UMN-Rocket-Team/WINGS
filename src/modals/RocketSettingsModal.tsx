@@ -33,7 +33,7 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
     const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as RocketStruct);
-    
+
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
         infoIconRef?.addEventListener("mouseout", (e) => {
@@ -64,7 +64,7 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
 
     const setDisplayName = (newName: string, index: number) => {
         setDisplays(produce(s => {
-            s[index].displayName = newName;
+            s[index]!.displayName = newName;
         }));
         store.set("display", displays);
     };
@@ -73,14 +73,14 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
         // Need to clear fields before removing display
         setDisplays(produce(s => {
             const struct = s[props.index] as RocketStruct;
-            struct.fields =[];
+            struct.fields = [];
         }));
         store.set("display", displays);
-        
+
         setDisplays(displays.filter((_, index) => index !== props.index));
         store.set("display", displays);
         props.closeModal({});
-    }
+    };
 
     const getStructField = (packetId: number, fieldIndex: number): Number | undefined => {
         if (props.displayStruct.packetID !== packetId) {
@@ -114,26 +114,26 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
             {/*More info button*/}
             <Show when={displayInfo()}>
                 <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
-                    <p class="max-w-prose">This is a Template Settings Modal, and should not be shown to the user</p>
-                </div>            
+                    <p class="max-w-prose">Determine which packets will affect how the rocket is rendered</p>
+                </div>
             </Show>
-            
+
             {/*name of the display, along with the Extra settings button*/}
             <div class='flex flex-row leading-none justify-between mb-4'>
                 <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]" 
+                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]"
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
                 </h3>
 
-                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)} 
+                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)}
                     class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
             </div>
 
             {/*
-            Extra settings, which always contain the button to delete the display, 
-            they can also contain other settings that apply to the entire modal, like toggling a debug mode and 
+            Extra settings, which always contain the button to delete the display,
+            they can also contain other settings that apply to the entire modal, like toggling a debug mode and
             */}
             <Show when={displaySettings()}>
                 <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
@@ -160,8 +160,8 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                             }));
                             store.set("display", displays);
                         }}>
-                        <img alt="Dropdown" src={dropdownIcon} 
-                            class={`h-4 dark:invert`} 
+                        <img alt="Dropdown" src={dropdownIcon}
+                            class={`h-4 dark:invert`}
                             style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
                             draggable={false}/>
                         <h3 class='font-bold'>{packetViewModel.name}</h3>
@@ -176,7 +176,7 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                                 return <label class="flex flex-row cursor-pointer">
                                     {/**
                                      * Lets the user select specific packets for use,.
-                                     * If there are settings for each packet on the screen (like the ability to rename a field or assign it a color), 
+                                     * If there are settings for each packet on the screen (like the ability to rename a field or assign it a color),
                                      * they should also be edited from here
                                      */}
                                     <input
