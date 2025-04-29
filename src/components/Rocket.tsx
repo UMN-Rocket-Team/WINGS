@@ -9,6 +9,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     const BODY_TUBE_LENGTH = 37;
     const NOSE_CONE_LENGTH = 5;
     const NUM_FINS = 4;
+    const FIN_WIDTH = 0.1;
 
     // In inches from tip of nose cone.
     const CENTER_OF_GRAVITY = 27.342;
@@ -83,20 +84,27 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     finShape.lineTo(1 - 0.75, 1);
     finShape.lineTo(1 - 1.25, 1);
     finShape.lineTo(1 - 1, 0);
-    const finGeometry = new THREE.ShapeGeometry(finShape);
-    finGeometry.scale(3.5, 3.5, 3.5);
-    finGeometry.rotateZ(Math.PI / 2);
+    const finMesh = new THREE.ExtrudeGeometry(finShape, {
+        depth: FIN_WIDTH,
+        bevelEnabled: true,
+        bevelSegments: 1,
+        bevelSize: 0,
+        bevelThickness: 0
+    });
+    finMesh.translate(0, 0, -FIN_WIDTH / 2);
+    finMesh.scale(3.5, 3.5, 3.5);
+    finMesh.rotateZ(Math.PI / 2);
 
     // All the fins are the same geometry so instanced rendering (faster) can be used.
-    const instancedFins = new THREE.InstancedMesh(finGeometry, finMaterial, NUM_FINS);
+    const instancedFins = new THREE.InstancedMesh(finMesh, finMaterial, NUM_FINS);
     for (let i = 0; i < NUM_FINS; i++) {
         // This mesh is only used for doing matrix calculations
         const dummy = new THREE.Mesh();
 
         const angle = (2 * Math.PI / NUM_FINS) * i;
         dummy.rotateY(angle + Math.PI / 2);
-        dummy.position.z = BODY_TUBE_RADIUS * Math.cos(angle);
-        dummy.position.x = BODY_TUBE_RADIUS * Math.sin(angle);
+        dummy.position.z = (BODY_TUBE_RADIUS ) * Math.cos(angle);
+        dummy.position.x = (BODY_TUBE_RADIUS ) * Math.sin(angle);
         dummy.position.y = -(BODY_TUBE_LENGTH + NOSE_CONE_LENGTH);
 
         // Update the matrix for the instances mesh
