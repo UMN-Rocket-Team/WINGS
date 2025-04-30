@@ -113,10 +113,12 @@ impl CommsIF for ByteReadDriver {
     }
 
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
+        let mut buffer: [u8; 4096] = [0; 4096];
         self.file
             .as_mut()
             .context("failed to load file")?
-            .read(data_vector)?; //question mark operator returns error if we fail
+            .read(&mut buffer)?; //question mark operator returns error if we fail
+        data_vector.append(&mut buffer.to_vec());
         return Ok(()); // returns ok if everything succeeded
     }
 

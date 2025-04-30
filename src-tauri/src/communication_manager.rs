@@ -196,12 +196,21 @@ impl CommunicationManager {
     pub fn init_device(&mut self, port_name: &str, baud: u32, id: usize) -> anyhow::Result<()> {
         let index = self.find(id,false);
         match index {
-            Some(index) => match self.comms_objects[index].init_device(
-                self.name_to_value.get(port_name).ok_or(anyhow::anyhow!("Could not find a device with that name"))?,
-                baud,
-            ) {
-                Ok(_) => Ok(()),
-                Err(message) => Err(message)
+            Some(index) => {
+                let name;
+                if self.comms_objects[index].get_type() == "ByteFile"{
+                    name = port_name;
+                }
+                else{
+                    name = self.name_to_value.get(port_name).ok_or(anyhow::anyhow!("Could not find a device with that name"))?;
+                }
+                match self.comms_objects[index].init_device(
+                    name,
+                    baud,
+                ) {
+                    Ok(_) => Ok(()),
+                    Err(message) => Err(message)
+                }
             },
             None => bail!(format!(
                 "could not find a device with that ID: {} {}",
