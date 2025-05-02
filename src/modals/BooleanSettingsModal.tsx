@@ -98,7 +98,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
         <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit'>
             <Show when={displayInfo()}>
-                <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
+                <div class="absolute bg-gray-200 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                     <p class="max-w-prose">Monitors chosen variables and displays lights that indicate whether data satisfies input inequalities or not.</p>
                 </div>
             </Show>
@@ -149,7 +149,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                 type="number"
                                                 value={structField()!.unit?.left}
                                                 class="w-16 max-h-6"
-                                                onchange={(e) => {
+                                                onChange={(e) => {
                                                     const target = e.target as HTMLInputElement;
                                                     setDisplays(produce(s => {
                                                         const struct = (s[props.index] as BooleanStruct);
@@ -189,7 +189,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                             type="checkbox"
                                             checked={!!structField()}
                                             class="mr-1 cursor-pointer"
-                                            onchange={(e) => {
+                                            onChange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setActive(packetViewModel.id, packetField.index, target.checked);
                                             }}
@@ -222,7 +222,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                             type="number"
                                             value={structField()!.unit?.right}
                                             class="w-16 max-h-6"
-                                            onchange={(e) => {
+                                            onChange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setDisplays(produce(s => {
                                                     const struct = (s[props.index] as BooleanStruct);
@@ -246,7 +246,7 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                 id={`range-select-${packetViewModel.id}-${packetField.index}`}
                                                 checked={getComponentField()?.isRange}
                                                 class="ml-1 cursor-pointer"
-                                                onchange={(e) => {
+                                                onChange={(e) => {
                                                     const target = e.target as HTMLInputElement;
                                                     setDisplays(produce(s => {
                                                         const struct = (s[props.index] as BooleanStruct);

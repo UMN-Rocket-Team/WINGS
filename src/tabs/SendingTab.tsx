@@ -79,8 +79,8 @@ const SendingTab: Component = () => {
 
     return (
         <div class="flex flex-grow gap-4">
-            <div class="flex flex-grow flex-col gap-4">
-                <button
+            <div class="flex flex-grow flex-col gap-4" style = {{"flex":"3"}}>
+                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"
                     onClick={async () => {
                         const store = new Store("persistent.dat");
                         const recentPaths = (await store.get("recentSaves") || []) as string[];
@@ -91,22 +91,24 @@ const SendingTab: Component = () => {
                     }}>
                     addPath&#40;s&#41;
                 </button>
-                <button onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addRfd() }}>
+                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md" onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addRfd() }}>
                     add SerialPort
                 </button>
-                <button onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAltusMetrum() }}>
+                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAltusMetrum() }}>
                     add AltusMetrum Product
                 </button>
-                <button onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAim() }}>
+                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAim() }}>
                     add AimXtra
                 </button>
                 <For each={comDeviceList()}>
                     {(device, device_index) =>
                         <label for="DeviceInput" class="px-2 m-0">
                             <span>{device.device_type} {device.id} </span>
-                            <input name="Device" id="DeviceInput" class="w-1/2" autocomplete="off"
+                            <input name="Device" id="DeviceInput" class="w-1/2, border-b-2 border-white" autocomplete="off"
                                 list="dataDevices" value={comDeviceSelections[device_index()].selection ?? ""}
-                                onChange={event => applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)} />
+                                onChange={event => {
+                                    console.log((event.target as HTMLInputElement).value!);
+                                    applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)}} />
                             <button onClick={() => {
                                 deleteDevice(device.id);
                                 setComDeviceSelections(comDeviceSelections.filter((_, index) => device_index() != index));
@@ -123,44 +125,13 @@ const SendingTab: Component = () => {
                     </For>
                 </datalist>
             </div>
-            <div class="flex flex-grow flex-col gap-4">
+            < div class="flex-1"/>
+            {/* <div class="flex- flex-grow flex-col gap-4">
                 <datalist id="radioTestAvailablePorts">
                     <For each={comDeviceList()}>
                         {(device) => <option value={device.id} />}
                     </For>
                 </datalist>
-                <datalist id="commonBauds">
-                    <option value="4800" />
-                    <option value="9600" />
-                    <option value="19200" />
-                    <option value="38400" />
-                    <option value="57600" />
-                    <option value="115200" />
-                    <option value="230400" />
-                    <option value="460800" />
-                    <option value="921600" />
-                </datalist>
-                <label class="flex gap-1 items-center">
-                    <span>baud:</span>
-                    <input
-                        class="border border-gray-400 rounded flex-grow px-2 py-1 dark:border-gray-600"
-                        list="commonBauds"
-                        min={0}
-                        value={baud()}
-                        onBeforeInput={(e) => {
-                            if (e.data?.match(/[^0-9]/) ?? false) {
-                                e.preventDefault();
-                            }
-                        }}
-                        onChange={(e) => {
-                            const el = e.target as HTMLInputElement;
-                            const val = el.value.trim() === '' ? 57600 : Math.max(0, +el.value);
-                            el.value = val.toString();
-                            setBaud(val);
-                        }}
-                    />
-                    <span>ms</span>
-                </label>
                 <label class="flex gap-1">
                     <span>Sending radio Device:</span>
                     <input class="border border-gray-400 rounded flex-grow dark:border-gray-600" autocomplete="off" list="radioTestAvailablePorts"
@@ -205,8 +176,8 @@ const SendingTab: Component = () => {
                 >
                     {isSimulating() ? "Stop Sending" : "Start Sending"}
                 </button>
-            </div>
-            <div class="flex flex-grow flex-col gap-4">
+            </div> */}
+            <div class="flex flex-2 flex-grow flex-col gap-4" style = {{"flex":"2"}}>
                 <p><b>Sent: </b>{sendingLoopState()?.packetsSent} packets</p>
                 <p><b>Received: </b>{parsedPacketCount()} packets</p>
                 <button
@@ -218,7 +189,41 @@ const SendingTab: Component = () => {
                 >
                     data_indicator
                 </button>
+                <br />
+                <datalist id="commonBauds">
+                    <option value="4800" />
+                    <option value="9600" />
+                    <option value="19200" />
+                    <option value="38400" />
+                    <option value="57600" />
+                    <option value="115200" />
+                    <option value="230400" />
+                    <option value="460800" />
+                    <option value="921600" />
+                </datalist>
+                <label class="flex gap-1 items-center">
+                    <span>baud:</span>
+                    <input
+                        class="border border-gray-400 rounded flex-grow px-2 py-1 dark:border-gray-600"
+                        list="commonBauds"
+                        min={0}
+                        value={baud()}
+                        onBeforeInput={(e) => {
+                            if (e.data?.match(/[^0-9]/) ?? false) {
+                                e.preventDefault();
+                            }
+                        }}
+                        onChange={(e) => {
+                            const el = e.target as HTMLInputElement;
+                            const val = el.value.trim() === '' ? 57600 : Math.max(0, +el.value);
+                            el.value = val.toString();
+                            setBaud(val);
+                        }}
+                    />
+                    <span>b/s</span>
+                </label>
             </div>
+            < div class="flex-1"/>
         </div>
     );
 };

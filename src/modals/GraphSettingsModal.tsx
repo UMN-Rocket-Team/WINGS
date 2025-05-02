@@ -107,7 +107,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
     }
 
     const deleteGraph = (index: number) => {
-        let newGraphs: DisplayStruct[] = [];
+        const newGraphs: DisplayStruct[] = [];
         for (let i = 0; i < displays.length; i++) {
             if (index !== i) {
                 newGraphs.push(displays[i]!);
@@ -127,7 +127,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
 
             <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit'>
                 <Show when={displayInfo()}>
-                    <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
+                    <div class="absolute bg-gray-200 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                         Customizable graph for visualizing data. Ability to zoom in on data, drag through data. Hold ctrl + drag over display for drag and zoom.
                     </div>
                 </Show>
@@ -145,9 +145,9 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                 </div>
 
                 <Show when={displaySettings()}>
-                    <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
+                    <div class="absolute bg-gray-200 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
                         {/* Graph Colors */}
-                        <div class="flex flex-col bg-neutral-300 dark:bg-neutral-700 p-4 text-center">
+                        <div class="flex flex-col bg-gray-200 dark:bg-neutral-700 p-4 text-center">
                             <h2 class="font-bold">Graph Colors</h2>
                             <For each={PacketStructureViewModels.find(psViewModel => psViewModel.id === props.displayStruct.packetID)?.components.filter(component => component.type === PacketComponentType.Field)}>
                                 {(packetComponent: PacketComponent, i) => {

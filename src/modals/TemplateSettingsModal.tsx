@@ -72,7 +72,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
         store.set("display", displays);
     }
 
-    const getStructField = (packetId: number, fieldIndex: number): Number | undefined => {
+    const getStructField = (packetId: number, fieldIndex: number): number | undefined => {
         if (props.displayStruct.packetID !== packetId) {
             return undefined;
         }
@@ -103,7 +103,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
 
             {/*More info button*/}
             <Show when={displayInfo()}>
-                <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
+                <div class="absolute bg-gray-200 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                     <p class="max-w-prose">This is a Template Settings Modal, and should not be shown to the user</p>
                 </div>            
             </Show>
@@ -125,7 +125,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
             Extra settings for the modal, can be removed if not needed. 
             */}
             <Show when={displaySettings()}>
-                <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
+                <div class="absolute bg-gray-200 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
                     <div class="relative flex items-center justify-center mt-10">
                         {/* Put children here */}
                     </div>
@@ -166,7 +166,7 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
                                         type="checkbox"
                                         class="mr-1 cursor-pointer"
                                         checked={!!structField()}
-                                        onchange={(e) => {
+                                        onChange={(e) => {
                                             const target = e.target as HTMLInputElement;
                                             setActive(packetViewModel.id, packetField.index, target.checked);
                                         }}

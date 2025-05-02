@@ -100,7 +100,7 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
         <div class="flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit">
             <Show when={displayInfo()}>
-                <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
+                <div class="absolute bg-gray-200 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                     <p class="max-w-prose">Displays incoming data for chosen variables.</p>
                 </div>            
             </Show>
@@ -141,7 +141,7 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                         type="checkbox"
                                         class="mr-1 cursor-pointer"
                                         checked={!!structField()}
-                                        onchange={(e) => {
+                                        onChange={(e) => {
                                             const target = e.target as HTMLInputElement;
                                             setActive(packetViewModel.id, packetField.index, target.checked);
                                         }}
@@ -154,7 +154,7 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                             type="text"
                                             value={structField()!.unit}
                                             class="ml-2"
-                                            onchange={(e) => {
+                                            onChange={(e) => {
                                                 const target = e.target as HTMLInputElement;
                                                 setDisplays(produce(s => {
                                                     const struct = s[props.index] as ReadoutStruct;

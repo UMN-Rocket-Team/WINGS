@@ -1,8 +1,6 @@
 import { Component, For, JSX, Show } from "solid-js";
 import { displays, FlexviewObject, flexviewObjects } from "../components/DisplaySettingsScreen";
-import GraphDisplayElement from "../components/SolidChart";
-import ReadoutDisplayElement from "../components/Readout";
-import { displayRegistry, DisplayStruct, DisplayTypeDefinition } from "../core/display_registry";
+import { displayRegistry} from "../core/display_registry";
 
 const RecursiveFlexviewViewer = (props: {
     object: FlexviewObject
@@ -13,7 +11,7 @@ const RecursiveFlexviewViewer = (props: {
         const DisplayComponent = typeDef?.displayComponent;
         return (
             <div
-                class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray-300 p-2"
+                class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray-700 dark:border-gray-300 p-2"
             >
                 <DisplayComponent {...displays[display.index]!} />
             </div>
@@ -24,9 +22,9 @@ const RecursiveFlexviewViewer = (props: {
         const layout = props.object!;
 
         // getting the total of all weights so that we can normalize them later
-        let totalWeight = () => {
+        const totalWeight = () => {
             let weightSum = 0;
-            for (let w of layout.weights){
+            for (const w of layout.weights){
                 weightSum += w
             }
             return weightSum;
@@ -34,7 +32,7 @@ const RecursiveFlexviewViewer = (props: {
 
         return (
             <div
-                class="overflow-hidden w-full h-full flex items-stretch justify-center border-2 border-gray-600 p-2 gap-2"
+                class="overflow-hidden w-full h-full flex items-stretch justify-center border-2 border-gray-400 dark:border-gray-600 p-2 gap-2"
                 style={{
                     "flex-direction": layout.direction
                 }}
