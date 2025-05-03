@@ -1,9 +1,13 @@
-import { Component, JSX, onCleanup, onMount } from "solid-js";
+import { Component, createEffect, JSX, onCleanup, onMount } from "solid-js";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RocketStruct } from "../modals/RocketSettingsModal";
+import { useBackend } from "../backend_interop/BackendProvider";
+import { unDecimatedPackets } from "../backend_interop/buffers";
 
 const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
+    const { parsedPacketCount, PacketStructureViewModels } = useBackend();
+
     // Physical dimensions. Lengths in inches.
     const BODY_TUBE_RADIUS = 3.15 / 2;
     const BODY_TUBE_LENGTH = 37;
@@ -116,11 +120,35 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     camera.position.y = 0;
     camera.position.z = 40;
 
-    const animate = () => {
-        // rocketRotationGroup.rotation.x += 0.01;
-        rocketRotationGroup.rotation.y += 0.01;
-        // rocketRotationGroup.rotation.z += 0.01;
+    const updateFromPackets = () => {
+        const packets = unDecimatedPackets[rocket.packetID];
+        if (!packets) {
+            return;
+        }
+        const lastPacket = packets[packets.length - 1];
+        if (!lastPacket) {
+            return;
+        }
 
+        const x = rocket.fieldGyroX === -1 ? 0 : lastPacket.fieldData[rocket.fieldGyroX];
+        const y = rocket.fieldGyroY === -1 ? 0 : lastPacket.fieldData[rocket.fieldGyroY];
+        const z = rocket.fieldGyroZ === -1 ? 0 : lastPacket.fieldData[rocket.fieldGyroZ];
+
+        // TODO: axis alignment; unit scaling; user configurable?
+        rocketRotationGroup.rotation.x = x;
+        rocketRotationGroup.rotation.y = y;
+        rocketRotationGroup.rotation.z = z;
+    };
+
+    createEffect(() => {
+        // Update this effect whenever the parsed packet count changes (meaning new
+        // packets got parsed)
+        const _ignored = parsedPacketCount();
+        updateFromPackets();
+    });
+    updateFromPackets();
+
+    const animate = () => {
         renderer.render(scene, camera);
     };
 

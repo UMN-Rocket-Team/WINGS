@@ -3,12 +3,11 @@ import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
 import {SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { PacketComponentType, PacketField } from "../backend_interop/types";
+import { PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import { createStore, produce } from "solid-js/store";
 import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
-import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
 export class RocketStruct implements DisplayStruct {
@@ -16,11 +15,43 @@ export class RocketStruct implements DisplayStruct {
     displayName = 'Rocket';
     packetID = -1;
     type = 'rocket';
+
+    // unused by RocketStruct
     packetsDisplayed: boolean[] = [false];
 
-    // Adding an array of all fields that will be displayed by this element
-    fields: number[] = [];
+    fieldGyroX: number = -1;
+    fieldGyroY: number = -1;
+    fieldGyroZ: number = -1;
 }
+
+const FieldList = (props: {
+    packet: PacketStructureViewModel,
+    selectedField: number,
+    onSelectedField: (newField: number) => void
+}) => {
+    return (
+        <select
+            value={props.selectedField}
+            onChange={(e) => {
+                props.onSelectedField(+e.target.value);
+            }}
+        >
+            <option value={-1}>
+                (None)
+            </option>
+            <For
+                each={props.packet.components.filter(i => i.type === PacketComponentType.Field)}
+            >{(component, componentIndex) => {
+                const field = component.data as PacketField;
+                return (
+                    <option value={field.index}>
+                        {field.name}
+                    </option>
+                )
+            }}</For>
+        </select>
+    );
+};
 
 // The modal that will be displayed to the user when editing a template type
 const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
@@ -66,46 +97,15 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
         setDisplays(produce(s => {
             s[index]!.displayName = newName;
         }));
-        store.set("display", displays);
     };
 
     const deleteDisplay = () => {
-        // Need to clear fields before removing display
-        setDisplays(produce(s => {
-            const struct = s[props.index] as RocketStruct;
-            struct.fields = [];
-        }));
-        store.set("display", displays);
-
         setDisplays(displays.filter((_, index) => index !== props.index));
-        store.set("display", displays);
         props.closeModal({});
     };
 
-    const getStructField = (packetId: number, fieldIndex: number): Number | undefined => {
-        if (props.displayStruct.packetID !== packetId) {
-            return undefined;
-        }
-        return displayStruct.fields.find(i => i === fieldIndex);
-    };
-
-    const setActive = (packetId: number, fieldIndex: number, active: boolean) => {
-        setDisplays(produce(s => {
-            const struct = s[props.index] as RocketStruct;
-
-            // When switching packet IDs, remove all the old stuff
-            if (struct.packetID !== packetId) {
-                struct.packetID = packetId;
-                struct.fields = [];
-            }
-
-            if (active) {
-                struct.fields.push(fieldIndex);
-            } else {
-                struct.fields = struct.fields.filter(i => i !== fieldIndex);
-            }
-        }));
-        store.set("display", displays);
+    const getPacket = () => {
+        return PacketStructureViewModels.find(i => i.id === displayStruct.packetID);
     };
 
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -149,52 +149,66 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                 </div>
             </Show>
 
-            {/* List of every single packet, each packet has a dropdown with its fields*/}
-            <For each={PacketStructureViewModels}>{(packetViewModel, packetIdx) => (
-                <div class='flex flex-col mb-4'>
-                    <div class='flex gap-2 leading-none w-fit cursor-pointer'
-                        onClick={() => {
-                            setDisplays(produce(s => {
-                                const struct = (s[props.index] as RocketStruct);
-                                struct.packetsDisplayed[packetIdx()] = !struct.packetsDisplayed[packetIdx()];
-                            }));
-                            store.set("display", displays);
-                        }}>
-                        <img alt="Dropdown" src={dropdownIcon}
-                            class={`h-4 dark:invert`}
-                            style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
-                            draggable={false}/>
-                        <h3 class='font-bold'>{packetViewModel.name}</h3>
-                    </div>
+            <p>Select which packet to use:</p>
+            <select
+                value={displayStruct.packetID}
+                onChange={(e) => {
+                    setDisplays(produce(s => {
+                        const struct = (s[props.index] as RocketStruct);
+                        struct.packetID = +e.target.value;
+                        struct.fieldGyroX = -1;
+                        struct.fieldGyroY = -1;
+                        struct.fieldGyroZ = -1;
+                    }));
+                }}
+            >
+                <option value={-1}>
+                    (None)
+                </option>
+                <For each={PacketStructureViewModels}>{(packetViewModel, packetIdx) => (
+                    <option value={packetViewModel.id}>
+                        {packetViewModel.name}
+                    </option>
+                )}</For>
+            </select>
 
-                    {/* Checks the packets displayed array and renders the opened dropdown for each displayed packet*/}
-                    <Show when={displays[props.index]?.packetsDisplayed[packetIdx()]}>
-                        <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg'>
-                            <For each={packetViewModel.components.filter(i => i.type === PacketComponentType.Field)}>{(component) => {
-                                const packetField = component.data as PacketField;
-                                const structField = () => getStructField(packetViewModel.id, packetField.index);
-                                return <label class="flex flex-row cursor-pointer">
-                                    {/**
-                                     * Lets the user select specific packets for use,.
-                                     * If there are settings for each packet on the screen (like the ability to rename a field or assign it a color),
-                                     * they should also be edited from here
-                                     */}
-                                    <input
-                                        type="checkbox"
-                                        class="mr-1 cursor-pointer"
-                                        checked={!!structField()}
-                                        onchange={(e) => {
-                                            const target = e.target as HTMLInputElement;
-                                            setActive(packetViewModel.id, packetField.index, target.checked);
-                                        }}
-                                    />
-                                    {packetField.name}
-                                </label>
-                            }}</For>
-                        </div>
-                    </Show>
-                </div>
-            )}</For>
+            <Show when={displayStruct.packetID !== -1}>
+                <p>Gyro X field:</p>
+                <FieldList
+                    packet={getPacket()!}
+                    selectedField={displayStruct.fieldGyroX}
+                    onSelectedField={(newField) => {
+                        setDisplays(produce(s => {
+                            const struct = (s[props.index] as RocketStruct);
+                            struct.fieldGyroX = newField;
+                        }));
+                    }}
+                />
+
+                <p>Gyro Y field:</p>
+                <FieldList
+                    packet={getPacket()!}
+                    selectedField={displayStruct.fieldGyroY}
+                    onSelectedField={(newField) => {
+                        setDisplays(produce(s => {
+                            const struct = (s[props.index] as RocketStruct);
+                            struct.fieldGyroY = newField;
+                        }));
+                    }}
+                />
+
+                <p>Gyro Z field:</p>
+                <FieldList
+                    packet={getPacket()!}
+                    selectedField={displayStruct.fieldGyroZ}
+                    onSelectedField={(newField) => {
+                        setDisplays(produce(s => {
+                            const struct = (s[props.index] as RocketStruct);
+                            struct.fieldGyroZ = newField;
+                        }));
+                    }}
+                />
+            </Show>
         </div>
     </DefaultModalLayout>;
 };
