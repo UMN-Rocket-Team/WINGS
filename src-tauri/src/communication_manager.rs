@@ -104,7 +104,7 @@ impl CommunicationManager {
             |device| 
             {
                 let man_string =device.manufacturer_string().unwrap_or_default().to_owned();
-                if man_string == "Microsoft" || man_string == "Logitech" ||  man_string == ""{
+                if man_string == "Microsoft" || man_string == "Logitech" || man_string == "Apple Inc." || man_string == "Apple" || man_string == "" {
                     return None;
                 }
                 return Some(DeviceName {
