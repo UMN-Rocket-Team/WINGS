@@ -38,7 +38,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     });
     renderer.setClearColor(BACKGROUND_COLOR);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+    // const controls = new OrbitControls(camera, renderer.domElement);
 
     // Set this up such that the origin is the top of the rocket
     // with the rocket's tube in the -y direction (like openrocket)
@@ -130,14 +130,14 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
             return;
         }
 
-        const x = rocket.fieldGyroX === -1 ? 0 : lastPacket.fieldData[rocket.fieldGyroX];
-        const y = rocket.fieldGyroY === -1 ? 0 : lastPacket.fieldData[rocket.fieldGyroY];
-        const z = rocket.fieldGyroZ === -1 ? 0 : lastPacket.fieldData[rocket.fieldGyroZ];
+        const roll = rocket.fieldRoll === -1 ? 0 : lastPacket.fieldData[rocket.fieldRoll];
+        const pitch = rocket.fieldPitch === -1 ? 0 : lastPacket.fieldData[rocket.fieldPitch];
+        const yaw = rocket.fieldYaw === -1 ? 0 : lastPacket.fieldData[rocket.fieldYaw];
 
-        // TODO: axis alignment; unit scaling; user configurable?
-        rocketRotationGroup.rotation.x = x;
-        rocketRotationGroup.rotation.y = y;
-        rocketRotationGroup.rotation.z = z;
+        // UFC sends angles in degrees, but we need radians
+        rocketRotationGroup.rotation.x = roll * Math.PI / 180.0;
+        rocketRotationGroup.rotation.y = yaw * Math.PI / 180.0;
+        rocketRotationGroup.rotation.z = -pitch * Math.PI / 180.0;
     };
 
     createEffect(() => {
