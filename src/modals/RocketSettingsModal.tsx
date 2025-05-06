@@ -9,6 +9,7 @@ import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
 import { DisplayStruct } from "../core/display_registry";
+import { ROCKET_MODELS } from "../components/Rocket";
 
 export class RocketStruct implements DisplayStruct {
     // Implementing required values
@@ -22,6 +23,9 @@ export class RocketStruct implements DisplayStruct {
     fieldRoll: number = -1;
     fieldPitch: number = -1;
     fieldYaw: number = -1;
+
+    // see ROCKET_MODELS in Rocket.tsx
+    rocketModel: string = 'thomas-weber-gopher';
 }
 
 const FieldList = (props: {
@@ -148,6 +152,23 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                     </div>
                 </div>
             </Show>
+
+            <p>Select rocket model:</p>
+            <select
+                value={displayStruct.rocketModel}
+                onChange={(e) => {
+                    setDisplays(produce(s => {
+                        const struct = (s[props.index] as RocketStruct);
+                        struct.rocketModel = e.target.value;
+                    }));
+                }}
+            >
+                <For each={Object.keys(ROCKET_MODELS)}>{modelName => (
+                    <option value={modelName}>
+                        {modelName}
+                    </option>
+                )}</For>
+            </select>
 
             <p>Select which packet to use:</p>
             <select
