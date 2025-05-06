@@ -5,30 +5,50 @@ import { RocketStruct } from "../modals/RocketSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { unDecimatedPackets } from "../backend_interop/buffers";
 
+const FOV = 75; // degrees
+
+interface RocketModel {
+    bodyTubeRadius: number; // inches
+    bodyTubeLength: number; // inches
+    noseConeLength: number; // inches
+    numFins: number;
+    finWidth: number; // inches
+    centerOfGravity: number; // inches from tip
+    bodyTubeColor: number; // hex
+    noseConeColor: number; // hex
+    finColor: number; // hex
+    backgroundColor: number; // hex
+}
+
+export const ROCKET_MODELS: Record<string, RocketModel> = {
+    // see interface above for what the fields mean
+    'thomas-weber-gopher': {
+        bodyTubeRadius: 3.15 / 2,
+        bodyTubeLength: 37,
+        noseConeLength: 5,
+        numFins: 4,
+        finWidth: 0.01,
+        centerOfGravity: 27.342,
+        bodyTubeColor: 0xa97835,
+        noseConeColor: 0xff00ff,
+        finColor: 0xfff8dc,
+        backgroundColor: 0xaaaaff,
+    }
+};
+
 const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
-    const { parsedPacketCount, PacketStructureViewModels } = useBackend();
+    const { parsedPacketCount } = useBackend();
 
-    // Physical dimensions. Lengths in inches.
-    const BODY_TUBE_RADIUS = 3.15 / 2;
-    const BODY_TUBE_LENGTH = 37;
-    const NOSE_CONE_LENGTH = 5;
-    const NUM_FINS = 4;
-    const FIN_WIDTH = 0.1;
-
-    // In inches from tip of nose cone.
-    const CENTER_OF_GRAVITY = 27.342;
-
-    // Colors, in hex 0xRRGGBB
-    const BODY_TUBE_COLOR = 0xa97835;
-    const NOSE_CONE_COLOR = 0xff00ff;
-    const FIN_COLOR = 0xfff8dc;
-    const BACKGROUND_COLOR = 0xaaaaff;
+    const model = ROCKET_MODELS[rocket.rocketModel];
+    if (!model) {
+        return <p>Unknown rocket model: {rocket.rocketModel}</p>;
+    }
 
     let containerElement: HTMLDivElement;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-        75,  // fov
+        FOV, // vertical field of view
         1,   // aspect ratio (updated later in resize observer)
         0.1, // near clipping plane
         100  // far clipping plane
@@ -36,7 +56,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     const renderer = new THREE.WebGLRenderer({
         antialias: true
     });
-    renderer.setClearColor(BACKGROUND_COLOR);
+    renderer.setClearColor(model.backgroundColor);
 
     // const controls = new OrbitControls(camera, renderer.domElement);
 
@@ -44,42 +64,42 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     // with the rocket's tube in the -y direction (like openrocket)
     const rocketGeometryGroup = new THREE.Group();
     // Rotate around the center of gravity.
-    rocketGeometryGroup.position.y = CENTER_OF_GRAVITY;
+    rocketGeometryGroup.position.y = model.centerOfGravity;
 
     // Use this to rotate the rocket
     const rocketRotationGroup = new THREE.Group();
     rocketRotationGroup.add(rocketGeometryGroup);
     scene.add(rocketRotationGroup);
 
-    const bodyTubeMaterial = new THREE.MeshBasicMaterial({color: BODY_TUBE_COLOR});
+    const bodyTubeMaterial = new THREE.MeshBasicMaterial({color: model.bodyTubeColor});
     const bodyTubeGeometry = new THREE.CylinderGeometry(
-        BODY_TUBE_RADIUS, // radius top
-        BODY_TUBE_RADIUS, // radius bottom
-        BODY_TUBE_LENGTH, // height
+        model.bodyTubeRadius, // radius top
+        model.bodyTubeRadius, // radius bottom
+        model.bodyTubeLength, // height
         20, // radial segments (just enough to look smooth)
         1, // height segments (avoid unnecessary triangles)
         false, // solid ends (bottom might be visible)
     );
-    bodyTubeGeometry.translate(0, BODY_TUBE_LENGTH / 2, 0);
+    bodyTubeGeometry.translate(0, model.bodyTubeLength / 2, 0);
     const bodyTube = new THREE.Mesh(bodyTubeGeometry, bodyTubeMaterial);
-    bodyTube.position.y = -(NOSE_CONE_LENGTH + BODY_TUBE_LENGTH);
+    bodyTube.position.y = -(model.noseConeLength + model.bodyTubeLength);
     rocketGeometryGroup.add(bodyTube);
 
-    const noseConeMaterial = new THREE.MeshBasicMaterial({color: NOSE_CONE_COLOR});
+    const noseConeMaterial = new THREE.MeshBasicMaterial({color: model.noseConeColor});
     const noseConeGeometry = new THREE.ConeGeometry(
-        BODY_TUBE_RADIUS, // radius
-        NOSE_CONE_LENGTH, // height
+        model.bodyTubeRadius, // radius
+        model.noseConeLength, // height
         20, // radial segments (just enough to look smooth)
         1, // height segments (avoid unnecessary triangles)
         true, // open ended (avoid unnecessary triangles)
     );
-    noseConeGeometry.translate(0, NOSE_CONE_LENGTH / 2, 0);
+    noseConeGeometry.translate(0, model.noseConeLength / 2, 0);
     const noseCone = new THREE.Mesh(noseConeGeometry, noseConeMaterial);
-    noseCone.position.y = -(NOSE_CONE_LENGTH);
+    noseCone.position.y = -(model.noseConeLength);
     rocketGeometryGroup.add(noseCone);
 
     const finMaterial = new THREE.MeshBasicMaterial({
-        color: FIN_COLOR,
+        color: model.finColor,
         // The shape geometry is 2D, we want to be visible from both sides
         side: THREE.DoubleSide
     });
@@ -89,27 +109,27 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     finShape.lineTo(1 - 1.25, 1);
     finShape.lineTo(1 - 1, 0);
     const finMesh = new THREE.ExtrudeGeometry(finShape, {
-        depth: FIN_WIDTH,
+        depth: model.finWidth,
         bevelEnabled: true,
         bevelSegments: 1,
         bevelSize: 0,
         bevelThickness: 0
     });
-    finMesh.translate(0, 0, -FIN_WIDTH / 2);
+    finMesh.translate(0, 0, -model.finWidth / 2);
     finMesh.scale(3.5, 3.5, 3.5);
     finMesh.rotateZ(Math.PI / 2);
 
     // All the fins are the same geometry so instanced rendering (faster) can be used.
-    const instancedFins = new THREE.InstancedMesh(finMesh, finMaterial, NUM_FINS);
-    for (let i = 0; i < NUM_FINS; i++) {
+    const instancedFins = new THREE.InstancedMesh(finMesh, finMaterial, model.numFins);
+    for (let i = 0; i < model.numFins; i++) {
         // This mesh is only used for doing matrix calculations
         const dummy = new THREE.Mesh();
 
-        const angle = (2 * Math.PI / NUM_FINS) * i;
+        const angle = (2 * Math.PI / model.numFins) * i;
         dummy.rotateY(angle + Math.PI / 2);
-        dummy.position.z = (BODY_TUBE_RADIUS ) * Math.cos(angle);
-        dummy.position.x = (BODY_TUBE_RADIUS ) * Math.sin(angle);
-        dummy.position.y = -(BODY_TUBE_LENGTH + NOSE_CONE_LENGTH);
+        dummy.position.z = (model.bodyTubeRadius ) * Math.cos(angle);
+        dummy.position.x = (model.bodyTubeRadius ) * Math.sin(angle);
+        dummy.position.y = -(model.bodyTubeLength + model.noseConeLength);
 
         // Update the matrix for the instances mesh
         dummy.updateMatrix();
@@ -117,8 +137,9 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     }
     rocketGeometryGroup.add(instancedFins);
 
-    camera.position.y = 0;
-    camera.position.z = 40;
+    // TODO: figure these out more generally ...
+    camera.position.y = 5;
+    camera.position.z = ((model.bodyTubeLength + model.noseConeLength) / 1.5) / Math.tan((FOV / 2) * Math.PI / 180);
 
     const updateFromPackets = () => {
         const packets = unDecimatedPackets[rocket.packetID];
