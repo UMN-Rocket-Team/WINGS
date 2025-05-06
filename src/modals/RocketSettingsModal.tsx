@@ -19,9 +19,9 @@ export class RocketStruct implements DisplayStruct {
     // unused by RocketStruct
     packetsDisplayed: boolean[] = [false];
 
-    fieldGyroX: number = -1;
-    fieldGyroY: number = -1;
-    fieldGyroZ: number = -1;
+    fieldRoll: number = -1;
+    fieldPitch: number = -1;
+    fieldYaw: number = -1;
 }
 
 const FieldList = (props: {
@@ -156,9 +156,9 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                     setDisplays(produce(s => {
                         const struct = (s[props.index] as RocketStruct);
                         struct.packetID = +e.target.value;
-                        struct.fieldGyroX = -1;
-                        struct.fieldGyroY = -1;
-                        struct.fieldGyroZ = -1;
+                        struct.fieldRoll = -1;
+                        struct.fieldPitch = -1;
+                        struct.fieldYaw = -1;
                     }));
                 }}
             >
@@ -173,38 +173,38 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
             </select>
 
             <Show when={displayStruct.packetID !== -1}>
-                <p>Gyro X field:</p>
+                <p>Roll field:</p>
                 <FieldList
                     packet={getPacket()!}
-                    selectedField={displayStruct.fieldGyroX}
+                    selectedField={displayStruct.fieldRoll}
                     onSelectedField={(newField) => {
                         setDisplays(produce(s => {
                             const struct = (s[props.index] as RocketStruct);
-                            struct.fieldGyroX = newField;
+                            struct.fieldRoll = newField;
                         }));
                     }}
                 />
 
-                <p>Gyro Y field:</p>
+                <p>Pitch field:</p>
                 <FieldList
                     packet={getPacket()!}
-                    selectedField={displayStruct.fieldGyroY}
+                    selectedField={displayStruct.fieldPitch}
                     onSelectedField={(newField) => {
                         setDisplays(produce(s => {
                             const struct = (s[props.index] as RocketStruct);
-                            struct.fieldGyroY = newField;
+                            struct.fieldPitch = newField;
                         }));
                     }}
                 />
 
-                <p>Gyro Z field:</p>
+                <p>Yaw field:</p>
                 <FieldList
                     packet={getPacket()!}
-                    selectedField={displayStruct.fieldGyroZ}
+                    selectedField={displayStruct.fieldYaw}
                     onSelectedField={(newField) => {
                         setDisplays(produce(s => {
                             const struct = (s[props.index] as RocketStruct);
-                            struct.fieldGyroZ = newField;
+                            struct.fieldYaw = newField;
                         }));
                     }}
                 />
