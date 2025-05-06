@@ -12,7 +12,8 @@ interface RocketModel {
     bodyTubeLength: number; // inches
     noseConeLength: number; // inches
     numFins: number;
-    finWidth: number; // inches
+    finThickness: number; // inches (usually just leave as some arbitrary small value eg. 0.01)
+    finRootChord: number; // inches
     centerOfGravity: number; // inches from tip
     bodyTubeColor: number; // hex
     noseConeColor: number; // hex
@@ -27,7 +28,8 @@ export const ROCKET_MODELS: Record<string, RocketModel> = {
         bodyTubeLength: 110,
         noseConeLength: 40,
         numFins: 4,
-        finWidth: 0.01,
+        finThickness: 0.01,
+        finRootChord: 14,
         centerOfGravity: 75.757,
         bodyTubeColor: 0xa97835,
         noseConeColor: 0xff00ff,
@@ -39,7 +41,8 @@ export const ROCKET_MODELS: Record<string, RocketModel> = {
         bodyTubeLength: 37,
         noseConeLength: 5,
         numFins: 4,
-        finWidth: 0.01,
+        finThickness: 0.01,
+        finRootChord: 3.5,
         centerOfGravity: 27.342,
         bodyTubeColor: 0xa97835,
         noseConeColor: 0xff00ff,
@@ -121,14 +124,14 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     finShape.lineTo(1 - 1.25, 1);
     finShape.lineTo(1 - 1, 0);
     const finMesh = new THREE.ExtrudeGeometry(finShape, {
-        depth: model.finWidth,
+        depth: model.finThickness,
         bevelEnabled: true,
         bevelSegments: 1,
         bevelSize: 0,
         bevelThickness: 0
     });
-    finMesh.translate(0, 0, -model.finWidth / 2);
-    finMesh.scale(3.5, 3.5, 3.5);
+    finMesh.translate(0, 0, -model.finThickness / 2);
+    finMesh.scale(model.finRootChord, 3.5, 3.5);
     finMesh.rotateZ(Math.PI / 2);
 
     // All the fins are the same geometry so instanced rendering (faster) can be used.
