@@ -22,6 +22,18 @@ interface RocketModel {
 
 export const ROCKET_MODELS: Record<string, RocketModel> = {
     // see interface above for what the fields mean
+    'irec-2025': {
+        bodyTubeRadius: 6.2 / 2,
+        bodyTubeLength: 110,
+        noseConeLength: 40,
+        numFins: 4,
+        finWidth: 0.01,
+        centerOfGravity: 75.757,
+        bodyTubeColor: 0xa97835,
+        noseConeColor: 0xff00ff,
+        finColor: 0xfff8dc,
+        backgroundColor: 0xaaaaff,
+    },
     'thomas-weber-gopher': {
         bodyTubeRadius: 3.15 / 2,
         bodyTubeLength: 37,
@@ -51,7 +63,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
         FOV, // vertical field of view
         1,   // aspect ratio (updated later in resize observer)
         0.1, // near clipping plane
-        100  // far clipping plane
+        1000 // far clipping plane
     );
     const renderer = new THREE.WebGLRenderer({
         antialias: true
