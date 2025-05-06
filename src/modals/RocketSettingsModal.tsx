@@ -25,7 +25,7 @@ export class RocketStruct implements DisplayStruct {
     fieldYaw: number = -1;
 
     // see ROCKET_MODELS in Rocket.tsx
-    rocketModel: string = 'thomas-weber-gopher';
+    rocketModel: string = 'irec-2025';
 }
 
 const FieldList = (props: {
