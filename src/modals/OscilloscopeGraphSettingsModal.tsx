@@ -139,7 +139,7 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
 
             <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg relative min-w-fit'>
                 <Show when={displayInfo()}>
-                    <div class="absolute bg-neutral-300 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
+                    <div class="absolute bg-gray-200 top-[-1px] left-[-1px] dark:bg-neutral-700 p-4 rounded-3xl pt-12 z-[2]">
                         Customizable graph for visualizing data. Displays new data on the right while pushing out old data to the left, 
                         creating a sliding window effect. Useful for realtime display of time-series data. Time window is customizable.
                     </div>
@@ -183,7 +183,7 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
                                 min="1"
                                 value={currTimeWindow()}
                                 class="w-16 max-h-6"
-                                onchange={(e) => {
+                                onChange={(e) => {
                                     const target = e.target as HTMLInputElement;
                                     let newTimeWindow = Number(target.value);
                                     if (newTimeWindow < 1) {
