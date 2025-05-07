@@ -1,6 +1,5 @@
 import { Component, createEffect, JSX, onCleanup, onMount } from "solid-js";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RocketStruct } from "../modals/RocketSettingsModal";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { unDecimatedPackets } from "../backend_interop/buffers";
@@ -34,7 +33,7 @@ export const ROCKET_MODELS: Record<string, RocketModel> = {
         bodyTubeColor: 0xa97835,
         noseConeColor: 0xff00ff,
         finColor: 0xfff8dc,
-        backgroundColor: 0xaaaaff,
+        backgroundColor: 0x000000,
     },
     'thomas-weber-gopher': {
         bodyTubeRadius: 3.15 / 2,

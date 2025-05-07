@@ -174,6 +174,15 @@ impl PacketStructureManager {
 
         self.packet_structures.push(packet_structure.clone());
         self.update_tracked_values();
+
+        if self.app.is_some(){
+            emit_packet_structure_update_event(
+                &self.app.clone().unwrap(),
+                vec![packet_structure.id],
+                None,
+                &self,
+            );
+        }
         Ok(packet_structure.id)
     }
 

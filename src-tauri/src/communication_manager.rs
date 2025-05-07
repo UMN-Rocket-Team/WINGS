@@ -198,7 +198,7 @@ impl CommunicationManager {
         match index {
             Some(index) => {
                 let name;
-                if self.comms_objects[index].get_type() == "ByteFile"{
+                if self.comms_objects[index].get_type() == "ByteFile" || self.comms_objects[index].get_type() == "TeleDongle"{
                     name = port_name;
                 }
                 else{
