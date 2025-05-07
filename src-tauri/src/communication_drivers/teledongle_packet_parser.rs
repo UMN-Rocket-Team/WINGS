@@ -26,27 +26,23 @@ impl AltosPacketParser {
     pub fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
-        print_flag: bool
+        mut print_flag: bool
     ) -> anyhow::Result<Vec<Packet>> {
         if print_flag {
             println!("Unparsed data length: {}", self.unparsed_data.len());
         }
+        // println!("{:#?}",self.unparsed_data);
         let mut packets: Vec<Packet> = vec![];
 
         let mut last_successful_match_end_index: Option<usize> = None;
 
-        let mut maximum_index = self.unparsed_data.len();
-        maximum_index = maximum_index.checked_sub(packet_structure_manager.minimum_packet_structure_size).unwrap_or(maximum_index); //don't look for packets that cant be completely inside the buffer
-        maximum_index += packet_structure_manager.maximum_first_delimiter + 1; //look at the furthest point where a first delimiter could appear
-        for i in 0..maximum_index {
-            // Try to find a matching packet for the data
             for j in 0..packet_structure_manager.packet_structures.len() {
                 let packet_structure = &packet_structure_manager.packet_structures[j];
               
                 if print_flag {
-                    println!("At index {}, matching structure {}", i, j);
+                    println!("At index {}, matching structure {}", 0, j);
                 }
-                if i + packet_structure.size() > (self.unparsed_data.len() + (packet_structure.delimiters[0].offset_in_packet)){
+                if packet_structure.size() > (self.unparsed_data.len() + (packet_structure.delimiters[0].offset_in_packet)){
                     if print_flag {
                         println!("Packet out of bounds");
                     }
@@ -54,8 +50,8 @@ impl AltosPacketParser {
                 }
                 if !is_delimiter_match(
                     &self.unparsed_data,
-                    i,
-                    &packet_structure.delimiters[0].identifier,print_flag
+                    packet_structure.delimiters[0].offset_in_packet +2,
+                    &packet_structure.delimiters[0].identifier,false
                 ) { 
                     if print_flag {
                         println!("- First delimiter did not match");
@@ -63,12 +59,7 @@ impl AltosPacketParser {
                     continue;
                 }
 
-                if packet_structure.delimiters[0].offset_in_packet > i {
-                    println!("- Packet starts before data begins!");
-                    continue;
-                }
-
-                let packet_start_index = i - packet_structure.delimiters[0].offset_in_packet;
+                let packet_start_index =  2;
 
                 if let Some(last_successful_match_end_index) = last_successful_match_end_index {
                     // Use < instead of <= as the "last index" points to the byte *after*
@@ -151,7 +142,6 @@ impl AltosPacketParser {
                 last_successful_match_end_index =
                     Some(packet_start_index + packet_structure.size());
             }
-        }
 
         // Throw away any garbage data that remains so that it does not have to be re-parsed
         let last_parsed_index = max(
@@ -161,7 +151,7 @@ impl AltosPacketParser {
         if print_flag {
             println!("LPI: {}", last_parsed_index);
         }
-        self.unparsed_data.drain(0..last_parsed_index);
+        self.unparsed_data = vec![];
         Ok(packets)
     }
 }
@@ -174,7 +164,7 @@ fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: 
 
     for j in 0..delimiter_identifier.len() {
         if print_flag {
-            print!("{:02X?}",data[start_index + j]);
+            print!("{:02X?} ",data[start_index + j]);
             println!("{:02X?}",delimiter_identifier[j]);
         }
         if data[start_index + j] != delimiter_identifier[j] {
