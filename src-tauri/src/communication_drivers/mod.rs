@@ -1,8 +1,8 @@
-pub mod ftdi_spi_driver;
-pub mod serial_port_driver;
+pub mod serial_port_adapter;
 pub mod serial_packet_parser;
-pub mod teledongle_driver;
+pub mod teledongle_adapter;
 pub mod teledongle_packet_parser;
-pub mod byte_reader_driver;
-pub mod aim_driver;
+pub mod binary_file_adapter;
+pub mod aim_adapter;
 pub mod aim_parser;
+pub mod featherweight_adapter;

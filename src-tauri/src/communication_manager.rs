@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_driver::AimDriver, byte_reader_driver::ByteReadDriver, serial_port_driver::SerialPortDriver, teledongle_driver::TeleDongleDriver
+        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter, serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter
     }, file_handling::log_handlers::LogHandler, models::packet::Packet, packet_structure_manager::PacketStructureManager
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
@@ -242,7 +242,7 @@ impl CommunicationManager {
 
     /// Adds an rfd device object to the manager
     pub fn add_serial_device(&mut self) -> usize {
-        let mut new_device: SerialPortDriver = SerialPortDriver::new(self.ps_manager.clone());
+        let mut new_device: SerialPortAdapter = SerialPortAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -252,7 +252,7 @@ impl CommunicationManager {
 
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self) -> usize {
-        let mut new_device: TeleDongleDriver = TeleDongleDriver::new(self.ps_manager.clone());
+        let mut new_device: TeleDongleAdapter = TeleDongleAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -262,7 +262,7 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_file_manager(&mut self) -> usize {
-        let mut new_device: ByteReadDriver = ByteReadDriver::new(self.ps_manager.clone());
+        let mut new_device: BinaryFileAdapter = BinaryFileAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -272,7 +272,7 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_aim(&mut self) -> usize {
-        let mut new_device: AimDriver = AimDriver::new(self.ps_manager.clone());
+        let mut new_device: AimAdapter = AimAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
