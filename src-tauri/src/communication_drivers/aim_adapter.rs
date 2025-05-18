@@ -6,7 +6,7 @@ use hidapi::{HidApi, HidDevice};
 use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}};
 
 use super::aim_parser::AimParser;
-pub struct AimDriver {
+pub struct AimAdapter {
     device: Option<HidDevice>,
     packet_parser: AimParser,
     baud: u32,
@@ -14,7 +14,7 @@ pub struct AimDriver {
     last_read: [u8;64] 
 }
 
-impl CommsIF for AimDriver{
+impl CommsIF for AimAdapter{
     
      ///creates a new instance of a comms device with the given packet structure manager
      fn new(
@@ -24,7 +24,7 @@ impl CommsIF for AimDriver{
         Self: Sized {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
             let parser = AimParser::default(ps_manager);
-            return AimDriver{
+            return AimAdapter{
                 device: None,
                 packet_parser: parser,
                 baud: 0,

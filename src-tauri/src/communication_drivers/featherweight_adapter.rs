@@ -8,7 +8,7 @@ use super::serial_packet_parser::SerialPacketParser;
 
 const PRINT_PARSING: bool = false;
 #[derive(Default)]
-pub struct SerialPortDriver {
+pub struct FeatherweightAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
     packet_parser: SerialPacketParser,
     baud: u32,
@@ -16,7 +16,7 @@ pub struct SerialPortDriver {
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
-impl CommsIF for SerialPortDriver{
+impl CommsIF for FeatherweightAdapter{
     
     ///creates a new instance of a comms device with the given packet structure manager
     fn new(
@@ -24,7 +24,7 @@ impl CommsIF for SerialPortDriver{
     ) -> Self 
     where
         Self: Sized {
-        return SerialPortDriver{
+        return FeatherweightAdapter{
             port: None,
             packet_parser: Default::default(),
             baud: 0,

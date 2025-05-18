@@ -25,13 +25,13 @@ const PRINT_PARSING: bool = false;
 /// * `id`: a device id mandated by the `CommsIF``
 /// * `packet_parser`: A packet parser that will be used to process packets from the binary
 /// * `packet_structure_manager`: A reference to a PacketStructureManager that defines all the packets the communications driver will be working with
-pub struct ByteReadDriver {
+pub struct BinaryFileAdapter {
     file: Option<File>,
     id: usize,
     packet_parser: SerialPacketParser,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
-impl CommsIF for ByteReadDriver {
+impl CommsIF for BinaryFileAdapter {
 
      ///creates a new instance of a comms device with the given packet structure manager
      fn new(
@@ -39,7 +39,7 @@ impl CommsIF for ByteReadDriver {
     ) -> Self 
     where
         Self: Sized {
-        return ByteReadDriver{
+        return BinaryFileAdapter{
             file: None,
             packet_parser: Default::default(),
             id: 0,

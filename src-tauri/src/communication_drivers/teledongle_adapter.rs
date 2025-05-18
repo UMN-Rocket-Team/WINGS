@@ -8,7 +8,7 @@ use super::teledongle_packet_parser::AltosPacketParser;
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
-pub struct TeleDongleDriver {
+pub struct TeleDongleAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
     packet_parser: AltosPacketParser,
     baud: u32,
@@ -16,7 +16,7 @@ pub struct TeleDongleDriver {
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
-impl CommsIF for TeleDongleDriver {
+impl CommsIF for TeleDongleAdapter {
 
      ///creates a new instance of a comms device with the given packet structure manager
      fn new(
@@ -118,7 +118,7 @@ impl CommsIF for TeleDongleDriver {
             _ = ps_manager.register_packet_structure(&mut altus_satellite_packet);
 
         });
-        return TeleDongleDriver{
+        return TeleDongleAdapter{
             port: None,
             packet_parser: Default::default(),
             baud: 0,
