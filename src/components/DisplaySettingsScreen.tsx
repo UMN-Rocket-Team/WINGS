@@ -21,6 +21,7 @@ export type SettingsModalProps = {
 export interface FlexviewDisplay {
     type: 'display'; //
     index: number; //location of the display in the displaysArray
+    struct: DisplayStruct;
 }
 
 export interface FlexviewLayout {
@@ -96,7 +97,8 @@ const RecursiveFlexviewEditor = (props: {
                                 // creating a new flexview object and pushing it to the FlexViewObjects Store
                                 setFlexviewObjects(flexViewObjectsIndex, {
                                     type: 'display',
-                                    index: displayArrayIndex
+                                    index: displayArrayIndex,
+                                    struct: newDisplay,
                                 });
 
                                 //editing this layout in the Flexview Object Store to add the item above as its child
