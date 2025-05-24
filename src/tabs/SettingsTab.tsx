@@ -1,5 +1,5 @@
-import { Component } from "solid-js";
-import FieldsScreen, { FlexviewObject } from "../components/DisplaySettingsScreen";
+import { batch, Component } from "solid-js";
+import FieldsScreen, { FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import logo from "../assets/logo.png";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { useNavigate } from "@solidjs/router";
@@ -7,9 +7,10 @@ import { clearParsedPackets } from "../backend_interop/buffers";
 import { save, open } from "@tauri-apps/api/dialog";
 import PacketEditor from "../components/PacketsEditor";
 import { store } from "../core/file_handling";
-import { writeTextFile } from "@tauri-apps/api/fs";
+import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { displays } from "../components/DisplaySettingsScreen";
 import { DisplayStruct } from "../core/display_registry";
+import { produce } from "solid-js/store";
 
 /**
  * Main Tab for hosting all groundstation settings
@@ -41,8 +42,7 @@ const SettingsTab: Component = () => {
 
         if (!selectedFilePath) return;
 
-        const displaySetupData = await store.get("display") as FlexviewObject[];
-        // const displaySetupData = displays as DisplayStruct[];
+        const displaySetupData = flexviewObjects as FlexviewObject[];
         await writeTextFile(
             selectedFilePath, JSON.stringify(displaySetupData, null, 2));
     }
@@ -57,7 +57,31 @@ const SettingsTab: Component = () => {
 
         if (!selectedFilePath) return;
 
+        const fileData = await readTextFile(selectedFilePath as string);
+        const loadedFlexviewObjects = JSON.parse(fileData);
 
+        batch(() => {
+            // Clear current displays
+            setDisplays([]);
+            setFlexviewObjects([
+                {
+                    type: 'layout',
+                    children: [],
+                    weights: [],
+                    direction: 'row'
+                }
+            ]);
+
+            loadedFlexviewObjects.map((f: any, idx: number) => {
+                setFlexviewObjects(idx, f);
+
+                if (f?.type === "display" && f.displayObj) {
+                    setDisplays(f.index, f.displayObj);
+                }
+            });  
+        });
+
+        store.set("display", flexviewObjects);
     }
 
     return (
