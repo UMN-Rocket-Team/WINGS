@@ -47,42 +47,6 @@ const SettingsTab: Component = () => {
             selectedFilePath, JSON.stringify(displaySetupData, null, 2));
     }
 
-    const openDisplaySetup = async () => {
-        const selectedFilePath = await open({
-            multiple: false,
-            filters: [
-                { name: "OpenDisplaySetup", extensions: ["json"] }
-            ]
-        })
-
-        if (!selectedFilePath) return;
-
-        const fileData = await readTextFile(selectedFilePath as string);
-        const loadedFlexviewObjects = JSON.parse(fileData);
-
-        batch(() => {
-            // Clear current displays
-            setDisplays([]);
-            setFlexviewObjects([
-                {
-                    type: 'layout',
-                    children: [],
-                    weights: [],
-                    direction: 'row'
-                }
-            ]);
-
-            loadedFlexviewObjects.map((f: any, idx: number) => {
-                setFlexviewObjects(idx, f);
-
-                if (f?.type === "display" && f.displayObj) {
-                    setDisplays(f.index, f.displayObj);
-                }
-            });  
-        });
-
-        store.set("display", flexviewObjects);
-    }
 
     return (
         <div class="flex flex-col flex-grow gap-4 rounded border dark:text-white">
@@ -133,15 +97,6 @@ const SettingsTab: Component = () => {
                             dark:border-gray-700 dark:text-white"
                     >
                         Save Display Setup
-                    </button>
-                    <button
-                        type="button"
-                        onClick={openDisplaySetup}
-                        class="text-dark bg-gray-200 hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300
-                            font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 
-                            dark:border-gray-700 dark:text-white"
-                    >
-                        Open Display Setup
                     </button>
                 </div>
             </footer>
