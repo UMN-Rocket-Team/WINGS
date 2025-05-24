@@ -21,7 +21,7 @@ export type SettingsModalProps = {
 export interface FlexviewDisplay {
     type: 'display'; //
     index: number; //location of the display in the displaysArray
-    struct: DisplayStruct;
+    displayObj: DisplayStruct;
 }
 
 export interface FlexviewLayout {
@@ -98,7 +98,7 @@ const RecursiveFlexviewEditor = (props: {
                                 setFlexviewObjects(flexViewObjectsIndex, {
                                     type: 'display',
                                     index: displayArrayIndex,
-                                    struct: newDisplay,
+                                    displayObj: newDisplay,
                                 });
 
                                 //editing this layout in the Flexview Object Store to add the item above as its child
@@ -214,6 +214,7 @@ const RecursiveFlexviewEditor = (props: {
 
                                         // removing this object from the FlexviewObjects
                                         setFlexviewObjects(TotalArrayObjectIndex, undefined);
+                                        store.set("display", flexviewObjects);
                                     }} 
                                         class="w-[25px] dark:invert z-[1] cursor-pointer m-5" />
                                     <Show when={layout.weights.length > 1}>
@@ -222,15 +223,16 @@ const RecursiveFlexviewEditor = (props: {
                                             type = "number"
                                             min = "1"
                                             onChange = {event => {
-                                            if (Number(event.target.value) < 1) 
-                                                event.target.value =  "1";
-                                            setFlexviewObjects(props.objectIndex, {
-                                                type: 'layout',
-                                                children: layout.children,
-                                                weights: layout.weights.toSpliced(childArrayObjectIndex(),1,parseInt((event.target as HTMLInputElement).value)),
-                                                direction: layout.direction
-                                            });
-                                        }} />
+                                                if (Number(event.target.value) < 1) 
+                                                    event.target.value =  "1";
+                                                setFlexviewObjects(props.objectIndex, {
+                                                    type: 'layout',
+                                                    children: layout.children,
+                                                    weights: layout.weights.toSpliced(childArrayObjectIndex(),1,parseInt((event.target as HTMLInputElement).value)),
+                                                    direction: layout.direction
+                                                });
+                                                store.set("display", flexviewObjects);
+                                            }} />
                                     </Show>
                                     <Show when={flexviewObjects[TotalArrayObjectIndex]!.type == "display"}>
                                         <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => {
