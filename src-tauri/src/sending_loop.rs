@@ -98,7 +98,7 @@ impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes, write_id: usize) -> anyhow::Result<()> {
         let config_state = app_handle.state::<ConfigState>();
         let mut packet_structure=  Default::default();
-        use_struct(&config_state, &mut |config|{
+        _ = use_struct(&config_state, &mut |config|{
             packet_structure = config.packet_structure_manager.packet_structures[1].clone();
         });
 

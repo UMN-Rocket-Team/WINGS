@@ -9,14 +9,12 @@ pub type ConfigState = Mutex<ConfigStruct>;
 //a struct defining all the data that will be getting saved to the config file
 #[derive(Debug, Clone)]
 pub struct ConfigStruct {
-    pub default_baud: u32,
     pub packet_structure_manager: PacketStructureManager,
 }
 
 /// Defines a Default
 fn hard_coded_config() -> ConfigStruct {
     ConfigStruct {
-        default_baud: 56700,
         packet_structure_manager: default_packet_structure_manager(),
     }
 }

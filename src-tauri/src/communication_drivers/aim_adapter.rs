@@ -1,9 +1,9 @@
-use std::{ffi::CString, sync::{Arc, Mutex}, thread::sleep, time::Duration};
+use std::{ffi::CString, sync::Arc, thread::sleep, time::Duration};
 
 use anyhow::bail;
 use hidapi::{HidApi, HidDevice};
 
-use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}};
+use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex};
 
 use super::aim_parser::AimParser;
 pub struct AimAdapter {

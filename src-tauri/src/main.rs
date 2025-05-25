@@ -19,7 +19,7 @@ mod file_handling;
 use std::sync::{Arc, Mutex};
 
 use communication_manager::CommunicationManager;
-use data_processing::{DataProcessor, DataProcessorState};
+use data_processing::{DataProcessor};
 use file_handling::{config_struct::ConfigStruct, log_handlers::FileHandlingState};
 use packet_structure_events::send_initial_packet_structure_update_event;
 
@@ -36,7 +36,7 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd, add_file_manager,add_aim},
+    communication_commands::{delete_device, init_device_port,add_altus_metrum,add_rfd, add_file_manager,add_aim, add_featherweight},
     file_commands::set_read,
     sending_commands::{start_sending_loop, stop_sending_loop},
 };
@@ -73,6 +73,7 @@ fn main() {
             add_rfd,
             add_file_manager,
             add_aim,
+            add_featherweight,
             set_read
         ])
         .manage(default_packet_structure_manager())
@@ -86,7 +87,7 @@ fn main() {
             let app_handle_2 = app.handle();
 
             app.listen_global("initialized", move |_| {
-                send_initial_packet_structure_update_event(app_handle_1.clone(),ps_manager.clone());
+                send_initial_packet_structure_update_event(app_handle_1.clone());
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
                 // program and accessed upon termination

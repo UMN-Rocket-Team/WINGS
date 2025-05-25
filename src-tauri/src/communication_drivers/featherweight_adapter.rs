@@ -2,9 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
 
-use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}};
+use crate::{communication_manager::CommsIF, models::{packet::Packet}, packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex};
 
-use super::serial_packet_parser::SerialPacketParser;
+use super::{featherweight_parser, serial_packet_parser::SerialPacketParser};
 
 const PRINT_PARSING: bool = false;
 #[derive(Default)]
@@ -14,6 +14,7 @@ pub struct FeatherweightAdapter {
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+    gps_packet_id: usize,
 }
 
 impl CommsIF for FeatherweightAdapter{
@@ -24,12 +25,25 @@ impl CommsIF for FeatherweightAdapter{
     ) -> Self 
     where
         Self: Sized {
+        let id = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
+           
+            return ps_manager.enforce_packet_fields("FW GPS",vec![
+                "TimeStamp",//Milliseconds
+                "Altitude", //Feet
+                "Lat",      //Degrees
+                "Long",     //Degrees
+                "Vel Lat",  //Feet per second
+                "Vel Long", //Feet per second
+                "Vel Vert"  //Feet per second
+            ]);
+        }).unwrap();
         return FeatherweightAdapter{
             port: None,
             packet_parser: Default::default(),
-            baud: 0,
+            baud: 115200,
             id: 0,
-            packet_structure_manager: packet_structure_manager
+            packet_structure_manager: packet_structure_manager,
+            gps_packet_id: id
         }
     }
 
@@ -38,11 +52,11 @@ impl CommsIF for FeatherweightAdapter{
     /// # Errors
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str , baud: u32)  -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str , _baud: u32)  -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
-            self.baud = baud;
+            self.baud = 115200;
             let mut new_port = serialport::new(port_name, self.baud).open()?;
             new_port.clear(serialport::ClearBuffer::All)?;
             // Short non-zero timeout is needed to receive data from the serialport when
@@ -80,13 +94,9 @@ impl CommsIF for FeatherweightAdapter{
         };
 
         let mut buffer = [0; 4096];
-        let bytes_read = active_port.read(&mut buffer)?;
+        let _bytes_read = active_port.read(&mut buffer)?;
 
-        self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
-            write_buffer.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
-            Ok(())
-        }).expect("poison!")?;
+        write_buffer.push(featherweight_parser::packet_from_byte_stream(buffer,self.gps_packet_id)?);
         Ok(())
     }
 
@@ -102,7 +112,7 @@ impl CommsIF for FeatherweightAdapter{
     }
     
     fn get_type(&self) -> String {
-        return "SerialPort".to_owned();
+        return "FeatherWeight".to_owned();
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {

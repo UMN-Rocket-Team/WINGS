@@ -1,6 +1,6 @@
 import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
@@ -16,7 +16,7 @@ export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevi
 let comDevicesIterator = 0;
 const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
-const [baud, setBaud] = createSignal(57600);
+const [baud, setBaud] = createSignal(115200);
 const [isSimulating, setSimulating] = createSignal(false);
 const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
@@ -99,6 +99,9 @@ const SendingTab: Component = () => {
                 </button>
                 <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAim() }}>
                     add AimXtra
+                </button>
+                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addFeatherWeight() }}>
+                    add FeatherWeight
                 </button>
                 <For each={comDeviceList()}>
                     {(device, device_index) =>
@@ -215,7 +218,7 @@ const SendingTab: Component = () => {
                         }}
                         onChange={(e) => {
                             const el = e.target as HTMLInputElement;
-                            const val = el.value.trim() === '' ? 57600 : Math.max(0, +el.value);
+                            const val = el.value.trim() === '' ? 115200 : Math.max(0, +el.value);
                             el.value = val.toString();
                             setBaud(val);
                         }}

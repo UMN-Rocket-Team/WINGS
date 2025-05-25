@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Manager};
 
-use crate::{communication_manager::{CommunicationManager,CommunicationManagerState}, packet_structure_events::send_initial_packet_structure_update_event, state::generic_state::{result_to_string, use_struct}};
+use crate::{communication_manager::{CommunicationManager,CommunicationManagerState}, state::generic_state::{result_to_string, use_struct}};
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
 ///helper function for sending out an update of all coms manager devices
@@ -87,6 +87,17 @@ pub fn add_aim(
 ) -> Result<(), String> {
     use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         communication_manager.add_aim();
+        update_coms(&app_handle, communication_manager);
+    })
+}
+
+#[tauri::command(async)]
+pub fn add_featherweight(
+    app_handle: AppHandle,
+    communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+) -> Result<(), String> {
+    use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
+        communication_manager.add_featherweight();
         update_coms(&app_handle, communication_manager);
     })
 }
