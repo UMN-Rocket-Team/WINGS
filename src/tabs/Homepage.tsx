@@ -65,58 +65,7 @@ const Homepage: Component = () => {
     }
 
     /**
-     * @brief Checks if an object is a valid FlexviewObject
-     * @param obj data from JSON file.
-     * @returns Boolean representing if obj is a valid FlexviewObject
-     */
-    const isValidFlexviewObj = (obj: any): obj is FlexviewObject => {
-
-        // Checks if a displayObj is a valid DisplayStruct type
-        const isDisplayStructCorrect = (displayObj: any): boolean => {
-            if (displayObj && displayRegistry.get(displayObj.type)) {
-                const def = displayRegistry.get(displayObj.type)!;
-                const correctStruct = new def.structClass; // Could be GraphStruct, ReadoutStruct, etc.
-                
-                for (const [key, value] of Object.entries(correctStruct)) {
-                    /**
-                     * Checking that every property in correctStruct is also one of displayObj's properties.
-                     * Also checking if the properties' types are the same.
-                     * This is merely a shallow check, i.e. if we have a value with an object type, 
-                     * we don't check if the object's align correctly as well.
-                     * TODO: make this a recursive check to ensure all data is valid
-                     */
-                    if (
-                        !(key in displayObj) ||
-                        typeof displayObj[key] !== typeof (correctStruct as any)[key]
-                    ) return false;
-                }
-
-            } else return false;
-
-            return true;
-        }
-
-        const isValidFlexviewDisplay =
-            obj?.type === "display" &&
-            typeof obj?.index === "number" &&
-            isDisplayStructCorrect(obj.displayObj);
-
-        const isValidFlexviewLayout =
-            obj?.type === "layout" &&
-            (obj?.direction === 'column' || obj?.direction === 'row') &&
-            obj.children && 
-            Array.isArray(obj.children) &&
-            obj.children.every((v: any) => typeof v === "number") &&
-            obj.weights &&
-            Array.isArray(obj.weights) &&
-            obj.weights.every((v: any) => typeof v === "number");
-
-        return isValidFlexviewDisplay || isValidFlexviewLayout;
-    }
-
-    /**
      * @brief Reads a selected JSON file and loads display setups. 
-     * Shows ErrorModal if JSON data is invalid.
      */
     const openDisplaySetup = async () => {
         const selectedFilePath = await open({
@@ -131,12 +80,12 @@ const Homepage: Component = () => {
         try {
             // Load file data
             const fileData = await readTextFile(selectedFilePath as string);
-            const loadedFlexviewObjects = JSON.parse(fileData) as FlexviewObject[];
+            const loadedFlexviewObjects = JSON.parse(fileData);
 
-            // Validate that JSON data is formatted correctly
+            // Validate that loaded JSON data contains FlexviewObjects
             loadedFlexviewObjects.forEach((obj: any) => {
-                if (obj && !isValidFlexviewObj(obj)) 
-                    throw new Error("Invalid JSON data.");
+                if (obj && !(obj?.type === "layout" || obj?.type ===  "display"))
+                    throw new Error();
             });
 
             setLoadedFlexviewObjects(loadedFlexviewObjects as FlexviewObject[]);
@@ -154,13 +103,13 @@ const Homepage: Component = () => {
 
             navigate("/newFlight");
 
-        } catch (err) {
+        } catch (_) {
             if (loadedFlexviewObjects())
                 setLoadedFlexviewObjects(undefined);
 
             showModal<ErrorModalProps, {}>(ErrorModal, {
                 error: "Failed to Load Saved Displays Setup",
-                description: (err as Error).message
+                description: "Invalid JSON data."
             });
         }
     }
