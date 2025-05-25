@@ -22,7 +22,7 @@ fn hard_coded_config() -> ConfigStruct {
 ///Default will either be what is already in the config file, or the DEFAULT_CONFIG const
 impl Default for ConfigStruct {
     fn default() -> Self {
-        return hard_coded_config();
+        hard_coded_config()
 
         // todo!() !!! This code has been temporarily commented out because a new method needs to be developed for saving and loading the packet structure manager from json (possibly ez-make?)
 

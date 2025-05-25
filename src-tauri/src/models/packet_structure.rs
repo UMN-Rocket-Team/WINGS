@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 /// Represents an entire "Data Packet Structure" 
 /// 
-/// This is the data packet format in which the ground station should expect to recieve new data
+/// This is the data packet format in which the ground station should expect to receive new data
 /// 
 /// id is defined at runtime and used to track packet structures
 /// 
@@ -33,26 +33,26 @@ pub struct PacketStructure {
 
 impl PacketStructure {
     pub fn make_default(name: String) -> PacketStructure{
-        return PacketStructure {
+        PacketStructure {
             id: 0, // gets overridden
-            name: name,
+            name,
             byte_defined: false,
             fields: vec![],
             delimiters: vec![],
             packet_crc: vec![],
             size: None,
-        };
+        }
     }
-    pub fn make_from_fields_and_delims(id: usize, name: String, fields: Vec<PacketField>, delims: Vec<PacketDelimiter>) -> PacketStructure{
-        return PacketStructure {
-            id: id, // gets overridden
-            name: name,
+    pub fn make_from_fields_and_delims(id: usize, name: String, fields: Vec<PacketField>, delimiters: Vec<PacketDelimiter>) -> PacketStructure{
+        PacketStructure {
+            id, // gets overridden
+            name,
             byte_defined: false,
-            fields: fields,
-            delimiters: delims,
+            fields,
+            delimiters,
             packet_crc: vec![],
             size: None,
-        };
+        }
     }
     /// Returns the size of the PacketStructure
     /// 
@@ -94,17 +94,16 @@ impl PacketStructure {
     /// 
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
-    pub fn ez_make(&mut self, input: &str, names: &[&str], reverse_delimeter: bool) {
-        print!("{}\n",input);
+    pub fn ez_make(&mut self, input: &str, names: &[&str], reverse_delimiter: bool) {
         self.byte_defined = true;
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
-            if first_char.is_digit(16) && (first_char.is_lowercase() || first_char.is_ascii_digit()){
+            if first_char.is_ascii_hexdigit() && (first_char.is_lowercase() || first_char.is_ascii_digit()){
 
                 let mut new_identifier = hex::decode(substr).unwrap();
                 
-                if reverse_delimeter{
+                if reverse_delimiter{
                     new_identifier.reverse();//this is the way firmware broadcasts the identifiers
                 }
 
@@ -121,8 +120,8 @@ impl PacketStructure {
                 self.delimiters.push(new_delimiter);
             }
             else if first_char == '_' {
-                let trimmedstr = substr.chars().next().map(|c| &substr[c.len_utf8()..]);
-                curr_offset += trimmedstr.unwrap().parse::<usize>().unwrap();
+                let trimmed_str = substr.chars().next().map(|c| &substr[c.len_utf8()..]);
+                curr_offset += trimmed_str.unwrap().parse::<usize>().unwrap();
             }
             else{
                 let offset: usize;
@@ -165,11 +164,10 @@ pub struct PacketMetaDataFields {
 }
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-
 /// represents a field within a Packet where the groundstation can expect a piece of data to be stored.
 /// 
 /// each packet field contains a number based datatype, 
-/// a Packetfield can also potentially contain timestamp metadata
+/// a Packet field can also potentially contain timestamp metadata
 pub struct PacketField {
     pub(crate) index: usize,
     pub(crate) name: String,
@@ -177,7 +175,7 @@ pub struct PacketField {
     pub(crate) offset_in_packet: usize,
 }
 #[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
-///Represents the different types that can be recieved in a packetField
+///Represents the different types that can be received in a packetField
 pub enum PacketFieldType {
     // Ensure that this enum is in sync with PacketFieldValue
 

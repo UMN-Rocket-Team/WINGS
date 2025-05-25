@@ -24,12 +24,12 @@ impl CommsIF for SerialPortAdapter{
     ) -> Self 
     where
         Self: Sized {
-        return SerialPortAdapter{
+        SerialPortAdapter{
             port: None,
             packet_parser: Default::default(),
             baud: 0,
             id: 0,
-            packet_structure_manager: packet_structure_manager
+            packet_structure_manager
         }
     }
 
@@ -64,7 +64,7 @@ impl CommsIF for SerialPortAdapter{
             None => bail!("No active test port")
         };
         
-        test_port.write(packet)?;
+        test_port.write_all(packet)?;
         Ok(())
     }
 
@@ -98,11 +98,11 @@ impl CommsIF for SerialPortAdapter{
         self.id = id;
     }
     fn get_id(&self) -> usize {
-        return self.id;
+        self.id
     }
     
     fn get_type(&self) -> String {
-        return "SerialPort".to_owned();
+        "SerialPort".to_owned()
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
@@ -114,7 +114,7 @@ impl CommsIF for SerialPortAdapter{
         let mut buffer = [0; 4096];
         let bytes_read = active_port.read(&mut buffer)?;
         data_vector.extend_from_slice(&buffer[..bytes_read]);
-        return Ok(());
+        Ok(())
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
@@ -123,7 +123,7 @@ impl CommsIF for SerialPortAdapter{
             packet_vector.extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?); 
             Ok(())
         }).expect("Poison!")?;
-        return Ok(());
+        Ok(())
     }
 
 }

@@ -39,11 +39,11 @@ impl CommsIF for BinaryFileAdapter {
     ) -> Self 
     where
         Self: Sized {
-        return BinaryFileAdapter{
+        BinaryFileAdapter{
             file: None,
             packet_parser: Default::default(),
             id: 0,
-            packet_structure_manager: packet_structure_manager
+            packet_structure_manager
         }
     }
 
@@ -76,19 +76,19 @@ impl CommsIF for BinaryFileAdapter {
                 .context("failed to load file")?
                 .read(&mut buffer)
             {
-                Ok(_) => {
-                    if buffer == [0; 4096] {
+                Ok(read_amount) => {
+                    if buffer == [0; 4096] && read_amount == 0 {
                         return Ok(());
                     }
                     self.packet_parser.push_data(&buffer, PRINT_PARSING);
-                    let _ = use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager: &mut PacketStructureManager| -> anyhow::Result<()>{
+                    use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager: &mut PacketStructureManager| -> anyhow::Result<()>{
                         write_buffer.extend_from_slice(
                             &self
                                 .packet_parser
                                 .parse_packets(ps_manager, PRINT_PARSING)?
                         );
                         Ok(())
-                    }).expect("poison!");
+                    }).expect("poison!")?;
                     Ok(())
                 }
                 Err(err) => bail!(err),
@@ -105,21 +105,21 @@ impl CommsIF for BinaryFileAdapter {
         self.id = id;
     }
     fn get_id(&self) -> usize {
-        return self.id;
+        self.id
     }
 
     fn get_type(&self) -> String {
-        return "ByteFile".to_owned();
+        "ByteFile".to_owned()
     }
 
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
         let mut buffer: [u8; 4096] = [0; 4096];
-        self.file
+        let _ = self.file
             .as_mut()
             .context("failed to load file")?
             .read(&mut buffer)?; //question mark operator returns error if we fail
         data_vector.append(&mut buffer.to_vec());
-        return Ok(()); // returns ok if everything succeeded
+        Ok(()) // returns ok if everything succeeded
     }
 
     fn parse_device_data(
@@ -128,13 +128,13 @@ impl CommsIF for BinaryFileAdapter {
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        return use_state_in_mutex(&self.packet_structure_manager, &mut|ps_manager| -> anyhow::Result<()>{
+        use_state_in_mutex(&self.packet_structure_manager, &mut|ps_manager| -> anyhow::Result<()>{
             packet_vector.extend_from_slice(
             &self
                 .packet_parser
                 .parse_packets(ps_manager, PRINT_PARSING)?
             );
-            return Ok(());
-        }).expect("poison!");
+            Ok(())
+        }).expect("poison!")
     }
 }

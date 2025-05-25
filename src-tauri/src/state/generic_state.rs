@@ -9,7 +9,7 @@ pub fn use_struct<Struct: Send,ReturnType>(
     callback: &mut dyn FnMut(&mut Struct) -> ReturnType,
 ) -> Result<ReturnType,String>
 {
-    use_state_in_mutex(&state_to_use, callback)
+    use_state_in_mutex(state_to_use, callback)
 }
 
 pub fn result_to_string<ReturnType,ErrorType: std::fmt::Display>(

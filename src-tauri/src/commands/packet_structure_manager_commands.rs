@@ -12,7 +12,7 @@ use crate::{
 // !!!!!
 // Everything in this file is Depreciated and should not be used moving forward. 
 //
-// Developers: If you want you could replace all of these calls with a json config file editor, but dont edit the PSM state derictly
+// Developers: If you want you could replace all of these calls with a json config file editor, but dont edit the PSM state directly
 // !!!!!
 //
 // These functions update the current packet structures in the packet_Structure_manager_state, by calling update_packet_structures
@@ -171,7 +171,6 @@ pub fn delete_packet_structure_component(
 ///
 /// ### Arguments
 /// * 'view' - PacketStructureViewModel containing the packet that will be added to the packet structure
-
 #[allow(unused_variables,unreachable_code)]
 #[tauri::command]
 pub fn add_packet_structure(

@@ -23,7 +23,7 @@ pub fn emit_packet_structure_update_event(
     let mut packet_view_model_updates = Vec::with_capacity(created_or_updated_packet_view_model_ids.len());
     for packet_view_model_id in created_or_updated_packet_view_model_ids {
         packet_view_model_updates.push(PacketStructureViewModelUpdate::CreateOrUpdate(create_packet_view_model(
-            &packet_structure_manager.get_packet_structure(packet_view_model_id).unwrap(),
+            packet_structure_manager.get_packet_structure(packet_view_model_id).unwrap(),
         )));
     }
 

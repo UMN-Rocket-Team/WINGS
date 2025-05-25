@@ -29,7 +29,7 @@ impl MainLoop {
                 Ok(result) => {
                     //sends packets to frontend
                     // app_handle.emit_all("serial-update", result).unwrap();
-                    if result.new_available_port_names.is_some() || result.parsed_packets.len() != 0{
+                    if result.new_available_port_names.is_some() || !result.parsed_packets.is_empty(){
                         app_handle.emit_all("serial-update", result).unwrap();
                     }
                 }
@@ -37,12 +37,12 @@ impl MainLoop {
             };
         });
 
-        return Self {
+        Self {
             refresh_timer_data:RefreshTimerData {
                 timer: timer.into(),
                 update_task_guard: update_task_guard.into(),
             },
-        };
+        }
     }
 
     pub fn destroy(&self) {
@@ -136,7 +136,7 @@ mod tests {
 
     use std::sync::Arc;
 
-    use crate::{file_handling::log_handlers::FileHandlingState, state::packet_structure_manager_state::default_packet_structure_manager};
+    use crate::{file_handling::log_handlers::FileHandlingState, packet_structure_manager::PacketStructureManager, state::packet_structure_manager_state::default_packet_structure_manager};
 
     use super::*; // lets the unit tests use everything in this file
     use tauri::Manager;
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn run_loop_once() {
         let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
-            .manage(CommunicationManagerState::default())
+            .manage(Mutex::new(CommunicationManager::default_state(Arc::new(Mutex::new(PacketStructureManager::default())))))
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
@@ -158,7 +158,7 @@ mod tests {
     fn can_receive_and_parse_data_with_rfds() {
         //init app
         let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
-            .manage(CommunicationManagerState::default())
+            .manage(Mutex::new(CommunicationManager::default_state(Arc::new(Mutex::new(PacketStructureManager::default())))))
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
@@ -175,21 +175,18 @@ mod tests {
                 app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>(),app_handle.state::<DataProcessorState>());
             match output{
                 Ok(output) => {
-                    match output.new_available_port_names {
-                        Some(new_ports) => {
-                            if new_ports.len() != 0 {
-                                println!("{:#?}", new_ports);
-                                match use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
-                                    let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
-                                }){
-                                    Ok(_) => {},
-                                    Err(err) => {println!("{}", err)},
-                                }
+                    if let Some(new_ports) = output.new_available_port_names {
+                        if !new_ports.is_empty() {
+                            println!("{:#?}", new_ports);
+                            match use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                                let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
+                            }){
+                                Ok(_) => {},
+                                Err(err) => {println!("{}", err)},
                             }
-                        },
-                        None => {},
+                        }
                     }
-                    if output.parsed_packets.len() != 0 {
+                    if !output.parsed_packets.is_empty() {
                         println!("{:#?}", output.parsed_packets);
                     }},
                 Err(err) => {println!("{}", err)},
@@ -203,7 +200,7 @@ mod tests {
     fn can_receive_and_parse_data_with_multiple_rfds() {
         //init app
         let app_handle = tauri::test::mock_builder().setup(|_app| {Ok(())})
-            .manage(CommunicationManagerState::default())
+            .manage(Mutex::new(CommunicationManager::default_state(Arc::new(Mutex::new(PacketStructureManager::default())))))
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
@@ -223,22 +220,19 @@ mod tests {
                 app_handle.state::<CommunicationManagerState>(), app_handle.state::<FileHandlingState>(),app_handle.state::<DataProcessorState>());
             match output{
                 Ok(output) => {
-                    match output.new_available_port_names {
-                        Some(new_ports) => {
-                            if new_ports.len() != 0 {
-                                println!("{:#?}", new_ports);
-                                match use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
-                                    let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
-                                    let _ = communication_manager.init_device("COM14", 57600, new_id_2);
-                                }){
-                                    Ok(_) => {},
-                                    Err(err) => {println!("{}", err)},
-                                }
+                    if let Some(new_ports) = output.new_available_port_names {
+                        if !new_ports.is_empty() {
+                            println!("{:#?}", new_ports);
+                            match use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                                let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
+                                let _ = communication_manager.init_device("COM14", 57600, new_id_2);
+                            }){
+                                Ok(_) => {},
+                                Err(err) => {println!("{}", err)},
                             }
-                        },
-                        None => {},
+                        }
                     }
-                    if output.parsed_packets.len() != 0 {
+                    if !output.parsed_packets.is_empty() {
                         for packet in output.parsed_packets{
                             println!("{:?} {}", packet.field_data[0], packet.structure_id);//print timestamp and packet structure id
                         }

@@ -24,7 +24,7 @@ impl CommsIF for AimAdapter{
         Self: Sized {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
             let parser = AimParser::default(ps_manager);
-            return AimAdapter{
+            AimAdapter{
                 device: None,
                 packet_parser: parser,
                 baud: 0,
@@ -50,13 +50,13 @@ impl CommsIF for AimAdapter{
 
             match &self.device {
                 Some(base_station) => {
-                    let _ = base_station.write(&mut output);
+                    let _ = base_station.write(&output);
                     sleep(Duration::from_millis(100));
                     let result = base_station.read(&mut input);
                     match result{
                         Ok(_) => {},
                         Err(error) => {
-                            bail!(anyhow::anyhow!(error).context("failed to connect to entacore"))
+                            bail!(anyhow::anyhow!(error).context("failed to connect to Entacore product"))
                         },
                     }
                 },
@@ -72,7 +72,7 @@ impl CommsIF for AimAdapter{
     /// 
     /// returns an error if the device isn't initialized 
     fn write_port(&mut self, _: &[u8])  -> anyhow::Result<()> {
-        Err(anyhow::anyhow!("Wings does not currently support sending packets to an aim xtra"))
+        Err(anyhow::anyhow!("Wings does not currently support sending packets to an Aim-Xtra"))
     }
 
     fn get_device_packets(&mut self, _: &mut Vec<Packet>) -> anyhow::Result<()> {
@@ -87,11 +87,11 @@ impl CommsIF for AimAdapter{
         self.id = id;
     }
     fn get_id(&self) -> usize {
-        return self.id;
+        self.id
     }
     
     fn get_type(&self) -> String {
-        return "AimXtra".to_owned();
+        "AimXtra".to_owned()
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
@@ -109,7 +109,7 @@ impl CommsIF for AimAdapter{
                 let mut input: [u8;64] = [0;64];
                 output[0] = 0x03;
                 output[1] = 0x12;
-                let _ = base_station.write(&mut output);
+                let _ = base_station.write(&output);
                 let result = base_station.read_timeout(&mut input, 10);
                 match result{
                     Ok(_) => {
@@ -126,10 +126,10 @@ impl CommsIF for AimAdapter{
             }
             None => bail!("not initialized"),
         }
-        return Ok(());
+        Ok(())
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        return self.packet_parser.parse_transmission(data_vector,packet_vector);
+        self.packet_parser.parse_transmission(data_vector,packet_vector)
     }
 }
