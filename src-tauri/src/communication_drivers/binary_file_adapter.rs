@@ -81,7 +81,7 @@ impl CommsIF for BinaryFileAdapter {
                         return Ok(());
                     }
                     self.packet_parser.push_data(&buffer, PRINT_PARSING);
-                    use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager: &mut PacketStructureManager| -> anyhow::Result<()>{
+                    let _ = use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager: &mut PacketStructureManager| -> anyhow::Result<()>{
                         write_buffer.extend_from_slice(
                             &self
                                 .packet_parser

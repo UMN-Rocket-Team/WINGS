@@ -26,7 +26,7 @@ impl AltosPacketParser {
     pub fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
-        mut print_flag: bool
+        print_flag: bool
     ) -> anyhow::Result<Vec<Packet>> {
         if print_flag {
             println!("Unparsed data length: {}", self.unparsed_data.len());

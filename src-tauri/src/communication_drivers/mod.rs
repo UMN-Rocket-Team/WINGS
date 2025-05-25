@@ -6,3 +6,4 @@ pub mod binary_file_adapter;
 pub mod aim_adapter;
 pub mod aim_parser;
 pub mod featherweight_adapter;
+pub mod featherweight_parser;

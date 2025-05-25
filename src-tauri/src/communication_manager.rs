@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter, serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter
+        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter, featherweight_adapter::FeatherweightAdapter, serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter
     }, file_handling::log_handlers::LogHandler, models::packet::Packet, packet_structure_manager::PacketStructureManager
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
@@ -280,6 +280,16 @@ impl CommunicationManager {
         return self.comms_objects[self.comms_objects.len() - 1].get_id();
     }
 
+       /// Adds an byte reading device object to the manager
+       pub fn add_featherweight(&mut self) -> usize {
+        let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(self.ps_manager.clone());
+        new_device.set_id(self.id_iterator);
+        self.id_iterator += 1;
+        self.comms_objects
+            .push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        return self.comms_objects[self.comms_objects.len() - 1].get_id();
+    }
+
     //translates the device ID to array index
     fn find(&mut self, index: usize, print_flag: bool) -> Option<usize> {
         let mut i = 0;
@@ -346,7 +356,7 @@ mod tests {
         };
         use std::sync::Arc;
         
-        const BAUD: u32 = 57600;
+        const BAUD: u32 = 115200;
 
         let mut test_interface = CommunicationManager::default();
         let mut log_handler = LogHandler::default();
