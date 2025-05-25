@@ -146,6 +146,14 @@ impl PacketStructureManager {
                     r#type: PacketFieldType::UnsignedInteger,
                 });
             }
+            if self.app.is_some(){
+                emit_packet_structure_update_event(
+                    &self.app.clone().unwrap(),
+                    vec![id],
+                    None,
+                    &self,
+                );
+            }
         }
         return id;
     }
