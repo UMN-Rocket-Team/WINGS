@@ -2,7 +2,6 @@ use chrono::NaiveDate;
 
 use crate::models::packet::{Packet, PacketFieldValue};
 
-///
 /// Finding the GPS Packet withing the Byte stream and returning it
 /// 
 /// Because the data is mostly given in ascii, it is converted to a string, 
@@ -17,13 +16,14 @@ pub fn packet_from_byte_stream(buffer: [u8;4096], gps_packet_id:usize) -> anyhow
     let mut after_at = res2.to_owned().split_off(packet_loc);
     _ = after_at.split_off(after_at.find("\r\n").expect(""));
     let arr = parser(&mut after_at)?;
-    return Ok(Packet { structure_id: gps_packet_id, field_data: arr })
+    Ok(Packet { structure_id: gps_packet_id, field_data: arr })
 }
 
-///
+/// Parses String into Vector of packet field values
 /// 
-/// 
-fn parser(raw_data: &mut String) -> anyhow::Result<Vec<PacketFieldValue>>{
+/// Strings are split by spaces and then fields of interest are parsed individually
+/// Time data given by the packet is simplified into a millisecond timestamp
+fn parser(raw_data: &mut str) -> anyhow::Result<Vec<PacketFieldValue>>{
     let message: Vec<&str> = raw_data.split(" ").collect();
     let time_vec: Vec<&str> = message[6].split(&[':', '.']).collect();
     let mut return_vec = vec![];
@@ -44,7 +44,7 @@ fn parser(raw_data: &mut String) -> anyhow::Result<Vec<PacketFieldValue>>{
     return_vec.push(PacketFieldValue::Number(message[17].parse::<f64>().unwrap_or(0.0)));
     return_vec.push(PacketFieldValue::Number(message[18].parse::<f64>().unwrap_or(0.0)));
     return_vec.push(PacketFieldValue::Number(message[19].parse::<f64>().unwrap_or(0.0)));
-    return Ok(return_vec);
+    Ok(return_vec)
 }
 
 

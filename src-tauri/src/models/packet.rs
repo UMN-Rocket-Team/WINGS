@@ -32,25 +32,19 @@ pub enum PacketFieldValue {
 #[allow(dead_code)]
 impl PacketFieldValue {
     pub fn edit_number(&mut self, callback: &mut dyn FnMut(&mut f64) -> f64) {
-        match self {
-            PacketFieldValue::Number(i) => {*i = callback(i)},
-            _ => {},
-        }
+        if let PacketFieldValue::Number(i) = self {*i = callback(i)}
     }
     pub fn new_number(&mut self, callback: &mut dyn FnMut(&mut f64) -> f64)-> PacketFieldValue {
         let mut new_number = self.clone();
-        match &mut new_number {
-            PacketFieldValue::Number(i) => {*i = callback(i)},
-            _ => {},
-        }
-        return new_number
+        if let PacketFieldValue::Number(i) = &mut new_number {*i = callback(i)}
+        new_number
     }
     /// Converts this value to a vec of bytes in little-endian form (see CSCI 2021)
     pub fn to_le_bytes(&self,field_type: PacketFieldType) -> anyhow::Result<Vec<u8>> {
         // Need to return a vec here instead of a [u8] as the size is not constant
         match self {
-            PacketFieldValue::String(i) => return Ok(i.as_bytes().to_vec()),
-            PacketFieldValue::Bool(i) => return Ok(vec![*i as u8]),
+            PacketFieldValue::String(i) => Ok(i.as_bytes().to_vec()),
+            PacketFieldValue::Bool(i) => Ok(vec![*i as u8]),
             PacketFieldValue::Number(i) => {
                 match field_type{
                     PacketFieldType::UnsignedByte => Ok(u8::to_le_bytes(*i as u8).to_vec()),
@@ -62,13 +56,13 @@ impl PacketFieldValue {
                     PacketFieldType::UnsignedLong => Ok(u64::to_le_bytes(*i as u64).to_vec()),
                     PacketFieldType::SignedLong => Ok(i64::to_le_bytes(*i as i64).to_vec()),
                     PacketFieldType::Float => Ok(f32::to_le_bytes(*i as f32).to_vec()),
-                    PacketFieldType::Double => Ok(f64::to_le_bytes(*i as f64).to_vec()),
+                    PacketFieldType::Double => Ok(f64::to_le_bytes(*i).to_vec()),
                     PacketFieldType::UnsignedTwoFour => {
                         u32::to_le_bytes(*i as u32).to_vec();
                         todo!("make these only spit out 3 u8s");
                     },
                     PacketFieldType::SignedTwoFour => Ok(i32::to_le_bytes(*i as i32).to_vec()),
-                    _ => Err(anyhow::anyhow!("Numbervalue being processed as String or bool"))
+                    _ => Err(anyhow::anyhow!("Number value being processed as String or bool"))
                 }
             },
         }
@@ -117,7 +111,7 @@ impl PacketFieldType {
                                 Ok(PacketFieldValue::Number(f32::from_le_bytes(slice_to_fixed_size::<4>(bytes)).into()))
                             }
             PacketFieldType::Double => {
-                                Ok(PacketFieldValue::Number(f64::from_le_bytes(slice_to_fixed_size::<8>(bytes)).into()))
+                                Ok(PacketFieldValue::Number(f64::from_le_bytes(slice_to_fixed_size::<8>(bytes))))
                             }
             PacketFieldType::UnsignedTwoFour => {
                         let mut raw:u32 = 0;

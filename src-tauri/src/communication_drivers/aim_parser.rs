@@ -56,7 +56,7 @@ pub struct PacketIdList {
 impl AimParser {
     pub fn default(ps_manager: &mut PacketStructureManager) -> AimParser{
         println!("Creating Aim!");
-        return AimParser{
+        AimParser{
             init_time: SystemTime::now(),
             packet_ids: PacketIdList{
                 meta: ps_manager.enforce_packet_fields(META,vec!["System time","RSSI","SNR"]),
@@ -92,7 +92,7 @@ impl AimParser {
     /// processes the raw data queue, returning a Vector(aka. array) of the processed packets
     pub fn parse_transmission(
         &mut self,
-        transmission: &mut Vec<u8>,
+        transmission: &mut [u8],
         packets:&mut Vec<Packet>
     ) -> anyhow::Result<()> {
         if transmission.len() <=63 {
@@ -166,7 +166,8 @@ impl AimParser {
 
                     i+=2;
                 },
-                0x07 | 0x08 | 0x09 | 0x0A =>{
+                // ..= is Searching through the range of values 0x07,0x08,0x09,and 0x0A
+                0x07..=0x0A =>{
                     if delimiter == 0x07{
                         type_id = self.packet_ids.line_a;
                     }
@@ -330,7 +331,7 @@ impl AimParser {
                 field_data: data,
             });
         }
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -348,33 +349,23 @@ mod tests {
         let path = Path::new(".\\test utilities\\out.txt");
         let json: serde_json::Value = serde_json::from_str(&fs::read_to_string(path).unwrap()).expect("JSON was not well-formatted");
         let mut json_string_array = vec![];
-        match json {
-            serde_json::Value::Array(values) => {
-                json_string_array = values;
-            },
-            _ => {
-
-            }
+        if let serde_json::Value::Array(values) = json {
+            json_string_array = values;
         }
 
         let mut collector: Vec<Vec<Packet>> = vec![];
 
         for value in json_string_array {
-            match value {
-                serde_json::Value::String(str) => {
-                    let string_by_bytes = str.split(":");
-                    let mut byte_array: Vec<u8> = vec![];
-                    for string in string_by_bytes{
-                        byte_array.append(&mut hex::decode(string).expect("uh oh stinky"));
-                    }
-                    let mut aim = AimParser::default(&mut PacketStructureManager::default());
-                    let mut ans = vec![];
-                    aim.parse_transmission(&mut byte_array,&mut ans).expect("parser");
-                    collector.push(ans);
-               },
-                _ => {
-    
-                }
+            if let serde_json::Value::String(str) = value {
+                 let string_by_bytes = str.split(":");
+                 let mut byte_array: Vec<u8> = vec![];
+                 for string in string_by_bytes{
+                     byte_array.append(&mut hex::decode(string).expect("uh oh stinky"));
+                 }
+                 let mut aim = AimParser::default(&mut PacketStructureManager::default());
+                 let mut ans = vec![];
+                 aim.parse_transmission(&mut byte_array,&mut ans).expect("parser");
+                 collector.push(ans);
             }
         }     
     }

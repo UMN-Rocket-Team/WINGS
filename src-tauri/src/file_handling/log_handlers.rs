@@ -193,7 +193,7 @@ impl LogHandler {
         data: &Vec<u8>,
         device_id: usize,
         device_type: String
-    ) -> Result<usize, Error> {
+    ) -> Result<(), Error> {
         if self.testing{
             println!("{}_{}: Printed {}",device_type,device_id,data.len());
         }
@@ -209,7 +209,7 @@ impl LogHandler {
                 self.byte_writer.get(&(device_type,device_id)).ok_or(anyhow::anyhow!("failed to register new file"))?
             },
         };
-        Ok(byte_file.write(&data)?)
+        Ok(byte_file.write_all(data)?)
     }
 
     pub fn enable_debug(&mut self){

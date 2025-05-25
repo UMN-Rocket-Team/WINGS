@@ -1,5 +1,7 @@
 use crate::{file_handling::log_handlers::{FileHandlingState, LogHandler}, state::generic_state::{result_to_string, use_struct}};
 
+///
+/// Obsolete command used to set the file which the sending loop would read from
 /// 
 #[tauri::command(async)]
 pub fn set_read(

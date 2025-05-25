@@ -18,7 +18,6 @@ use crate::models::{packet::PacketFieldValue, packet_structure::PacketStructure}
 /// 
 /// However some errors will not be caught such as packets overlapping each other, so please
 /// make sure your structures are valid first :)
-
 pub fn generate_packet(packet_structure: &PacketStructure, field_data: StringRecord) -> anyhow::Result<Vec<u8>> {
     // Don't grow this after making it. It's already the exact right size.
     let mut result = vec![0; packet_structure.size()];

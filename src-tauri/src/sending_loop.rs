@@ -56,15 +56,12 @@ impl BackgroundTask {
     /// 
     /// The callback just should do something once -- it shouldn't include
     /// its own `loop { ... }` as that's handled by BackgroundTask.
-    pub fn run_repeatedly<F>(mut callback: F) -> BackgroundTask where F: FnMut() -> (), F: Send + 'static {
+    pub fn run_repeatedly<F>(mut callback: F) -> BackgroundTask where F: FnMut(), F: Send + 'static {
         let (tx, rx) = mpsc::channel();
 
         thread::spawn(move || {
             let is_stopped = || {
-                match rx.try_recv() {
-                    Err(mpsc::TryRecvError::Disconnected) => true,
-                    _ => false
-                }
+                matches!(rx.try_recv(), Err(mpsc::TryRecvError::Disconnected))
             };
 
             while !is_stopped() {
@@ -156,7 +153,7 @@ impl SendingLoop {
                     flipper = !flipper;
                     let mut output_string = vec![unix_time().to_string()];
                     for i in 1..packet_structure.fields.len(){
-                        output_string.push(((flipper.overflowing_add(i as u8).0)).to_string());
+                        output_string.push((flipper.overflowing_add(i as u8).0).to_string());
                     } 
                     packet_to_send = Some(StringRecord::from(output_string));
                 },
@@ -192,7 +189,7 @@ impl SendingLoop {
                     packets_sent = packets_sent.overflowing_add(1).0;
                     //println!("Sent packet {}: {:?}", packets_sent, packet);
 
-                    let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent as u32));
+                    let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
                 },
                 Err(err) => {
                     println!("Failed to write to test port: {}", err);

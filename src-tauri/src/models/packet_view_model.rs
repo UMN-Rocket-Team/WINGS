@@ -27,13 +27,13 @@ impl PacketStructureViewModel {
                 PacketComponent::Delimiter(delimiter) => packet_delimiters.push(PacketDelimiter {
                     index: delimiter.index,
                     name: delimiter.name.to_string(),
-                    identifier: hex::decode(delimiter.identifier.to_string()).unwrap(), // used unwrap instead of match(program will panic if this cant decode)
+                    identifier: hex::decode(&delimiter.identifier).unwrap(), // used unwrap instead of match(program will panic if this cant decode)
                     offset_in_packet: delimiter.offset_in_packet,
                 }),
                 PacketComponent::Gap(_gap) => {} //gaps are view only and can be ignored
             };
         }
-        return PacketStructure::make_from_fields_and_delims(self.id, self.name.clone(), packet_fields, packet_delimiters);
+        PacketStructure::make_from_fields_and_delims(self.id, self.name.clone(), packet_fields, packet_delimiters)
     }
 }
 
@@ -109,9 +109,8 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         }));
     }
 
-    components.sort_by(|lhs, rhs| lhs.get_offset_in_packet().cmp(&rhs.get_offset_in_packet()));
 
-    if let Some(first_component) = components.get(0) {
+    if let Some(first_component) = components.first() {
         if first_component.get_offset_in_packet() != 0 {
             components.insert(0, PacketComponent::Gap(PacketGap {
                 size: first_component.get_offset_in_packet(),
@@ -123,7 +122,7 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
     // This loop checks for a gap *after* the component at index `i`.
     // The last component by definition can't have a gap after it.
     // Must iterate backwards because we are adding items as we loop.
-    for i in (0..(components.len().checked_sub(1).unwrap_or(0))).rev() {
+    for i in (0..components.len().saturating_sub(1)).rev() {
         let component = &components[i];
 
         let current_component_end = component.get_offset_in_packet() + component.len();
@@ -140,11 +139,11 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         }
     }
 
-    return PacketStructureViewModel {
+    PacketStructureViewModel {
         id: packet_structure.id,
         name: packet_structure.name.clone(),
         components,
-    };
+    }
 }
 
 #[cfg(test)]

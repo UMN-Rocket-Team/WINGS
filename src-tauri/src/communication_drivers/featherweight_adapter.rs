@@ -27,7 +27,7 @@ impl CommsIF for FeatherweightAdapter{
         Self: Sized {
         let id = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
            
-            return ps_manager.enforce_packet_fields("FW GPS",vec![
+            ps_manager.enforce_packet_fields("FW GPS",vec![
                 "TimeStamp",//Milliseconds
                 "Altitude", //Feet
                 "Lat",      //Degrees
@@ -35,14 +35,14 @@ impl CommsIF for FeatherweightAdapter{
                 "Vel Lat",  //Feet per second
                 "Vel Long", //Feet per second
                 "Vel Vert"  //Feet per second
-            ]);
+            ])
         }).unwrap();
-        return FeatherweightAdapter{
+        FeatherweightAdapter{
             port: None,
             packet_parser: Default::default(),
             baud: 115200,
             id: 0,
-            packet_structure_manager: packet_structure_manager,
+            packet_structure_manager,
             gps_packet_id: id
         }
     }
@@ -78,7 +78,7 @@ impl CommsIF for FeatherweightAdapter{
             None => bail!("No active test port")
         };
         
-        test_port.write(packet)?;
+        test_port.write_all(packet)?;
         Ok(())
     }
 
@@ -108,11 +108,11 @@ impl CommsIF for FeatherweightAdapter{
         self.id = id;
     }
     fn get_id(&self) -> usize {
-        return self.id;
+        self.id
     }
     
     fn get_type(&self) -> String {
-        return "FeatherWeight".to_owned();
+        "FeatherWeight".to_owned()
     }
     
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
@@ -124,7 +124,7 @@ impl CommsIF for FeatherweightAdapter{
         let mut buffer = [0; 4096];
         let bytes_read = active_port.read(&mut buffer)?;
         data_vector.extend_from_slice(&buffer[..bytes_read]);
-        return Ok(());
+        Ok(())
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
@@ -133,7 +133,7 @@ impl CommsIF for FeatherweightAdapter{
             packet_vector.extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?); 
             Ok(())
         }).expect("Poison!")?;
-        return Ok(());
+        Ok(())
     }
 
 }

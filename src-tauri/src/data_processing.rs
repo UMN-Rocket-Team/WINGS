@@ -22,7 +22,7 @@ pub struct DataProcessor {
 impl DataProcessor{
     pub fn default_state ( ps_manager: Arc<Mutex<PacketStructureManager>>) -> DataProcessorState{
         use_state_in_mutex(&ps_manager, &mut |ps_ref| {
-            return Mutex::new(
+            Mutex::new(
                 DataProcessor { 
                     daq_id: ps_ref.get_packet_structure_by_name("daq"),
                     daq_adv_id: ps_ref.enforce_packet_fields("daq_adv",vec!["Time","PSI","Newtons","Impulse","Burn_time","Max_pressure"]),
@@ -46,7 +46,7 @@ impl DataProcessor{
                 let mut time = packet.field_data[0].clone();
                 time.edit_number(&mut |time| {
                     self.daq_timestamp_buffer.push_front(*time); 
-                    return *time
+                    *time
                 });
                 let mut load_cell_raw = packet.field_data[1].clone();
                 let mut pressure_raw = packet.field_data[2].clone();
@@ -57,7 +57,7 @@ impl DataProcessor{
                     if *n > MOTOR_WEIGHT_CONSERVATIVE_NEWTONS {
                         self.burn_iter+=1;
                         if self.burn_iter >=3 {
-                            let t1 = match self.daq_timestamp_buffer.get(0){
+                            let t1 = match self.daq_timestamp_buffer.front(){
                                 Some(front) => *front,
                                 None => 0.0
                             };
@@ -99,7 +99,7 @@ impl DataProcessor{
                                     PacketFieldValue::Number(self.max_pressure)
                                 ],
                             });
-                    return *n
+                    *n
                 });
             }
         }

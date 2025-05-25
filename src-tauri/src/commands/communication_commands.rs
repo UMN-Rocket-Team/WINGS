@@ -25,7 +25,7 @@ pub fn delete_device(
     result_to_string(use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         let result = communication_manager.delete_device(id);
         update_coms(&app_handle, communication_manager);
-        return result;
+        result
          
     }))
 }

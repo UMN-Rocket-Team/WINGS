@@ -107,10 +107,11 @@ impl SerialPacketParser {
                 // The packet is a match, parse its data
                 let mut field_data: Vec<PacketFieldValue> =
                     vec![PacketFieldValue::Number(0.0); packet_structure.fields.len()];
-                for k in 0..packet_structure.fields.len() {
+                    
+                for (k,field_data_item) in field_data.iter_mut().enumerate().take(packet_structure.fields.len()) {
                     let field = &packet_structure.fields[k];
                     let field_start_index = packet_start_index + field.offset_in_packet;
-                    field_data[k] = field.r#type.parse(
+                    *field_data_item = field.r#type.parse(
                         &self.unparsed_data
                             [field_start_index..(field_start_index + field.r#type.size()?)],
                     )?
@@ -131,7 +132,7 @@ impl SerialPacketParser {
 
         // Throw away any garbage data that remains so that it does not have to be re-parsed
         let last_parsed_index = max(
-            self.unparsed_data.len().checked_sub(packet_structure_manager.maximum_packet_structure_size).unwrap_or(0),
+            self.unparsed_data.len().saturating_sub(packet_structure_manager.maximum_packet_structure_size),
             last_successful_match_end_index.unwrap_or(0),
         );
         if print_flag {
@@ -143,8 +144,8 @@ impl SerialPacketParser {
 }
 
 //checks if the delimiter of a packet can be found in the given data
-fn is_delimiter_match(data: &Vec<u8>, start_index: usize, delimiter_identifier: &Vec<u8>,print_flag: bool) -> bool {
-    if start_index + delimiter_identifier.len() - 1 >= data.len() {
+fn is_delimiter_match(data: &[u8], start_index: usize, delimiter_identifier: &[u8],print_flag: bool) -> bool {
+    if start_index + delimiter_identifier.len() > data.len() {
         return false;
     }
 

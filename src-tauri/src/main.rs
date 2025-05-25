@@ -48,7 +48,7 @@ fn main() {
     let config = ConfigStruct::default();
     let ps_manager: Arc<Mutex<PacketStructureManager>> = Arc::new(config.packet_structure_manager.clone().into());
     let data = DataProcessor::default_state(ps_manager.clone());
-    let comms = CommunicationManager::default_state(ps_manager.clone());
+    let comms = Mutex::new(CommunicationManager::default_state(ps_manager.clone()));
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             delete_device, 
@@ -98,12 +98,9 @@ fn main() {
 
             Ok(())
         })
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::CloseRequested { .. } => {
-                // Timer internals need to manually dropped, do that here at program termination
-                event.window().app_handle().state::<MainLoop>().destroy()
-            }
-            _ => {}
+        .on_window_event(|event| if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
+            // Timer internals need to manually dropped, do that here at program termination
+            event.window().app_handle().state::<MainLoop>().destroy()
         })
         .plugin(tauri_plugin_store::Builder::default().build())
         .run(tauri::generate_context!())
