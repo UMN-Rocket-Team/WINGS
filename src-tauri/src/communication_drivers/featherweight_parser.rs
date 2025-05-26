@@ -9,8 +9,9 @@ use crate::models::packet::{Packet, PacketFieldValue};
 /// The data is cut down to just the first line with a gps packet 
 ///     ( we assume one gps packet per transmission since gps packets are only sent once every couple of seconds so multiple would be highly unlikely)
 /// once the data is cut down it is then sent to the parser to be 
-pub fn packet_from_byte_stream(buffer: [u8;4096], gps_packet_id:usize) -> anyhow::Result<Packet>{
-    let res = String::from_utf8_lossy(&buffer);
+pub fn packet_from_byte_stream(buffer: &[u8], gps_packet_id:usize) -> anyhow::Result<Packet>{
+    let res = String::from_utf8_lossy(buffer);
+    println!("{:?}",res);
     let res2 = res.trim_matches(char::from(0));
     let packet_loc =  res2.find("@ GPS_STAT").ok_or(anyhow::anyhow!("no Gps Packet"))?;
     let mut after_at = res2.to_owned().split_off(packet_loc);
@@ -27,7 +28,6 @@ fn parser(raw_data: &mut str) -> anyhow::Result<Vec<PacketFieldValue>>{
     let message: Vec<&str> = raw_data.split(" ").collect();
     let time_vec: Vec<&str> = message[6].split(&[':', '.']).collect();
     let mut return_vec = vec![];
-    println!("{:?}",message);
     let dt = NaiveDate::from_ymd_opt(
         message[3].parse::<i32>().unwrap_or(0), 
         message[4].parse::<u32>().unwrap_or(0), 

@@ -53,6 +53,7 @@ impl CommsIF for FeatherweightAdapter{
     /// 
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
     fn init_device(&mut self, port_name: &str , _baud: u32)  -> anyhow::Result<()> {
+        println!("initial how");
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -88,6 +89,7 @@ impl CommsIF for FeatherweightAdapter{
     /// 
     /// bails and returns an error if there is no active port
     fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
+        println!("here!");
         let active_port = match self.port.as_mut() {
             Some(port) => port,
             None => bail!("No read port has been set")
@@ -95,8 +97,8 @@ impl CommsIF for FeatherweightAdapter{
 
         let mut buffer = [0; 4096];
         let _bytes_read = active_port.read(&mut buffer)?;
-
-        write_buffer.push(featherweight_parser::packet_from_byte_stream(buffer,self.gps_packet_id)?);
+        println!("here!");
+        write_buffer.push(featherweight_parser::packet_from_byte_stream(&buffer,self.gps_packet_id)?);
         Ok(())
     }
 
@@ -123,16 +125,13 @@ impl CommsIF for FeatherweightAdapter{
 
         let mut buffer = [0; 4096];
         let bytes_read = active_port.read(&mut buffer)?;
+        
         data_vector.extend_from_slice(&buffer[..bytes_read]);
         Ok(())
     }
     
     fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(&self.packet_structure_manager, &mut|parser|-> anyhow::Result<()> {
-            packet_vector.extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?); 
-            Ok(())
-        }).expect("Poison!")?;
+        packet_vector.push(featherweight_parser::packet_from_byte_stream(data_vector,self.gps_packet_id)?);
         Ok(())
     }
 
