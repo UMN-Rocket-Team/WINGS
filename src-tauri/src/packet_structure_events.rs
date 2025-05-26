@@ -1,4 +1,4 @@
-use crate::{file_handling::config_struct::{ConfigState, ConfigStruct}, models::packet_view_model::PacketStructureViewModel, state::generic_state::use_struct};
+use crate::{file_handling::config_struct::ConfigState, models::packet_view_model::PacketStructureViewModel, state::mutex_utils::use_state_in_mutex};
 use tauri::{AppHandle, Manager};
 use serde::Serialize;
 
@@ -38,7 +38,7 @@ pub fn emit_packet_structure_update_event(
 }
 
 pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
-    match use_struct::<ConfigStruct,()>(
+    use_state_in_mutex(
         &app_handle.state::<ConfigState>(),
         &mut |config| {
             emit_packet_structure_update_event(
@@ -52,8 +52,5 @@ pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
                 &config.packet_structure_manager,
             );
         },
-    ) {
-        Ok(_) => {}
-        Err(_) => panic!("Failed to send initial packet structures!"),
-    };
+    );
 }

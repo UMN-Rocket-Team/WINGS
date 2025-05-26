@@ -57,7 +57,6 @@ pub trait CommsIF {
         raw_data_vector: &mut Vec<u8>,
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()>;
-    fn get_device_packets(&mut self, data_vector: &mut Vec<Packet>) -> anyhow::Result<()>;
     fn is_init(&self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;

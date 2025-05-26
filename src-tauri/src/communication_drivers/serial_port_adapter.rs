@@ -68,28 +68,6 @@ impl CommsIF for SerialPortAdapter{
         Ok(())
     }
 
-    /// Reads bytes from the active port and adds new bytes to the write_buffer
-    /// 
-    /// # Errors
-    /// 
-    /// bails and returns an error if there is no active port
-    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        let active_port = match self.port.as_mut() {
-            Some(port) => port,
-            None => bail!("No read port has been set")
-        };
-
-        let mut buffer = [0; 4096];
-        let bytes_read = active_port.read(&mut buffer)?;
-
-        self.packet_parser.push_data(&buffer[..bytes_read], PRINT_PARSING);
-        use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
-            write_buffer.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
-            Ok(())
-        }).expect("poison!")?;
-        Ok(())
-    }
-
     /// Returns true if there is an active port
     fn is_init(&self) -> bool {
         self.port.is_some()
@@ -122,7 +100,7 @@ impl CommsIF for SerialPortAdapter{
         use_state_in_mutex(&self.packet_structure_manager, &mut|parser|-> anyhow::Result<()> {
             packet_vector.extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?); 
             Ok(())
-        }).expect("Poison!")?;
+        })?;
         Ok(())
     }
 

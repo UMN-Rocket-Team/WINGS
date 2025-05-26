@@ -67,37 +67,6 @@ impl CommsIF for BinaryFileAdapter {
         Ok(())
     }
 
-    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        if self.file.is_some() {
-            let mut buffer = [0; 4096];
-            match self
-                .file
-                .as_mut()
-                .context("failed to load file")?
-                .read(&mut buffer)
-            {
-                Ok(read_amount) => {
-                    if buffer == [0; 4096] && read_amount == 0 {
-                        return Ok(());
-                    }
-                    self.packet_parser.push_data(&buffer, PRINT_PARSING);
-                    use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager: &mut PacketStructureManager| -> anyhow::Result<()>{
-                        write_buffer.extend_from_slice(
-                            &self
-                                .packet_parser
-                                .parse_packets(ps_manager, PRINT_PARSING)?
-                        );
-                        Ok(())
-                    }).expect("poison!")?;
-                    Ok(())
-                }
-                Err(err) => bail!(err),
-            }
-        } else {
-            bail!("reading from uninitialized driver");
-        }
-    }
-
     fn is_init(&self) -> bool {
         self.file.is_some()
     }
@@ -135,6 +104,6 @@ impl CommsIF for BinaryFileAdapter {
                 .parse_packets(ps_manager, PRINT_PARSING)?
             );
             Ok(())
-        }).expect("poison!")
+        })
     }
 }

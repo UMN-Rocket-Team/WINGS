@@ -4,16 +4,13 @@ use anyhow::bail;
 
 use crate::{communication_manager::CommsIF, models::{packet::Packet}, packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex};
 
-use super::{featherweight_parser, serial_packet_parser::SerialPacketParser};
+use super::featherweight_parser;
 
-const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct FeatherweightAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: SerialPacketParser,
     baud: u32,
     id: usize,
-    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
     gps_packet_id: usize,
 }
 
@@ -25,8 +22,7 @@ impl CommsIF for FeatherweightAdapter{
     ) -> Self 
     where
         Self: Sized {
-        let id = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-           
+        let id = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {          
             ps_manager.enforce_packet_fields("FW GPS",vec![
                 "TimeStamp",//Milliseconds
                 "Altitude", //Feet
@@ -36,13 +32,11 @@ impl CommsIF for FeatherweightAdapter{
                 "Vel Long", //Feet per second
                 "Vel Vert"  //Feet per second
             ])
-        }).unwrap();
+        });
         FeatherweightAdapter{
             port: None,
-            packet_parser: Default::default(),
             baud: 115200,
             id: 0,
-            packet_structure_manager,
             gps_packet_id: id
         }
     }
@@ -80,25 +74,6 @@ impl CommsIF for FeatherweightAdapter{
         };
         
         test_port.write_all(packet)?;
-        Ok(())
-    }
-
-    /// Reads bytes from the active port and adds new bytes to the write_buffer
-    /// 
-    /// # Errors
-    /// 
-    /// bails and returns an error if there is no active port
-    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        println!("here!");
-        let active_port = match self.port.as_mut() {
-            Some(port) => port,
-            None => bail!("No read port has been set")
-        };
-
-        let mut buffer = [0; 4096];
-        let _bytes_read = active_port.read(&mut buffer)?;
-        println!("here!");
-        write_buffer.push(featherweight_parser::packet_from_byte_stream(&buffer,self.gps_packet_id)?);
         Ok(())
     }
 
