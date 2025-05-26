@@ -14,14 +14,26 @@ import ErrorModal, { ErrorModalProps } from "../modals/ErrorModal";
 import { displays, FlexviewLayout, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import { displayRegistry, DisplayStruct } from "../core/display_registry";
 import { store } from "../core/file_handling";
+import { createStore } from "solid-js/store";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
     PacketStructureViewModels: PacketStructureViewModel[]
 };
 
-// Signal that's used for FlexviewObject arrays loaded from saved files
-export const [loadedFlexviewObjects, setLoadedFlexviewObjects] = createSignal<FlexviewObject[]>();
+/**
+ * Structure for storing and loading display setup data from JSON files.
+ */
+export type JSONDisplaysData = {
+    loadedFlexviewObjects: FlexviewObject[],
+    loadedDisplays: DisplayStruct[],
+}
+
+// Store that's used loaded JSON data
+export const [loadedDisplayData, setLoadedDisplayData] = createStore<JSONDisplaysData>({
+    loadedFlexviewObjects: [],
+    loadedDisplays: [],
+} as JSONDisplaysData);
 
 /**
  * A component for the homepage/landing page of the application.
@@ -81,38 +93,38 @@ const Homepage: Component = () => {
         try {
             // Load file data
             const fileData = await readTextFile(selectedFilePath as string);
-            const loadedFlexviewObjects = JSON.parse(fileData);
+            const loadedDisplayData = JSON.parse(fileData);
 
-            // Validate that loaded JSON data contains FlexviewObjects
-            loadedFlexviewObjects.forEach((obj: any) => {
-                if (obj && !(obj?.type === "layout" || obj?.type === "display"))
-                    throw new Error();
-            });
+            // Validate loaded JSON data
+            if ( // Data should contain two properties: "flexviewObjects" and "displays"
+                Object.keys(loadedDisplayData).length !== 2 || 
+                !("flexviewObjects" in loadedDisplayData) || 
+                !("displays" in loadedDisplayData)
+            ) throw new Error();
 
-            setLoadedFlexviewObjects(loadedFlexviewObjects as FlexviewObject[]);
+            setLoadedDisplayData({ 
+                loadedFlexviewObjects: loadedDisplayData.flexviewObjects,
+                loadedDisplays: loadedDisplayData.displays
+            } as JSONDisplaysData);
 
             // Clearing FlexviewObject and Display arrays if user already had a 
             // display setup
-            if (flexviewObjects) {
-                setFlexviewObjects([{
-                    type: 'layout',
-                    children: [],
-                    weights: [],
-                    direction: 'row'
-                }]);
-                store.set("flexviewObjects", flexviewObjects);
-            }
+            if (flexviewObjects) setFlexviewObjects([{
+                type: 'layout',
+                children: [],
+                weights: [],
+                direction: 'row'
+            }]);
 
-            if (displays) {
-                setDisplays([]);
-                store.set("display", displays);
-            }
+            if (displays) setDisplays([]);
 
             navigate("/newFlight");
 
         } catch (_) {
-            if (loadedFlexviewObjects())
-                setLoadedFlexviewObjects(undefined);
+            setLoadedDisplayData({
+                loadedFlexviewObjects: [],
+                loadedDisplays: [],
+            } as JSONDisplaysData);
 
             showModal<ErrorModalProps, {}>(ErrorModal, {
                 error: "Failed to Load Saved Displays Setup",
@@ -135,7 +147,10 @@ const Homepage: Component = () => {
                 <div class="flex gap-4 flex-col md:flex-row">
                     <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
                         onClick={() => {
-                            setLoadedFlexviewObjects(undefined);
+                            setLoadedDisplayData({
+                                loadedFlexviewObjects: [],
+                                loadedDisplays: [],
+                            } as JSONDisplaysData);
                             navigate("/newFlight");
                         }}>
                         Create New Flight

@@ -6,7 +6,7 @@ import settingsIcon from "../assets/settings.png";
 import closeIcon from "../assets/close.svg";
 import { store } from "../core/file_handling";
 import { displayRegistry, DisplayStruct } from "../core/display_registry";
-import { loadedFlexviewObjects, setLoadedFlexviewObjects } from "../tabs/Homepage";
+import { loadedDisplayData, setLoadedDisplayData } from "../tabs/Homepage";
 
 /**
  * general set of props to give each display settingsModal
@@ -22,7 +22,6 @@ export type SettingsModalProps = {
 export interface FlexviewDisplay {
     type: 'display'; //
     index: number; //location of the display in the displaysArray
-    displayObj: DisplayStruct;
 }
 
 export interface FlexviewLayout {
@@ -52,6 +51,20 @@ const RecursiveFlexviewEditor = (props: {
 }) => {
     const { PacketStructureViewModels } = useBackend();
     const { showModal } = useModal();
+
+    // If user loaded a display setup from a JSON file, use that data
+    if (loadedDisplayData.loadedDisplays.length > 0 || 
+        loadedDisplayData.loadedFlexviewObjects.length > 0) {
+        setFlexviewObjects(loadedDisplayData.loadedFlexviewObjects);
+        setDisplays(loadedDisplayData.loadedDisplays);
+        store.set("display", displays);
+        store.set("flexviewObjects", flexviewObjects);
+        setLoadedDisplayData({
+            loadedFlexviewObjects: [],
+            loadedDisplays: [],
+        });
+    }
+
     if (flexviewObjects[props.objectIndex]!.type === 'display') {
         const display = flexviewObjects[props.objectIndex] as FlexviewDisplay;
         return (
@@ -99,7 +112,6 @@ const RecursiveFlexviewEditor = (props: {
                                 setFlexviewObjects(flexViewObjectsIndex, {
                                     type: 'display',
                                     index: displayArrayIndex,
-                                    displayObj: newDisplay,
                                 });
 
                                 //editing this layout in the Flexview Object Store to add the item above as its child
@@ -280,22 +292,6 @@ const RecursiveFlexviewEditor = (props: {
  * @param props an object that contains the number of this screen
  */
 const FieldsScreen: Component = () => {
-    onMount(() => {
-        // Setup displays if loaded from saved file
-        if (loadedFlexviewObjects()) {
-            loadedFlexviewObjects()!.forEach((f: any, idx: number) => {
-                setFlexviewObjects(idx, f);
-
-                if (f?.type === "display" && f.displayObj)
-                    setDisplays(f.index, f.displayObj);
-            });
-
-            store.set("display", displays);
-            store.set("flexviewObjects", flexviewObjects);
-            setLoadedFlexviewObjects(undefined);
-        }
-    });
-
     return (
         <div class=" flex flex-grow relative p-2 mb-5 w-full h-full">
             {/*Field Select Button*/}

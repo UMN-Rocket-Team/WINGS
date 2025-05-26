@@ -1,16 +1,13 @@
-import { batch, Component } from "solid-js";
+import { Component } from "solid-js";
 import FieldsScreen, { FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import logo from "../assets/logo.png";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { useNavigate } from "@solidjs/router";
 import { clearParsedPackets } from "../backend_interop/buffers";
-import { save, open } from "@tauri-apps/api/dialog";
-import PacketEditor from "../components/PacketsEditor";
-import { store } from "../core/file_handling";
-import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import { save } from "@tauri-apps/api/dialog";
+import { writeTextFile } from "@tauri-apps/api/fs";
 import { displays } from "../components/DisplaySettingsScreen";
 import { DisplayStruct } from "../core/display_registry";
-import { produce } from "solid-js/store";
 
 /**
  * Main Tab for hosting all groundstation settings
@@ -42,7 +39,10 @@ const SettingsTab: Component = () => {
 
         if (!selectedFilePath) return;
 
-        const displaySetupData = flexviewObjects as FlexviewObject[];
+        const displaySetupData = {
+            "flexviewObjects": flexviewObjects as FlexviewObject[],
+            "displays": displays as DisplayStruct[]
+        }
         await writeTextFile(
             selectedFilePath, JSON.stringify(displaySetupData, null, 2));
     }
