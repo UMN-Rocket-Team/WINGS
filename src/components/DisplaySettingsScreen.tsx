@@ -110,7 +110,8 @@ const RecursiveFlexviewEditor = (props: {
                                     direction: layout.direction
                                 });
                                 counter++;
-                                store.set("display", flexviewObjects);
+                                store.set("display", displays);
+                                store.set("flexviewObjects", flexviewObjects);
                             }}
                         >
                             New {typeDef.displayName}
@@ -140,7 +141,8 @@ const RecursiveFlexviewEditor = (props: {
                                 direction: layout.direction
                             });
                             counter++;
-                            store.set("display", flexviewObjects);
+                            store.set("display", displays);
+                            store.set("flexviewObjects", flexviewObjects);
                         }}
                     >
                         - Div
@@ -166,7 +168,8 @@ const RecursiveFlexviewEditor = (props: {
                                 direction: layout.direction
                             });
                             counter++;
-                            store.set("display", flexviewObjects);
+                            store.set("display", displays);
+                            store.set("flexviewObjects", flexviewObjects);
                         }}
                     >
                         | Div
@@ -210,11 +213,12 @@ const RecursiveFlexviewEditor = (props: {
                                         // Removing display from the display array (if this is a display)
                                         if (flexviewObjects[TotalArrayObjectIndex]!.type === 'display') {
                                             setDisplays(((flexviewObjects[TotalArrayObjectIndex] as FlexviewDisplay).index), undefined);
+                                            store.set("display", displays);
                                         }
 
                                         // removing this object from the FlexviewObjects
                                         setFlexviewObjects(TotalArrayObjectIndex, undefined);
-                                        store.set("display", flexviewObjects);
+                                        store.set("flexviewObjects", flexviewObjects);
                                     }}
                                         class="w-[25px] dark:invert z-[1] cursor-pointer m-5" />
                                     <Show when={layout.weights.length > 1}>
@@ -231,7 +235,7 @@ const RecursiveFlexviewEditor = (props: {
                                                     weights: layout.weights.toSpliced(childArrayObjectIndex(), 1, parseInt((event.target as HTMLInputElement).value)),
                                                     direction: layout.direction
                                                 });
-                                                store.set("display", flexviewObjects);
+                                                store.set("flexviewObjects", flexviewObjects);
                                             }} />
                                     </Show>
                                     <Show when={flexviewObjects[TotalArrayObjectIndex]!.type == "display"}>
@@ -285,8 +289,9 @@ const FieldsScreen: Component = () => {
                 if (f?.type === "display" && f.displayObj)
                     setDisplays(f.index, f.displayObj);
             });
-            
-            store.set("display", flexviewObjects);
+
+            store.set("display", displays);
+            store.set("flexviewObjects", flexviewObjects);
             setLoadedFlexviewObjects(undefined);
         }
     });

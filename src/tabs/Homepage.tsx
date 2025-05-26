@@ -13,6 +13,7 @@ import { Packet, PacketStructureViewModel } from "../backend_interop/types";
 import ErrorModal, { ErrorModalProps } from "../modals/ErrorModal";
 import { displays, FlexviewLayout, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import { displayRegistry, DisplayStruct } from "../core/display_registry";
+import { store } from "../core/file_handling";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
@@ -84,7 +85,7 @@ const Homepage: Component = () => {
 
             // Validate that loaded JSON data contains FlexviewObjects
             loadedFlexviewObjects.forEach((obj: any) => {
-                if (obj && !(obj?.type === "layout" || obj?.type ===  "display"))
+                if (obj && !(obj?.type === "layout" || obj?.type === "display"))
                     throw new Error();
             });
 
@@ -92,14 +93,20 @@ const Homepage: Component = () => {
 
             // Clearing FlexviewObject and Display arrays if user already had a 
             // display setup
-            if (flexviewObjects) setFlexviewObjects([{
-                type: 'layout', 
-                children: [],
-                weights: [],
-                direction: 'row'
-            }]);
+            if (flexviewObjects) {
+                setFlexviewObjects([{
+                    type: 'layout',
+                    children: [],
+                    weights: [],
+                    direction: 'row'
+                }]);
+                store.set("flexviewObjects", flexviewObjects);
+            }
 
-            if (displays) setDisplays([]);
+            if (displays) {
+                setDisplays([]);
+                store.set("display", displays);
+            }
 
             navigate("/newFlight");
 
