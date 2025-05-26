@@ -12,17 +12,13 @@ use std::sync::Mutex;
 pub fn use_state_in_mutex<State, ReturnType>(
     mutex: &Mutex<State>,
     callback: &mut dyn FnMut(&mut State) -> ReturnType,
-) -> Result<ReturnType, String>
+) -> ReturnType
 {
-    //println!("locking! {:?}", std::any::type_name::<State>());
-    let locked_mutex_result = mutex.lock();
+    //it is ok to panic if a lock fails: https://users.rust-lang.org/t/any-examples-of-recovering-from-a-poisoned-lock/29435
+    let mut locked_mutex_result = mutex.lock().expect("Poison!");
 
-    if locked_mutex_result.is_err() {
-        return Err(locked_mutex_result.err().unwrap().to_string());
-    }
-
-    let state = &mut *locked_mutex_result.unwrap();
-    let result = callback(state);
+    let state = &mut *locked_mutex_result;
+    
     //println!("unlocking! {}", std::any::type_name::<State>());
-    Ok(result)
+    callback(state)
 }

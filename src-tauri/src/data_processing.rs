@@ -36,7 +36,7 @@ impl DataProcessor{
                     burn_time: 0.0
                 }
             )
-        }).expect("poison!")
+        })
     }
 
     pub fn daq_processing(&mut self, input_array: &mut Vec<Packet>){
@@ -51,8 +51,8 @@ impl DataProcessor{
                 let mut load_cell_raw = packet.field_data[1].clone();
                 let mut pressure_raw = packet.field_data[2].clone();
 
-                let mut pressure_psi = pressure_raw.new_number(&mut |v| ((*v - 5.0)/4.0) *3000.0);
-                let mut load_cell_newtons =load_cell_raw.new_number(&mut |v| (*v * 920.0) +84.3);
+                let mut pressure_psi = pressure_raw.new_number(&mut |v| ((*v - 5.0) / 4.0) * 3000.0);
+                let mut load_cell_newtons =load_cell_raw.new_number(&mut |v| (*v * 920.0) + 84.3);
                 load_cell_newtons.edit_number(&mut |n| {
                     if *n > MOTOR_WEIGHT_CONSERVATIVE_NEWTONS {
                         self.burn_iter+=1;
@@ -89,16 +89,16 @@ impl DataProcessor{
                         self.burning = false;
                     }
                     output_array.push(Packet{
-                                structure_id: self.daq_adv_id,
-                                field_data: vec![
-                                    time.clone(),
-                                    pressure_psi.clone(),
-                                    PacketFieldValue::Number(*n),
-                                    PacketFieldValue::Number(self.max_impulse_estimate),
-                                    PacketFieldValue::Number(self.burn_time),
-                                    PacketFieldValue::Number(self.max_pressure)
-                                ],
-                            });
+                        structure_id: self.daq_adv_id,
+                        field_data: vec![
+                            time.clone(),
+                            pressure_psi.clone(),
+                            PacketFieldValue::Number(*n),
+                            PacketFieldValue::Number(self.max_impulse_estimate),
+                            PacketFieldValue::Number(self.burn_time),
+                            PacketFieldValue::Number(self.max_pressure)
+                        ],
+                    });
                     *n
                 });
             }

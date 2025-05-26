@@ -25,7 +25,7 @@ impl CommsIF for TeleDongleAdapter {
     where
         Self: Sized {
             
-        _ = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
+        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
            
             //################################
             //Altus Metrum Hardcoded packets start here
@@ -146,9 +146,9 @@ impl CommsIF for TeleDongleAdapter {
 
             //setup commands for the radio
             self.write_port(&[0x7E, 0x0A, 0x45,0x20,0x30,0x0A,0x6D,0x20,0x30,0x0A])?;
-            self.get_device_packets(&mut vec![])?;
+            self.parse_device_data(&mut vec![], &mut vec![])?;
             self.write_port(&[0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x30,0x0A,0x63,0x20,0x73,0x0A,0x66,0x0A,0x76,0x0A])?;
-            self.get_device_packets(&mut vec![])?;
+            self.parse_device_data(&mut vec![],&mut vec![])?;
             self.write_port(&[0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x30,0x0A,0x63,0x20,0x46,0x20,0x34,0x33,0x34,0x35,0x35,0x30,0x0A,0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x30,0x0A,0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x30,0x0A,0x63,0x20,0x54,0x20,0x30,0x0A,0x6D,0x20,0x32,0x30,0x0A,0x6D,0x20,0x32,0x30,0x0A])?;
         }
         Ok(())
@@ -157,38 +157,6 @@ impl CommsIF for TeleDongleAdapter {
     /// Returns true if there is an active port
     fn is_init(&self) -> bool {
         self.port.is_some()
-    }
-
-    /// Reads bytes from the active port and adds new bytes to the write_buffer
-    /// returns an empty set when the function runs successfully, 
-    /// 
-    /// # Errors
-    /// bails and returns an error if there is no active port
-    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        let active_port = match self.port.as_mut() {
-            Some(port) => port,
-            None => bail!("No read port has been set")
-        };
-
-        let mut buffer = [0; 4096];
-        let _bytes_read = active_port.read(&mut buffer)?;
-        let str = from_utf8(&buffer)?;
-        let mut parsed_str = "".to_owned();
-        for c in str.chars() {
-            if c.is_ascii_hexdigit() {
-                parsed_str.push(c);
-            }
-        }
-        let decoded = hex::decode(parsed_str)?;
-        
-        // Clone to a vec so we can return it easily, especially as we don't
-        // know how large it will end up being at compile time.
-        self.packet_parser.push_data(&decoded, PRINT_PARSING);
-        use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
-            write_buffer.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
-            Ok(())
-        }).expect("poison!")?;
-        Ok(())
     }
 
     /// Attempt to write bytes to the radio test port
@@ -242,7 +210,7 @@ impl CommsIF for TeleDongleAdapter {
         use_state_in_mutex(&self.packet_structure_manager, &mut |ps_manager| -> anyhow::Result<()>{
             packet_vector.extend_from_slice(&self.packet_parser.parse_packets(ps_manager, PRINT_PARSING)?); 
             Ok(())
-        }).expect("poison!")?;
+        })?;
         Ok(())
     }
 }

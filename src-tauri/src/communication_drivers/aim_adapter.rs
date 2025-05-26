@@ -31,7 +31,7 @@ impl CommsIF for AimAdapter{
                 id: 0,
                 last_read: [0;64],
             }
-        }).expect("poison!")
+        })
     }
 
     /// used to connect the object with a specific device
@@ -73,10 +73,6 @@ impl CommsIF for AimAdapter{
     /// returns an error if the device isn't initialized 
     fn write_port(&mut self, _: &[u8])  -> anyhow::Result<()> {
         Err(anyhow::anyhow!("Wings does not currently support sending packets to an Aim-Xtra"))
-    }
-
-    fn get_device_packets(&mut self, _: &mut Vec<Packet>) -> anyhow::Result<()> {
-        todo!()
     }
 
     /// Returns true if there is an active port

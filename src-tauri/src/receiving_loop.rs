@@ -1,12 +1,12 @@
 use std::sync::Mutex;
 
-use anyhow::{Error, anyhow};
+use anyhow::Error;
 use chrono::Duration;
 use tauri::{AppHandle, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
-    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, data_processing::DataProcessorState, file_handling::log_handlers::FileHandlingState, models::packet::Packet, state::{generic_state::use_struct, mutex_utils::use_state_in_mutex}
+    communication_manager::{CommunicationManager, CommunicationManagerState, DeviceName}, data_processing::DataProcessorState, file_handling::log_handlers::FileHandlingState, models::packet::Packet, state::mutex_utils::use_state_in_mutex
 };
 
 pub struct MainLoop {
@@ -18,8 +18,8 @@ impl MainLoop {
         let timer = Timer::new();
         use_state_in_mutex(&app_handle.state::<CommunicationManagerState>(), &mut |comms_manager| {
             let ps_manager_arc = comms_manager.ps_manager.clone();
-            use_state_in_mutex(&ps_manager_arc, &mut |psm| psm.set_app(app_handle.clone())).expect("poison!");
-        }).expect("poison!");
+            use_state_in_mutex(&ps_manager_arc, &mut |psm| psm.set_app(app_handle.clone()));
+        });
         let update_task_guard = timer.schedule_repeating(Duration::milliseconds(0), move || {
             match iterate_receiving_loop(
                 app_handle.state::<CommunicationManagerState>(),
@@ -97,10 +97,10 @@ fn iterate_receiving_loop(
     // ##########################
     // Get Data
     // ##########################
-    match use_struct(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
+    use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
         result.new_available_port_names = communication_manager.get_all_potential_devices();
         for device in communication_manager.get_initialized_devices(){
-            use_struct(&log_state, &mut|log|{
+            use_state_in_mutex(&log_state, &mut|log|{
                 match communication_manager.get_data(device,&mut  result.parsed_packets,log){
                     Ok(_) => {},
                     Err(err) => {
@@ -110,20 +110,12 @@ fn iterate_receiving_loop(
                         }
                     }
                 }
-            }).expect("failed to use da log state")
+            });
         }
-        match use_struct(&data_state, &mut |data_processor| data_processor.daq_processing( &mut result.parsed_packets)){
-            Ok(_) => {},
-            Err(err) => return Err(anyhow!(err)),
-        }
-        Ok(())
-    }) {
-        Ok(result) => {match result{
-            Ok(_) => {},
-            Err(err) => return Err(err),
-        }}
-        Err(message) => return Err(anyhow!(message))
-    }
+        use_state_in_mutex(&data_state, &mut |data_processor| 
+            data_processor.daq_processing( &mut result.parsed_packets)
+        );
+    });
     Ok(result)
 }
 
@@ -166,7 +158,7 @@ mod tests {
         let mut new_id= 0;
 
         //add an rfd device to comms manager
-        let _ = use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+        use_state_in_mutex(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
             new_id = communication_manager.add_serial_device();
         });
         //run the main receiving loop and print if any data is received
@@ -178,12 +170,9 @@ mod tests {
                     if let Some(new_ports) = output.new_available_port_names {
                         if !new_ports.is_empty() {
                             println!("{:#?}", new_ports);
-                            match use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                            use_state_in_mutex(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
                                 let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
-                            }){
-                                Ok(_) => {},
-                                Err(err) => {println!("{}", err)},
-                            }
+                            });
                         }
                     }
                     if !output.parsed_packets.is_empty() {
@@ -209,7 +198,7 @@ mod tests {
         let mut new_id_2= 0;
 
         //add an rfd device to comms manager
-        let _ = use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+        use_state_in_mutex(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
             new_id = communication_manager.add_serial_device();
             new_id_2 = communication_manager.add_altus_metrum();
             communication_manager.ps_manager = Arc::new(default_packet_structure_manager().into());
@@ -223,13 +212,10 @@ mod tests {
                     if let Some(new_ports) = output.new_available_port_names {
                         if !new_ports.is_empty() {
                             println!("{:#?}", new_ports);
-                            match use_struct(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
+                            use_state_in_mutex(&app_handle.state::<CommunicationManagerState>(), &mut |communication_manager| {
                                 let _ = communication_manager.init_device(&new_ports[0].name, 57600, new_id);
                                 let _ = communication_manager.init_device("COM14", 57600, new_id_2);
-                            }){
-                                Ok(_) => {},
-                                Err(err) => {println!("{}", err)},
-                            }
+                            });
                         }
                     }
                     if !output.parsed_packets.is_empty() {

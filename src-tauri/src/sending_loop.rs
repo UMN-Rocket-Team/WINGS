@@ -4,7 +4,7 @@ use csv::StringRecord;
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
-use crate::{communication_manager::CommunicationManager, file_handling::{config_struct::ConfigState, log_handlers::{FileHandlingState, LogHandler}}, packet_generator::generate_packet, state::generic_state::{result_to_string, use_struct}};
+use crate::{communication_manager::CommunicationManager, file_handling::{config_struct::ConfigState, log_handlers::{FileHandlingState, LogHandler}}, packet_generator::generate_packet, state::mutex_utils::use_state_in_mutex};
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
@@ -95,7 +95,7 @@ impl SendingLoop {
     pub fn start(&mut self, app_handle: tauri::AppHandle, interval: Duration,already_sent: u32,mode : SendingModes, write_id: usize) -> anyhow::Result<()> {
         let config_state = app_handle.state::<ConfigState>();
         let mut packet_structure=  Default::default();
-        _ = use_struct(&config_state, &mut |config|{
+        use_state_in_mutex(&config_state, &mut |config|{
             packet_structure = config.packet_structure_manager.packet_structures[1].clone();
         });
 
@@ -122,12 +122,9 @@ impl SendingLoop {
             // ##########################
             match mode{
                 SendingModes::FromCSV => 
-                    match result_to_string(use_struct(&file_handling_state, &mut |file_handler:&mut LogHandler|{
-                        match file_handler.read_packet(){
-                            Ok(packet) =>  Ok(packet),
-                            Err(err) => Err(err),
-                        }
-                    })){
+                    match use_state_in_mutex(&file_handling_state, &mut |file_handler:&mut LogHandler|{
+                        file_handler.read_packet()
+                    }){
                         Ok(packet) => {packet_to_send = Some(packet);},
                         Err(err) => {
                             println!("Failed to lock file handler: {}", err);
@@ -182,7 +179,7 @@ impl SendingLoop {
             // ##########################
             // Send Packet
             // ##########################
-            match use_struct(&app_handle.state::<Mutex<CommunicationManager>>(), &mut |communication_manager: &mut CommunicationManager| {
+            match use_state_in_mutex(&app_handle.state::<Mutex<CommunicationManager>>(), &mut |communication_manager: &mut CommunicationManager| {
                 communication_manager.write_data(&packet, write_id)
             }) {
                 Ok(_) => {
