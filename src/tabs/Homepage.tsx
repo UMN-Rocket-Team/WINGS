@@ -29,7 +29,7 @@ export type JSONDisplaysData = {
     loadedDisplays: DisplayStruct[],
 }
 
-// Store that's used loaded JSON data
+// Store that's used for loaded JSON data
 export const [loadedDisplayData, setLoadedDisplayData] = createStore<JSONDisplaysData>({
     loadedFlexviewObjects: [],
     loadedDisplays: [],
