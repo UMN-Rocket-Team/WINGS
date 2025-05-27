@@ -1,6 +1,6 @@
 import { Component, For, onMount, Show } from "solid-js";
 import { useModal } from "../core/ModalProvider";
-import { createStore, produce } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { useBackend } from "../backend_interop/BackendProvider";
 import settingsIcon from "../assets/settings.png";
 import closeIcon from "../assets/close.svg";
@@ -33,16 +33,14 @@ export interface FlexviewLayout {
 
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 
-export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>([])
+export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(await store.get("display") ?? []);
 
-export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>([
-    {
-        type: 'layout',
-        children: [],
-        weights: [],
-        direction: 'row'
-    }
-]);
+export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(await store.get("flexviewObjects") ?? [{
+    type: 'layout',
+    children: [],
+    weights: [],
+    direction: 'row'
+}]);
 
 let counter = 1; //iterates to give each graph a different number in its display name ie Indicator 1, indicator 2, indicator 3
 
@@ -65,6 +63,12 @@ const RecursiveFlexviewEditor = (props: {
         });
     }
 
+    // If store contains data, use that
+    // } else if (storedDisplayData?.length > 0 && storedDisplayData?.length > 1) {
+    //     setDisplays(storedDisplayData!);
+    //     setFlexviewObjects(storedFlexviewObjects!);
+    // }
+
     if (flexviewObjects[props.objectIndex]!.type === 'display') {
         const display = flexviewObjects[props.objectIndex] as FlexviewDisplay;
         return (
@@ -73,7 +77,7 @@ const RecursiveFlexviewEditor = (props: {
                 class="flex items-center justify-center p-2 flex-grow"
             >
                 <h1>
-                    {displays[display.index]!.displayName}
+                    {displays[display.index]?.displayName}
                 </h1>
             </div>
         );
@@ -250,7 +254,7 @@ const RecursiveFlexviewEditor = (props: {
                                                 store.set("flexviewObjects", flexviewObjects);
                                             }} />
                                     </Show>
-                                    <Show when={flexviewObjects[TotalArrayObjectIndex]!.type == "display"}>
+                                    <Show when={flexviewObjects[TotalArrayObjectIndex]?.type == "display"}>
                                         <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => {
                                             const childDisplay = flexviewObjects[TotalArrayObjectIndex] as FlexviewDisplay;
                                             return (
