@@ -1,4 +1,4 @@
-import { Component } from "solid-js";
+import { batch, Component } from "solid-js";
 import FieldsScreen, { FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import logo from "../assets/logo.png";
 import { useBackend } from "../backend_interop/BackendProvider";
@@ -8,6 +8,7 @@ import { save } from "@tauri-apps/api/dialog";
 import { writeTextFile } from "@tauri-apps/api/fs";
 import { displays } from "../components/DisplaySettingsScreen";
 import { DisplayStruct } from "../core/display_registry";
+import { store } from "../core/file_handling";
 
 /**
  * Main Tab for hosting all groundstation settings
@@ -29,6 +30,9 @@ const SettingsTab: Component = () => {
         }
     };
 
+    /**
+     * Saves displays setup to a JSON file
+     */
     const saveDisplaySetup = async () => {
         const selectedFilePath = await save({
             title: "Save Display Setup",
@@ -45,6 +49,25 @@ const SettingsTab: Component = () => {
         }
         await writeTextFile(
             selectedFilePath, JSON.stringify(displaySetupData, null, 2));
+    }
+
+    /**
+     * Removes all displays
+     */
+    const clearDisplaySetup = () => { 
+        setFlexviewObjects([{
+            type: 'layout',
+            children: [],
+            weights: [],
+            direction: 'row'
+        }]);
+        setDisplays([]);
+
+        store.set("display", displays);
+        store.set("flexviewObjects", flexviewObjects);
+
+        // Navigate home, since RecursiveFlexviewEditor isn't reactive  
+        navigate("/");
     }
 
 
@@ -97,6 +120,15 @@ const SettingsTab: Component = () => {
                             dark:border-gray-700 dark:text-white"
                     >
                         Save Display Setup
+                    </button>
+                    <button
+                        type="button"
+                        onClick={clearDisplaySetup}
+                        class="text-dark bg-gray-200 hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300
+                            font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 
+                            dark:border-gray-700 dark:text-white"
+                    >
+                        Clear Display Setup
                     </button>
                 </div>
             </footer>
