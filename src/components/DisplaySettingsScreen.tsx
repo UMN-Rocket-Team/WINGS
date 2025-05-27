@@ -63,11 +63,6 @@ const RecursiveFlexviewEditor = (props: {
         });
     }
 
-    // If store contains data, use that
-    // } else if (storedDisplayData?.length > 0 && storedDisplayData?.length > 1) {
-    //     setDisplays(storedDisplayData!);
-    //     setFlexviewObjects(storedFlexviewObjects!);
-    // }
 
     if (flexviewObjects[props.objectIndex]!.type === 'display') {
         const display = flexviewObjects[props.objectIndex] as FlexviewDisplay;
