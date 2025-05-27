@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router";
-import { Component, createSignal } from "solid-js";
+import { Component } from "solid-js";
 import Credits from "../components/Credits";
 import { useModal } from "../core/ModalProvider";
 import ThemeSwitcher from "../theme/ThemeSwitcher";
@@ -11,9 +11,8 @@ import { setParsedPackets } from "../backend_interop/buffers";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { Packet, PacketStructureViewModel } from "../backend_interop/types";
 import ErrorModal, { ErrorModalProps } from "../modals/ErrorModal";
-import { displays, FlexviewLayout, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
-import { displayRegistry, DisplayStruct } from "../core/display_registry";
-import { store } from "../core/file_handling";
+import { displays, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
+import { DisplayStruct } from "../core/display_registry";
 import { createStore } from "solid-js/store";
 
 export type PacketBundle = {

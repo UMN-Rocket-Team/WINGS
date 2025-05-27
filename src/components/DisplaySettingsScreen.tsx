@@ -1,4 +1,4 @@
-import { Component, For, onMount, Show } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { useModal } from "../core/ModalProvider";
 import { createStore } from "solid-js/store";
 import { useBackend } from "../backend_interop/BackendProvider";
