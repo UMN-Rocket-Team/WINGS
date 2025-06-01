@@ -4,6 +4,9 @@ import solidPlugin from "vite-plugin-solid";
 import tailwindcss from 'tailwindcss';
 
 export default defineConfig({
+  esbuild: {
+    target: 'esnext',
+  },
   plugins: [
     solidPlugin(),
   ],
@@ -33,8 +36,5 @@ export default defineConfig({
         // Add any other PostCSS plugins here if needed
       ],
     },
-  },
-  esbuild: {
-    target: 'esnext',
   },
 });
