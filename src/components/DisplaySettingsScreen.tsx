@@ -33,7 +33,7 @@ export interface FlexviewLayout {
 
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 const displayFromStoreResult = store.get("display") ?? [];
-let displayFromStoreFinal;
+let displayFromStoreFinal = [];
 displayFromStoreResult.then((displayFromStore) => {
     displayFromStoreFinal = displayFromStore;
 });
@@ -45,7 +45,12 @@ const flexViewObjectsFromStoreResult = store.get("flexviewObjects") ?? [{
     weights: [],
     direction: 'row'
 }]
-let flexViewObjectsFromStoreFinal;
+let flexViewObjectsFromStoreFinal = [{
+    type: 'layout',
+    children: [],
+    weights: [],
+    direction: 'row'
+}];
 flexViewObjectsFromStoreResult.then((flexViewObjectsFromStore) => {
     flexViewObjectsFromStoreFinal = flexViewObjectsFromStore;
 });
