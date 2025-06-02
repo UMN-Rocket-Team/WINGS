@@ -34,10 +34,11 @@ export interface FlexviewLayout {
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 const displayFromStoreResult = store.get("display") ?? [];
 let displayFromStoreFinal = [];
+export let [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
 displayFromStoreResult.then((displayFromStore) => {
     displayFromStoreFinal = displayFromStore;
+    [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
 });
-export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
 
 const flexViewObjectsFromStoreResult = store.get("flexviewObjects") ?? [{
     type: 'layout',
@@ -51,10 +52,11 @@ let flexViewObjectsFromStoreFinal = [{
     weights: [],
     direction: 'row'
 }];
+export let [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
 flexViewObjectsFromStoreResult.then((flexViewObjectsFromStore) => {
     flexViewObjectsFromStoreFinal = flexViewObjectsFromStore;
+    [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
 });
-export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
 
 let counter = 1; //iterates to give each graph a different number in its display name ie Indicator 1, indicator 2, indicator 3
 
