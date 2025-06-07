@@ -96,7 +96,7 @@ impl AimParser {
         packets:&mut Vec<Packet>
     ) -> anyhow::Result<()> {
         if transmission.len() <=63 {
-            return Err(anyhow::anyhow!("invalid input for parser"));
+            return Ok(());
         }
         let time_received = self.init_time.elapsed()?.as_millis() as f64;
         let length = transmission[1];

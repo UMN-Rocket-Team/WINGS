@@ -33,7 +33,7 @@ impl AltosPacketParser {
         }
         // println!("{:#?}",self.unparsed_data);
         let mut packets: Vec<Packet> = vec![];
-
+        
         let mut last_successful_match_end_index: Option<usize> = None;
 
             for j in 0..packet_structure_manager.packet_structures.len() {
@@ -42,12 +42,20 @@ impl AltosPacketParser {
                 if print_flag {
                     println!("At index {}, matching structure {}", 0, j);
                 }
+
+                if packet_structure.delimiters.is_empty() {
+                    println!("no delimiters!");
+                    println!("{}",packet_structure.name);
+                    continue;
+                }
+
                 if packet_structure.size() > (self.unparsed_data.len() + (packet_structure.delimiters[0].offset_in_packet)){
                     if print_flag {
                         println!("Packet out of bounds");
                     }
                     continue;
                 }
+                
                 if !is_delimiter_match(
                     &self.unparsed_data,
                     packet_structure.delimiters[0].offset_in_packet +2,

@@ -9,6 +9,8 @@ pub type DataProcessorState = Mutex<DataProcessor>;
 pub struct DataProcessor {
     daq_id: usize,
     daq_adv_id: usize,
+    altus_sense_id: usize,
+    altus_gps_id: usize,
     daq_timestamp_buffer: VecDeque<f64>,
     impulse_estimate: f64,
     max_impulse_estimate:f64,
@@ -26,6 +28,8 @@ impl DataProcessor{
                 DataProcessor { 
                     daq_id: ps_ref.get_packet_structure_by_name("daq"),
                     daq_adv_id: ps_ref.enforce_packet_fields("daq_adv",vec!["Time","PSI","Newtons","Impulse","Burn_time","Max_pressure"]),
+                    altus_sense_id: ps_ref.get_packet_structure_by_name("Altus TeleMega Kalman and Voltage Data"),
+                    altus_gps_id: ps_ref.get_packet_structure_by_name("Altus GPS Location"),
                     daq_timestamp_buffer: VecDeque::new(),
                     impulse_estimate: 0.0,
                     max_impulse_estimate: 0.0,
@@ -41,7 +45,17 @@ impl DataProcessor{
 
     pub fn daq_processing(&mut self, input_array: &mut Vec<Packet>){
         let mut output_array = vec![];
-        for packet in input_array.clone() {
+        for packet in input_array {
+            if packet.structure_id == self.altus_sense_id && packet.field_data.len() >= 17{
+                packet.field_data[15].edit_number(&mut |n| *n/(16.0*3.28084));
+                packet.field_data[16].edit_number(&mut |n| *n/(3.28084));
+            }
+            if packet.structure_id == self.altus_gps_id && packet.field_data.len() >= 5{
+                println!("here");
+                packet.field_data[3].edit_number(&mut |n| *n/(100.0 * 100000.0));
+                packet.field_data[4].edit_number(&mut |n| *n/(100.0 * 100000.0));
+                
+            }
             if packet.structure_id == self.daq_id && packet.field_data.len() == 5{
                 let mut time = packet.field_data[0].clone();
                 time.edit_number(&mut |time| {
@@ -52,7 +66,7 @@ impl DataProcessor{
                 let mut pressure_raw = packet.field_data[2].clone();
 
                 let mut pressure_psi = pressure_raw.new_number(&mut |v| ((*v - 5.0) / 4.0) * 3000.0);
-                let mut load_cell_newtons =load_cell_raw.new_number(&mut |v| (*v * 920.0) + 84.3);
+                let mut load_cell_newtons = load_cell_raw.new_number(&mut |v| (*v * 920.0) + 84.3);
                 load_cell_newtons.edit_number(&mut |n| {
                     if *n > MOTOR_WEIGHT_CONSERVATIVE_NEWTONS {
                         self.burn_iter+=1;
@@ -103,7 +117,7 @@ impl DataProcessor{
                 });
             }
         }
-        input_array.append(&mut output_array);
+        //input_array.append(&mut output_array);
         
     }
 }

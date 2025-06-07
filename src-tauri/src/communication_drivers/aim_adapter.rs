@@ -56,6 +56,7 @@ impl CommsIF for AimAdapter{
                     match result{
                         Ok(_) => {},
                         Err(error) => {
+                            println!("{}",error);
                             bail!(anyhow::anyhow!(error).context("failed to connect to Entacore product"))
                         },
                     }
