@@ -114,7 +114,7 @@ const RecursiveFlexviewEditor = (props: {
                                 const flexViewObjectsIndex = flexviewObjects.length;
                                 //insert into displayArrays
                                 setDisplays(displayArrayIndex, newDisplay);
-                                console.log(flexviewObjects);
+                                
                                 // creating a new flexview object and pushing it to the FlexViewObjects Store
                                 setFlexviewObjects(flexViewObjectsIndex, {
                                     type: 'display',
