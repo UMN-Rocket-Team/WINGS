@@ -6,6 +6,9 @@ import tailwindcss from 'tailwindcss';
 export default defineConfig({
   esbuild: {
     target: 'esnext',
+    supported: {
+      'top-level-await': true //browsers can handle top-level-await features
+    },
   },
   plugins: [
     solidPlugin(),

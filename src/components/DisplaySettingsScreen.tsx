@@ -32,39 +32,25 @@ export interface FlexviewLayout {
 }
 
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
+
 const displayFromStoreResult = await store.get("display") as DisplayStruct[];
-// let displayFromStoreFinal = [];
-export let [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreResult ?? []);
-// displayFromStoreResult.then((displayFromStore) => {
-//     if ((displayFromStore as any[]).length > 0) {
-//         displayFromStoreFinal = displayFromStore;
-//         [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
-//     }
-// });
+export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreResult ?? []);
 
-let flexViewObjectsFromStoreResult = await store.get("flexviewObjects") as FlexviewObject[];
-
-if (!flexViewObjectsFromStoreResult || flexViewObjectsFromStoreResult.length < 1) 
+let flexViewObjectsFromStoreResult = await store.get("flexviewObjects");
+if (!flexViewObjectsFromStoreResult || 
+    !Array.isArray(flexViewObjectsFromStoreResult) || 
+    flexViewObjectsFromStoreResult.length < 1) 
+{
     flexViewObjectsFromStoreResult = [{
         type: 'layout',
         children: [],
         weights: [],
         direction: 'row'
     }];
+}
 
-// let flexViewObjectsFromStoreFinal = [{
-//     type: 'layout',
-//     children: [],
-//     weights: [],
-//     direction: 'row'
-// }];
-export let [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreResult);
-// flexViewObjectsFromStoreResult.then((flexViewObjectsFromStore) => {
-//     if ((flexViewObjectsFromStore as any[]).length > 0) {
-//         flexViewObjectsFromStoreFinal = flexViewObjectsFromStore;
-//         [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
-//     }
-// });
+export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(
+    flexViewObjectsFromStoreResult as FlexviewObject[]);
 
 let counter = 1; //iterates to give each graph a different number in its display name ie Indicator 1, indicator 2, indicator 3
 
@@ -130,7 +116,7 @@ const RecursiveFlexviewEditor = (props: {
                                 const flexViewObjectsIndex = flexviewObjects.length;
                                 //insert into displayArrays
                                 setDisplays(displayArrayIndex, newDisplay);
-
+                                console.log(flexviewObjects);
                                 // creating a new flexview object and pushing it to the FlexViewObjects Store
                                 setFlexviewObjects(flexViewObjectsIndex, {
                                     type: 'display',
