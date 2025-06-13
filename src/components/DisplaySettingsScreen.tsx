@@ -32,31 +32,39 @@ export interface FlexviewLayout {
 }
 
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
-const displayFromStoreResult = store.get("display") ?? [];
-let displayFromStoreFinal = [];
-export let [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
-displayFromStoreResult.then((displayFromStore) => {
-    displayFromStoreFinal = displayFromStore;
-    [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
-});
+const displayFromStoreResult = await store.get("display") as DisplayStruct[];
+// let displayFromStoreFinal = [];
+export let [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreResult ?? []);
+// displayFromStoreResult.then((displayFromStore) => {
+//     if ((displayFromStore as any[]).length > 0) {
+//         displayFromStoreFinal = displayFromStore;
+//         [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreFinal);
+//     }
+// });
 
-const flexViewObjectsFromStoreResult = store.get("flexviewObjects") ?? [{
-    type: 'layout',
-    children: [],
-    weights: [],
-    direction: 'row'
-}]
-let flexViewObjectsFromStoreFinal = [{
-    type: 'layout',
-    children: [],
-    weights: [],
-    direction: 'row'
-}];
-export let [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
-flexViewObjectsFromStoreResult.then((flexViewObjectsFromStore) => {
-    flexViewObjectsFromStoreFinal = flexViewObjectsFromStore;
-    [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
-});
+let flexViewObjectsFromStoreResult = await store.get("flexviewObjects") as FlexviewObject[];
+
+if (!flexViewObjectsFromStoreResult || flexViewObjectsFromStoreResult.length < 1) 
+    flexViewObjectsFromStoreResult = [{
+        type: 'layout',
+        children: [],
+        weights: [],
+        direction: 'row'
+    }];
+
+// let flexViewObjectsFromStoreFinal = [{
+//     type: 'layout',
+//     children: [],
+//     weights: [],
+//     direction: 'row'
+// }];
+export let [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreResult);
+// flexViewObjectsFromStoreResult.then((flexViewObjectsFromStore) => {
+//     if ((flexViewObjectsFromStore as any[]).length > 0) {
+//         flexViewObjectsFromStoreFinal = flexViewObjectsFromStore;
+//         [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(flexViewObjectsFromStoreFinal);
+//     }
+// });
 
 let counter = 1; //iterates to give each graph a different number in its display name ie Indicator 1, indicator 2, indicator 3
 
