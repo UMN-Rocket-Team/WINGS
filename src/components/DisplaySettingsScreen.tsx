@@ -33,14 +33,12 @@ export interface FlexviewLayout {
 
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 
-const displayFromStoreResult = await store.get("display") as DisplayStruct[];
-export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(displayFromStoreResult ?? []);
+export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(await store.get("display") ?? []);
 
 let flexViewObjectsFromStoreResult = await store.get("flexviewObjects");
-if (!flexViewObjectsFromStoreResult || 
-    !Array.isArray(flexViewObjectsFromStoreResult) || 
-    flexViewObjectsFromStoreResult.length < 1) 
-{
+if (!flexViewObjectsFromStoreResult ||
+    !Array.isArray(flexViewObjectsFromStoreResult) ||
+    flexViewObjectsFromStoreResult.length < 1) {
     flexViewObjectsFromStoreResult = [{
         type: 'layout',
         children: [],
@@ -61,7 +59,7 @@ const RecursiveFlexviewEditor = (props: {
     const { showModal } = useModal();
 
     // If user loaded a display setup from a JSON file, use that data
-    if (loadedDisplayData.loadedDisplays.length > 0 || 
+    if (loadedDisplayData.loadedDisplays.length > 0 ||
         loadedDisplayData.loadedFlexviewObjects.length > 0) {
         setFlexviewObjects(loadedDisplayData.loadedFlexviewObjects);
         setDisplays(loadedDisplayData.loadedDisplays);
