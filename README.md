@@ -1,8 +1,8 @@
-# Downloads
+# WINGS
 
-https://github.umn.edu/Rocket-Team/wings/releases
+## Downloads
 
-# wings
+https://github.com/UMN-Rocket-Team/WINGS/releases
 
 The Ground Station of the University of Minnesota Twin Cities Rocket Team.
 
@@ -16,33 +16,7 @@ The Ground Station of the University of Minnesota Twin Cities Rocket Team.
 
 ## Running
 
-The most-recent published executables are available in the [Releases Tab](https://github.umn.edu/Rocket-Team/wings/releases). Currently, CI (Continuous Integration) processes are not enabled on the University of Minnesota's GitHub instance, so any more-recent builds of the application will have to be done manually or requested from a developer with the same operating system. To manually build and run the application, follow the instructions in the [Building](#building) section.
-
-## Building
-
-Basic familiarity with your operating system's terminal will be helpful during this process.
-
-Currently, builds for an operating system can only be performed on that operating system, i.e. `.exe`s can only be compiled on Windows.
-
-1. Install the recommended version of the following project dependencies:
-
-   - [`pnpm`](https://pnpm.io/): package management
-   - [Node.js](https://nodejs.org): Javascript runtime
-
-2. Follow the instructions on Tauri's [Prerequisites page](https://tauri.app/v1/guides/getting-started/prerequisites).
-3. Run the following command in the root directory of the project:
-   ```shell
-   pnpm tauri build
-   ```
-4. Distribute the executable found in a subdirectory of [`src-tauri/target/release/bundle`](src-tauri/target/release/bundle)
-
-   - Each distribution format (`.exe`, `.deb`, `.AppImage`, `.app`) will have its own directory
-
-### Building on Linux
-1. Follow the insturctions to install pnpm and Node.js. Ensure that you install npm as you install Node.js. Your Node.js version must be over v12.
-   - [`pnpm`](https://pnpm.io/): package management
-   - [Node.js]([https://nodejs.org](https://nodejs.org/en/download/package-manager)): Javascript runtime
- 2. Run `npm install` in the
+The most-recent published executables are available in the [Releases Tab](https://github.com/UMN-Rocket-Team/WINGS/releases). Currently, CI (Continuous Integration) processes aren't set up, so any more-recent builds of the application will have to be done manually or requested from a developer with the same operating system. To manually build and run the application, follow the instructions in the [Building](#building) section.
 
 ## Developing
 
@@ -51,10 +25,10 @@ Currently, builds for an operating system can only be performed on that operatin
 A [working knowledge](https://en.wiktionary.org/wiki/working_knowledge) of the following technologies will be helpful when contributing to this project:
 
  - [Git](https://www.git-scm.com/): source control
- - [Typescript](https://www.typescriptlang.org/): frontend programming language
+ - [TypeScript](https://www.typescriptlang.org/): frontend programming language
  - [`pnpm`](https://www.pnpm.io/): package management
  - [SolidJS](https://www.solidjs.com/): reactive frontend library
- - [UnoCSS](https://github.com/unocss/unocss): UI styling
+ - [Tailwind CSS](https://tailwindcss.com/): UI styling
  - [Tauri](https://www.tauri.app/): cross-platform window management library
  - [Rust](https://www.rust-lang.org/): backend programming language
 
@@ -64,26 +38,36 @@ Don't read the documentation for these technologies cover to cover, instead, wor
 
 ### Development Process
 
-This project uses a feature-driven development process. Work on a specific feature or issue is done on its own Git branch, then merged into the `main` branch when it is complete.
+Basic familiarity with your operating system's terminal will be helpful during this process.
 
-To start work on a feature, create a new branch named specifically like `feature-new-packetexplorer-ui` based on the `main` branch. If the feature is large, try to separate related code into their own incremental commits. Code divided logically into smaller chunks is much easier to review, especially if the program still functions after the commit. Once the feature is finished, push your code to the repository and make a pull request into the `main` branch for review, which is required.
+1. Install the recommended version of the following project dependencies:
 
-To keep others up to date on what features are being worked on, either assign yourself to the GitHub issue for the feature or create a new one.
+   - [`pnpm`](https://pnpm.io/): package management
+   - [Node.js](https://nodejs.org): Javascript runtime
 
-The same process applies for bugfixes.
+2. Follow the instructions on Tauri's [Prerequisites page](https://tauri.app/v1/guides/getting-started/prerequisites).
 
-### Contributing
-
-To get started contributing, follow the first two steps in the [Building](#building) section, clone this repository, open it up in your IDE of choice, and run the following command in this project's root directory to download the frontend's dependencies:
+3. Clone this repository, open it up in your IDE of choice, and run the following command in this project's root directory to download the frontend's dependencies:
 ```shell
 pnpm install
 ```
-
-Then, follow the process outlined above.
-
-To compile and run the application in development mode, execute the following in the root directory of the project:
+4. To compile and run the application in development mode, execute the following in the root directory of the project:
 ```shell
 pnpm tauri dev
 ```
 
 Some changes may be automatically applied with hot module reloading while this command is running, however, others will not and will require and application restart.
+
+## Building
+
+Currently, builds for an operating system can only be performed on that operating system, i.e. `.exe`s can only be compiled on Windows.
+
+1. Follow the first two steps from [Development Process](#development-process)
+
+2. Run the following command in the root directory of the project:
+   ```shell
+   pnpm tauri build
+   ```
+3. Distribute the executable found in a subdirectory of [`src-tauri/target/release/bundle`](src-tauri/target/release/bundle)
+
+   - Each distribution format (`.exe`, `.deb`, `.AppImage`, `.app`) will have its own directory
