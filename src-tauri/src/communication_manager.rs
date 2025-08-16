@@ -1,3 +1,10 @@
+//! Communication manager for handling device connections and data transfer.
+//!
+//! This module provides the `CommunicationManager` struct and related traits/types
+//! for managing communication devices, including serial, HID, file, and custom adapters.
+//! It supports adding/removing devices, initializing connections, reading/writing data,
+//! and updating device lists for frontend display.
+
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -17,6 +24,8 @@ use crate::{
     models::packet::Packet,
     packet_structure_manager::PacketStructureManager,
 };
+
+/// Represents a device name and its metadata for display and selection.
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
@@ -25,6 +34,8 @@ pub struct DeviceName {
     pub manufacturer_name: Option<String>,
     pub product_name: Option<String>,
 }
+
+/// Represents a communication device for display purposes.
 #[derive(Serialize)]
 pub struct DisplayComDevice {
     id: usize,
@@ -34,6 +45,10 @@ pub struct DisplayComDevice {
 ///A `Mutex` of `CommunicationManager`
 pub type CommunicationManagerState = Mutex<CommunicationManager>;
 
+/// Manages all communication devices and their interactions.
+///
+/// Provides methods for adding/removing devices, initializing connections,
+/// reading/writing data, and updating device lists.
 pub struct CommunicationManager {
     pub comms_objects: Vec<Box<dyn CommsIF + Send>>,
     pub id_iterator: usize,
@@ -42,12 +57,19 @@ pub struct CommunicationManager {
     name_to_value: HashMap<String, String>,
 }
 
+/// Trait for communication device adapters.
+///
+/// Defines the required interface for device communication, including initialization,
+/// data transfer, and identification.
 pub trait CommsIF {
+    /// Create a new device adapter with the given packet structure manager.
     fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
     where
         Self: Sized;
 
+    /// Initialize the device with the given port name and baud rate.
     fn init_device(&mut self, port_name: &str, baud: u32) -> anyhow::Result<()>;
+    /// Write a packet to the device.
     fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()>;
 
     //Implements the communications side of the communications object (the bare minimum to get data), then returns it inside the Vec<u8>
@@ -66,6 +88,7 @@ pub trait CommsIF {
 }
 
 impl CommunicationManager {
+    /// Create a default communication manager state.
     pub fn default_state(ps_manager: Arc<Mutex<PacketStructureManager>>) -> CommunicationManager {
         CommunicationManager {
             comms_objects: Default::default(),
@@ -76,7 +99,9 @@ impl CommunicationManager {
         }
     }
 
-    ///checks for serial ports to connect to, streamlining radio setup
+    /// Get all potential devices (serial and HID) available for connection.
+    ///
+    /// Returns a list of `DeviceName` if new devices are found, otherwise `None`.
     pub fn get_all_potential_devices(&mut self) -> Option<Vec<DeviceName>> {
         let mut device_names: Vec<DeviceName>;
         let available_ports = serialport::available_ports().ok()?;
