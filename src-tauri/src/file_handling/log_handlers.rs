@@ -1,3 +1,9 @@
+//! Logging and file handling for ground station data.
+//!
+//! This module provides the `LogHandler` struct for managing CSV and binary log files,
+//! reading and writing packets, and handling device-specific logs. It supports both
+//! reading from and writing to files, and can operate in a debug/testing mode.
+
 use anyhow::{bail, Error};
 use chrono::{DateTime, Utc};
 use csv::{Reader, StringRecord, Writer};
@@ -193,7 +199,12 @@ impl LogHandler {
         }
     }
 
-    /// Writes the bytes given to the log file associated with the given device
+    /// Writes the bytes given to the log file associated with the given device.
+    ///
+    /// If in testing mode, prints the data length instead of writing.
+    ///
+    /// # Errors
+    /// Returns an error if file creation or writing fails.
     pub fn write_bytes(
         &mut self,
         data: &Vec<u8>,
@@ -230,6 +241,7 @@ impl LogHandler {
     }
 }
 
+/// Formats device info for use in file names.
 pub fn device_info_to_file_format(device_type: String, device_id: usize) -> String {
     return format!("{}_{}_log", device_type, device_id);
 }
