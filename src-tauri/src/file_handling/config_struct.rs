@@ -1,8 +1,8 @@
-use std::sync::Mutex;
 use crate::{
     packet_structure_manager::PacketStructureManager,
     state::packet_structure_manager_state::default_packet_structure_manager,
 };
+use std::sync::Mutex;
 
 /// a `Mutex` of `ConfigStruct`
 pub type ConfigState = Mutex<ConfigStruct>;

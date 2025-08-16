@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use anyhow::bail;
 use hidapi::HidApi;
@@ -6,8 +9,13 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter, featherweight_adapter::FeatherweightAdapter, serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter
-    }, file_handling::log_handlers::LogHandler, models::packet::Packet, packet_structure_manager::PacketStructureManager
+        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter,
+        featherweight_adapter::FeatherweightAdapter, serial_port_adapter::SerialPortAdapter,
+        teledongle_adapter::TeleDongleAdapter,
+    },
+    file_handling::log_handlers::LogHandler,
+    models::packet::Packet,
+    packet_structure_manager::PacketStructureManager,
 };
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
@@ -31,21 +39,15 @@ pub struct CommunicationManager {
     pub id_iterator: usize,
     pub old_device_names: Vec<DeviceName>,
     pub ps_manager: Arc<Mutex<PacketStructureManager>>,
-    name_to_value: HashMap<String,String>,
+    name_to_value: HashMap<String, String>,
 }
 
 pub trait CommsIF {
-    fn new(
-        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
-    ) -> Self 
+    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
     where
         Self: Sized;
 
-    fn init_device(
-        &mut self,
-        port_name: &str,
-        baud: u32,
-    ) -> anyhow::Result<()>;
+    fn init_device(&mut self, port_name: &str, baud: u32) -> anyhow::Result<()>;
     fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()>;
 
     //Implements the communications side of the communications object (the bare minimum to get data), then returns it inside the Vec<u8>
@@ -64,14 +66,14 @@ pub trait CommsIF {
 }
 
 impl CommunicationManager {
-    pub fn default_state(ps_manager: Arc<Mutex<PacketStructureManager>>) -> CommunicationManager{
-            CommunicationManager { 
-                comms_objects: Default::default(), 
-                id_iterator: Default::default(), 
-                old_device_names: Default::default(), 
-                ps_manager: ps_manager.clone(), 
-                name_to_value: Default::default() 
-            }
+    pub fn default_state(ps_manager: Arc<Mutex<PacketStructureManager>>) -> CommunicationManager {
+        CommunicationManager {
+            comms_objects: Default::default(),
+            id_iterator: Default::default(),
+            old_device_names: Default::default(),
+            ps_manager: ps_manager.clone(),
+            name_to_value: Default::default(),
+        }
     }
 
     ///checks for serial ports to connect to, streamlining radio setup
@@ -81,15 +83,16 @@ impl CommunicationManager {
         let mut hid_api = HidApi::new().ok()?;
         _ = hid_api.refresh_devices();
         let available_hid_devices = hid_api.device_list();
-        
-        device_names = available_ports.into_iter()
+
+        device_names = available_ports
+            .into_iter()
             .filter_map(|port| match port.port_type {
                 serialport::SerialPortType::UsbPort(usb_info) => {
                     let mut display_name = port.port_name.clone();
-                    if usb_info.manufacturer.is_some(){
+                    if usb_info.manufacturer.is_some() {
                         display_name = usb_info.manufacturer.clone().unwrap() + " " + &display_name;
-                    } 
-                    if usb_info.product.is_some(){
+                    }
+                    if usb_info.product.is_some() {
                         display_name = usb_info.product.clone().unwrap() + " " + &display_name;
                     }
                     Some(DeviceName {
@@ -100,31 +103,38 @@ impl CommunicationManager {
                     })
                 }
                 _ => None,
-            }).collect();
-        
-        let mut hid_devices: Vec<DeviceName> = available_hid_devices.filter_map(
-            |device| 
-            {
-                let man_string =device.manufacturer_string().unwrap_or_default().to_owned();
-                if man_string == "Microsoft" || man_string == "Logitech" || man_string == "Apple Inc." || man_string == "Apple" || man_string.is_empty() {
+            })
+            .collect();
+
+        let mut hid_devices: Vec<DeviceName> = available_hid_devices
+            .filter_map(|device| {
+                let man_string = device.manufacturer_string().unwrap_or_default().to_owned();
+                if man_string == "Microsoft"
+                    || man_string == "Logitech"
+                    || man_string == "Apple Inc."
+                    || man_string == "Apple"
+                    || man_string.is_empty()
+                {
                     return None;
                 }
                 Some(DeviceName {
-                    name: man_string+ " " + device.product_string().unwrap_or_default(),
+                    name: man_string + " " + device.product_string().unwrap_or_default(),
                     value: device.path().to_str().unwrap_or_default().to_owned(),
-                    manufacturer_name: Some(device.manufacturer_string().unwrap_or_default().to_owned()),
-                    product_name: Some(device.product_string().unwrap_or_default().to_owned()), 
+                    manufacturer_name: Some(
+                        device.manufacturer_string().unwrap_or_default().to_owned(),
+                    ),
+                    product_name: Some(device.product_string().unwrap_or_default().to_owned()),
                 })
-            }
-        ).collect();
+            })
+            .collect();
         device_names.append(&mut hid_devices);
-                
+
         if device_names == self.old_device_names {
             None
         } else {
             self.old_device_names = device_names.clone();
-            for device in device_names.clone(){
-                self.name_to_value.insert(device.name,device.value);
+            for device in device_names.clone() {
+                self.name_to_value.insert(device.name, device.value);
             }
             Some(device_names)
         }
@@ -136,36 +146,42 @@ impl CommunicationManager {
     /// # Error
     ///
     /// Returns an error if the device being addressed isn't initialized correctly
-    pub fn get_data(&mut self, id: usize, return_buffer: &mut Vec<Packet>, log: &mut LogHandler) -> anyhow::Result<()> {
-        let index = self.find(id,false).ok_or(anyhow::anyhow!("could not find a device with given id"))?;
+    pub fn get_data(
+        &mut self,
+        id: usize,
+        return_buffer: &mut Vec<Packet>,
+        log: &mut LogHandler,
+    ) -> anyhow::Result<()> {
+        let index = self
+            .find(id, false)
+            .ok_or(anyhow::anyhow!("could not find a device with given id"))?;
         let mut raw_bytes = vec![];
 
         if !self.comms_objects[index].is_init() {
-            return Err(anyhow::anyhow!("object not initialized"))
+            return Err(anyhow::anyhow!("object not initialized"));
         }
 
         let result = self.comms_objects[index].get_device_raw_data(&mut raw_bytes);
-        if result.is_err(){
+        if result.is_err() {
             let error = result.unwrap_err();
-            if format!("{}", error.root_cause()) != "Operation timed out"{
+            if format!("{}", error.root_cause()) != "Operation timed out" {
                 return Err(error.context("failed to get raw data"));
-            }
-            else{
+            } else {
                 return Ok(());
             }
         }
-        let result = log.write_bytes(&raw_bytes,id,self.comms_objects[index].get_type());
-        if result.is_err(){
+        let result = log.write_bytes(&raw_bytes, id, self.comms_objects[index].get_type());
+        if result.is_err() {
             let new_result = result.unwrap_err().context("failed to write raw data");
             let context = new_result.chain();
-            for i in context{
+            for i in context {
                 eprintln!("Binary File Write{:#?}", i);
             }
         }
 
-        let result = self.comms_objects[index].parse_device_data(&mut raw_bytes,return_buffer);
-        if let Err(error) = result{
-            return Err(error.context("failed to get raw data"))
+        let result = self.comms_objects[index].parse_device_data(&mut raw_bytes, return_buffer);
+        if let Err(error) = result {
+            return Err(error.context("failed to get raw data"));
         }
         Ok(())
     }
@@ -176,7 +192,7 @@ impl CommunicationManager {
     ///
     /// Returns an error if the device being addressed isn't initialized correctly
     pub fn write_data(&mut self, packet: &[u8], id: usize) -> anyhow::Result<()> {
-        let index = self.find(id,false);
+        let index = self.find(id, false);
         match index {
             Some(index) => match self.comms_objects[index].write_port(packet) {
                 Ok(_) => Ok(()),
@@ -196,24 +212,24 @@ impl CommunicationManager {
     ///
     /// Was unable to initialize the device object
     pub fn init_device(&mut self, port_name: &str, baud: u32, id: usize) -> anyhow::Result<()> {
-        let index = self.find(id,false);
+        let index = self.find(id, false);
         match index {
             Some(index) => {
-                let name = if self.comms_objects[index].get_type() == "ByteFile" || self.comms_objects[index].get_type() == "TeleDongle"{
+                let name = if self.comms_objects[index].get_type() == "ByteFile"
+                    || self.comms_objects[index].get_type() == "TeleDongle"
+                {
                     port_name
-                }
-                else{
-                    self.name_to_value.get(port_name).ok_or(anyhow::anyhow!("Could not find a device with that name"))?
+                } else {
+                    self.name_to_value
+                        .get(port_name)
+                        .ok_or(anyhow::anyhow!("Could not find a device with that name"))?
                 };
 
-                match self.comms_objects[index].init_device(
-                    name,
-                    baud,
-                ) {
+                match self.comms_objects[index].init_device(name, baud) {
                     Ok(_) => Ok(()),
-                    Err(message) => Err(message)
+                    Err(message) => Err(message),
                 }
-            },
+            }
             None => bail!(format!(
                 "could not find a device with that ID: {} {}",
                 id,
@@ -228,7 +244,7 @@ impl CommunicationManager {
     ///
     /// Was unable to initialize the device object
     pub fn delete_device(&mut self, id: usize) -> anyhow::Result<()> {
-        let index = self.find(id,true);
+        let index = self.find(id, true);
         match index {
             Some(index) => {
                 self.comms_objects.remove(index);
@@ -282,9 +298,10 @@ impl CommunicationManager {
         self.comms_objects[self.comms_objects.len() - 1].get_id()
     }
 
-       /// Adds an byte reading device object to the manager
-       pub fn add_featherweight(&mut self) -> usize {
-        let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(self.ps_manager.clone());
+    /// Adds an byte reading device object to the manager
+    pub fn add_featherweight(&mut self) -> usize {
+        let mut new_device: FeatherweightAdapter =
+            FeatherweightAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -297,7 +314,7 @@ impl CommunicationManager {
         let mut i = 0;
         while i < self.comms_objects.len() {
             if print_flag {
-                println!("{},{}",self.comms_objects[i].get_id(), index);
+                println!("{},{}", self.comms_objects[i].get_id(), index);
             }
             if self.comms_objects[i].get_id() == index {
                 return Some(i);
@@ -307,10 +324,9 @@ impl CommunicationManager {
         None
     }
 
-
     /// The function `update_display_com_devices` iterates through communication objects, creates
     /// `DisplayComDevice` instances, and places them inside the provided buffer.
-    pub fn update_display_com_devices(&mut self,buffer: &mut Vec<DisplayComDevice>){
+    pub fn update_display_com_devices(&mut self, buffer: &mut Vec<DisplayComDevice>) {
         let mut i = 0;
         while i < self.comms_objects.len() {
             buffer.push(DisplayComDevice {
@@ -325,7 +341,7 @@ impl CommunicationManager {
     pub fn get_initialized_devices(&self) -> Vec<usize> {
         let mut return_me = vec![];
         for device in &self.comms_objects {
-            if device.is_init(){
+            if device.is_init() {
                 return_me.push(device.get_id());
             }
         }
@@ -333,21 +349,19 @@ impl CommunicationManager {
     }
 }
 
-
 mod tests {
 
-
-
-
-    // this test is being ignored because it requires the 
+    // this test is being ignored because it requires the
     #[test]
     #[ignore]
     fn test_if_serial_recognized() {
-        use std::sync::{Arc, Mutex};
-        use crate::packet_structure_manager::PacketStructureManager;
         use crate::communication_manager::CommunicationManager;
+        use crate::packet_structure_manager::PacketStructureManager;
+        use std::sync::{Arc, Mutex};
 
-        let mut test_interface = CommunicationManager::default_state(Arc::new(Mutex::new(PacketStructureManager::default())));
+        let mut test_interface = CommunicationManager::default_state(Arc::new(Mutex::new(
+            PacketStructureManager::default(),
+        )));
         let device_names = test_interface.get_all_potential_devices();
         assert!(device_names.is_some());
         assert!(!device_names.unwrap().is_empty());
@@ -356,18 +370,20 @@ mod tests {
     #[test]
     #[ignore]
     fn test_serial_receive() {
-        use std::sync::Mutex;
-        use crate::packet_structure_manager::PacketStructureManager;
         use crate::file_handling::log_handlers::LogHandler;
+        use crate::packet_structure_manager::PacketStructureManager;
         use crate::{
             communication_manager::CommunicationManager,
             state::packet_structure_manager_state::default_packet_structure_manager,
         };
         use std::sync::Arc;
-        
+        use std::sync::Mutex;
+
         const BAUD: u32 = 115200;
 
-        let mut test_interface = CommunicationManager::default_state(Arc::new(Mutex::new(PacketStructureManager::default())));
+        let mut test_interface = CommunicationManager::default_state(Arc::new(Mutex::new(
+            PacketStructureManager::default(),
+        )));
         let mut log_handler = LogHandler::default();
         log_handler.enable_debug();
         let device_names = test_interface.get_all_potential_devices();
@@ -381,7 +397,7 @@ mod tests {
         };
         loop {
             let mut buff = vec![];
-            let result = test_interface.get_data(0, &mut buff,&mut log_handler);
+            let result = test_interface.get_data(0, &mut buff, &mut log_handler);
             println!("             {:#?}", result);
             println!("{:#?}", buff);
         }
