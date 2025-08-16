@@ -1,24 +1,25 @@
 use crate::{
-    data_processing::DataProcessorState, file_handling::config_struct::ConfigState, models::{packet_structure::{
-    PacketFieldType, PacketMetadataType
+    data_processing::DataProcessorState,
+    file_handling::config_struct::ConfigState,
+    models::{
+        packet_structure::{PacketFieldType, PacketMetadataType},
+        packet_view_model::{PacketComponentType, PacketStructureViewModel},
     },
-    packet_view_model::{PacketComponentType, PacketStructureViewModel},
-    }
 };
 // # packet_structure_manager_commands
-// 
+//
 // Contains all tauri commands related to the packet structure manager
-// 
+//
 // !!!!!
-// Everything in this file is Depreciated and should not be used moving forward. 
+// Everything in this file is Depreciated and should not be used moving forward.
 //
 // Developers: If you want you could replace all of these calls with a json config file editor, but dont edit the PSM state directly
 // !!!!!
 //
 // These functions update the current packet structures in the packet_Structure_manager_state, by calling update_packet_structures
-// 
+//
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_packet_name(
     app_handle: tauri::AppHandle,
@@ -31,7 +32,7 @@ pub fn set_packet_name(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_field_name(
     app_handle: tauri::AppHandle,
@@ -45,7 +46,7 @@ pub fn set_field_name(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_field_type(
     app_handle: tauri::AppHandle,
@@ -59,7 +60,7 @@ pub fn set_field_type(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_field_metadata_type(
     app_handle: tauri::AppHandle,
@@ -73,7 +74,7 @@ pub fn set_field_metadata_type(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_delimiter_name(
     app_handle: tauri::AppHandle,
@@ -87,7 +88,7 @@ pub fn set_delimiter_name(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_delimiter_identifier(
     app_handle: tauri::AppHandle,
@@ -101,7 +102,7 @@ pub fn set_delimiter_identifier(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn set_gap_size(
     app_handle: tauri::AppHandle,
@@ -115,7 +116,7 @@ pub fn set_gap_size(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn add_field(
     app_handle: tauri::AppHandle,
@@ -127,7 +128,7 @@ pub fn add_field(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn add_delimiter(
     app_handle: tauri::AppHandle,
@@ -139,7 +140,7 @@ pub fn add_delimiter(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn add_gap_after(
     app_handle: tauri::AppHandle,
@@ -153,7 +154,7 @@ pub fn add_gap_after(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn delete_packet_structure_component(
     app_handle: tauri::AppHandle,
@@ -171,7 +172,7 @@ pub fn delete_packet_structure_component(
 ///
 /// ### Arguments
 /// * 'view' - PacketStructureViewModel containing the packet that will be added to the packet structure
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn add_packet_structure(
     app_handle: tauri::AppHandle,
@@ -183,7 +184,7 @@ pub fn add_packet_structure(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn register_empty_packet_structure(
     app_handle: tauri::AppHandle,
@@ -194,7 +195,7 @@ pub fn register_empty_packet_structure(
     todo!();
 }
 
-#[allow(unused_variables,unreachable_code)]
+#[allow(unused_variables, unreachable_code)]
 #[tauri::command]
 pub fn delete_packet_structure(
     app_handle: tauri::AppHandle,

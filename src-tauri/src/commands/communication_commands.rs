@@ -1,17 +1,18 @@
 use tauri::{AppHandle, Manager};
 
-use crate::{communication_manager::{CommunicationManager,CommunicationManagerState}, state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex}};
+use crate::{
+    communication_manager::{CommunicationManager, CommunicationManagerState},
+    state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
+};
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
 ///helper function for sending out an update of all coms manager devices
-fn update_coms(
-    app_handle: &AppHandle,
-    communication_manager: &mut CommunicationManager){
-    let mut return_me= vec![];
+fn update_coms(app_handle: &AppHandle, communication_manager: &mut CommunicationManager) {
+    let mut return_me = vec![];
     communication_manager.update_display_com_devices(&mut return_me);
     let success = app_handle.emit_all(COM_DEVICE_UPDATE, &return_me);
     //notify devs if backend is failing to send updates to the frontend
-    if success.is_err(){
+    if success.is_err() {
         println!("WARNING: communication_commands.rs failed to communicate with frontend, \n| Warning Error:{:#?}",success)
     }
 }
@@ -22,12 +23,14 @@ pub fn delete_device(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     id: usize,
 ) -> Result<(), String> {
-    result_to_string(use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        let result = communication_manager.delete_device(id);
-        update_coms(&app_handle, communication_manager);
-        result
-         
-    }))
+    result_to_string(use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            let result = communication_manager.delete_device(id);
+            update_coms(&app_handle, communication_manager);
+            result
+        },
+    ))
 }
 // # serial_commands
 //
@@ -39,10 +42,13 @@ pub fn init_device_port(
     baud: u32,
     id: usize,
 ) -> Result<(), String> {
-    result_to_string(use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        println!("initializing! {} {} {}",port_name,baud,id);
-        communication_manager.init_device(port_name, baud, id)
-    }))
+    result_to_string(use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            println!("initializing! {} {} {}", port_name, baud, id);
+            communication_manager.init_device(port_name, baud, id)
+        },
+    ))
 }
 
 #[tauri::command(async)]
@@ -50,10 +56,13 @@ pub fn add_rfd(
     app_handle: AppHandle,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
-    use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        communication_manager.add_serial_device();
-        update_coms(&app_handle, communication_manager);
-    });
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            communication_manager.add_serial_device();
+            update_coms(&app_handle, communication_manager);
+        },
+    );
     Ok(())
 }
 
@@ -62,10 +71,13 @@ pub fn add_altus_metrum(
     app_handle: tauri::AppHandle,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
-    use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        communication_manager.add_altus_metrum();
-        update_coms(&app_handle, communication_manager);
-    });
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            communication_manager.add_altus_metrum();
+            update_coms(&app_handle, communication_manager);
+        },
+    );
     Ok(())
 }
 
@@ -75,11 +87,14 @@ pub fn add_file_manager(
     file_path: &str,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
-    use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        let new_id =communication_manager.add_file_manager();
-        let _ = communication_manager.init_device(file_path, 0, new_id);
-        update_coms(&app_handle, communication_manager);
-    });
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            let new_id = communication_manager.add_file_manager();
+            let _ = communication_manager.init_device(file_path, 0, new_id);
+            update_coms(&app_handle, communication_manager);
+        },
+    );
     Ok(())
 }
 
@@ -88,10 +103,13 @@ pub fn add_aim(
     app_handle: AppHandle,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
-    use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        communication_manager.add_aim();
-        update_coms(&app_handle, communication_manager);
-    });
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            communication_manager.add_aim();
+            update_coms(&app_handle, communication_manager);
+        },
+    );
     Ok(())
 }
 
@@ -100,10 +118,12 @@ pub fn add_featherweight(
     app_handle: AppHandle,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
-    use_state_in_mutex(&communication_manager_state, &mut |communication_manager: &mut CommunicationManager| {
-        communication_manager.add_featherweight();
-        update_coms(&app_handle, communication_manager);
-    });
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            communication_manager.add_featherweight();
+            update_coms(&app_handle, communication_manager);
+        },
+    );
     Ok(())
 }
-

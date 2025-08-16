@@ -3,7 +3,10 @@ use std::{ffi::CString, sync::Arc, thread::sleep, time::Duration};
 use anyhow::bail;
 use hidapi::{HidApi, HidDevice};
 
-use crate::{communication_manager::CommsIF, models::packet::Packet, packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex};
+use crate::{
+    communication_manager::CommsIF, models::packet::Packet,
+    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+};
 
 use super::aim_parser::AimParser;
 pub struct AimAdapter {
@@ -11,31 +14,29 @@ pub struct AimAdapter {
     packet_parser: AimParser,
     baud: u32,
     id: usize,
-    last_read: [u8;64] 
+    last_read: [u8; 64],
 }
 
-impl CommsIF for AimAdapter{
-    
-     ///creates a new instance of a comms device with the given packet structure manager
-     fn new(
-        packet_structure_manager: Arc<std::sync::Mutex<PacketStructureManager>>,
-    ) -> Self 
+impl CommsIF for AimAdapter {
+    ///creates a new instance of a comms device with the given packet structure manager
+    fn new(packet_structure_manager: Arc<std::sync::Mutex<PacketStructureManager>>) -> Self
     where
-        Self: Sized {
+        Self: Sized,
+    {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
             let parser = AimParser::default(ps_manager);
-            AimAdapter{
+            AimAdapter {
                 device: None,
                 packet_parser: parser,
                 baud: 0,
                 id: 0,
-                last_read: [0;64],
+                last_read: [0; 64],
             }
         })
     }
 
     /// used to connect the object with a specific device
-    fn init_device(&mut self, port_name: &str , baud: u32)  -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str, baud: u32) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.device = None;
         } else {
@@ -43,8 +44,8 @@ impl CommsIF for AimAdapter{
             let hid_api = HidApi::new()?;
             self.device = hid_api.open_path(CString::new(port_name)?.as_c_str()).ok();
 
-            let mut output: [u8;64] = [0;64];
-            let mut input: [u8;64] = [0;64];
+            let mut output: [u8; 64] = [0; 64];
+            let mut input: [u8; 64] = [0; 64];
             output[0] = 3;
             output[1] = 3;
 
@@ -53,14 +54,15 @@ impl CommsIF for AimAdapter{
                     let _ = base_station.write(&output);
                     sleep(Duration::from_millis(100));
                     let result = base_station.read(&mut input);
-                    match result{
-                        Ok(_) => {},
+                    match result {
+                        Ok(_) => {}
                         Err(error) => {
-                            println!("{}",error);
-                            bail!(anyhow::anyhow!(error).context("failed to connect to Entacore product"))
-                        },
+                            println!("{}", error);
+                            bail!(anyhow::anyhow!(error)
+                                .context("failed to connect to Entacore product"))
+                        }
                     }
-                },
+                }
                 None => bail!("no device stored within output of HID API"),
             }
         }
@@ -68,29 +70,31 @@ impl CommsIF for AimAdapter{
     }
 
     /// Attempt to write bytes to the radio test port
-    /// 
+    ///
     /// # Errors
-    /// 
-    /// returns an error if the device isn't initialized 
-    fn write_port(&mut self, _: &[u8])  -> anyhow::Result<()> {
-        Err(anyhow::anyhow!("Wings does not currently support sending packets to an Aim-Xtra"))
+    ///
+    /// returns an error if the device isn't initialized
+    fn write_port(&mut self, _: &[u8]) -> anyhow::Result<()> {
+        Err(anyhow::anyhow!(
+            "Wings does not currently support sending packets to an Aim-Xtra"
+        ))
     }
 
     /// Returns true if there is an active port
     fn is_init(&self) -> bool {
         self.device.is_some()
     }
-    fn set_id(&mut self, id: usize){
+    fn set_id(&mut self, id: usize) {
         self.id = id;
     }
     fn get_id(&self) -> usize {
         self.id
     }
-    
+
     fn get_type(&self) -> String {
         "AimXtra".to_owned()
     }
-    
+
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
         // let active_port = match self.device.as_mut() {
         //     Some(port) => port,
@@ -102,19 +106,19 @@ impl CommsIF for AimAdapter{
         // data_vector.extend_from_slice(&buffer[..bytes_read]);
         match &self.device {
             Some(base_station) => {
-                let mut output: [u8;64] = [0;64];
-                let mut input: [u8;64] = [0;64];
+                let mut output: [u8; 64] = [0; 64];
+                let mut input: [u8; 64] = [0; 64];
                 output[0] = 0x03;
                 output[1] = 0x12;
                 let _ = base_station.write(&output);
                 let result = base_station.read_timeout(&mut input, 10);
-                match result{
+                match result {
                     Ok(_) => {
-                        if self.last_read != input{
+                        if self.last_read != input {
                             data_vector.extend_from_slice(&input);
                             self.last_read = input;
                         }
-                    },
+                    }
                     Err(_) => {
                         //doing nothing because we didn't read a packet
                     }
@@ -125,8 +129,13 @@ impl CommsIF for AimAdapter{
         }
         Ok(())
     }
-    
-    fn parse_device_data(&mut self, data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        self.packet_parser.parse_transmission(data_vector,packet_vector)
+
+    fn parse_device_data(
+        &mut self,
+        data_vector: &mut Vec<u8>,
+        packet_vector: &mut Vec<Packet>,
+    ) -> anyhow::Result<()> {
+        self.packet_parser
+            .parse_transmission(data_vector, packet_vector)
     }
 }

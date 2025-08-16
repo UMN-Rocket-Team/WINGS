@@ -2,7 +2,11 @@ use anyhow::{bail, Error};
 use chrono::{DateTime, Utc};
 use csv::{Reader, StringRecord, Writer};
 use std::{
-    collections::BTreeMap, fs::{self, File}, io::Write, path::{Path, PathBuf}, sync::Mutex
+    collections::BTreeMap,
+    fs::{self, File},
+    io::Write,
+    path::{Path, PathBuf},
+    sync::Mutex,
 };
 
 use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
@@ -19,7 +23,7 @@ pub struct LogHandler {
     byte_writer: BTreeMap<(String, usize), File>,
     base_path: PathBuf,
     time: DateTime<Utc>,
-    testing: bool //flag that should disable all writing and print values to terminal instead
+    testing: bool, //flag that should disable all writing and print values to terminal instead
 }
 
 struct PacketWriter {
@@ -45,11 +49,13 @@ impl Default for LogHandler {
         path_buf.push(BASE_DIRECTORY);
         let time = Utc::now();
         path_buf.push(&format!("{}", time.format(DAY_FORMAT)));
-        path_buf.push(&format!("{}", time.format(TIME_FORMAT)).replace(":","-"));
-        fs::create_dir_all(path_buf.as_path()).expect(&format!("failed to register: {:#?}",&path_buf));
+        path_buf.push(&format!("{}", time.format(TIME_FORMAT)).replace(":", "-"));
+        fs::create_dir_all(path_buf.as_path())
+            .expect(&format!("failed to register: {:#?}", &path_buf));
         let mut raw_path_buf = path_buf.clone();
         raw_path_buf.push("raw");
-        fs::create_dir_all(raw_path_buf.as_path()).expect(&format!("failed to register: {:#?}",&path_buf));
+        fs::create_dir_all(raw_path_buf.as_path())
+            .expect(&format!("failed to register: {:#?}", &path_buf));
         let general_directory = path_buf.clone();
         println!("{:#?}", path_buf);
         Self {
@@ -192,31 +198,38 @@ impl LogHandler {
         &mut self,
         data: &Vec<u8>,
         device_id: usize,
-        device_type: String
+        device_type: String,
     ) -> Result<(), Error> {
-        if self.testing{
-            println!("{}_{}: Printed {}",device_type,device_id,data.len());
+        if self.testing {
+            println!("{}_{}: Printed {}", device_type, device_id, data.len());
         }
-        let maybe_file = self.byte_writer.get(&(device_type.clone(),device_id));
+        let maybe_file = self.byte_writer.get(&(device_type.clone(), device_id));
         let mut byte_file = match maybe_file {
-            Some(file) => {file},
+            Some(file) => file,
             None => {
                 let mut path = self.base_path.clone();
                 path.push("raw");
-                path.push(format!("raw_log_{}_{}",self.time.format(LOG_TIME_FORMAT),device_info_to_file_format(device_type.clone(), device_id)));
+                path.push(format!(
+                    "raw_log_{}_{}",
+                    self.time.format(LOG_TIME_FORMAT),
+                    device_info_to_file_format(device_type.clone(), device_id)
+                ));
                 path.set_extension("wings");
-                self.byte_writer.insert((device_type.clone(),device_id), File::create(path)?);
-                self.byte_writer.get(&(device_type,device_id)).ok_or(anyhow::anyhow!("failed to register new file"))?
-            },
+                self.byte_writer
+                    .insert((device_type.clone(), device_id), File::create(path)?);
+                self.byte_writer
+                    .get(&(device_type, device_id))
+                    .ok_or(anyhow::anyhow!("failed to register new file"))?
+            }
         };
         Ok(byte_file.write_all(data)?)
     }
 
-    pub fn enable_debug(&mut self){
+    pub fn enable_debug(&mut self) {
         self.testing = true;
     }
 }
 
-pub fn device_info_to_file_format(device_type: String, device_id: usize) -> String{
-    return format!("{}_{}_log",device_type,device_id)
+pub fn device_info_to_file_format(device_type: String, device_id: usize) -> String {
+    return format!("{}_{}_log", device_type, device_id);
 }

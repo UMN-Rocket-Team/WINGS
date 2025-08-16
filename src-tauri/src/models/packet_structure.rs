@@ -2,24 +2,22 @@ use std::cmp::max;
 
 use serde::{Deserialize, Serialize};
 
+#[derive(PartialEq, Deserialize, Serialize, Clone, Debug, Default)]
 
-
-#[derive(PartialEq, Deserialize,Serialize, Clone, Debug, Default)]
-
-/// Represents an entire "Data Packet Structure" 
-/// 
+/// Represents an entire "Data Packet Structure"
+///
 /// This is the data packet format in which the ground station should expect to receive new data
-/// 
+///
 /// id is defined at runtime and used to track packet structures
-/// 
+///
 /// name is given by the user, and should follow a specific format
-/// 
+///
 /// fields represent any data in the packet
-/// 
-/// delimiters represent any constant values in the packet 
-/// 
+///
+/// delimiters represent any constant values in the packet
+///
 /// crc represents a delimiter derived from a checksum of previous elements
-/// 
+///
 /// size represents the overall size of the packet
 pub struct PacketStructure {
     pub(crate) id: usize,
@@ -32,7 +30,7 @@ pub struct PacketStructure {
 }
 
 impl PacketStructure {
-    pub fn make_default(name: String) -> PacketStructure{
+    pub fn make_default(name: String) -> PacketStructure {
         PacketStructure {
             id: 0, // gets overridden
             name,
@@ -43,7 +41,12 @@ impl PacketStructure {
             size: None,
         }
     }
-    pub fn make_from_fields_and_delims(id: usize, name: String, fields: Vec<PacketField>, delimiters: Vec<PacketDelimiter>) -> PacketStructure{
+    pub fn make_from_fields_and_delims(
+        id: usize,
+        name: String,
+        fields: Vec<PacketField>,
+        delimiters: Vec<PacketDelimiter>,
+    ) -> PacketStructure {
         PacketStructure {
             id, // gets overridden
             name,
@@ -55,11 +58,11 @@ impl PacketStructure {
         }
     }
     /// Returns the size of the PacketStructure
-    /// 
+    ///
     /// size is found by going through every element in the packetStructure, and finding the largest sum of an elements offset and size.
     /// this produces the same result as returning the largest offset with the size of that element added on
     pub fn size(&self) -> usize {
-        match self.size{
+        match self.size {
             Some(i) => i,
             None => {
                 let mut max_end: usize = 0;
@@ -68,30 +71,30 @@ impl PacketStructure {
                     let size = field.r#type.size().unwrap_or(0);
                     max_end = max(max_end, field.offset_in_packet + size);
                 }
-        
+
                 for delimiter in &self.delimiters {
                     max_end = max(
                         max_end,
                         delimiter.offset_in_packet + delimiter.identifier.len(),
                     );
                 }
-        
+
                 max_end
-            },
+            }
         }
     }
 
     /// fills the packet calling it using string inputs,
     /// THIS IS MEANT FOR TESTING ONLY
-    /// 
+    ///
     /// 0 - f,    represents delimiters in hex
     /// _1-inf    represents gaps, the number after is the length in decimal
     /// u8 - u64  represents unsigned ints
     /// i8 - i64  represents signed ints
     /// F32 & F64 represents floats
-    /// 
+    ///
     /// all delimiters will be named "test delimiter" and all fields "test field"
-    /// 
+    ///
     /// spaces are used to format between elements
     /// ie "deadbeef _4 u8 u8 i16 i16 deadbeef" is 2 delimiters and 4 variables and a 4byte gap
     pub fn ez_make(&mut self, input: &str, names: &[&str], reverse_delimiter: bool) {
@@ -99,48 +102,79 @@ impl PacketStructure {
         let mut curr_offset = 0;
         for substr in input.split(" ") {
             let first_char = substr.chars().nth(0).unwrap();
-            if first_char.is_ascii_hexdigit() && (first_char.is_lowercase() || first_char.is_ascii_digit()){
-
+            if first_char.is_ascii_hexdigit()
+                && (first_char.is_lowercase() || first_char.is_ascii_digit())
+            {
                 let mut new_identifier = hex::decode(substr).unwrap();
-                
-                if reverse_delimiter{
-                    new_identifier.reverse();//this is the way firmware broadcasts the identifiers
+
+                if reverse_delimiter {
+                    new_identifier.reverse(); //this is the way firmware broadcasts the identifiers
                 }
 
-                let offset = new_identifier.len();//calculates size of the delimiter in memory
-                curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
-                
-                let new_delimiter = PacketDelimiter{
+                let offset = new_identifier.len(); //calculates size of the delimiter in memory
+                curr_offset = (curr_offset + offset - 1) / offset * offset; //aligns the variable
+
+                let new_delimiter = PacketDelimiter {
                     index: self.delimiters.len(),
-                    name:"test delimiter ".to_string() + &(self.delimiters.len()).to_string(),
+                    name: "test delimiter ".to_string() + &(self.delimiters.len()).to_string(),
                     identifier: new_identifier,
-                    offset_in_packet: curr_offset
+                    offset_in_packet: curr_offset,
                 };
                 curr_offset += offset;
                 self.delimiters.push(new_delimiter);
-            }
-            else if first_char == '_' {
+            } else if first_char == '_' {
                 let trimmed_str = substr.chars().next().map(|c| &substr[c.len_utf8()..]);
                 curr_offset += trimmed_str.unwrap().parse::<usize>().unwrap();
-            }
-            else{
+            } else {
                 let offset: usize;
                 let t: PacketFieldType;
-                match substr{
-                        "u8" => {offset = 1; t = PacketFieldType::UnsignedByte},
-                        "i8" => {offset = 1; t = PacketFieldType::SignedByte},
-                        "u16" => {offset = 2; t = PacketFieldType::UnsignedShort},
-                        "i16" => {offset = 2; t = PacketFieldType::SignedShort},
-                        "u32" => {offset = 4; t = PacketFieldType::UnsignedInteger},
-                        "i32" => {offset = 4; t = PacketFieldType::SignedInteger},
-                        "u64" => {offset = 8; t = PacketFieldType::UnsignedLong},
-                        "i64" => {offset = 8; t = PacketFieldType::SignedLong},
-                        "F32" => {offset = 4; t = PacketFieldType::Float},
-                        "F64" => {offset = 8; t = PacketFieldType::Double},
-                        &_ => {panic!("invalid packet field: {}", substr)},
+                match substr {
+                    "u8" => {
+                        offset = 1;
+                        t = PacketFieldType::UnsignedByte
+                    }
+                    "i8" => {
+                        offset = 1;
+                        t = PacketFieldType::SignedByte
+                    }
+                    "u16" => {
+                        offset = 2;
+                        t = PacketFieldType::UnsignedShort
+                    }
+                    "i16" => {
+                        offset = 2;
+                        t = PacketFieldType::SignedShort
+                    }
+                    "u32" => {
+                        offset = 4;
+                        t = PacketFieldType::UnsignedInteger
+                    }
+                    "i32" => {
+                        offset = 4;
+                        t = PacketFieldType::SignedInteger
+                    }
+                    "u64" => {
+                        offset = 8;
+                        t = PacketFieldType::UnsignedLong
+                    }
+                    "i64" => {
+                        offset = 8;
+                        t = PacketFieldType::SignedLong
+                    }
+                    "F32" => {
+                        offset = 4;
+                        t = PacketFieldType::Float
+                    }
+                    "F64" => {
+                        offset = 8;
+                        t = PacketFieldType::Double
+                    }
+                    &_ => {
+                        panic!("invalid packet field: {}", substr)
+                    }
                 }
-                curr_offset = (curr_offset + offset - 1)/ offset * offset;//aligns the variable
-                let new_field = PacketField{
+                curr_offset = (curr_offset + offset - 1) / offset * offset; //aligns the variable
+                let new_field = PacketField {
                     index: self.fields.len(),
                     name: names[self.fields.len()].to_owned(),
                     r#type: t,
@@ -154,7 +188,7 @@ impl PacketStructure {
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
-/// Used to represent the 
+/// Used to represent the
 pub struct PacketMetaDataFields {
     pub(crate) index: usize,
     pub(crate) name: String,
@@ -165,8 +199,8 @@ pub struct PacketMetaDataFields {
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 /// represents a field within a Packet where the groundstation can expect a piece of data to be stored.
-/// 
-/// each packet field contains a number based datatype, 
+///
+/// each packet field contains a number based datatype,
 /// a Packet field can also potentially contain timestamp metadata
 pub struct PacketField {
     pub(crate) index: usize,
@@ -178,7 +212,6 @@ pub struct PacketField {
 ///Represents the different types that can be received in a packetField
 pub enum PacketFieldType {
     // Ensure that this enum is in sync with PacketFieldValue
-
     #[serde(rename = "Unsigned Byte")]
     UnsignedByte,
     #[serde(rename = "Signed Byte")]
@@ -212,7 +245,7 @@ pub enum PacketMetadataType {
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 ///Represents a Delimiter within a Packet that can be used to identify that packet within the raw data that is received by radio
-/// 
+///
 ///The identifier variable represents the unique set of data that the groundstation should look out for when looking at the incoming data stream
 pub struct PacketDelimiter {
     pub(crate) index: usize,
@@ -223,6 +256,6 @@ pub struct PacketDelimiter {
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 pub struct PacketCRC {
-    pub(crate) length: usize, 
-    pub(crate) offset_in_packet: usize
+    pub(crate) length: usize,
+    pub(crate) offset_in_packet: usize,
 }

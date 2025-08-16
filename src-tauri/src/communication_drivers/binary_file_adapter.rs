@@ -4,23 +4,26 @@
 //
 // ****
 use crate::{
-    communication_manager::CommsIF,
-    models::packet::Packet,
-    packet_structure_manager::PacketStructureManager, state::{mutex_utils::use_state_in_mutex},
+    communication_manager::CommsIF, models::packet::Packet,
+    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
 };
 use anyhow::{bail, Context};
-use std::{fs::File, io::Read, sync::{Arc, Mutex}};
+use std::{
+    fs::File,
+    io::Read,
+    sync::{Arc, Mutex},
+};
 
 use super::serial_packet_parser::SerialPacketParser;
 
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
-/// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface. 
+/// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface.
 /// it reads from a binary file as if the file was a serial port. this is useful for replaying .wings files or PuTTY outputs
-/// 
+///
 /// Properties:
-/// 
+///
 /// * `file`: A Handle of the file that is being used as a data source
 /// * `id`: a device id mandated by the `CommsIF``
 /// * `packet_parser`: A packet parser that will be used to process packets from the binary
@@ -32,26 +35,20 @@ pub struct BinaryFileAdapter {
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 impl CommsIF for BinaryFileAdapter {
-
-     ///creates a new instance of a comms device with the given packet structure manager
-     fn new(
-        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
-    ) -> Self 
+    ///creates a new instance of a comms device with the given packet structure manager
+    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
     where
-        Self: Sized {
-        BinaryFileAdapter{
+        Self: Sized,
+    {
+        BinaryFileAdapter {
             file: None,
             packet_parser: Default::default(),
             id: 0,
-            packet_structure_manager
+            packet_structure_manager,
         }
     }
 
-    fn init_device(
-        &mut self,
-        file_name: &str,
-        _baud: u32,
-    ) -> anyhow::Result<()> {
+    fn init_device(&mut self, file_name: &str, _baud: u32) -> anyhow::Result<()> {
         match File::open(file_name) {
             Ok(new_file) => {
                 self.file = Some(new_file);
@@ -83,7 +80,8 @@ impl CommsIF for BinaryFileAdapter {
 
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
         let mut buffer: [u8; 4096] = [0; 4096];
-        let _ = self.file
+        let _ = self
+            .file
             .as_mut()
             .context("failed to load file")?
             .read(&mut buffer)?; //question mark operator returns error if we fail
@@ -97,13 +95,16 @@ impl CommsIF for BinaryFileAdapter {
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()> {
         self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(&self.packet_structure_manager, &mut|ps_manager| -> anyhow::Result<()>{
-            packet_vector.extend_from_slice(
-            &self
-                .packet_parser
-                .parse_packets(ps_manager, PRINT_PARSING)?
-            );
-            Ok(())
-        })
+        use_state_in_mutex(
+            &self.packet_structure_manager,
+            &mut |ps_manager| -> anyhow::Result<()> {
+                packet_vector.extend_from_slice(
+                    &self
+                        .packet_parser
+                        .parse_packets(ps_manager, PRINT_PARSING)?,
+                );
+                Ok(())
+            },
+        )
     }
 }
