@@ -1,3 +1,4 @@
+// This attribute ensures that on Windows, the console window is hidden in release builds.
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
@@ -53,12 +54,17 @@ fn main() {
         Arc::new(config.packet_structure_manager.clone().into());
     let data = DataProcessor::default_state(ps_manager.clone());
     let comms = Mutex::new(CommunicationManager::default_state(ps_manager.clone()));
+
+    // Build the Tauri application.
     tauri::Builder::default()
+        // Register all command handlers that can be invoked from the frontend
         .invoke_handler(tauri::generate_handler![
+            // Device and communication commands
             delete_device,
             init_device_port,
             start_sending_loop,
             stop_sending_loop,
+            // Packet structure commands
             set_field_name,
             set_field_type,
             set_field_metadata_type,
@@ -73,24 +79,29 @@ fn main() {
             add_packet_structure,
             register_empty_packet_structure,
             delete_packet_structure,
+            // Device-specific commands
             add_altus_metrum,
             add_rfd,
             add_file_manager,
             add_aim,
             add_featherweight,
+            // File read command
             set_read
         ])
+        // Manage shared state objects so they can be accessed in commands and event handlers.
         .manage(default_packet_structure_manager())
         .manage(Mutex::new(config))
         .manage(comms)
         .manage(data)
         .manage(SendingLoopState::default())
         .manage(FileHandlingState::default())
+        // Setup hook runs once when the app starts, used for initialization and event listeners.
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
 
             app.listen_global("initialized", move |_| {
+                // Send initial packet structure update to the frontend.
                 send_initial_packet_structure_update_event(app_handle_1.clone());
                 // Initialize and start the background refresh timer
                 // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
@@ -102,6 +113,7 @@ fn main() {
 
             Ok(())
         })
+        // Handle window close events to clean up resources.
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
                 // Timer internals need to manually dropped, do that here at program termination
