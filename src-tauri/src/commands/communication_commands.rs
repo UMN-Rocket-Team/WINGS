@@ -1,3 +1,9 @@
+//! Tauri commands for managing communication devices.
+//!
+//! This module provides async commands for adding, initializing, and deleting
+//! communication devices, as well as updating the frontend with device changes.
+//! It interacts with the CommunicationManager and emits updates to the frontend.
+
 use tauri::{AppHandle, Manager};
 
 use crate::{
@@ -6,7 +12,8 @@ use crate::{
 };
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
-///helper function for sending out an update of all coms manager devices
+/// Helper function for sending out an update of all coms manager devices.
+/// Emits the current list of devices to the frontend.
 fn update_coms(app_handle: &AppHandle, communication_manager: &mut CommunicationManager) {
     let mut return_me = vec![];
     communication_manager.update_display_com_devices(&mut return_me);
@@ -17,6 +24,17 @@ fn update_coms(app_handle: &AppHandle, communication_manager: &mut Communication
     }
 }
 
+/// Deletes a device from the communication manager by its ID.
+///
+/// Emits an update to the frontend after deletion.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+/// * `id` - The ID of the device to delete.
+///
+/// # Returns
+/// Result<(), String> - Ok on success, Err with error message on failure.
 #[tauri::command(async)]
 pub fn delete_device(
     app_handle: AppHandle,
@@ -32,9 +50,17 @@ pub fn delete_device(
         },
     ))
 }
-// # serial_commands
-//
-// Contains all tauri commands related to the serial manager.
+
+/// Initializes a device port with the given name, baud rate, and ID.
+///
+/// # Arguments
+/// * `communication_manager_state` - The shared state of the communication manager.
+/// * `port_name` - The name of the port to initialize.
+/// * `baud` - The baud rate for the device.
+/// * `id` - The ID of the device to initialize.
+///
+/// # Returns
+/// Result<(), String> - Ok on success, Err with error message on failure.
 #[tauri::command(async)]
 pub fn init_device_port(
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
@@ -51,6 +77,16 @@ pub fn init_device_port(
     ))
 }
 
+/// Adds a new RFD (serial) device to the communication manager.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
 #[tauri::command(async)]
 pub fn add_rfd(
     app_handle: AppHandle,
@@ -66,6 +102,16 @@ pub fn add_rfd(
     Ok(())
 }
 
+/// Adds a new Altus Metrum device to the communication manager.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
 #[tauri::command(async)]
 pub fn add_altus_metrum(
     app_handle: tauri::AppHandle,
@@ -81,6 +127,17 @@ pub fn add_altus_metrum(
     Ok(())
 }
 
+/// Adds a new file manager device to the communication manager and initializes it with the given file path.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `file_path` - The path to the file to use for the device.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
 #[tauri::command(async)]
 pub fn add_file_manager(
     app_handle: tauri::AppHandle,
@@ -98,6 +155,16 @@ pub fn add_file_manager(
     Ok(())
 }
 
+/// Adds a new AIM device to the communication manager.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
 #[tauri::command(async)]
 pub fn add_aim(
     app_handle: AppHandle,
@@ -113,6 +180,16 @@ pub fn add_aim(
     Ok(())
 }
 
+/// Adds a new Featherweight device to the communication manager.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
 #[tauri::command(async)]
 pub fn add_featherweight(
     app_handle: AppHandle,
