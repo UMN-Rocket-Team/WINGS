@@ -1,3 +1,10 @@
+//! Data structures for representing packet formats and fields.
+//!
+//! This module defines the `PacketStructure` and related types used to describe
+//! the format of data packets received by the ground station. It includes support
+//! for fields, delimiters, CRCs, and metadata, as well as utility methods for
+//! constructing and analyzing packet structures.
+
 use std::cmp::max;
 
 use serde::{Deserialize, Serialize};
@@ -6,19 +13,13 @@ use serde::{Deserialize, Serialize};
 
 /// Represents an entire "Data Packet Structure"
 ///
-/// This is the data packet format in which the ground station should expect to receive new data
-///
-/// id is defined at runtime and used to track packet structures
-///
-/// name is given by the user, and should follow a specific format
-///
-/// fields represent any data in the packet
-///
-/// delimiters represent any constant values in the packet
-///
-/// crc represents a delimiter derived from a checksum of previous elements
-///
-/// size represents the overall size of the packet
+/// This is the data packet format in which the ground station should expect to receive new data.
+/// - `id` is defined at runtime and used to track packet structures.
+/// - `name` is given by the user, and should follow a specific format.
+/// - `fields` represent any data in the packet.
+/// - `delimiters` represent any constant values in the packet.
+/// - `packet_crc` represents a delimiter derived from a checksum of previous elements.
+/// - `size` represents the overall size of the packet.
 pub struct PacketStructure {
     pub(crate) id: usize,
     pub(crate) name: String,
@@ -30,6 +31,7 @@ pub struct PacketStructure {
 }
 
 impl PacketStructure {
+    /// Creates a default packet structure with the given name.
     pub fn make_default(name: String) -> PacketStructure {
         PacketStructure {
             id: 0, // gets overridden
@@ -188,7 +190,7 @@ impl PacketStructure {
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
-/// Used to represent the
+/// Represents metadata fields within a packet.
 pub struct PacketMetaDataFields {
     pub(crate) index: usize,
     pub(crate) name: String,
@@ -238,6 +240,7 @@ pub enum PacketFieldType {
     Bool,
 }
 #[derive(PartialEq, Serialize, Deserialize, Clone, Copy, Debug)]
+/// Represents metadata type for a packet field.
 pub enum PacketMetadataType {
     None,
     Timestamp,
@@ -245,7 +248,6 @@ pub enum PacketMetadataType {
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 ///Represents a Delimiter within a Packet that can be used to identify that packet within the raw data that is received by radio
-///
 ///The identifier variable represents the unique set of data that the groundstation should look out for when looking at the incoming data stream
 pub struct PacketDelimiter {
     pub(crate) index: usize,
@@ -255,6 +257,7 @@ pub struct PacketDelimiter {
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
+/// Represents a CRC (checksum) field within a packet.
 pub struct PacketCRC {
     pub(crate) length: usize,
     pub(crate) offset_in_packet: usize,
