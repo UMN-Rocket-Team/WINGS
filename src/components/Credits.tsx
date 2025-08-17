@@ -16,6 +16,7 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                     <h2>Lead Developers, Project Managers</h2>
                     <span>Ryan Hill</span>
                     <span>Kuba Kedzior</span>
+                    <span>Joe Anderson</span>
                     <h2>Developers</h2>
                     <span>Jeffrey Hu</span>
                     <span>Thomas Weber</span>
@@ -23,7 +24,6 @@ const Credits = (creditsProps: ModalProps): JSX.Element => {
                     <span>Pranshu Panda</span>
                     <span>Adit Kadepurkar</span>
                     <span>Chongwei Chen</span>
-                    <span>Joe Anderson</span>
                     <h2>UI Designer</h2>
                     <span>Ashlyn Pietrowski</span>
                 </section>
@@ -254,7 +254,7 @@ file or class name and description of purpose be included on the
 same "printed page" as the copyright notice for easier
 identification within third-party archives.
 
-Copyright [yyyy] [name of copyright owner]
+Copyright 2025 University of Minnesota Rocket Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
