@@ -1,3 +1,8 @@
+//! # Packet Structure Manager
+//!
+//! This module provides the `PacketStructureManager`, a centralized repository for creating,
+//! managing, and modifying the definitions of various data packets.
+
 use std::{
     cmp::{max, min},
     collections::BTreeMap,
