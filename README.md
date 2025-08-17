@@ -1,9 +1,5 @@
 # WINGS
 
-## Downloads
-
-https://github.com/UMN-Rocket-Team/WINGS/releases
-
 The Ground Station of the University of Minnesota Twin Cities Rocket Team.
 
 ## Features
@@ -71,3 +67,7 @@ Currently, builds for an operating system can only be performed on that operatin
 3. Distribute the executable found in a subdirectory of [`src-tauri/target/release/bundle`](src-tauri/target/release/bundle)
 
    - Each distribution format (`.exe`, `.deb`, `.AppImage`, `.app`) will have its own directory
+
+## Downloads
+
+https://github.com/UMN-Rocket-Team/WINGS/releases
