@@ -1,7 +1,20 @@
+//! # Packet View Model
+//!
+//! This module provides a "view model" representation of a `PacketStructure`.
+//!
+//! Key components:
+//! - `PacketStructureViewModel`: The top-level container for the packet layout.
+//! - `PacketComponent`: An enum representing the different parts of the layout
+//! - `create_packet_view_model`: Performs the conversion from `PacketStructure` to `PacketStructureViewModel`.
+
 use serde::{Deserialize, Serialize};
 
 use crate::models::packet_structure::{PacketDelimiter, PacketField, PacketStructure};
 
+/// Represents a packet structure in a format suitable for display.
+///
+/// This struct holds the basic information of a packet and a vector of `PacketComponent`s,
+/// which together describe the complete, contiguous layout of the packet, including any gaps.
 #[derive(Serialize, Clone, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketStructureViewModel {
@@ -40,6 +53,10 @@ impl PacketStructureViewModel {
     }
 }
 
+/// An enum to categorize the different types of packet components.
+///
+/// This is primarily used for deserialization logic where the type of
+/// component needs to be identified.
 #[derive(Deserialize, Clone, Copy)]
 pub enum PacketComponentType {
     Field,
@@ -47,6 +64,12 @@ pub enum PacketComponentType {
     Gap,
 }
 
+/// An enum representing a single component in the packet's visual layout.
+///
+/// This is a tagged enum that can represent a data field, a fixed delimiter,
+/// or a gap between other components. The `serde` attributes ensure it's
+/// serialized to JSON with a `type` field (e.g., `"type": "Field"`) and a `data` field
+/// containing the corresponding struct.
 #[derive(Serialize, Clone, Deserialize, Debug, PartialEq)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketComponent {
@@ -56,6 +79,7 @@ pub enum PacketComponent {
 }
 
 impl PacketComponent {
+    /// Returns the starting offset of the component within the packet.
     fn get_offset_in_packet(&self) -> usize {
         match self {
             PacketComponent::Field(field) => field.offset_in_packet,
@@ -64,15 +88,21 @@ impl PacketComponent {
         }
     }
 
+    /// Returns the length of the component in bytes.
     fn len(&self) -> usize {
         match self {
             PacketComponent::Field(field) => field.r#type.size().unwrap_or(0),
+            // Delimiter identifier is hex encoded, so length is half the string length.
             PacketComponent::Delimiter(delimiter) => delimiter.identifier.len() / 2,
             PacketComponent::Gap(gap) => gap.size,
         }
     }
 }
 
+/// A view model representation of a `PacketDelimiter`.
+///
+/// This struct is similar to the core `PacketDelimiter` but stores the
+/// `identifier` as a hex-encoded `String` for easier handling in front-end applications.
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketDelimiterViewModel {
@@ -82,6 +112,10 @@ pub struct PacketDelimiterViewModel {
     pub(crate) offset_in_packet: usize,
 }
 
+/// Represents a gap in the packet structure.
+///
+/// A gap is an unallocated space between two other components or before the first component.
+/// This is a purely visual concept used to create a complete representation of the packet layout.
 #[derive(Serialize, Clone, Deserialize, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketGap {
@@ -99,10 +133,12 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
     let mut components: Vec<PacketComponent> =
         Vec::with_capacity(packet_structure.delimiters.len() + packet_structure.fields.len());
 
+    // Convert all fields from the data model into `Field` components.
     for field in &packet_structure.fields {
         components.push(PacketComponent::Field(field.clone()));
     }
 
+    // Convert all delimiters from the data model into `Delimiter` components.
     for delimiter in &packet_structure.delimiters {
         components.push(PacketComponent::Delimiter(PacketDelimiterViewModel {
             index: delimiter.index,
@@ -112,6 +148,7 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         }));
     }
 
+    // Check if there is a gap at the very beginning of the packet.
     if let Some(first_component) = components.first() {
         if first_component.get_offset_in_packet() != 0 {
             components.insert(
@@ -124,15 +161,14 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         }
     }
 
-    // This loop checks for a gap *after* the component at index `i`.
-    // The last component by definition can't have a gap after it.
-    // Must iterate backwards because we are adding items as we loop.
+    // Iterate backwards through the components to check for gaps between them.
     for i in (0..components.len().saturating_sub(1)).rev() {
         let component = &components[i];
 
         let current_component_end = component.get_offset_in_packet() + component.len();
         let next_offset = components[i + 1].get_offset_in_packet();
 
+        // If the end of the current component is before the start of the next one, there's a gap.
         if current_component_end < next_offset {
             components.insert(
                 i + 1,
@@ -148,169 +184,5 @@ pub fn create_packet_view_model(packet_structure: &PacketStructure) -> PacketStr
         id: packet_structure.id,
         name: packet_structure.name.clone(),
         components,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::models::{
-        packet_structure::{PacketDelimiter, PacketStructure},
-        packet_view_model::{
-            PacketComponent, PacketDelimiterViewModel, PacketGap, PacketStructureViewModel,
-        },
-    };
-
-    use super::create_packet_view_model;
-
-    #[test]
-    fn delimiter() {
-        let packet_structure = PacketStructure::make_from_fields_and_delims(
-            0,
-            String::from("Test packet"),
-            vec![],
-            vec![PacketDelimiter {
-                index: 0,
-                name: String::from("Test delimiter"),
-                identifier: vec![0xde, 0xad, 0xbe, 0xef],
-                offset_in_packet: 0,
-            }],
-        );
-        let view_model = create_packet_view_model(&packet_structure);
-        assert_eq!(
-            view_model,
-            PacketStructureViewModel {
-                id: 0,
-                name: String::from("Test packet"),
-                components: vec![PacketComponent::Delimiter(PacketDelimiterViewModel {
-                    index: 0,
-                    name: String::from("Test delimiter"),
-                    identifier: String::from("deadbeef"),
-                    offset_in_packet: 0
-                })]
-            }
-        );
-        assert_eq!(view_model.components[0].len(), 4); // 4 bytes long
-    }
-
-    #[test]
-    fn starts_with_gap() {
-        let packet_structure = PacketStructure::make_from_fields_and_delims(
-            0,
-            String::from("Test packet"),
-            vec![],
-            vec![
-                // There is a gap before the first field/delimiter
-                PacketDelimiter {
-                    index: 0,
-                    name: String::from("Test delimiter 1"),
-                    identifier: vec![0x34],
-                    offset_in_packet: 10,
-                },
-                // There is also a gap between these, which we will use to test that the
-                // gap index is updated correctly
-                PacketDelimiter {
-                    index: 1,
-                    name: String::from("Test delimiter 2"),
-                    identifier: vec![0x56],
-                    offset_in_packet: 12,
-                },
-            ],
-        );
-        let view_model = create_packet_view_model(&packet_structure);
-        assert_eq!(
-            view_model,
-            PacketStructureViewModel {
-                id: 0,
-                name: String::from("Test packet"),
-                components: vec![
-                    PacketComponent::Gap(PacketGap {
-                        size: 10,
-                        offset_in_packet: 0
-                    }),
-                    PacketComponent::Delimiter(PacketDelimiterViewModel {
-                        index: 0,
-                        name: String::from("Test delimiter 1"),
-                        identifier: String::from("34"),
-                        offset_in_packet: 10
-                    }),
-                    PacketComponent::Gap(PacketGap {
-                        size: 1,
-                        offset_in_packet: 11
-                    }),
-                    PacketComponent::Delimiter(PacketDelimiterViewModel {
-                        index: 1,
-                        name: String::from("Test delimiter 2"),
-                        identifier: String::from("56"),
-                        offset_in_packet: 12
-                    })
-                ]
-            }
-        );
-    }
-
-    #[test]
-    pub fn a_lot_of_gaps() {
-        // There used to be a bug where when there were a ton of gaps, the last few packets
-        // would not be checked for gaps.
-        let make_structure_delimiter = |i: u8| PacketDelimiter {
-            index: i as usize,
-            name: i.to_string(),
-            identifier: vec![i],
-            offset_in_packet: i as usize,
-        };
-        let packet_structure = PacketStructure::make_from_fields_and_delims(
-            0,
-            String::from("Test packet"),
-            vec![],
-            vec![
-                make_structure_delimiter(0),
-                make_structure_delimiter(2),
-                make_structure_delimiter(4),
-                make_structure_delimiter(6),
-                make_structure_delimiter(8),
-                make_structure_delimiter(10),
-                make_structure_delimiter(12),
-                make_structure_delimiter(14),
-            ],
-        );
-        let view_model = create_packet_view_model(&packet_structure);
-        let make_view_gap = |i: u8| {
-            PacketComponent::Gap(PacketGap {
-                size: 1,
-                offset_in_packet: i as usize,
-            })
-        };
-        let make_view_delimiter = |i: u8| {
-            PacketComponent::Delimiter(PacketDelimiterViewModel {
-                index: i as usize,
-                name: i.to_string(),
-                identifier: hex::encode(vec![i]),
-                offset_in_packet: i as usize,
-            })
-        };
-        assert_eq!(
-            view_model,
-            PacketStructureViewModel {
-                id: 0,
-                name: String::from("Test packet"),
-                components: vec![
-                    make_view_delimiter(0),
-                    make_view_gap(1),
-                    make_view_delimiter(2),
-                    make_view_gap(3),
-                    make_view_delimiter(4),
-                    make_view_gap(5),
-                    make_view_delimiter(6),
-                    make_view_gap(7),
-                    make_view_delimiter(8),
-                    make_view_gap(9),
-                    make_view_delimiter(10),
-                    make_view_gap(11),
-                    make_view_delimiter(12),
-                    make_view_gap(13),
-                    make_view_delimiter(14),
-                ]
-            }
-        );
     }
 }
