@@ -29,5 +29,13 @@ When creating a new issue, use one of the available templates (Bug report, Featu
     - Good example: `Add telemetry packet parser`
     - Bad example: `Added telemetry packet parser`
 
+## Code Formatting
+To ensure consistent code style, please format your code before submitting changes.
+Most IDEs should have a built-in formatter for TypeScript code.
+
+For Rust code, you can use either of the following approaches:
+- **VS Code + rust-analyzer**: Install the rust-analyzer extension in VS Code. You can use this to automatically format your code on save.
+- **cargo fmt**: Run `cargo fmt` command in `src-tauri` directory to format all Rust files according to standard style guidelines.
+
 ## License 
 By contributing, you agree that your contributions will be licensed under the [Apache License 2.0](LICENSE.txt).
