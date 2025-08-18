@@ -1,21 +1,46 @@
-# WINGS
+Wings 📡
+========
+A unified Ground Station project led by the University of Minnesota Rocket Team  
 
-The Ground Station of the University of Minnesota Twin Cities Rocket Team.
+![Build Status](https://github.com/UMN-Rocket-Team/WINGS/actions/workflows/build.yml/badge.svg)
+[![License: Apachee](https://img.shields.io/badge/License-Apachev2-blue)](https://www.apache.org/licenses/LICENSE-2.0)
+![GitHub release](https://img.shields.io/github/release/UMN-Rocket-Team/WINGS.svg)
+[![Github Releases (by release)](https://img.shields.io/github/downloads/UMN-Rocket-Team/WINGS/latest/total.svg)](https://GitHub.com/UMN-Rocket-Team/WINGS/releases/)
 
-## Features
- - Live telemetry reception through a serial (USB) port
- - Data visualization
- - Telemetry format customization
- - Data storage
- - Dark mode
- - Radio testing
+Under the hood:  
+[![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?logo=chartdotjs&logoColor=fff)](#)
+[![Solid](https://img.shields.io/badge/Solid-2C4F7C?logo=solid&logoColor=fff)](#)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?logo=tailwind-css&logoColor=white)](#)
+[![Tauri](https://img.shields.io/badge/Tauri-24C8D8?logo=tauri&logoColor=fff)](#)
+[![Rust](https://img.shields.io/badge/Rust-%23000000.svg?e&logo=rust&logoColor=white)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](#)
 
-## Running
+Overview
+--------
+Wings is a "Unified" Ground station. Allowing one ground computer to collect data from multiple flight-computers, flights, or stages. If a user has purchased a commerical high-power rocketry telemetry system, Wings strives to match the capabilities of its existing ground station software, while allowing crosscompatibility with other flight computers. Extra features are also provided to make wings the primary choice when flying multiple telemetry systems.
 
+Features
+--------
+ - Dark mode, and High Contrast mode
+
+### Base Station, or other Input Support
+[![AIMBASE](https://img.shields.io/badge/AIMBASE-cd2021)](https://entacore.com/electronics/aimbase)
+[![FeatherWeight GPS Tracker](https://img.shields.io/badge/FeatherWeightTracker-3c4c6c)](https://www.featherweightaltimeters.com/featherweight-gps-tracker.html)
+[![TeleDongle](https://img.shields.io/badge/TeleDongle-8607dc)](https://altusmetrum.org/TeleDongle/)
+[![Serial_Input (RFD, XBee etc.)](https://img.shields.io/badge/Serial%20Input-b32029)](https://ftdichip.com/products/ttl-234x-5v/)
+### Flight-computer/Tracker/Altimeter Support
+[![AIMXTRA](https://img.shields.io/badge/AIMXTRA-cd2021)](https://entacore.com/electronics/aimxtra)
+[![FeatherWeight GPS Tracker](https://img.shields.io/badge/FeatherWeightTracker-3c4c6c)](https://www.featherweightaltimeters.com/featherweight-gps-tracker.html)
+[![TeleMega](https://img.shields.io/badge/TeleMega-8607dc)](https://altusmetrum.org/TeleMega/)
+[![TeleMetrum](https://img.shields.io/badge/TeleMetrum-8607dc)](https://altusmetrum.org/TeleMetrum/)
+
+
+Running
+-------
 The most-recent published executables are available in the [Releases Tab](https://github.com/UMN-Rocket-Team/WINGS/releases). Currently, CI (Continuous Integration) processes aren't set up, so any more-recent builds of the application will have to be done manually or requested from a developer with the same operating system. To manually build and run the application, follow the instructions in the [Building](#building) section.
 
-## Developing
-
+Developing
+----------
 ### Prerequisites
 
 A [working knowledge](https://en.wiktionary.org/wiki/working_knowledge) of the following technologies will be helpful when contributing to this project:
