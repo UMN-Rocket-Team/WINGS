@@ -2,7 +2,6 @@ Wings 📡
 ========
 A unified Ground Station project led by the University of Minnesota Rocket Team  
 
-![Build Status](https://github.com/UMN-Rocket-Team/WINGS/actions/workflows/build.yml/badge.svg)
 [![License: Apachee](https://img.shields.io/badge/License-Apachev2-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 ![GitHub release](https://img.shields.io/github/release/UMN-Rocket-Team/WINGS.svg)
 [![Github Releases (by release)](https://img.shields.io/github/downloads/UMN-Rocket-Team/WINGS/latest/total.svg)](https://GitHub.com/UMN-Rocket-Team/WINGS/releases/)
@@ -21,19 +20,24 @@ Wings is a "Unified" Ground station. Allowing one ground computer to collect dat
 
 Features
 --------
- - Dark mode, and High Contrast mode
-
 ### Base Station, or other Input Support
 [![AIMBASE](https://img.shields.io/badge/AIMBASE-cd2021)](https://entacore.com/electronics/aimbase)
 [![FeatherWeight GPS Tracker](https://img.shields.io/badge/FeatherWeightTracker-3c4c6c)](https://www.featherweightaltimeters.com/featherweight-gps-tracker.html)
 [![TeleDongle](https://img.shields.io/badge/TeleDongle-8607dc)](https://altusmetrum.org/TeleDongle/)
-[![Serial_Input (RFD, XBee etc.)](https://img.shields.io/badge/Serial%20Input-b32029)](https://ftdichip.com/products/ttl-234x-5v/)
+[![Serial_Input (RFD, XBee etc.)](https://img.shields.io/badge/Serial%20Input-b32029)](https://ftdichip.com/products/ttl-234x-5v/)  
+
 ### Flight-computer/Tracker/Altimeter Support
 [![AIMXTRA](https://img.shields.io/badge/AIMXTRA-cd2021)](https://entacore.com/electronics/aimxtra)
 [![FeatherWeight GPS Tracker](https://img.shields.io/badge/FeatherWeightTracker-3c4c6c)](https://www.featherweightaltimeters.com/featherweight-gps-tracker.html)
 [![TeleMega](https://img.shields.io/badge/TeleMega-8607dc)](https://altusmetrum.org/TeleMega/)
-[![TeleMetrum](https://img.shields.io/badge/TeleMetrum-8607dc)](https://altusmetrum.org/TeleMetrum/)
+[![TeleMetrum](https://img.shields.io/badge/TeleMetrum-8607dc)](https://altusmetrum.org/TeleMetrum/)  
 
+### Display Support
+- Dark and High contrast themed modes
+- Line Graphs
+- Scrolling window Graphs
+- Direct Data Readouts
+- Inclination Indicator
 
 Running
 -------
