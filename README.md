@@ -57,8 +57,6 @@ A [working knowledge](https://en.wiktionary.org/wiki/working_knowledge) of the f
  - [Tauri](https://www.tauri.app/): cross-platform window management library
  - [Rust](https://www.rust-lang.org/): backend programming language
 
-To get started with frontend development, the [Hello World and Beyond](https://docs.google.com/document/d/19jHqrfia9sDfPGw_IvaK9lhzySdDVZC7vv07I-OWDiM/edit?usp=share_link) tutorial will be a helpful guide.
-
 Don't read the documentation for these technologies cover to cover, instead, work at understanding what each is and be ready to ask for help, look up your questions, and reference online documentation. Examples of how to use these technologies can be found throughout this project and in online tutorials.
 
 ### Development Process
