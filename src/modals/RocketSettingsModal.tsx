@@ -65,7 +65,6 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
     // Used to restore previous name when user enters something invalid
     let oldName = props.displayStruct.displayName;
 
-    const [displaySettings, setDisplaySettings] = createSignal(false); // Are the modal settings (on the top left of the modal) being displayed?
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
     const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as RocketStruct);
@@ -133,28 +132,7 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
                 </h3>
-
-                <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)}
-                    class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
             </div>
-
-            {/*
-            Extra settings, which always contain the button to delete the display,
-            they can also contain other settings that apply to the entire modal, like toggling a debug mode and
-            */}
-            <Show when={displaySettings()}>
-                <div class="absolute bg-neutral-300 dark:bg-neutral-700 p-4 top-0 rounded-3xl right-0 z-[0]">
-                    <div class="relative flex items-center justify-center mt-10">
-                        <button
-                            class="rounded-lg bg-red-500 hover:bg-red-600 flex items-center justify-center p-3"
-                            onClick={() => {
-                                deleteDisplay();
-                            }}>
-                            <h3>Remove Display</h3>
-                        </button>
-                    </div>
-                </div>
-            </Show>
 
             <p>Select rocket model:</p>
             <select
