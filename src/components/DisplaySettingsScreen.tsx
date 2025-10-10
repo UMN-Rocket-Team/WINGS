@@ -50,8 +50,6 @@ if (!flexViewObjectsFromStoreResult ||
 export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(
     flexViewObjectsFromStoreResult as FlexviewObject[]);
 
-let counter = 1; //iterates to give each graph a different number in its display name ie Indicator 1, indicator 2, indicator 3
-
 const RecursiveFlexviewEditor = (props: {
     objectIndex: number
 }) => {
@@ -107,7 +105,8 @@ const RecursiveFlexviewEditor = (props: {
                             dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white"
                             onClick={() => {
                                 const newDisplay = new typeDef.structClass();
-                                newDisplay.displayName = `${typeDef.displayName} ${counter}`;
+                                newDisplay.displayName = `${typeDef.displayName} 
+                                    ${displays.filter(d => d?.type === typeDef.type).length + 1}`;
                                 newDisplay.packetID = PacketStructureViewModels[0].id;
 
                                 const displayArrayIndex = displays.length;
@@ -128,7 +127,6 @@ const RecursiveFlexviewEditor = (props: {
                                     weights: [...layout.weights, 1],
                                     direction: layout.direction
                                 });
-                                counter++;
                                 store.set("display", displays);
                                 store.set("flexviewObjects", flexviewObjects);
                             }}
@@ -159,7 +157,6 @@ const RecursiveFlexviewEditor = (props: {
                                 weights: [...layout.weights, 1],
                                 direction: layout.direction
                             });
-                            counter++;
                             store.set("display", displays);
                             store.set("flexviewObjects", flexviewObjects);
                         }}
@@ -186,7 +183,6 @@ const RecursiveFlexviewEditor = (props: {
                                 weights: [...layout.weights, 1],
                                 direction: layout.direction
                             });
-                            counter++;
                             store.set("display", displays);
                             store.set("flexviewObjects", flexviewObjects);
                         }}
