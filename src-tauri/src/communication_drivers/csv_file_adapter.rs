@@ -3,11 +3,12 @@
 // Communications device driver for reading csv files
 // 
 // ****
-use std::{fs::{self, File}, io::{stderr, stdout, Read},sync::Arc};
+use std::{fs::{self, File}, io::{stderr, stdout, Read},sync::{Arc,Mutex}};
 use anyhow::{bail, Context};
 use serde::de::value;
 use tauri::{AppHandle, Manager};
-use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::{self, Packet, PacketFieldValue}, packet_parser::SerialPacketParser,packet_structure_manager::PacketStructureManager,};
+use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::{self, Packet, PacketFieldValue}, packet_structure_manager::PacketStructureManager,state::mutex_utils::use_state_in_mutex,};
+use super::serial_packet_parser::SerialPacketParser;
 use csv::{self, ByteRecord};
 const PRINT_PARSING: bool = false;
 
@@ -19,7 +20,7 @@ pub struct CSVReadDriver {
     baud:usize,
     //packet_parser: SerialPacketParser,
     //config: ConfigStruct
-    packet_structure_manager: Arc<PacketStructureManager>,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for CSVReadDriver {
@@ -88,7 +89,7 @@ impl CommsIF for CSVReadDriver {
             };
             result.push(parsed_value);
         }
-        let new_packet = Packet{structure_id:packet_id,field_data:result,field_meta_data:vec![]};
+        let new_packet = Packet{structure_id:packet_id,field_data:result};
         packet_vector.push(new_packet);
         Ok(())
     }
@@ -124,25 +125,26 @@ mod tests {
         let mut packet_structure_manager = PacketStructureManager::default();
         let mut p_structure = PacketStructure {
             id: 0, // gets overridden
+            size: Some(0),
+            byte_defined: true,
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
             packet_crc: vec![],
         };
-        p_structure.ez_make("u8 u8 u8", &["Height","Speed","Temperature"]);
+        p_structure.ez_make("u8 u8 u8", &["Height","Speed","Temperature"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(1));
-            assert_eq!(field_data[1],PacketFieldValue::UnsignedByte(2));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(3));
+            assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(2.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(3.0));
         }
     }
     //test for parsing negative numbers, succeeds as long as the packet structure marks that the data field is for signed values
@@ -154,24 +156,25 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
+            size: Some(0),
+            byte_defined: true,
             packet_crc: vec![],
         };
-        p_structure.ez_make("u8 i8 u8 u8 i8", &["Height","Speed","Temperature","Time","Location"]);
+        p_structure.ez_make("u8 i8 u8 u8 i8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(9));
-            assert_eq!(field_data[1],PacketFieldValue::SignedByte(-8));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(47));
-            assert_eq!(field_data[3],PacketFieldValue::UnsignedByte(0));
-            assert_eq!(field_data[4],PacketFieldValue::SignedByte(-25));
+            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(-8.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
         }
     }
     // if the structure has n data fields and the csv file has more than n columns the first n data fields are copied into the structure
@@ -183,22 +186,23 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
+            size: Some(0),
+            byte_defined: true,
             packet_crc: vec![],
         };
-        p_structure.ez_make("u8 i8 u8", &["Height","Speed","Temperature"]);
+        p_structure.ez_make("u8 i8 u8", &["Height","Speed","Temperature"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(9));
-            assert_eq!(field_data[1],PacketFieldValue::SignedByte(-8));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(47));
+            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(-8.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
         }
     }
     // if the structure has more data fields than the csv file, the parser will throw an error
@@ -210,22 +214,23 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
+            size: Some(0),
+            byte_defined: true,
             packet_crc: vec![],
         };
-        p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"]);
+        p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(1));
-            assert_eq!(field_data[1],PacketFieldValue::UnsignedByte(2));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(3));
+            assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(2.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(3.0));
         }
     }
     /*
@@ -286,13 +291,14 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
+            size: Some(0),
+            byte_defined: true,
             packet_crc: vec![],
         };
-        p_structure.ez_make("i8 i8 i8 i8 i8", &["Height","Speed","Temperature","Time","Location"]);
+        p_structure.ez_make("i8 i8 i8 i8 i8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -301,17 +307,17 @@ mod tests {
         assert!(result.is_ok());
         let mut packet = &packet_vector[0]; 
         let field_data = &packet.field_data;
-        assert_eq!(field_data[0],PacketFieldValue::SignedByte(9));
-        assert_eq!(field_data[1],PacketFieldValue::SignedByte(8));
-        assert_eq!(field_data[2],PacketFieldValue::SignedByte(47));
-        assert_eq!(field_data[3],PacketFieldValue::SignedByte(0));
-        assert_eq!(field_data[4],PacketFieldValue::SignedByte(-25));
+        assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+        assert_eq!(field_data[1],PacketFieldValue::Number(8.0));
+        assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
+        assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
+        assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
         packet = &packet_vector[1];
-        assert_eq!(field_data[0],PacketFieldValue::SignedByte(1));
-        assert_eq!(field_data[1],PacketFieldValue::SignedByte(-2));
-        assert_eq!(field_data[2],PacketFieldValue::SignedByte(0));
-        assert_eq!(field_data[3],PacketFieldValue::SignedByte(4));
-        assert_eq!(field_data[4],PacketFieldValue::SignedByte(0));
+        assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
+        assert_eq!(field_data[1],PacketFieldValue::Number(-2.0));
+        assert_eq!(field_data[2],PacketFieldValue::Number(0.0));
+        assert_eq!(field_data[3],PacketFieldValue::Number(4.0));
+        assert_eq!(field_data[4],PacketFieldValue::Number(0.0));
     }
     //parse big numbers
     #[test]
@@ -322,24 +328,25 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
+            size: Some(0),
+            byte_defined: true,
             packet_crc: vec![],
         };
-        p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"]);
+        p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test3.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test3.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(9));
-            assert_eq!(field_data[1],PacketFieldValue::UnsignedByte(8));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(47));
-            assert_eq!(field_data[3],PacketFieldValue::UnsignedByte(0));
-            assert_eq!(field_data[4],PacketFieldValue::SignedByte(-25));
+            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(8.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
         }
     }
     //parse decimals
@@ -351,24 +358,25 @@ mod tests {
             name: String::from("Test Structure"),
             fields: vec![],
             delimiters: vec![],
-            metafields: vec![],
+            size: Some(0),
+            byte_defined: true,
             packet_crc: vec![],
         };
-        p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"]);
+        p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test4.csv",id as u32,Arc::new(packet_structure_manager));
+        let mut result = csv_read_driver.init_device("./test_files/test4.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(9));
-            assert_eq!(field_data[1],PacketFieldValue::UnsignedByte(8));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(47));
-            assert_eq!(field_data[3],PacketFieldValue::UnsignedByte(0));
-            assert_eq!(field_data[4],PacketFieldValue::SignedByte(-25));
+            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(8.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
         }
     }
 }
