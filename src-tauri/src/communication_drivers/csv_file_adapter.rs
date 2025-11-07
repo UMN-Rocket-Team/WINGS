@@ -23,8 +23,18 @@ pub struct CSVReadDriver {
 }
 
 impl CommsIF for CSVReadDriver {
-    fn init_device(&mut self,port_name: &str, baud: u32, ps_manager: Arc<PacketStructureManager>) -> anyhow::Result<()> {
-        self.packet_structure_manager = ps_manager; 
+    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    where
+        Self: Sized,
+    {
+        CSVReadDriver {
+            file: None,
+            baud: 0,
+            id: 0,
+            packet_structure_manager,
+        }
+    }
+    fn init_device(&mut self,port_name: &str, baud: u32) -> anyhow::Result<()> {
         self.baud = baud as usize;
         match File::open(port_name){
             Ok(new_file) => {
@@ -83,7 +93,7 @@ impl CommsIF for CSVReadDriver {
         Ok(())
     }
     
-    fn is_init(&mut self) -> bool {
+    fn is_init(&self) -> bool {
         self.file.is_some()
     }
     fn set_id(&mut self, id: usize) {
@@ -94,9 +104,6 @@ impl CommsIF for CSVReadDriver {
     }
     fn get_type(&self) -> String {
         return "CSVFile".to_owned();
-    }
-    fn get_device_packets(&mut self, write_buffer: &mut Vec<Packet>) -> anyhow::Result<()> {
-        Ok(())
     }
 } 
 
