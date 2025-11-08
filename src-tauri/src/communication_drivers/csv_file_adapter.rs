@@ -73,7 +73,8 @@ impl CommsIF for CSVReadDriver {
             Ok(value) => value,
             Err(_) => return Err(anyhow::anyhow!("Bytefile does not contain valid utf-8")),
         };
-        let good_structure = match self.packet_structure_manager.get_packet_structure(packet_id) {
+        let mut manager = self.packet_structure_manager.lock().unwrap();
+        let good_structure = match manager.get_packet_structure_mut(packet_id) {
             Ok(structure) => structure, //make sure the packet id returned a real structure
             Err(_) => return Err(anyhow::anyhow!("Invalid Packet")),
         };
