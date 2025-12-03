@@ -108,15 +108,15 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
             <div class='flex flex-row leading-none justify-between mb-4'>
                 <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]" 
+                <div role="textbox" tabIndex={0} contenteditable={true} class="m-2 text-center font-bold text-2xl w-[82%] absolute left-[50%] translate-x-[-50%]" 
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
-                </h3>
+                </div>
             </div>
-
+            
             <For each={PacketStructureViewModels}>{(packetViewModel, packetIdx) => (
                 <div class='flex flex-col mb-4'>
-                    <div class='flex gap-2 leading-none w-fit cursor-pointer'
+                    <button class='flex gap-2 leading-none w-fit cursor-pointer'
                         onClick={() => {
                             setDisplays(produce(s => {
                                 const struct = (s[props.index] as ReadoutStruct);
@@ -126,10 +126,10 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                         }}>
                         <img alt="Dropdown" src={dropdownIcon} 
                             class={`h-4 dark:invert`} 
-                            style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
+                            style={{transform: `rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"})`}}
                             draggable={false}/>
                         <h3 class='font-bold'>{packetViewModel.name}</h3>
-                    </div>
+                    </button>
 
                     <Show when={displays[props.index]?.packetsDisplayed[packetIdx()]}>
                         <div class='flex flex-col bg-neutral-200 dark:bg-gray-700 p-4 rounded-lg'>

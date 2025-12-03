@@ -5,9 +5,7 @@ import {SettingsModalProps, displays, setDisplays } from "../components/DisplayS
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
 import { createStore, produce } from "solid-js/store";
-import settingsIcon from "../assets/settings.png";
 import infoIcon from "../assets/info-sym.svg";
-import dropdownIcon from "../assets/dropdown.svg";
 import { DisplayStruct } from "../core/display_registry";
 import { ROCKET_MODELS } from "../components/Rocket";
 import { store } from "../core/file_handling";
@@ -128,12 +126,12 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
             <div class='flex flex-row leading-none justify-between mb-4'>
                 <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]"
+                <div role="textbox" tabIndex={0} contenteditable={true} class="m-2 text-center font-bold text-2xl w-[82%] absolute left-[50%] translate-x-[-50%]"
                     onBlur={handleInput} onKeyDown={handleKeyDown}>
                     {props.displayStruct.displayName}
-                </h3>
+                </div>
             </div>
-
+            
             <p>Select rocket model:</p>
             <select
                 value={displayStruct.rocketModel}

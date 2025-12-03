@@ -1,4 +1,4 @@
-import {ModalProps} from "./ModalProvider";
+import {ModalProps} from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import {JSX} from "solid-js";
 
@@ -9,7 +9,7 @@ import {JSX} from "solid-js";
  */
 const SaveModal = (props: ModalProps): JSX.Element => {
     return (
-        <DefaultModalLayout close={() => props.closeModal({})} title="Save was successful!"></DefaultModalLayout>
+        <DefaultModalLayout close={() => props.closeModal({})} title="Save was successful!"/>
     );
 };
 
