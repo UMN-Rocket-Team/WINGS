@@ -135,14 +135,18 @@ mod tests {
         };
         p_structure.ez_make("u8 u8 u8", &["Height","Speed","Temperature"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32);
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut result = csv_read_driver.init_device("src/test_files/test.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
+            println!("{:?}",field_data[0]);
+            println!("{:?}",field_data[1]);
+            println!("{:?}",field_data[2]);
             assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
             assert_eq!(field_data[1],PacketFieldValue::Number(2.0));
             assert_eq!(field_data[2],PacketFieldValue::Number(3.0));
@@ -163,7 +167,8 @@ mod tests {
         };
         p_structure.ez_make("u8 i8 u8 u8 i8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
         let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -193,7 +198,8 @@ mod tests {
         };
         p_structure.ez_make("u8 i8 u8", &["Height","Speed","Temperature"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
         let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -221,7 +227,8 @@ mod tests {
         };
         p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
         let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -298,7 +305,8 @@ mod tests {
         };
         p_structure.ez_make("i8 i8 i8 i8 i8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
         let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -335,7 +343,8 @@ mod tests {
         };
         p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
         let mut result = csv_read_driver.init_device("./test_files/test3.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -365,7 +374,8 @@ mod tests {
         };
         p_structure.ez_make("u8 u8 u8 u8 u8", &["Height","Speed","Temperature","Time","Location"],false);
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
         let mut result = csv_read_driver.init_device("./test_files/test4.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
