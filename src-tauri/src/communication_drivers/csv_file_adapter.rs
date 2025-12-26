@@ -9,7 +9,7 @@ use serde::de::value;
 use tauri::{AppHandle, Manager};
 use crate::{communication_manager::{CommsIF, DeviceName}, file_handling::config_struct::ConfigStruct, models::packet::{self, Packet, PacketFieldValue}, packet_structure_manager::PacketStructureManager,state::mutex_utils::use_state_in_mutex,};
 use super::serial_packet_parser::SerialPacketParser;
-use csv::{self, ByteRecord};
+use csv::{self, ByteRecord, Reader};
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
@@ -65,7 +65,6 @@ impl CommsIF for CSVReadDriver {
         };
         let mut reader = csv::Reader::from_reader(good_file);
         let mut field_byte_data = ByteRecord::new();
-        let headers = reader.headers()?;
         if !reader.read_byte_record(&mut field_byte_data)? {//reads one row of the csv file into the ByteRecord
             return Err(anyhow::anyhow!("Reached End of File"))
         }
@@ -84,7 +83,7 @@ impl CommsIF for CSVReadDriver {
                 Some(value) => value,
                 None => return Err(anyhow::anyhow!(format!("Field {} refers to missing index: {}", field.name, field.index)))
             };
-            let parsed_value: PacketFieldValue = match field.r#type.make_from_string(given_value){
+            let parsed_value: PacketFieldValue = match field.r#type.make_from_string(given_value.trim()){
                 Ok(value) => value,
                 Err(_)=> return Err(anyhow::anyhow!(format!("Field {} refers to missing index: {}", field.name, field.index))),
             };
@@ -169,7 +168,7 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -200,7 +199,7 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -229,7 +228,7 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -307,7 +306,7 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("./test_files/test2.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test2.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -345,18 +344,18 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("./test_files/test3.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test3.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
-            assert_eq!(field_data[1],PacketFieldValue::Number(8.0));
-            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
-            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
-            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
+            assert_eq!(field_data[0],PacketFieldValue::Number(65.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(129.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(257.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(529.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(1000000000.0));
         }
     }
     //parse decimals
@@ -376,18 +375,18 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("./test_files/test4.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test4.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
         for packet in packet_vector {
             let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
-            assert_eq!(field_data[1],PacketFieldValue::Number(8.0));
-            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
-            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
-            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
+            assert_eq!(field_data[0],PacketFieldValue::Number(5.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(0.1));
+            assert_eq!(field_data[2],PacketFieldValue::Number(0.27));
+            assert_eq!(field_data[3],PacketFieldValue::Number(3.141592));
+            assert_eq!(field_data[4],PacketFieldValue::Number(239.52));
         }
     }
 }
