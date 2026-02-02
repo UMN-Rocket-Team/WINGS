@@ -115,10 +115,11 @@ const RecursiveFlexviewEditor = (props: {
                                                         focus:ring-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 z-1000
                                                         dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white"
                                                     onClick={() => {
-                                                        const newDisplay = new typeDef.structClass();
-                                                        newDisplay.displayName = `${typeDef.displayName} 
+                                                        const displayInstance = new typeDef.structClass();
+                                                        displayInstance.displayName = `${typeDef.displayName} 
                                                             ${displays.filter(d => d?.type === typeDef.type).length + 1}`;
-                                                        newDisplay.packetID = PacketStructureViewModels[0].id;
+                                                        displayInstance.packetID = PacketStructureViewModels[0].id;
+                                                        const newDisplay = { ...displayInstance } as DisplayStruct;
 
                                                         const displayArrayIndex = displays.length;
                                                         const flexViewObjectsIndex = flexviewObjects.length;
