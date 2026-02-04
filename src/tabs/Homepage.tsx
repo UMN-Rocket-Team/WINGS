@@ -9,11 +9,12 @@ import { open as openHref } from '@tauri-apps/api/shell';
 import { readTextFile } from "@tauri-apps/api/fs";
 import { setParsedPackets } from "../backend_interop/buffers";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { Packet, PacketStructureViewModel } from "../backend_interop/types";
+import { Packet, PacketStructureViewModel, ProductName } from "../backend_interop/types";
 import ErrorModal, { ErrorModalProps } from "../modals/ErrorModal";
 import { displays, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import { DisplayStruct } from "../core/display_registry";
 import { createStore } from "solid-js/store";
+import { addAim, addAltusMetrum, addFeatherWeight, addRfd } from "../backend_interop/api_calls";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],
@@ -76,6 +77,18 @@ const Homepage: Component = () => {
             }));
     }
 
+    const addProduct = async (productName: ProductName) => {
+        if (productName === "altusMetrum") {
+            await addAltusMetrum();
+        } else if (productName === "rfd") {
+            await addRfd();
+        } else if (productName === "aim") {
+            await addAim();
+        } else if (productName === "featherweight") {
+            await addFeatherWeight();
+        }
+    }
+
     /**
      * @brief Reads a selected JSON file and loads display setups. 
      */
@@ -96,10 +109,16 @@ const Homepage: Component = () => {
 
             // Validate loaded JSON data
             if ( // Data should contain two properties: "flexviewObjects" and "displays"
-                Object.keys(loadedDisplayData).length !== 2 || 
-                !("flexviewObjects" in loadedDisplayData) || 
-                !("displays" in loadedDisplayData)
+                Object.keys(loadedDisplayData).length !== 3
+                    || !("flexviewObjects" in loadedDisplayData) 
+                    || !("displays" in loadedDisplayData)
+                    || !("commands" in loadedDisplayData)
             ) throw new Error();
+
+            // add products
+            for (const productName of loadedDisplayData.productNames) {
+                await addProduct(productName);
+            }
 
             setLoadedDisplayData({ 
                 loadedFlexviewObjects: loadedDisplayData.flexviewObjects,
