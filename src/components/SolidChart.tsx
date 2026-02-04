@@ -45,7 +45,7 @@ const GraphDisplayElement: Component<GraphStruct> = (props) => {
 
     const initialunDecimatedPackets = unDecimatedPackets[graph.packetID];
     const ratio = initialunDecimatedPackets.length / 100;
-    let datasets = []
+    const datasets = []
     for (let i = 0; i < graph.y.length; i++) {
         const dataValue = {
             label: ((PacketStructureViewModels.find(psViewModel => (psViewModel.id === graph.packetID))?.components.find(component => component.type === PacketComponentType.Field && (component.data as PacketField).index === graph.y[i]))?.data as PacketField).name,

@@ -13,6 +13,8 @@ export type SerialUpdateResult = {
     parsedPackets: Packet[] | null,
 }
 
+export type ProductName = "altusMetrum" | "rfd" | "featherweight" | "aim";
+
 /**
  * The names of a serial port.
  */
