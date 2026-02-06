@@ -90,6 +90,10 @@ impl Default for LogHandler {
 }
 
 impl LogHandler {
+    fn find_writer_index(&mut self, id: usize) -> Option<usize> {
+        self.csv_writers.iter().position(|r| r.index == id)
+    }
+
     /// Write a packet to the csv currently loaded
     ///
     /// Note: this function flushes the writer buffer with every call,
@@ -104,57 +108,51 @@ impl LogHandler {
         mut packet: Packet,
         packet_structure_manager: &mut PacketStructureManager,
     ) -> Result<(), Error> {
-        // let csv_writer;
-        // match self.find_writer_index(packet.structure_id) {
-        //     Some(index) => csv_writer = &mut self.csv_writers[index],
-        //     None => {
-        //         let mut field_names = vec![];
-        //         let mut path_buf = self.base_path.clone();
-        //         let _ = fs::create_dir(path_buf.as_path());
-        //         match packet_structure_manager.get_packet_structure(packet.structure_id) {
-        //             Ok(packet_structure) => {
-        //                 path_buf.push(format!("packet_log_{}", packet_structure.name));
-        //                 for field in &packet_structure.fields {
-        //                     field_names.push(field.name.to_owned());
-        //                 }
-        //             }
-        //             Err(_) => path_buf.push(format!("packet_log_{}", packet.structure_id)),
-        //         }
-        //         path_buf.set_extension("csv");
-        //         self.csv_writers.push(PacketWriter {
-        //             writer: csv::Writer::from_path(path_buf.as_path())?,
-        //             index: packet.structure_id,
-        //         });
-        //         let iter = self.csv_writers.len() - 1;
-        //         csv_writer = &mut self.csv_writers[iter];
-        //         let _ = csv_writer.writer.serialize(field_names); //dont care if this actually gets written, headers can get reverse engineered
-        //     }
-        // }
+        let csv_writer;
+        match self.find_writer_index(packet.structure_id) {
+            Some(index) => csv_writer = &mut self.csv_writers[index],
+            None => {
+                let mut field_names = vec![];
+                let mut path_buf = self.base_path.clone();
+                let _ = fs::create_dir(path_buf.as_path());
+                match packet_structure_manager.get_packet_structure(packet.structure_id) {
+                    Ok(packet_structure) => {
+                        path_buf.push(format!("packet_log_{}", packet_structure.name));
+                        for field in &packet_structure.fields {
+                            field_names.push(field.name.to_owned());
+                        }
+                    }
+                    Err(_) => path_buf.push(format!("packet_log_{}", packet.structure_id)),
+                }
+                path_buf.set_extension("csv");
+                self.csv_writers.push(PacketWriter {
+                    writer: csv::Writer::from_path(path_buf.as_path())?,
+                    index: packet.structure_id,
+                });
+                let iter = self.csv_writers.len() - 1;
+                csv_writer = &mut self.csv_writers[iter];
+                let _ = csv_writer.writer.serialize(field_names); //dont care if this actually gets written, headers can get reverse engineered
+            }
+        }
 
-        // match csv_writer.writer.serialize(packet.field_data) {
-        //     Err(err) => {
-        //         _ = csv_writer.writer.flush(); //attempt to flush, we dont handle the result since we are already failing anyways
-        //         packet.field_data = Default::default();
-        //         self.safety_iterator += 1;
-        //         let mut path_buf = self.base_path.clone();
-        //         path_buf.push(format!(
-        //             "error_log_{}_{}",
-        //             packet.structure_id, self.safety_iterator
-        //         ));
-        //         path_buf.set_extension("csv");
+        match csv_writer.writer.serialize(packet.field_data) {
+            Err(err) => {
+                _ = csv_writer.writer.flush(); //attempt to flush, we dont handle the result since we are already failing anyways
+                packet.field_data = Default::default();
+                let mut path_buf = self.base_path.clone();
+                path_buf.set_extension("csv");
 
-        //         csv_writer.writer = csv::Writer::from_path(path_buf.as_path())?;
-        //         bail!("Unable to write packet and got error: {}", err);
-        //     }
-        //     Ok(_) => match csv_writer.writer.flush() {
-        //         Err(err) => {
-        //             bail!("Unable to flush packet writer and got error: {}", err)
-        //         }
+                csv_writer.writer = csv::Writer::from_path(path_buf.as_path())?;
+                bail!("Unable to write packet and got error: {}", err);
+            }
+            Ok(_) => match csv_writer.writer.flush() {
+                Err(err) => {
+                    bail!("Unable to flush packet writer and got error: {}", err)
+                }
 
-        //         Ok(ok) => Ok(ok),
-        //     },
-        // }
-        todo!()
+                Ok(ok) => Ok(ok),
+            },
+        }
     }
 
     /// Sets the filepath that the FileHandler reads csvs from. returns an error if it can't write to that path
