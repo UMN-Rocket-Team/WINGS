@@ -306,21 +306,24 @@ mod tests {
         let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test2.csv",id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test5.csv",id as u32);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
+        {
+            let packet = &packet_vector[0]; 
+            let field_data = &packet.field_data;
+            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(-8.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
+        }
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_ok());
-        let mut packet = &packet_vector[0]; 
+        let packet = &packet_vector[1];
         let field_data = &packet.field_data;
-        assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
-        assert_eq!(field_data[1],PacketFieldValue::Number(8.0));
-        assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
-        assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
-        assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
-        packet = &packet_vector[1];
         assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
         assert_eq!(field_data[1],PacketFieldValue::Number(-2.0));
         assert_eq!(field_data[2],PacketFieldValue::Number(0.0));
