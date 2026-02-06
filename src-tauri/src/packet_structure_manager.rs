@@ -179,6 +179,7 @@ impl PacketStructureManager {
         &mut self,
         packet_structure: &mut PacketStructure,
     ) -> Result<usize, Error> {
+
         let mut next_packet_id = LOWEST_ID;
         for registered_packet_structure in self.packet_structures.iter() {
             if registered_packet_structure.name == packet_structure.name {
@@ -187,31 +188,15 @@ impl PacketStructureManager {
                 next_packet_id = registered_packet_structure.id + 1;
             }
         }
-        match self.name_to_id.get(&packet_structure.name) {
-            Some(id) => {
-                packet_structure.id = *id;
-                let index = self
-                    .packet_structures
-                    .iter_mut()
-                    .find(&mut |x: &&mut PacketStructure| x.id == *id);
-                match index {
-                    Some(mut structure) => {
-                        structure
-                            .delimiters
-                            .append(&mut packet_structure.delimiters);
-                        structure.delimiters.dedup();
-                        structure.fields.append(&mut packet_structure.fields);
-                        structure.fields.dedup();
-                        structure.size = max(packet_structure.size, structure.size)
-                    }
-                    None => self.packet_structures.push(packet_structure.clone()),
-                }
-            }
-            None => {
-                packet_structure.id = next_packet_id;
-                self.packet_structures.push(packet_structure.clone());
-            }
+
+        if let Some(existing_id) = self.name_to_id.get(&packet_structure.name) {
+            return Err(Error::NameAlreadyRegistered(*existing_id));
         }
+        else {
+            packet_structure.id = next_packet_id;
+            self.packet_structures.push(packet_structure.clone());
+        }
+        
 
         self.name_to_id
             .insert(packet_structure.name.clone(), packet_structure.id);

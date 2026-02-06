@@ -65,9 +65,6 @@ const SettingsTab: Component = () => {
 
         store.set("display", displays);
         store.set("flexviewObjects", flexviewObjects);
-
-        // Navigate home, since RecursiveFlexviewEditor isn't reactive  
-        navigate("/");
     }
 
 
