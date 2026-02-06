@@ -214,10 +214,10 @@ impl CommunicationManager {
         for packet in return_buffer.iter() {
         let result = log.write_packet(packet.clone(), &mut *ps_guard);
         if result.is_err() {
-            let new_result = result.unwrap_err().context("failed to write raw data");
+            let new_result = result.unwrap_err().context("failed to export csv");
             let context = new_result.chain();
             for i in context {
-                eprintln!("Binary File Write{:#?}", i);
+                eprintln!("CSV File Export{:#?}", i);
             }
         }
     }
