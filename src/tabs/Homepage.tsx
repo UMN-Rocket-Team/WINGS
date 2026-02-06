@@ -108,11 +108,11 @@ const Homepage: Component = () => {
             const loadedDisplayData = JSON.parse(fileData);
 
             // Validate loaded JSON data
-            if ( // Data should contain two properties: "flexviewObjects" and "displays"
+            if ( // Data should contain three properties: "flexviewObjects", "displays", "productNames"
                 Object.keys(loadedDisplayData).length !== 3
                     || !("flexviewObjects" in loadedDisplayData) 
                     || !("displays" in loadedDisplayData)
-                    || !("commands" in loadedDisplayData)
+                    || !("productNames" in loadedDisplayData)
             ) throw new Error();
 
             // add products
