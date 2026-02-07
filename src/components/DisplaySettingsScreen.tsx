@@ -4,7 +4,6 @@ import { createStore } from "solid-js/store";
 import { useBackend } from "../backend_interop/BackendProvider";
 import settingsIcon from "../assets/settings.png";
 import closeIcon from "../assets/close.svg";
-import { store } from "../core/file_handling";
 import { displayRegistry, DisplayStruct } from "../core/display_registry";
 import { loadedDisplayData, setLoadedDisplayData } from "../tabs/Homepage";
 
