@@ -21,7 +21,7 @@ export type ProductName = "altusMetrum" | "rfd" | "featherweight" | "aim";
 /**
  * Type of communications device
  */
-export type comDevice = {
+export type ComDevice = {
     id: number,
     selection: string,
     productName?: ProductName,
