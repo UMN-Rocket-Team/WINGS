@@ -81,7 +81,6 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
             setDisplays(produce((s) =>
                 (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(ind => ind != fieldIndex)));
         }
-        store.set("display", displays);
     }
 
     const handleSelectX = (isChecked: boolean, fieldIndex: number, graphIndex: number, packet_id: number) => {
@@ -97,13 +96,11 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
             setDisplays(produce((s) =>
                 (s[graphIndex] as GraphStruct).x = 0));
         }
-        store.set("display", displays);
     }
 
     const setGraphName = (newName: string, index: number) => {
         setDisplays(produce((s) =>
             s[index]!.displayName = newName));
-        store.set("display", displays);
     }
 
     const deleteGraph = (index: number) => {
@@ -114,13 +111,11 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
             }
         }
         setDisplays(newGraphs);
-        store.set("display", displays);
     }
 
     const updateColor = (color: string, colorIndex: number, graphIndex: number) => {
         setDisplays(produce((s) =>
             (s[graphIndex] as GraphStruct).colors[colorIndex] = color));
-        store.set("display", displays);
     }
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -177,7 +172,6 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                                         const struct = (s[props.index] as GraphStruct);
                                         struct.packetsDisplayed[packetIdx()] = !struct.packetsDisplayed[packetIdx()];
                                     }));
-                                    store.set("display", displays);
                                 }}>
                                 <img alt="Dropdown" src={dropdownIcon} class={`h-4 dark:invert`} draggable={false}
                                     style={{transform: `rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"})`}} />

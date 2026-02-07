@@ -64,9 +64,6 @@ const SettingsTab: Component = () => {
             direction: 'row'
         }]);
         setDisplays([]);
-
-        store.set("display", displays);
-        store.set("flexviewObjects", flexviewObjects);
     }
 
 
