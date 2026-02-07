@@ -3,12 +3,12 @@ import { useBackend } from "../backend_interop/BackendProvider";
 import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
-import { comDevice, ProductName, SendingModes } from "../backend_interop/types";
+import { ComDevice, ProductName, SendingModes } from "../backend_interop/types";
 import { createStore } from "solid-js/store";
 import { Store } from "tauri-plugin-store-api";
 import FileModal from "../modals/FilePathModal";
 
-export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevice[]>([]);
+export const [comDeviceSelections, setComDeviceSelections] = createStore<ComDevice[]>([]);
 let comDevicesIterator = 0;
 const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
@@ -102,7 +102,7 @@ const SendingTab: Component = () => {
                 </button>
                 <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
                     onClick={async () => {
-                        const newDevice: comDevice = {
+                        const newDevice: ComDevice = {
                             id: comDevicesIterator++,
                             selection: "",
                             productName: "altusMetrum"
