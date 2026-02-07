@@ -69,7 +69,6 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
         setDisplays(produce(s => {
             s[index]!.displayName = newName;
         }));
-        store.set("display", displays);
     }
 
     const getStructField = (packetId: number, fieldIndex: number): number | undefined => {
@@ -95,7 +94,6 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
                 struct.fields = struct.fields.filter(i => i !== fieldIndex);
             }
         }));
-        store.set("display", displays);
     };
 
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -143,7 +141,6 @@ const TemplateSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Eleme
                                 const struct = (s[props.index] as TemplateStruct);
                                 struct.packetsDisplayed[packetIdx()] = !struct.packetsDisplayed[packetIdx()];
                             }));
-                            store.set("display", displays);
                         }}>
                         <img alt="Dropdown" src={dropdownIcon} 
                             class={`h-4 dark:invert`} 
