@@ -108,11 +108,9 @@ const Homepage: Component = () => {
             const loadedDisplayData = JSON.parse(fileData);
 
             // Validate loaded JSON data
-            if ( // Data should contain three properties: "flexviewObjects", "displays"
-                Object.keys(loadedDisplayData).length !== 3
-                    || !("flexviewObjects" in loadedDisplayData) 
-                    || !("displays" in loadedDisplayData)
-            ) throw new Error();
+            if (!("flexviewObjects" in loadedDisplayData && "displays" in loadedDisplayData)) {
+                throw new Error("Invalid Displays JSON structure. Need flexviewObjects and displays fields.");
+            }
 
             // add products
             for (const productName of loadedDisplayData?.productNames) {
