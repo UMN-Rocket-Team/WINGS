@@ -34,19 +34,6 @@ export interface FlexviewLayout {
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 
 export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>([]);
-
-// let flexViewObjectsFromStoreResult = await store.get("flexviewObjects");
-// if (!flexViewObjectsFromStoreResult ||
-//     !Array.isArray(flexViewObjectsFromStoreResult) ||
-//     flexViewObjectsFromStoreResult.length < 1) {
-//     flexViewObjectsFromStoreResult = [{
-//         type: 'layout',
-//         children: [],
-//         weights: [],
-//         direction: 'row'
-//     }];
-// }
-
 export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(
     [{
         type: 'layout',
