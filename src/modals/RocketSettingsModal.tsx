@@ -8,7 +8,6 @@ import { createStore, produce } from "solid-js/store";
 import infoIcon from "../assets/info-sym.svg";
 import { DisplayStruct } from "../core/display_registry";
 import { ROCKET_MODELS } from "../components/Rocket";
-import { store } from "../core/file_handling";
 
 export class RocketStruct implements DisplayStruct {
     // Implementing required values
