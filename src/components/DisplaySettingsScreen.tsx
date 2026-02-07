@@ -33,22 +33,28 @@ export interface FlexviewLayout {
 
 export type FlexviewObject = FlexviewDisplay | FlexviewLayout | undefined;
 
-export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>(await store.get("display") ?? []);
+export const [displays, setDisplays] = createStore<(DisplayStruct | undefined)[]>([]);
 
-let flexViewObjectsFromStoreResult = await store.get("flexviewObjects");
-if (!flexViewObjectsFromStoreResult ||
-    !Array.isArray(flexViewObjectsFromStoreResult) ||
-    flexViewObjectsFromStoreResult.length < 1) {
-    flexViewObjectsFromStoreResult = [{
+// let flexViewObjectsFromStoreResult = await store.get("flexviewObjects");
+// if (!flexViewObjectsFromStoreResult ||
+//     !Array.isArray(flexViewObjectsFromStoreResult) ||
+//     flexViewObjectsFromStoreResult.length < 1) {
+//     flexViewObjectsFromStoreResult = [{
+//         type: 'layout',
+//         children: [],
+//         weights: [],
+//         direction: 'row'
+//     }];
+// }
+
+export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(
+    [{
         type: 'layout',
         children: [],
         weights: [],
         direction: 'row'
-    }];
-}
-
-export const [flexviewObjects, setFlexviewObjects] = createStore<FlexviewObject[]>(
-    flexViewObjectsFromStoreResult as FlexviewObject[]);
+    }]
+);
 
 const RecursiveFlexviewEditor = (props: {
     objectIndex: number
@@ -64,8 +70,6 @@ const RecursiveFlexviewEditor = (props: {
         ) {
             setFlexviewObjects(loadedDisplayData.loadedFlexviewObjects);
             setDisplays(loadedDisplayData.loadedDisplays);
-            store.set("display", displays);
-            store.set("flexviewObjects", flexviewObjects);
             setLoadedDisplayData({
                 loadedFlexviewObjects: [],
                 loadedDisplays: [],
@@ -139,8 +143,6 @@ const RecursiveFlexviewEditor = (props: {
                                                             weights: [...layout().weights, 1],
                                                             direction: layout().direction,
                                                         });
-                                                        store.set("display", displays);
-                                                        store.set("flexviewObjects", flexviewObjects);
                                                     }}
                                                 >
                                                     New {typeDef.displayName}
@@ -171,8 +173,6 @@ const RecursiveFlexviewEditor = (props: {
                                                     weights: [...layout().weights, 1],
                                                     direction: layout().direction,
                                                 });
-                                                store.set("display", displays);
-                                                store.set("flexviewObjects", flexviewObjects);
                                             }}
                                         >
                                             - Div
@@ -199,8 +199,6 @@ const RecursiveFlexviewEditor = (props: {
                                                     weights: [...layout().weights, 1],
                                                     direction: layout().direction,
                                                 });
-                                                store.set("display", displays);
-                                                store.set("flexviewObjects", flexviewObjects);
                                             }}
                                         >
                                             | Div
@@ -247,12 +245,10 @@ const RecursiveFlexviewEditor = (props: {
                                                                                 (flexviewObjects[TotalArrayObjectIndex] as FlexviewDisplay).index,
                                                                                 undefined
                                                                             );
-                                                                            store.set("display", displays);
                                                                         }
 
                                                                         // removing this object from the FlexviewObjects
                                                                         setFlexviewObjects(TotalArrayObjectIndex, undefined);
-                                                                        store.set("flexviewObjects", flexviewObjects);
                                                                     }}
                                                                 >
                                                                     <img
@@ -282,7 +278,6 @@ const RecursiveFlexviewEditor = (props: {
                                                                                 ),
                                                                                 direction: layout().direction,
                                                                             });
-                                                                            store.set("flexviewObjects", flexviewObjects);
                                                                         }}
                                                                     />
                                                                 </Show>
