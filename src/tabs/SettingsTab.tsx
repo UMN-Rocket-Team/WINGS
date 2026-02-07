@@ -9,6 +9,7 @@ import { writeTextFile } from "@tauri-apps/api/fs";
 import { displays } from "../components/DisplaySettingsScreen";
 import { DisplayStruct } from "../core/display_registry";
 import { store } from "../core/file_handling";
+import { comDeviceSelections } from "./SendingTab";
 
 /**
  * Main Tab for hosting all groundstation settings
@@ -44,6 +45,7 @@ const SettingsTab: Component = () => {
         if (!selectedFilePath) return;
 
         const displaySetupData = {
+            "productNames": [...new Set(comDeviceSelections.map(c => c.productName))],
             "flexviewObjects": flexviewObjects as FlexviewObject[],
             "displays": displays as DisplayStruct[]
         }
