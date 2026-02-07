@@ -112,11 +112,10 @@ const Homepage: Component = () => {
                 Object.keys(loadedDisplayData).length !== 3
                     || !("flexviewObjects" in loadedDisplayData) 
                     || !("displays" in loadedDisplayData)
-                    || !("productNames" in loadedDisplayData)
             ) throw new Error();
 
             // add products
-            for (const productName of loadedDisplayData.productNames) {
+            for (const productName of loadedDisplayData?.productNames) {
                 await addProduct(productName);
             }
 
