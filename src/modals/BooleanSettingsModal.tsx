@@ -7,7 +7,6 @@ import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { createStore, produce } from "solid-js/store";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
-import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
 interface BooleanStructField {
