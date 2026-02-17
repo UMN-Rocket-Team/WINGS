@@ -20,6 +20,13 @@ export const IterateComDevicesIterator = () => {
     return comDevicesIterator++;
 }
 
+export const EnsureComDevicesIteratorAtLeast = (minVal: number) => {
+    if (comDevicesIterator < minVal) {
+        comDevicesIterator = minVal;
+    }
+    comDevicesIterator = Math.max(comDevicesIterator, minVal);
+}
+
 const SendingTab: Component = () => {
     const { availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState, comDeviceList, gotData } = useBackend();
     const { showModal } = useModal();
@@ -94,7 +101,7 @@ const SendingTab: Component = () => {
                             selection: "",
                             productName: "rfd" as ProductName
                         };
-                        setComDeviceSelections([...comDeviceSelections, newDevice]);
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
                         await addRfd();
                     }}
                 >
@@ -107,7 +114,7 @@ const SendingTab: Component = () => {
                             selection: "",
                             productName: "altusMetrum"
                         }
-                        setComDeviceSelections([...comDeviceSelections, newDevice]);
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
                         await addAltusMetrum()
                     }}
                 >
@@ -116,24 +123,24 @@ const SendingTab: Component = () => {
                 <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
                     onClick={async () => {
                         const newDevice = {
-                            id: comDevicesIterator++, 
-                            selection: "", 
+                            id: comDevicesIterator++,
+                            selection: "",
                             productName: "aim" as ProductName
                         }
-                        setComDeviceSelections([...comDeviceSelections, newDevice]);
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
                         await addAim();
                     }}>
                     add AimXtra
                 </button>
                 <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
-                    onClick={async () => { 
-                        const newDevice = { 
-                            id: comDevicesIterator++, 
-                            selection: "", 
+                    onClick={async () => {
+                        const newDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
                             productName: "featherweight" as ProductName
                         };
-                        setComDeviceSelections([...comDeviceSelections, newDevice]); 
-                        await addFeatherWeight() 
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addFeatherWeight()
                     }}
                 >
                     add FeatherWeight
@@ -146,7 +153,7 @@ const SendingTab: Component = () => {
                         <label for="DeviceInput" class="px-2 m-0">
                             <span>{device.device_type} {device.id} </span>
                             <input name="Device" id="DeviceInput" class="w-1/2, border-b-2 border-white" autocomplete="off"
-                                list="dataDevices" value={comDeviceSelections[device_index()].selection ?? ""}
+                                list="dataDevices" value={comDeviceSelections[device_index()]?.selection ?? ""}
                                 onChange={event => {
                                     console.log((event.target as HTMLInputElement).value!);
                                     applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)
