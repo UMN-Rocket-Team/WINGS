@@ -12,7 +12,7 @@ import {
     DisplayComDevice
 } from "./types";
 import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
-import { comDeviceSelections, EnsureComDevicesIteratorAtLeast, IterateComDevicesIterator, setComDeviceSelections } from "../tabs/SendingTab";
+import { comDeviceSelections, EnsureComDevicesIteratorAtLeast, setComDeviceSelections } from "../tabs/SendingTab";
 
 /**
  * The global state managed by the {@link BackendContext}.
@@ -140,14 +140,12 @@ export const BackendProvider: ParentComponent = (props) => {
                 if (Array.isArray(payload)) {
                     setComDeviceList(payload as Array<DisplayComDevice>);
 
-                    //check for a de-sync to prevent the front end from crashing
-                    const difference = payload.length - comDeviceSelections.length;
-                    if (difference > 0) {
-                        for (let i = 0; i < difference; i++) {
-                            setComDeviceSelections([...comDeviceSelections, { 
-                                id: IterateComDevicesIterator(), selection: "Plug and Play" }]);
-                        }
-                    }
+                    const existingSelectionsById = new Map(comDeviceSelections.map(selection => [selection.id, selection]));
+                    const reconciledSelections = payload.map(device => existingSelectionsById.get(device.id) ?? {
+                        id: device.id,
+                        selection: "Plug and Play"
+                    });
+                    setComDeviceSelections(reconciledSelections);
 
                     const maxDeviceId = payload.reduce((max, device) => Math.max(max, device.id), -1);
                     EnsureComDevicesIteratorAtLeast(maxDeviceId + 1);

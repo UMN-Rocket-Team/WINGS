@@ -21,9 +21,6 @@ export const IterateComDevicesIterator = () => {
 }
 
 export const EnsureComDevicesIteratorAtLeast = (minVal: number) => {
-    if (comDevicesIterator < minVal) {
-        comDevicesIterator = minVal;
-    }
     comDevicesIterator = Math.max(comDevicesIterator, minVal);
 }
 
