@@ -123,6 +123,9 @@ export const clearParsedPackets = (): void => {
     for (const structureId in parsedPackets) {
         delete parsedPackets[+structureId];
     }
+    for (const structureId in unDecimatedPackets) {
+        delete unDecimatedPackets[+structureId];
+    }
 }
 
 export const setParsedPackets = (packets: Packet[]): void => {

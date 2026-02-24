@@ -208,6 +208,19 @@ impl CommunicationManager {
         if let Err(error) = result {
             return Err(error.context("failed to get raw data"));
         }
+
+        let mut ps_guard = self.ps_manager.lock().unwrap();
+        
+        for packet in return_buffer.iter() {
+        let result = log.write_packet(packet.clone(), &mut *ps_guard);
+        if result.is_err() {
+            let new_result = result.unwrap_err().context("failed to export csv");
+            let context = new_result.chain();
+            for i in context {
+                eprintln!("CSV File Export{:#?}", i);
+            }
+        }
+    }
         Ok(())
     }
 

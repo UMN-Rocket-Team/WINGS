@@ -3,16 +3,12 @@ import { useBackend } from "../backend_interop/BackendProvider";
 import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
-import { SendingModes } from "../backend_interop/types";
+import { ComDevice, ProductName, SendingModes } from "../backend_interop/types";
 import { createStore } from "solid-js/store";
 import { Store } from "tauri-plugin-store-api";
 import FileModal from "../modals/FilePathModal";
 
-type comDevice = {
-    id: number,
-    selection: string,
-}
-export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevice[]>([]);
+export const [comDeviceSelections, setComDeviceSelections] = createStore<ComDevice[]>([]);
 let comDevicesIterator = 0;
 const [sendPort, setSendPort] = createSignal<string>();
 const [sendInterval, setSendInterval] = createSignal(500);
@@ -22,6 +18,10 @@ const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
 export const IterateComDevicesIterator = () => {
     return comDevicesIterator++;
+}
+
+export const EnsureComDevicesIteratorAtLeast = (minVal: number) => {
+    comDevicesIterator = Math.max(comDevicesIterator, minVal);
 }
 
 const SendingTab: Component = () => {
@@ -79,8 +79,8 @@ const SendingTab: Component = () => {
 
     return (
         <div class="flex flex-grow gap-4">
-            <div class="flex flex-grow flex-col gap-4" style = {{"flex":"3"}}>
-                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"
+            <div class="flex flex-grow flex-col gap-4" style={{ "flex": "3" }}>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
                     onClick={async () => {
                         const store = new Store("persistent.dat");
                         const recentPaths = (await store.get("recentSaves") || []) as string[];
@@ -91,16 +91,55 @@ const SendingTab: Component = () => {
                     }}>
                     addPath&#40;s&#41;
                 </button>
-                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md" onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addRfd() }}>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
+                    onClick={async () => {
+                        const newDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
+                            productName: "rfd" as ProductName
+                        };
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addRfd();
+                    }}
+                >
                     add SerialPort
                 </button>
-                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAltusMetrum() }}>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
+                    onClick={async () => {
+                        const newDevice: ComDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
+                            productName: "altusMetrum"
+                        }
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addAltusMetrum()
+                    }}
+                >
                     add AltusMetrum Product
                 </button>
-                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addAim() }}>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
+                    onClick={async () => {
+                        const newDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
+                            productName: "aim" as ProductName
+                        }
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addAim();
+                    }}>
                     add AimXtra
                 </button>
-                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addFeatherWeight() }}>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
+                    onClick={async () => {
+                        const newDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
+                            productName: "featherweight" as ProductName
+                        };
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addFeatherWeight()
+                    }}
+                >
                     add FeatherWeight
                 </button>
                 <For each={comDeviceList()}>
@@ -108,10 +147,11 @@ const SendingTab: Component = () => {
                         <label for="DeviceInput" class="px-2 m-0">
                             <span>{device.device_type} {device.id} </span>
                             <input name="Device" id="DeviceInput" class="w-1/2, border-b-2 border-white" autocomplete="off"
-                                list="dataDevices" value={comDeviceSelections[device_index()].selection ?? ""}
+                                list="dataDevices" value={comDeviceSelections[device_index()]?.selection ?? ""}
                                 onChange={event => {
                                     console.log((event.target as HTMLInputElement).value!);
-                                    applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)}} />
+                                    applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)
+                                }} />
                             <button onClick={() => {
                                 deleteDevice(device.id);
                                 setComDeviceSelections(comDeviceSelections.filter((_, index) => device_index() != index));
@@ -124,11 +164,11 @@ const SendingTab: Component = () => {
 
                 <datalist id="dataDevices">
                     <For each={availablePortNames()}>
-                        {(Device) => <option value={Device.name}/>}
+                        {(Device) => <option value={Device.name} />}
                     </For>
                 </datalist>
             </div>
-            < div class="flex-1"/>
+            < div class="flex-1" />
             {/* <div class="flex- flex-grow flex-col gap-4">
                 <datalist id="radioTestAvailablePorts">
                     <For each={comDeviceList()}>
@@ -180,7 +220,7 @@ const SendingTab: Component = () => {
                     {isSimulating() ? "Stop Sending" : "Start Sending"}
                 </button>
             </div> */}
-            <div class="flex flex-2 flex-grow flex-col gap-4" style = {{"flex":"2"}}>
+            <div class="flex flex-2 flex-grow flex-col gap-4" style={{ "flex": "2" }}>
                 <p><b>Sent: </b>{sendingLoopState()?.packetsSent} packets</p>
                 <p><b>Received: </b>{parsedPacketCount()} packets</p>
                 <button
@@ -226,7 +266,7 @@ const SendingTab: Component = () => {
                     <span>b/s</span>
                 </label>
             </div>
-            < div class="flex-1"/>
+            < div class="flex-1" />
         </div>
     );
 };
