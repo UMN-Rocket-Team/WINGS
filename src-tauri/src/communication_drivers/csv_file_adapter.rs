@@ -395,4 +395,59 @@ mod tests {
             assert_eq!(field_data[4],PacketFieldValue::Number(239.52));
         }
     }
+
+    #[test]
+    fn test_parsing_three_rows() {
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure {
+            id: 0, // gets overridden
+            name: String::from("Test Structure"),
+            fields: vec![],
+            delimiters: vec![],
+            size: Some(0),
+            byte_defined: true,
+            packet_crc: vec![],
+        };
+        p_structure.ez_make("i8 i8 i8 i8 i8", &["Height","Speed","Temperature","Time","Location"],false);
+        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut result = csv_read_driver.init_device("src/test_files/test5.csv",id as u32);
+        assert!(result.is_ok());
+        let packet_vector = &mut vec![];
+        result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
+        assert!(result.is_ok());
+        {
+            let packet = &packet_vector[0]; 
+            let field_data = &packet.field_data;
+            assert_eq!(field_data.len(),5);
+            assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(-8.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(0.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(-25.0));
+        }
+        result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
+        assert!(result.is_ok());
+        {
+            let packet = &packet_vector[1];
+            let field_data = &packet.field_data;
+            assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(-2.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(0.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(4.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(0.0));
+        }
+        result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
+        assert!(result.is_ok());
+        {
+            let packet = &packet_vector[2];
+            let field_data = &packet.field_data;
+            assert_eq!(field_data[0],PacketFieldValue::Number(5.0));
+            assert_eq!(field_data[1],PacketFieldValue::Number(-5.0));
+            assert_eq!(field_data[2],PacketFieldValue::Number(5.0));
+            assert_eq!(field_data[3],PacketFieldValue::Number(-5.0));
+            assert_eq!(field_data[4],PacketFieldValue::Number(5.0));
+        }
+    }
 }
