@@ -15,7 +15,7 @@ const PRINT_PARSING: bool = false;
 #[derive(Default)]
 
 pub struct CSVReadDriver {
-    file: Option<File>,
+    file: Option<csv::Reader<File>>,
     id: usize,
     baud:usize,
     //packet_parser: SerialPacketParser,
@@ -39,7 +39,8 @@ impl CommsIF for CSVReadDriver {
         self.baud = baud as usize;
         match File::open(port_name){
             Ok(new_file) => {
-                self.file = Some(new_file); 
+                let reader = csv::Reader::from_reader(new_file);
+                self.file = Some(reader);
                 Ok(())
             },
             Err(err) => {
@@ -58,15 +59,16 @@ impl CommsIF for CSVReadDriver {
     } 
     //Reads a line of data from a csv file into a data packet of a specificed type
     fn parse_device_data(&mut self, raw_data_vector: &mut Vec<u8>, packet_vector: &mut Vec<Packet>) -> anyhow::Result<()> {
-        let packet_id:usize = self.baud;
-        let good_file = match &self.file { //make sure the file object is valid
-            Some(file) => file,
-            None => return Err(anyhow::anyhow!("Invalid File")),
+        let packet_id = self.baud;
+            // Borrow the existing reader
+        let reader = match &mut self.file {
+            Some(r) => r,
+            None => return Err(anyhow::anyhow!("Invalid Reader/File")),
         };
-        let mut reader = csv::Reader::from_reader(good_file);
+
         let mut field_byte_data = ByteRecord::new();
-        if !reader.read_byte_record(&mut field_byte_data)? {//reads one row of the csv file into the ByteRecord
-            return Err(anyhow::anyhow!("Reached End of File"))
+        if !reader.read_byte_record(&mut field_byte_data)? {
+            return Err(anyhow::anyhow!("Reached End of File"));
         }
         let field_data = match csv::StringRecord::from_byte_record(field_byte_data) { //converts from ByteRecord to string record
             Ok(value) => value,
@@ -314,6 +316,7 @@ mod tests {
         {
             let packet = &packet_vector[0]; 
             let field_data = &packet.field_data;
+            assert_eq!(field_data.len(),5);
             assert_eq!(field_data[0],PacketFieldValue::Number(9.0));
             assert_eq!(field_data[1],PacketFieldValue::Number(-8.0));
             assert_eq!(field_data[2],PacketFieldValue::Number(47.0));
