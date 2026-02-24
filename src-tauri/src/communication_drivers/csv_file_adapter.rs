@@ -5,13 +5,13 @@
 // ****
 use crate::{
     communication_manager::CommsIF,
-    models::packet::{self, Packet, PacketFieldValue},
+    models::packet::{Packet, PacketFieldValue},
     packet_structure_manager::PacketStructureManager,
 };
 use anyhow::bail;
 use csv::{self, ByteRecord};
 use std::{
-    fs::{self, File},
+    fs::File,
     sync::{Arc, Mutex},
 };
 
