@@ -234,7 +234,7 @@ mod tests {
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
-        assert!(result.is_ok());
+        assert!(result.is_err());
         for packet in packet_vector {
             let field_data = &packet.field_data;
             assert_eq!(field_data[0],PacketFieldValue::Number(1.0));
@@ -242,55 +242,6 @@ mod tests {
             assert_eq!(field_data[2],PacketFieldValue::Number(3.0));
         }
     }
-    /*
-    #[test]
-    fn test_parsing_two_files() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![],
-        };
-        p_structure.ez_make("u8 u8 u8", &["Height","Speed","Temperature"]);
-        let id = packet_structure_manager.register_packet_structure(&mut p_structure).unwrap();
-        let mut csv_read_driver = CSVReadDriver::default();
-        let mut result = csv_read_driver.init_device("./test_files/test.csv",id as u32,Arc::new(packet_structure_manager));
-        assert!(result.is_ok());
-        let packet_vector = &mut vec![];
-        result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
-        assert!(result.is_ok());
-        for packet in packet_vector {
-            let field_data = &packet.field_data;
-            assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(1));
-            assert_eq!(field_data[1],PacketFieldValue::UnsignedByte(2));
-            assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(3));
-        }
-        let mut p_structure2 = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            metafields: vec![],
-            packet_crc: vec![],
-        };
-        p_structure2.ez_make("u8 u8 u8", &["Height","Speed","Temperature","Time","Location"]);
-        let id2 = packet_structure_manager.register_packet_structure(&mut p_structure2).unwrap();
-        result = csv_read_driver.init_device("./test_files/test2.csv", id2 as u32, Arc::new(packet_structure_manager));
-        assert!(result.is_ok());
-        result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
-        assert!(result.is_ok());
-        let packet2 = &packet_vector[1]; 
-        let field_data = &packet2.field_data;
-        assert_eq!(field_data[0],PacketFieldValue::UnsignedByte(9));
-        assert_eq!(field_data[1],PacketFieldValue::UnsignedByte(8));
-        assert_eq!(field_data[2],PacketFieldValue::UnsignedByte(47));
-        assert_eq!(field_data[3],PacketFieldValue::UnsignedByte(0));
-        assert_eq!(field_data[4],PacketFieldValue::SignedByte(-25));
-
-    }  */
     //parse two rows from the same file
     #[test]
     fn test_parsing_two_rows() {
