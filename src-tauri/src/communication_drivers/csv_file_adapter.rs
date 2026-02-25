@@ -1,15 +1,16 @@
 // ****
-// Written by Rohan R
+// Written by Rohan R., Joe A.
 // Communications device driver for reading csv files
 //
 // ****
 use crate::{
     communication_manager::CommsIF,
     models::packet::{Packet, PacketFieldValue},
-    packet_structure_manager::PacketStructureManager,
+    models::packet_structure::{PacketField, PacketFieldType, PacketStructure},
+    packet_structure_manager::{Error as PacketStructureManagerError, PacketStructureManager},
 };
 use anyhow::bail;
-use csv::{self, ByteRecord};
+use csv::{self, ByteRecord, StringRecord};
 use std::{
     fs::File,
     sync::{Arc, Mutex},
@@ -20,8 +21,69 @@ use std::{
 pub struct CSVReadDriver {
     file: Option<csv::Reader<File>>,
     id: usize,
-    baud: usize,
+    packet_structure_id: Option<usize>,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+}
+
+impl CSVReadDriver {
+    fn register_packet_structure_from_header(
+        &mut self,
+        header: &StringRecord,
+    ) -> anyhow::Result<usize> {
+        if header.len() < 2 {
+            return Err(anyhow::anyhow!(
+                "CSV header must contain packet name column plus at least one field column"
+            ));
+        }
+
+        let packet_name = match header.get(0) {
+            Some(name) => name.trim(),
+            None => {
+                return Err(anyhow::anyhow!(
+                    "CSV header is missing the first packet-name column"
+                ))
+            }
+        };
+
+        if packet_name.is_empty() {
+            return Err(anyhow::anyhow!(
+                "CSV first header column (packet name) cannot be empty"
+            ));
+        }
+
+        let mut packet_structure = PacketStructure::make_default(packet_name.to_owned());
+        packet_structure.fields = header
+            .iter()
+            .skip(1)
+            .enumerate()
+            .map(|(index, name)| PacketField {
+                index,
+                name: name.trim().to_owned(),
+                r#type: PacketFieldType::Double,
+                offset_in_packet: index * 8,
+            })
+            .collect();
+
+        let mut manager = self.packet_structure_manager.lock().unwrap();
+        let packet_id = match manager.register_packet_structure(&mut packet_structure) {
+            Ok(new_id) => new_id,
+            Err(PacketStructureManagerError::NameAlreadyRegistered(existing_id)) => {
+                let existing_structure = match manager.get_packet_structure_mut(existing_id) {
+                    Ok(existing_structure) => existing_structure,
+                    Err(err) => return Err(anyhow::anyhow!(err.to_string())),
+                };
+                existing_structure.byte_defined = false;
+                existing_structure.fields = packet_structure.fields;
+                existing_structure.delimiters = vec![];
+                existing_structure.packet_crc = vec![];
+                existing_structure.size = None;
+                existing_id
+            }
+            Err(other_error) => return Err(anyhow::anyhow!(other_error.to_string())),
+        };
+
+        Ok(packet_id)
+    }
 }
 
 impl CommsIF for CSVReadDriver {
@@ -31,16 +93,23 @@ impl CommsIF for CSVReadDriver {
     {
         CSVReadDriver {
             file: None,
-            baud: 0,
+            packet_structure_id: None,
             id: 0,
             packet_structure_manager,
         }
     }
-    fn init_device(&mut self, port_name: &str, baud: u32) -> anyhow::Result<()> {
-        self.baud = baud as usize;
+    fn init_device(&mut self, port_name: &str, _baud: u32) -> anyhow::Result<()> {
         match File::open(port_name) {
             Ok(new_file) => {
-                let reader = csv::Reader::from_reader(new_file);
+                let mut reader = csv::Reader::from_reader(new_file);
+                let header = reader
+                    .headers()
+                    .map_err(|err| anyhow::anyhow!("Failed to read CSV header: {err}"))?
+                    .clone();
+
+                let packet_id = self.register_packet_structure_from_header(&header)?;
+
+                self.packet_structure_id = Some(packet_id);
                 self.file = Some(reader);
                 Ok(())
             }
@@ -64,7 +133,14 @@ impl CommsIF for CSVReadDriver {
         _: &mut Vec<u8>,
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()> {
-        let packet_id = self.baud;
+        let packet_id = match self.packet_structure_id {
+            Some(id) => id,
+            None => {
+                return Err(anyhow::anyhow!(
+                    "CSV device has no registered packet structure"
+                ))
+            }
+        };
         // Borrow the existing reader
         let reader = match &mut self.file {
             Some(r) => r,
@@ -87,12 +163,13 @@ impl CommsIF for CSVReadDriver {
         };
         let mut result: Vec<PacketFieldValue> = vec![];
         for field in good_structure.fields.iter() {
-            let given_value = match field_data.get(field.index) {
+            let csv_column_index = field.index + 1;
+            let given_value = match field_data.get(csv_column_index) {
                 Some(value) => value,
                 None => {
                     return Err(anyhow::anyhow!(format!(
                         "Field {} refers to missing index: {}",
-                        field.name, field.index
+                        field.name, csv_column_index
                     )))
                 }
             };
@@ -132,9 +209,7 @@ impl CommsIF for CSVReadDriver {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        models::packet_structure::PacketStructure, packet_structure_manager::PacketStructureManager,
-    };
+    use crate::packet_structure_manager::PacketStructureManager;
 
     use super::*; //lets the unit tests use everything in this file
 
@@ -142,23 +217,10 @@ mod tests {
     //Succesfully parses a csv file with small positive as long as it is given the right path and packet structure
     #[test]
     fn test_basic_parsing() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            size: Some(0),
-            byte_defined: true,
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            packet_crc: vec![],
-        };
-        p_structure.ez_make("u8 u8 u8", &["Height", "Speed", "Temperature"], false);
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -176,27 +238,10 @@ mod tests {
     //test for parsing negative numbers, succeeds as long as the packet structure marks that the data field is for signed values
     #[test]
     fn test_nonpositive_parsing() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make(
-            "u8 i8 u8 u8 i8",
-            &["Height", "Speed", "Temperature", "Time", "Location"],
-            false,
-        );
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test2.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test2.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -213,23 +258,10 @@ mod tests {
     // if the structure has n data fields and the csv file has more than n columns the first n data fields are copied into the structure
     #[test]
     fn test_parsing_too_few_columns() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make("u8 i8 u8", &["Height", "Speed", "Temperature"], false);
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test2.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test2.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -241,65 +273,26 @@ mod tests {
             assert_eq!(field_data[2], PacketFieldValue::Number(47.0));
         }
     }
-    // if the structure has more data fields than the csv file, the parser will throw an error
+    // if a row has fewer data fields than declared by the CSV header, parsing should fail
     #[test]
-    fn test_parsing_too_many_columns() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make(
-            "u8 u8 u8 u8 u8",
-            &["Height", "Speed", "Temperature", "Time", "Location"],
-            false,
-        );
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+    fn test_parsing_missing_columns_in_row() {
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test_missing_field.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
         assert!(result.is_err());
-        for packet in packet_vector {
-            let field_data = &packet.field_data;
-            assert_eq!(field_data[0], PacketFieldValue::Number(1.0));
-            assert_eq!(field_data[1], PacketFieldValue::Number(2.0));
-            assert_eq!(field_data[2], PacketFieldValue::Number(3.0));
-        }
+        assert!(packet_vector.is_empty());
     }
     //parse two rows from the same file
     #[test]
     fn test_parsing_two_rows() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make(
-            "i8 i8 i8 i8 i8",
-            &["Height", "Speed", "Temperature", "Time", "Location"],
-            false,
-        );
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test5.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test5.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -327,27 +320,10 @@ mod tests {
     //parse big numbers
     #[test]
     fn test_big_num_parsing() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make(
-            "u8 u8 u8 u8 u8",
-            &["Height", "Speed", "Temperature", "Time", "Location"],
-            false,
-        );
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test3.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test3.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -364,27 +340,10 @@ mod tests {
     //parse decimals
     #[test]
     fn test_decimal_parsing() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make(
-            "u8 u8 u8 u8 u8",
-            &["Height", "Speed", "Temperature", "Time", "Location"],
-            false,
-        );
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test4.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test4.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
@@ -401,27 +360,10 @@ mod tests {
 
     #[test]
     fn test_parsing_three_rows() {
-        let mut packet_structure_manager = PacketStructureManager::default();
-        let mut p_structure = PacketStructure {
-            id: 0, // gets overridden
-            name: String::from("Test Structure"),
-            fields: vec![],
-            delimiters: vec![],
-            size: Some(0),
-            byte_defined: true,
-            packet_crc: vec![],
-        };
-        p_structure.ez_make(
-            "i8 i8 i8 i8 i8",
-            &["Height", "Speed", "Temperature", "Time", "Location"],
-            false,
-        );
-        let id = packet_structure_manager
-            .register_packet_structure(&mut p_structure)
-            .unwrap();
+        let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test5.csv", id as u32);
+        let mut result = csv_read_driver.init_device("src/test_files/test5.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
