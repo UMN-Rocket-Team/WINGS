@@ -253,8 +253,10 @@ impl CommunicationManager {
         let index = self.find(id, false);
         match index {
             Some(index) => {
-                let name = if self.comms_objects[index].get_type() == "ByteFile"
-                    || self.comms_objects[index].get_type() == "TeleDongle"
+                let device_type = self.comms_objects[index].get_type();
+                let name = if device_type == "ByteFile"
+                    || device_type == "TeleDongle"
+                    || device_type == "CSVFile"
                 {
                     port_name
                 } else {
