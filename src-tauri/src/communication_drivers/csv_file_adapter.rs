@@ -149,7 +149,8 @@ impl CommsIF for CSVReadDriver {
 
         let mut field_byte_data = ByteRecord::new();
         if !reader.read_byte_record(&mut field_byte_data)? {
-            return Err(anyhow::anyhow!("Reached End of File"));
+            self.file = None;
+            return Ok(());
         }
         let field_data = match csv::StringRecord::from_byte_record(field_byte_data) {
             //converts from ByteRecord to string record
