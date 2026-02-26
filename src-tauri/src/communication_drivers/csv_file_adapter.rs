@@ -13,6 +13,7 @@ use anyhow::bail;
 use csv::{self, ByteRecord, StringRecord};
 use std::{
     fs::File,
+    path::Path,
     sync::{Arc, Mutex},
 };
 
@@ -28,33 +29,24 @@ pub struct CSVReadDriver {
 impl CSVReadDriver {
     fn register_packet_structure_from_header(
         &mut self,
+        packet_name: &str,
         header: &StringRecord,
     ) -> anyhow::Result<usize> {
-        if header.len() < 2 {
+        if packet_name.trim().is_empty() {
             return Err(anyhow::anyhow!(
-                "CSV header must contain packet name column plus at least one field column"
+                "CSV file stem (packet name) cannot be empty"
             ));
         }
 
-        let packet_name = match header.get(0) {
-            Some(name) => name.trim(),
-            None => {
-                return Err(anyhow::anyhow!(
-                    "CSV header is missing the first packet-name column"
-                ))
-            }
-        };
-
-        if packet_name.is_empty() {
+        if header.is_empty() {
             return Err(anyhow::anyhow!(
-                "CSV first header column (packet name) cannot be empty"
+                "CSV header must contain at least one field column"
             ));
         }
 
-        let mut packet_structure = PacketStructure::make_default(packet_name.to_owned());
+        let mut packet_structure = PacketStructure::make_default(packet_name.trim().to_owned());
         packet_structure.fields = header
             .iter()
-            .skip(1)
             .enumerate()
             .map(|(index, name)| PacketField {
                 index,
@@ -102,12 +94,19 @@ impl CommsIF for CSVReadDriver {
         match File::open(port_name) {
             Ok(new_file) => {
                 let mut reader = csv::Reader::from_reader(new_file);
+                let packet_name = Path::new(port_name)
+                    .file_stem()
+                    .and_then(|name| name.to_str())
+                    .ok_or(anyhow::anyhow!(
+                        "Unable to determine packet name from CSV file path"
+                    ))?;
+
                 let header = reader
                     .headers()
                     .map_err(|err| anyhow::anyhow!("Failed to read CSV header: {err}"))?
                     .clone();
 
-                let packet_id = self.register_packet_structure_from_header(&header)?;
+                let packet_id = self.register_packet_structure_from_header(packet_name, &header)?;
 
                 self.packet_structure_id = Some(packet_id);
                 self.file = Some(reader);
@@ -164,7 +163,7 @@ impl CommsIF for CSVReadDriver {
         };
         let mut result: Vec<PacketFieldValue> = vec![];
         for field in good_structure.fields.iter() {
-            let csv_column_index = field.index + 1;
+            let csv_column_index = field.index;
             let given_value = match field_data.get(csv_column_index) {
                 Some(value) => value,
                 None => {
@@ -213,6 +212,31 @@ mod tests {
     use crate::packet_structure_manager::PacketStructureManager;
 
     use super::*; //lets the unit tests use everything in this file
+
+    #[test]
+    fn test_registers_packet_name_from_file_stem_and_header_fields() {
+        let packet_structure_manager = PacketStructureManager::default();
+        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc.clone());
+
+        let result = csv_read_driver.init_device("src/test_files/test.csv", 0);
+        assert!(result.is_ok());
+
+        let packet_structure_id = csv_read_driver
+            .packet_structure_id
+            .expect("packet structure id should be set after init");
+
+        let mut manager = manager_arc.lock().unwrap();
+        let structure = manager
+            .get_packet_structure_mut(packet_structure_id)
+            .expect("packet structure should exist");
+
+        assert_eq!(structure.name, "test");
+        assert_eq!(structure.fields.len(), 3);
+        assert_eq!(structure.fields[0].name, "Category1");
+        assert_eq!(structure.fields[1].name, "Category2");
+        assert_eq!(structure.fields[2].name, "Category3");
+    }
 
     // test for basic packet recognition and parsing
     //Succesfully parses a csv file with small positive as long as it is given the right path and packet structure
