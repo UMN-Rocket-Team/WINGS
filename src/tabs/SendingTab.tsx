@@ -1,6 +1,6 @@
 import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
 import { SendingModes } from "../backend_interop/types";
@@ -59,7 +59,7 @@ const SendingTab: Component = () => {
     const addFileDirectory = async (filePaths: string | string[] | null) => {
         if (Array.isArray(filePaths)) {
             for (const path of filePaths) {
-                setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: path }]);
+                ([...comDeviceSelections, { id: comDevicesIterator++, selection: path }]);
                 addFileManager(path);
             }
         } else if (filePaths != null) {
@@ -102,6 +102,9 @@ const SendingTab: Component = () => {
                 </button>
                 <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addFeatherWeight() }}>
                     add FeatherWeight
+                </button>
+                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addMidwest() }}>
+                    add Midwest
                 </button>
                 <For each={comDeviceList()}>
                     {(device, device_index) =>

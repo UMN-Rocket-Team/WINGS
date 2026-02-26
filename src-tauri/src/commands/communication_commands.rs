@@ -205,7 +205,16 @@ pub fn add_featherweight(
     Ok(())
 }
 
-
+/// Adds a new Midwest device to the communication manager.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
 #[tauri::command(async)]
 pub fn add_midwest(
     app_handle: AppHandle,

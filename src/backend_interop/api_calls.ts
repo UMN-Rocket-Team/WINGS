@@ -18,6 +18,8 @@ export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum")
 
 export const addAim = async () => await invoke<void>("add_aim");
 
+export const addMidwest = async () => await invoke<void>("add_midwest");
+
 
 export const addFeatherWeight = async () => await invoke<void>("add_featherweight");
 

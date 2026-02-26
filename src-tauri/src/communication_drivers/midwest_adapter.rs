@@ -31,6 +31,7 @@ impl CommsIF for MidwestAdapter {
         Self: Sized,
     {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
+            println!("Creating Midwest!");
             //################################
             //Midwest Hardcoded packets start here
             //################################
@@ -57,6 +58,8 @@ let mut midwest_bno_structure = PacketStructure::default();
     );
     midwest_bno_structure.name = "midwest_bno".to_owned();
     packet_structure_manager
+        .lock()
+        .expect("Failed to lock PacketStructureManager")
         .register_packet_structure(&mut midwest_bno_structure)
         .expect("Failed to register test packet");
 
@@ -69,6 +72,8 @@ let mut midwest_bno_structure = PacketStructure::default();
     );
     midwest_alt_structure.name = "midwest_alt".to_owned();
     packet_structure_manager
+        .lock()
+        .expect("Failed to lock PacketStructureManager")
         .register_packet_structure(&mut midwest_alt_structure)
         .expect("Failed to register test packet");
 
@@ -99,7 +104,9 @@ let mut midwest_gps_structure = PacketStructure::default();
         "vel_accuracy"],true);
     midwest_gps_structure.name = "midwest_gps".to_owned();
     packet_structure_manager
-        .register_packet_structure(&mut midwst_gps_structure)
+        .lock()
+        .expect("Failed to lock PacketStructureManager")
+        .register_packet_structure(&mut midwest_gps_structure)
         .expect("Failed to register test packet");
 
         // Midwest Control Telemetry Data Packet.
@@ -111,6 +118,8 @@ let mut midwest_gps_structure = PacketStructure::default();
     );
     midwest_control_telemetry_structure.name = "midwest_control_telemetry".to_owned();
     packet_structure_manager
+        .lock()
+        .expect("Failed to lock PacketStructureManager")
         .register_packet_structure(&mut midwest_control_telemetry_structure)
         .expect("Failed to register test packet");
         });
