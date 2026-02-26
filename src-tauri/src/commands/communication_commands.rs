@@ -204,3 +204,19 @@ pub fn add_featherweight(
     );
     Ok(())
 }
+
+
+#[tauri::command(async)]
+pub fn add_midwest(
+    app_handle: AppHandle,
+    communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+) -> Result<(), String> {
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            communication_manager.add_midwest();
+            update_coms(&app_handle, communication_manager);
+        },
+    );
+    Ok(())
+}
