@@ -150,7 +150,7 @@ pub fn add_file_manager(
             let is_csv = Path::new(file_path)
                 .extension()
                 .and_then(|ext| ext.to_str())
-                .is_some_and(|ext| ext.eq_ignore_ascii_case("csv"));
+                .map_or(false, |ext| ext.eq_ignore_ascii_case("csv"));
 
             let new_id = if is_csv {
                 communication_manager.add_csv_adapter()

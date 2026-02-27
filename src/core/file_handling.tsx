@@ -77,7 +77,6 @@ export type ImportWindowOptions = {
     title?: string;
     multiple?: boolean;
     filterName?: string;
-    /** If omitted/undefined, the dialog will show all files. */
     extensions?: string[];
 };
 
@@ -86,13 +85,16 @@ export const runImportPacketWindow = async (options: ImportWindowOptions = {}) =
         title = 'Import Flight Data',
         multiple = true,
         filterName = 'FlightData',
-        extensions = ['json', 'wings', 'TXT'],
+        extensions = [],
     } = options;
 
     const openOptions: Parameters<typeof open>[0] = {
         title,
         multiple,
-        ...(extensions ? { filters: [{ name: filterName, extensions }] } : {}),
+        ...(extensions.length > 0 
+            ? { filters: [{ name: filterName, extensions }] } 
+            : {}
+        ),
     };
 
     const selectedFilePaths = await open(openOptions);
