@@ -16,7 +16,7 @@ export type SerialUpdateResult = {
 /** 
  * COTS product names that WINGS supports
  */
-export type ProductName = "altusMetrum" | "rfd" | "featherweight" | "aim";
+export type ProductName = "altusMetrum" | "rfd" | "featherweight" | "aim" | "midwest";
 
 /**
  * Type of communications device

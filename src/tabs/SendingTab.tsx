@@ -142,7 +142,17 @@ const SendingTab: Component = () => {
                 >
                     add FeatherWeight
                 </button>
-                <button class ="border border-black bg-gray dark:bg-gray-800 rounded-md"  onClick={() => { setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); addMidwest() }}>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
+                    onClick={async () => {
+                        const newDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
+                            productName: "midwest" as ProductName
+                        };
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addMidwest()
+                    }}
+                >
                     add Midwest
                 </button>
                 <For each={comDeviceList()}>
