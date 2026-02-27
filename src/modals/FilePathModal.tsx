@@ -40,7 +40,7 @@ const FileModal = (props: ModalProps<FileModalProps>): JSX.Element => {
                 Select Directory
             </button>
             <p class="text-lg font-semibold mt-4">Open Recent:</p>
-            <For each={props.pathStrings.reverse()}>{(item) =>
+            <For each={props.pathStrings.slice().reverse()}>{(item) =>
                 <div class="mt-2">
                     <button class="bg-gray-200 hover:bg-gray-300 text-black font-semibold py-2 px-4 rounded w-full text-left"
                         onClick={() => runCallBack([item])}>

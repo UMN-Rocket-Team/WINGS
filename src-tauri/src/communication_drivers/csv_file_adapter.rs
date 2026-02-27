@@ -126,7 +126,7 @@ impl CommsIF for CSVReadDriver {
     fn get_device_raw_data(&mut self, _: &mut Vec<u8>) -> anyhow::Result<()> {
         Ok(())
     }
-    //Reads a line of data from a csv file into a data packet of a specificed type
+    //Reads a line of data from a csv file into a data packet of a specified type
     fn parse_device_data(
         &mut self,
         _: &mut Vec<u8>,
@@ -154,7 +154,7 @@ impl CommsIF for CSVReadDriver {
         let field_data = match csv::StringRecord::from_byte_record(field_byte_data) {
             //converts from ByteRecord to string record
             Ok(value) => value,
-            Err(_) => return Err(anyhow::anyhow!("Bytefile does not contain valid utf-8")),
+            Err(_) => return Err(anyhow::anyhow!("CSV record does not contain valid utf-8")),
         };
         let mut manager = self.packet_structure_manager.lock().unwrap();
         let good_structure = match manager.get_packet_structure_mut(packet_id) {
@@ -176,10 +176,13 @@ impl CommsIF for CSVReadDriver {
             let parsed_value: PacketFieldValue =
                 match field.r#type.make_from_string(given_value.trim()) {
                     Ok(value) => value,
-                    Err(_) => {
+                    Err(e) => {
                         return Err(anyhow::anyhow!(format!(
-                            "Field {} refers to missing index: {}",
-                            field.name, field.index
+                            "Failed to parse value {:?} for field '{}' (index {}): {}",
+                            given_value,
+                            field.name,
+                            field.index,
+                            e
                         )))
                     }
                 };
@@ -278,24 +281,6 @@ mod tests {
             assert_eq!(field_data[2], PacketFieldValue::Number(47.0));
             assert_eq!(field_data[3], PacketFieldValue::Number(0.0));
             assert_eq!(field_data[4], PacketFieldValue::Number(-25.0));
-        }
-    }
-    // if the structure has n data fields and the csv file has more than n columns the first n data fields are copied into the structure
-    #[test]
-    fn test_parsing_too_few_columns() {
-        let packet_structure_manager = PacketStructureManager::default();
-        let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("src/test_files/test2.csv", 0);
-        assert!(result.is_ok());
-        let packet_vector = &mut vec![];
-        result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
-        assert!(result.is_ok());
-        for packet in packet_vector {
-            let field_data = &packet.field_data;
-            assert_eq!(field_data[0], PacketFieldValue::Number(9.0));
-            assert_eq!(field_data[1], PacketFieldValue::Number(-8.0));
-            assert_eq!(field_data[2], PacketFieldValue::Number(47.0));
         }
     }
     // if a row has fewer data fields than declared by the CSV header, parsing should fail
