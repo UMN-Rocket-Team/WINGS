@@ -73,7 +73,7 @@ impl CommsIF for MidwestAdapter {
             // Midwest GPS Data Packet.
             let mut midwest_gps_structure = PacketStructure::default();
             midwest_gps_structure.ez_make(
-                "ba5eba11 u32 F32 F32 u32 u8 _2 F32 ca11ab1e",
+                "ba5eba11 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
                 &[
                     "time_of_week",
                     "pos_lat",
@@ -124,33 +124,17 @@ impl CommsIF for MidwestAdapter {
     /// # Errors
     ///
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
-    fn init_device(&mut self, port_name: &str, _baud: u32) -> anyhow::Result<()> {
+    fn init_device(&mut self, port_name: &str, baud: u32) -> anyhow::Result<()> {
         if port_name.is_empty() {
             self.port = None;
         } else {
-            self.baud = 9600;
-            let mut new_port = serialport::new(port_name, self.baud)
-                .flow_control(serialport::FlowControl::None)
-                .open()?;
+            self.baud = baud;
+            let mut new_port = serialport::new(port_name, self.baud).open()?;
+            new_port.clear(serialport::ClearBuffer::All)?;
             // Short non-zero timeout is needed to receive data from the serialport when
             // the buffer isn't full yet.
             new_port.set_timeout(std::time::Duration::from_millis(1))?;
             self.port = Some(new_port);
-
-            //setup commands for the radio
-            self.write_port(&[0x7E, 0x0A, 0x45, 0x20, 0x30, 0x0A, 0x6D, 0x20, 0x30, 0x0A])?;
-            self.parse_device_data(&mut vec![], &mut vec![])?;
-            self.write_port(&[
-                0x6D, 0x20, 0x32, 0x30, 0x0A, 0x6D, 0x20, 0x30, 0x0A, 0x63, 0x20, 0x73, 0x0A, 0x66,
-                0x0A, 0x76, 0x0A,
-            ])?;
-            self.parse_device_data(&mut vec![], &mut vec![])?;
-            self.write_port(&[
-                0x6D, 0x20, 0x32, 0x30, 0x0A, 0x6D, 0x20, 0x30, 0x0A, 0x63, 0x20, 0x46, 0x20, 0x34,
-                0x33, 0x35, 0x30, 0x35, 0x30, 0x0A, 0x6D, 0x20, 0x32, 0x30, 0x0A, 0x6D, 0x20, 0x30,
-                0x0A, 0x6D, 0x20, 0x32, 0x30, 0x0A, 0x6D, 0x20, 0x30, 0x0A, 0x63, 0x20, 0x54, 0x20,
-                0x30, 0x0A, 0x6D, 0x20, 0x32, 0x30, 0x0A, 0x6D, 0x20, 0x32, 0x30, 0x0A,
-            ])?;
         }
         Ok(())
     }
