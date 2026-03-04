@@ -18,7 +18,7 @@ use super::{
     midwest_adapter::register_midwest_packet_structures, serial_packet_parser::SerialPacketParser,
 };
 
-const PRINT_PARSING: bool = true;
+const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 /// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface.
@@ -42,14 +42,6 @@ impl CommsIF for BinaryFileAdapter {
     where
         Self: Sized,
     {
-        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-            if let Err(err) = register_midwest_packet_structures(ps_manager) {
-                eprintln!(
-                    "Failed to register Midwest packet structures for BinaryFileAdapter: {err}"
-                );
-            }
-        });
-
         BinaryFileAdapter {
             file: None,
             packet_parser: Default::default(),

@@ -10,7 +10,7 @@ use crate::{
 };
 
 use super::serial_packet_parser::SerialPacketParser;
-const PRINT_PARSING: bool = true;
+const PRINT_PARSING: bool = false;
 
 pub fn register_midwest_packet_structures(
     ps_manager: &mut PacketStructureManager,
@@ -26,8 +26,10 @@ pub fn register_midwest_packet_structures(
     // Midwest BNO Data Packet.
     let mut midwest_bno_structure = PacketStructure::default();
     midwest_bno_structure.ez_make(
-        "ba5eba11 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
+        "ba5eba11 u32 02 u8 0034 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
         &[
+            "timestamp",
+            "rocket_state",
             "acc_x",
             "acc_y",
             "acc_z",
@@ -48,8 +50,8 @@ pub fn register_midwest_packet_structures(
     // Midwest Alt Data Packet.
     let mut midwest_alt_structure = PacketStructure::default();
     midwest_alt_structure.ez_make(
-        "ba5eba11 F32 F32 ca11ab1e",
-        &["temperature", "pressure"],
+        "ba5eba11 u32 04 u8 0018 F32 F32 ca11ab1e",
+        &["timestamp", "rocket_state", "temperature", "pressure"],
         true,
     );
     midwest_alt_structure.name = "midwest_alt".to_owned();
@@ -60,9 +62,10 @@ pub fn register_midwest_packet_structures(
     // Midwest GPS Data Packet.
     let mut midwest_gps_structure = PacketStructure::default();
     midwest_gps_structure.ez_make(
-        // "ba5eba11 u32 _5 F32 F32 u32 _1 u8 u8 _2 F32 _4 ca11ab1e",
-        "ba5eba11 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
+        "ba5eba11 u32 08 u8 0028 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
         &[
+            "timestamp",
+            "rocket_state",
             "time_of_week",
             "pos_lat",
             "pos_lon",
@@ -81,8 +84,10 @@ pub fn register_midwest_packet_structures(
     // Midwest Control Telemetry Data Packet.
     let mut midwest_control_telemetry_structure = PacketStructure::default();
     midwest_control_telemetry_structure.ez_make(
-        "ba5eba11 F32 F32 F32 F32 F32 ca11ab1e",
+        "ba5eba11 u32 11 u8 0028 F32 F32 F32 F32 F32 F32 ca11ab1e",
         &[
+            "timestamp",
+            "rocket_state",
             "PD_error",
             "loop_update_rule",
             "target_pos",
@@ -117,8 +122,9 @@ impl CommsIF for MidwestAdapter {
     {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
             println!("Creating Midwest!");
-            register_midwest_packet_structures(ps_manager)
-                .expect("Failed to register Midwest packet structures");
+            if let Err(err) = register_midwest_packet_structures(ps_manager) {
+                eprintln!("Failed to register Midwest packet structures: {err}");
+            }
         });
         MidwestAdapter {
             port: None,
