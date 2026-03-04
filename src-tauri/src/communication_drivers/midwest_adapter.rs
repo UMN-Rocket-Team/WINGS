@@ -73,6 +73,7 @@ impl CommsIF for MidwestAdapter {
             // Midwest GPS Data Packet.
             let mut midwest_gps_structure = PacketStructure::default();
             midwest_gps_structure.ez_make(
+                // "ba5eba11 u32 _5 F32 F32 u32 _1 u8 u8 _2 F32 _4 ca11ab1e",
                 "ba5eba11 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
                 &[
                     "time_of_week",
@@ -178,15 +179,8 @@ impl CommsIF for MidwestAdapter {
         };
 
         let mut buffer = [0; 4096];
-        let _bytes_read = active_port.read(&mut buffer)?;
-        let str = from_utf8(&buffer)?;
-        let mut parsed_str = "".to_owned();
-        for c in str.chars() {
-            if c.is_ascii_hexdigit() {
-                parsed_str.push(c);
-            }
-        }
-        data_vector.append(&mut hex::decode(parsed_str)?);
+        let bytes_read = active_port.read(&mut buffer)?;
+        data_vector.extend_from_slice(&buffer[..bytes_read]);
         Ok(())
     }
 
