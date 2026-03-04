@@ -14,9 +14,11 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use super::serial_packet_parser::SerialPacketParser;
+use super::{
+    midwest_adapter::register_midwest_packet_structures, serial_packet_parser::SerialPacketParser,
+};
 
-const PRINT_PARSING: bool = false;
+const PRINT_PARSING: bool = true;
 
 #[derive(Default)]
 /// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface.
@@ -40,6 +42,14 @@ impl CommsIF for BinaryFileAdapter {
     where
         Self: Sized,
     {
+        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
+            if let Err(err) = register_midwest_packet_structures(ps_manager) {
+                eprintln!(
+                    "Failed to register Midwest packet structures for BinaryFileAdapter: {err}"
+                );
+            }
+        });
+
         BinaryFileAdapter {
             file: None,
             packet_parser: Default::default(),
@@ -80,12 +90,12 @@ impl CommsIF for BinaryFileAdapter {
 
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
         let mut buffer: [u8; 4096] = [0; 4096];
-        let _ = self
+        let bytes_read = self
             .file
             .as_mut()
             .context("failed to load file")?
             .read(&mut buffer)?; //question mark operator returns error if we fail
-        data_vector.append(&mut buffer.to_vec());
+        data_vector.extend_from_slice(&buffer[..bytes_read]);
         Ok(()) // returns ok if everything succeeded
     }
 

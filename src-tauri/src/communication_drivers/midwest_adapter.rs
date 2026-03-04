@@ -1,7 +1,4 @@
-use std::{
-    str::from_utf8,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use anyhow::bail;
 
@@ -13,7 +10,95 @@ use crate::{
 };
 
 use super::serial_packet_parser::SerialPacketParser;
-const PRINT_PARSING: bool = false;
+const PRINT_PARSING: bool = true;
+
+pub fn register_midwest_packet_structures(
+    ps_manager: &mut PacketStructureManager,
+) -> anyhow::Result<()> {
+    if ps_manager
+        .packet_structures
+        .iter()
+        .any(|packet_structure| packet_structure.name == "midwest_bno")
+    {
+        return Ok(());
+    }
+
+    // Midwest BNO Data Packet.
+    let mut midwest_bno_structure = PacketStructure::default();
+    midwest_bno_structure.ez_make(
+        "ba5eba11 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
+        &[
+            "acc_x",
+            "acc_y",
+            "acc_z",
+            "gyro_x",
+            "gyro_y",
+            "gyro_z",
+            "eul_heading",
+            "eul_roll",
+            "eul_pitch",
+        ],
+        true,
+    );
+    midwest_bno_structure.name = "midwest_bno".to_owned();
+    ps_manager
+        .register_packet_structure(&mut midwest_bno_structure)
+        .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+    // Midwest Alt Data Packet.
+    let mut midwest_alt_structure = PacketStructure::default();
+    midwest_alt_structure.ez_make(
+        "ba5eba11 F32 F32 ca11ab1e",
+        &["temperature", "pressure"],
+        true,
+    );
+    midwest_alt_structure.name = "midwest_alt".to_owned();
+    ps_manager
+        .register_packet_structure(&mut midwest_alt_structure)
+        .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+    // Midwest GPS Data Packet.
+    let mut midwest_gps_structure = PacketStructure::default();
+    midwest_gps_structure.ez_make(
+        // "ba5eba11 u32 _5 F32 F32 u32 _1 u8 u8 _2 F32 _4 ca11ab1e",
+        "ba5eba11 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
+        &[
+            "time_of_week",
+            "pos_lat",
+            "pos_lon",
+            "height_msl",
+            "fixType",
+            "numSatellites",
+            "pDOP",
+        ],
+        true,
+    );
+    midwest_gps_structure.name = "midwest_gps".to_owned();
+    ps_manager
+        .register_packet_structure(&mut midwest_gps_structure)
+        .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+    // Midwest Control Telemetry Data Packet.
+    let mut midwest_control_telemetry_structure = PacketStructure::default();
+    midwest_control_telemetry_structure.ez_make(
+        "ba5eba11 F32 F32 F32 F32 F32 ca11ab1e",
+        &[
+            "PD_error",
+            "loop_update_rule",
+            "target_pos",
+            "model_vel",
+            "model_theta",
+            "model_servo_command",
+        ],
+        true,
+    );
+    midwest_control_telemetry_structure.name = "midwest_control_telemetry".to_owned();
+    ps_manager
+        .register_packet_structure(&mut midwest_control_telemetry_structure)
+        .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+    Ok(())
+}
 
 #[derive(Default)]
 pub struct MidwestAdapter {
@@ -32,83 +117,8 @@ impl CommsIF for MidwestAdapter {
     {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
             println!("Creating Midwest!");
-            //################################
-            //Midwest Hardcoded packets start here
-            //################################
-
-            // Midwest BNO Data Packet.
-            let mut midwest_bno_structure = PacketStructure::default();
-            midwest_bno_structure.ez_make(
-                "ba5eba11 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
-                &[
-                    "acc_x",
-                    "acc_y",
-                    "acc_z",
-                    "gyro_x",
-                    "gyro_y",
-                    "gyro_z",
-                    "eul_heading",
-                    "eul_roll",
-                    "eul_pitch",
-                ],
-                true,
-            );
-            midwest_bno_structure.name = "midwest_bno".to_owned();
-            ps_manager
-                .register_packet_structure(&mut midwest_bno_structure)
-                .expect("Failed to register test packet");
-
-            // Midwest Alt Data Packet.
-            let mut midwest_alt_structure = PacketStructure::default();
-            midwest_alt_structure.ez_make(
-                "ba5eba11 F32 F32 ca11ab1e",
-                &["temperature", "pressure"],
-                true,
-            );
-            midwest_alt_structure.name = "midwest_alt".to_owned();
-            ps_manager
-                .register_packet_structure(&mut midwest_alt_structure)
-                .expect("Failed to register test packet");
-
-            // Midwest GPS Data Packet.
-            let mut midwest_gps_structure = PacketStructure::default();
-            midwest_gps_structure.ez_make(
-                // "ba5eba11 u32 _5 F32 F32 u32 _1 u8 u8 _2 F32 _4 ca11ab1e",
-                "ba5eba11 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
-                &[
-                    "time_of_week",
-                    "pos_lat",
-                    "pos_lon",
-                    "height_msl",
-                    "fixType",
-                    "numSatellites",
-                    "pDOP",
-                ],
-                true,
-            );
-            midwest_gps_structure.name = "midwest_gps".to_owned();
-            ps_manager
-                .register_packet_structure(&mut midwest_gps_structure)
-                .expect("Failed to register test packet");
-
-            // Midwest Control Telemetry Data Packet.
-            let mut midwest_control_telemetry_structure = PacketStructure::default();
-            midwest_control_telemetry_structure.ez_make(
-                "ba5eba11 F32 F32 F32 F32 F32 ca11ab1e",
-                &[
-                    "PD_error",
-                    "loop_update_rule",
-                    "target_pos",
-                    "model_vel",
-                    "model_theta",
-                    "model_servo_command",
-                ],
-                true,
-            );
-            midwest_control_telemetry_structure.name = "midwest_control_telemetry".to_owned();
-            ps_manager
-                .register_packet_structure(&mut midwest_control_telemetry_structure)
-                .expect("Failed to register test packet");
+            register_midwest_packet_structures(ps_manager)
+                .expect("Failed to register Midwest packet structures");
         });
         MidwestAdapter {
             port: None,
