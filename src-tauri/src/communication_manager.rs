@@ -319,7 +319,7 @@ impl CommunicationManager {
         self.comms_objects[self.comms_objects.len() - 1].get_id()
     }
 
-    /// Adds an byte reading device object to the manager
+    /// Adds a byte reading device object to the manager
     pub fn add_binary_adapter(&mut self) -> usize {
         let mut new_device: BinaryFileAdapter = BinaryFileAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);

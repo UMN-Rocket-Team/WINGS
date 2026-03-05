@@ -190,7 +190,7 @@ impl PacketStructure {
 }
 
 // #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
-/// Represents metadata fields within a packet.
+// Represents metadata fields within a packet.
 // pub struct PacketMetaDataFields {
 //     pub(crate) index: usize,
 //     pub(crate) name: String,

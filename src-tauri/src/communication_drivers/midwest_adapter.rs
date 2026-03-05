@@ -23,7 +23,9 @@ pub fn register_midwest_packet_structures(
         return Ok(());
     }
 
-    println!("Creating Midwest!");
+    if PRINT_PARSING {
+        println!("Creating Midwest!");
+    }
 
     // Midwest BNO Data Packet.
     let mut midwest_bno_structure = PacketStructure::default();
@@ -170,7 +172,7 @@ impl CommsIF for MidwestAdapter {
     fn write_port(&mut self, packet: &[u8]) -> anyhow::Result<()> {
         let port = match self.port.as_mut() {
             Some(port) => port,
-            None => bail!("No active test port"),
+            None => bail!("No serial port initialized for Midwest adapter."),
         };
 
         port.write_all(packet)?;
