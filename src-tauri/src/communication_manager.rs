@@ -17,8 +17,9 @@ use serde::Serialize;
 use crate::{
     communication_drivers::{
         aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter,
-        featherweight_adapter::FeatherweightAdapter, serial_port_adapter::SerialPortAdapter,
-        teledongle_adapter::TeleDongleAdapter, midwest_adapter::MidwestAdapter,
+        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter, 
+        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter, 
+        midwest_adapter::MidwestAdapter,
     },
     file_handling::log_handlers::LogHandler,
     models::packet::Packet,
@@ -253,8 +254,10 @@ impl CommunicationManager {
         let index = self.find(id, false);
         match index {
             Some(index) => {
-                let name = if self.comms_objects[index].get_type() == "ByteFile"
-                    || self.comms_objects[index].get_type() == "TeleDongle"
+                let device_type = self.comms_objects[index].get_type();
+                let name = if device_type == "ByteFile"
+                    || device_type == "TeleDongle"
+                    || device_type == "CSVFile"
                 {
                     port_name
                 } else {
@@ -317,8 +320,18 @@ impl CommunicationManager {
     }
 
     /// Adds an byte reading device object to the manager
-    pub fn add_file_manager(&mut self) -> usize {
+    pub fn add_binary_adapter(&mut self) -> usize {
         let mut new_device: BinaryFileAdapter = BinaryFileAdapter::new(self.ps_manager.clone());
+        new_device.set_id(self.id_iterator);
+        self.id_iterator += 1;
+        self.comms_objects
+            .push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        self.comms_objects[self.comms_objects.len() - 1].get_id()
+    }
+
+    /// Adds a CSV reading device object to the manager
+    pub fn add_csv_adapter(&mut self) -> usize {
+        let mut new_device: CSVReadDriver = CSVReadDriver::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects

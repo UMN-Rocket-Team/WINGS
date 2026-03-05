@@ -59,12 +59,12 @@ const SendingTab: Component = () => {
     const addFileDirectory = async (filePaths: string | string[] | null) => {
         if (Array.isArray(filePaths)) {
             for (const path of filePaths) {
-                ([...comDeviceSelections, { id: comDevicesIterator++, selection: path }]);
-                addFileManager(path);
+                setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: path }]);
+                await addFileManager(path);
             }
         } else if (filePaths != null) {
             setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: filePaths }]);
-            addFileManager(filePaths);
+            await addFileManager(filePaths);
         }
     };
 
@@ -86,6 +86,12 @@ const SendingTab: Component = () => {
                         const recentPaths = (await store.get("recentSaves") || []) as string[];
                         showModal(FileModal, {
                             pathStrings: recentPaths,
+                            importWindowOptions: {
+                                title: "Select File(s)",
+                                multiple: true,
+                                filterName: "DataFiles",
+                                extensions: ["json", "wings", "TXT", "csv"],
+                            },
                             callBack: addFileDirectory
                         });
                     }}>
