@@ -23,6 +23,8 @@ pub fn register_midwest_packet_structures(
         return Ok(());
     }
 
+    println!("Creating Midwest!");
+
     // Midwest BNO Data Packet.
     let mut midwest_bno_structure = PacketStructure::default();
     midwest_bno_structure.ez_make(
@@ -121,7 +123,6 @@ impl CommsIF for MidwestAdapter {
         Self: Sized,
     {
         use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-            println!("Creating Midwest!");
             if let Err(err) = register_midwest_packet_structures(ps_manager) {
                 eprintln!("Failed to register Midwest packet structures: {err}");
             }
