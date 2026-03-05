@@ -42,6 +42,12 @@ impl CommsIF for BinaryFileAdapter {
     where
         Self: Sized,
     {
+        // register midwest packet structures for binary files from Midwest flights
+        use_state_in_mutex(&packet_structure_manager, &mut |ps_ref| {
+            if let Err(err) = register_midwest_packet_structures(ps_ref) {
+                eprintln!("Failed to register Midwest packet structures: {err}");
+            }
+        });
         BinaryFileAdapter {
             file: None,
             packet_parser: Default::default(),
