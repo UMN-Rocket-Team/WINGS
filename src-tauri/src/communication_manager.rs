@@ -17,8 +17,9 @@ use serde::Serialize;
 use crate::{
     communication_drivers::{
         aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter,
-        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter,
-        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter,
+        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter, 
+        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter, 
+        midwest_adapter::MidwestAdapter,
     },
     file_handling::log_handlers::LogHandler,
     models::packet::Packet,
@@ -318,7 +319,7 @@ impl CommunicationManager {
         self.comms_objects[self.comms_objects.len() - 1].get_id()
     }
 
-    /// Adds an byte reading device object to the manager
+    /// Adds a byte reading device object to the manager
     pub fn add_binary_adapter(&mut self) -> usize {
         let mut new_device: BinaryFileAdapter = BinaryFileAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
@@ -352,6 +353,17 @@ impl CommunicationManager {
     pub fn add_featherweight(&mut self) -> usize {
         let mut new_device: FeatherweightAdapter =
             FeatherweightAdapter::new(self.ps_manager.clone());
+        new_device.set_id(self.id_iterator);
+        self.id_iterator += 1;
+        self.comms_objects
+            .push(Box::new(new_device) as Box<dyn CommsIF + Send>);
+        self.comms_objects[self.comms_objects.len() - 1].get_id()
+    }
+
+    /// Adds an byte reading device object to the manager
+    pub fn add_midwest(&mut self) -> usize {
+        let mut new_device: MidwestAdapter =
+            MidwestAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects

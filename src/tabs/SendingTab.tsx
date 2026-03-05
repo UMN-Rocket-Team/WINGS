@@ -1,6 +1,6 @@
 import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
 import { ComDevice, ProductName, SendingModes } from "../backend_interop/types";
@@ -147,6 +147,19 @@ const SendingTab: Component = () => {
                     }}
                 >
                     add FeatherWeight
+                </button>
+                <button class="border border-black bg-gray dark:bg-gray-800 rounded-md"
+                    onClick={async () => {
+                        const newDevice = {
+                            id: comDevicesIterator++,
+                            selection: "",
+                            productName: "midwest" as ProductName
+                        };
+                        setComDeviceSelections(comDeviceSelections.length, newDevice);
+                        await addMidwest()
+                    }}
+                >
+                    add Midwest
                 </button>
                 <For each={comDeviceList()}>
                     {(device, device_index) =>
