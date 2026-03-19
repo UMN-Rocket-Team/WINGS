@@ -9,7 +9,7 @@ use crate::{
     state::mutex_utils::use_state_in_mutex,
 };
 
-use super::serial_packet_parser::SerialPacketParser;
+use super::midwest_parser::MidwestParser;
 const PRINT_PARSING: bool = false;
 
 pub fn register_midwest_packet_structures(
@@ -112,7 +112,7 @@ pub fn register_midwest_packet_structures(
 #[derive(Default)]
 pub struct MidwestAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: SerialPacketParser,
+    packet_parser: MidwestParser,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
