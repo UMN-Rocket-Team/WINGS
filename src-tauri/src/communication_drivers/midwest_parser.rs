@@ -222,6 +222,36 @@ mod tests {
         assert_eq!(parsed[0].field_data[4], PacketFieldValue::Number(4.0));
     }
 
+    #[test]
+    fn test_pitch_phase_shift() {
+        let mut packet_structure_manager = PacketStructureManager::default();
+        let mut p_structure = PacketStructure::make_default("Test Structure".to_owned());
+        p_structure.ez_make(
+            "ba5eba11 0010 0008 i64 u16 u16 u8 u8 _4 ca11ab1e",
+            &["eul_pitch"; 5],
+            true,
+        );
+        let id = packet_structure_manager
+            .register_packet_structure(&mut p_structure)
+            .unwrap();
+        let mut packet_parser = MidwestParser::default();
+        let data = [
+            0x11, 0xBA, 0x5E, 0xBA, 0x10, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x1E, 0xAB, 0x11, 0xCA,
+        ];
+        packet_parser.push_data(&data, false);
+        let parsed = packet_parser
+            .parse_packets(&packet_structure_manager, false)
+            .expect("");
+        assert_eq!(parsed[0].structure_id, id); //does the packet have the right ID?
+        assert_eq!(parsed[0].field_data[0], PacketFieldValue::Number(0.0 - 90.0)); //does the data parse correctly?
+        assert_eq!(parsed[0].field_data[1], PacketFieldValue::Number(1.0 - 90.0));
+        assert_eq!(parsed[0].field_data[2], PacketFieldValue::Number(2.0 - 90.0));
+        assert_eq!(parsed[0].field_data[3], PacketFieldValue::Number(3.0 - 90.0));
+        assert_eq!(parsed[0].field_data[4], PacketFieldValue::Number(4.0 - 90.0));
+    }
+
     /// test that data isn't mistaken for packets
     #[test]
     fn can_data_be_mistaken_for_delimiters() {
