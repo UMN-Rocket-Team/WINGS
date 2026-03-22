@@ -15,7 +15,7 @@ use std::{
 };
 
 use super::{
-    midwest_adapter::register_midwest_packet_structures, midwest_parser::MidwestParser,
+    midwest_adapter::register_midwest_packet_structures, serial_packet_parser::SerialPacketParser,
 };
 
 const PRINT_PARSING: bool = false;
@@ -33,7 +33,7 @@ const PRINT_PARSING: bool = false;
 pub struct BinaryFileAdapter {
     file: Option<File>,
     id: usize,
-    packet_parser: MidwestParser,
+    packet_parser: SerialPacketParser,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 impl CommsIF for BinaryFileAdapter {
