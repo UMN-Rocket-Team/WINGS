@@ -1,6 +1,6 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
-import { For, JSX, Show, createSignal, onMount } from "solid-js";
+import { For, JSX, Show, createEffect, createSignal, onMount } from "solid-js";
 import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponentType, PacketField } from "../backend_interop/types";
@@ -30,8 +30,9 @@ export class BooleanStruct implements DisplayStruct {
 const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element => {
     const { PacketStructureViewModels } = useBackend();
     const signs = ["<", "=", ">"];
+
     // used to restore previous name when user enters something invalid
-    let oldName = props.displayStruct.displayName;
+    let oldName = createEffect(() => props.displayStruct.displayName);
 
     const [displayInfo, setDisplayInfo] = createSignal(false); // Is info about the display being displayed?
 
@@ -39,10 +40,10 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
 
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
-        infoIconRef?.addEventListener("mouseout", (e) => {
+        infoIconRef?.addEventListener("mouseout", () => {
             setDisplayInfo(false);
         });
-        infoIconRef?.addEventListener("mouseover", (e) => {
+        infoIconRef?.addEventListener("mouseover", () => {
             setDisplayInfo(true);
         });
     });

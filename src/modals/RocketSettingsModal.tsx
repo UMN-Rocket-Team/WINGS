@@ -44,7 +44,7 @@ const FieldList = (props: {
             </option>
             <For
                 each={props.packet.components.filter(i => i.type === PacketComponentType.Field)}
-            >{(component, componentIndex) => {
+            >{(component) => {
                 const field = component.data as PacketField;
                 return (
                     <option value={field.index}>
@@ -69,10 +69,10 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
 
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
-        infoIconRef?.addEventListener("mouseout", (e) => {
+        infoIconRef?.addEventListener("mouseout", () => {
             setDisplayInfo(false);
         });
-        infoIconRef?.addEventListener("mouseover", (e) => {
+        infoIconRef?.addEventListener("mouseover", () => {
             setDisplayInfo(true);
         });
     });
@@ -167,7 +167,7 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                 <option value={-1}>
                     (None)
                 </option>
-                <For each={PacketStructureViewModels}>{(packetViewModel, packetIdx) => (
+                <For each={PacketStructureViewModels}>{(packetViewModel) => (
                     <option value={packetViewModel.id}>
                         {packetViewModel.name}
                     </option>

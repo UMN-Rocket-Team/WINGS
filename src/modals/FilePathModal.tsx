@@ -3,8 +3,12 @@ import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX } from "solid-js";
 import { runImportPacketWindow } from "../core/file_handling";
 
+interface callbackFunction {
+    (filePaths: string[] | string | null): void;
+}
+
 /**
- * The properties required for the {@link ErrorModal} component.
+ * The properties required for the {@link FileModal} component.
  */
 export type FileModalProps = {
     /**
@@ -15,7 +19,7 @@ export type FileModalProps = {
     /**
      * call this with the string returned from the modal 
      */
-    callBack: Function;
+    callBack: callbackFunction;
 };
 
 /**

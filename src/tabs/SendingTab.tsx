@@ -1,4 +1,4 @@
-import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
+import { Component, batch, createSignal, For } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";

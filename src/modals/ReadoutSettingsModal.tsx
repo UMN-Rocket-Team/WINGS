@@ -35,10 +35,10 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
     
     let infoIconRef: HTMLImageElement | undefined;
     onMount(() => { // Events for hovering over info icon
-        infoIconRef?.addEventListener("mouseout", (e) => {
+        infoIconRef?.addEventListener("mouseout", () => {
             setDisplayInfo(false);
         });
-        infoIconRef?.addEventListener("mouseover", (e) => {
+        infoIconRef?.addEventListener("mouseover", () => {
             setDisplayInfo(true);
         });
     });

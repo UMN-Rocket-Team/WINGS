@@ -1,6 +1,6 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
-import { For, JSX, createSignal, Show, onMount } from "solid-js";
+import { For, JSX, createSignal, Show, onMount, createEffect } from "solid-js";
 import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
@@ -32,7 +32,11 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
-    const [graphCurrName, setName] = createSignal(props.displayStruct.displayName);
+    const [graphCurrName, setName] = createSignal("");
+
+    createEffect(() => {
+        setName(props.displayStruct.displayName);
+    });
 
     const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as GraphStruct);
 
@@ -88,7 +92,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
         if (isChecked) {
             setDisplays(produce((s) => {
                 if (s[graphIndex]!.packetID != packet_id) {
-                    (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(_ => false); //sets all y values to false
+                    (s[graphIndex] as GraphStruct).y.map(() => false); //sets all y values to false
                     s[graphIndex]!.packetID = packet_id;
                 }
                 (s[graphIndex] as GraphStruct).x = fieldIndex;

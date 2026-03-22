@@ -88,7 +88,7 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
         if (isChecked) {
             setDisplays(produce((s) => {
                 if (s[graphIndex]!.packetID != packet_id) {
-                    (s[graphIndex] as OscilloscopeGraphStruct).y = (s[graphIndex] as OscilloscopeGraphStruct).y.filter(_ => false); //sets all y values to false
+                    (s[graphIndex] as OscilloscopeGraphStruct).y.map(() => false); //sets all y values to false
                     s[graphIndex]!.packetID = packet_id;
                 }
                 (s[graphIndex] as OscilloscopeGraphStruct).x = fieldIndex;
@@ -107,7 +107,7 @@ const OscilloscopeGraphSettingsModal = (props: ModalProps<SettingsModalProps>): 
     }
 
     const deleteGraph = (index: number) => {
-        let newGraphs: DisplayStruct[] = [];
+        const newGraphs: DisplayStruct[] = [];
         for (let i = 0; i < displays.length; i++) {
             if (index !== i) {
                 newGraphs.push(displays[i]!);

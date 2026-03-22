@@ -11,5 +11,6 @@
     "types": ["vite/client","vitest/importMeta"],
     "noEmit": true,
     "isolatedModules": true,
+    "ignoreDeprecations": "6.0"
   }
 }
