@@ -1,71 +1,69 @@
-import { Component, For, JSX, Show } from "solid-js";
+import { Component, For, JSX, Show, Switch, Match } from "solid-js";
 import { displays, FlexviewObject, flexviewObjects } from "../components/DisplaySettingsScreen";
 import { displayRegistry} from "../core/display_registry";
 
-const RecursiveFlexviewViewer = (props: {
-    object: FlexviewObject
-}) => {
-    if (props.object!.type === 'display') {
-        const display = props.object!;
-        const typeDef = displayRegistry.get(displays[display.index]!.type)!;
-        const DisplayComponent = typeDef?.displayComponent;
-        return (
-            <div
-                class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray-700 dark:border-gray-300 p-2"
-            >
-                <DisplayComponent {...displays[display.index]!} />
+const RecursiveFlexviewViewer = (props: { object: FlexviewObject }) => {
+  return (
+    <Switch fallback={<div>Unknown flexview object</div>}>
+
+      <Match when={props.object!.type === "display" ? props.object : null}>
+        {(disp) => {
+          const display = disp();
+
+          const typeDef = displayRegistry.get(displays[display.index]!.type)!;
+          const DisplayComponent = typeDef.displayComponent;
+
+          return (
+            <div class="overflow-hidden w-full h-full flex flex-shrink items-center justify-center border-2 border-gray-700 dark:border-gray-300 p-2">
+              <DisplayComponent {...displays[display.index]!} />
             </div>
-        );
-    }
+          );
+        }}
+      </Match>
 
-    if (props.object!.type === 'layout') {
-        const layout = props.object!;
+      <Match when={props.object!.type === "layout" ? props.object : null}>
+        {(layoutObj) => {
+          const layout = layoutObj();
 
-        // getting the total of all weights so that we can normalize them later
-        const totalWeight = () => {
-            let weightSum = 0;
-            for (const w of layout.weights){
-                weightSum += w
-            }
-            return weightSum;
-        }
+          const totalWeight = () =>
+            layout.weights.reduce((a, b) => a + b, 0);
 
-        return (
+          return (
             <div
-                class="overflow-hidden w-full h-full flex items-stretch justify-center border-2 border-gray-400 dark:border-gray-600 p-2 gap-2"
-                style={{
-                    "flex-direction": layout.direction
-                }}
+              class="overflow-hidden w-full h-full flex items-stretch justify-center border-2 border-gray-400 dark:border-gray-600 p-2 gap-2"
+              style={{ "flex-direction": layout.direction }}
             >
-                <Show
-                    when={layout.children.length > 0}
-                    fallback={(
-                        <p>Empty layout</p>
-                    )}
-                >
-                    <For each={layout.children}>{(childObjectId, childObjectIndex) =>
-                        { 
-                            const weight_calc = () => `${(layout.weights[childObjectIndex()]/totalWeight()) * 100}%`;
-                        return(<div
-                            style={layout.direction === 'column' ? {
-                                height: weight_calc()
-                            } : {
-                                width: weight_calc()
-                            }}
-                        >
-                            <RecursiveFlexviewViewer
-                                object={flexviewObjects[childObjectId]}
-                            />
-                        </div>)}}</For>
-                </Show>
-            </div>
-        );
-    }
+              <Show when={layout.children.length > 0} fallback={<p>Empty layout</p>}>
+                <For each={layout.children}>
+                  {(childId, i) => {
+                    const weight = () =>
+                      `${(layout.weights[i()] / totalWeight()) * 100}%`;
 
-    return (
-        <div>Unknown flexview object</div>
-    );
+                    return (
+                      <div
+                        style={
+                          layout.direction === "column"
+                            ? { height: weight() }
+                            : { width: weight() }
+                        }
+                      >
+                        <RecursiveFlexviewViewer
+                          object={flexviewObjects[childId]}
+                        />
+                      </div>
+                    );
+                  }}
+                </For>
+              </Show>
+            </div>
+          );
+        }}
+      </Match>
+
+    </Switch>
+  );
 };
+
 
 const DisplayTab: Component = (): JSX.Element => {
     return (

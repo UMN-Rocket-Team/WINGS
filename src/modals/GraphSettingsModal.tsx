@@ -1,6 +1,6 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
-import { For, JSX, createSignal, Show, onMount } from "solid-js";
+import { For, JSX, createSignal, Show, onMount, createEffect } from "solid-js";
 import { SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { PacketComponent, PacketComponentType, PacketField, PacketStructureViewModel } from "../backend_interop/types";
@@ -32,7 +32,11 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
     const { PacketStructureViewModels } = useBackend();
 
     /** Signal used to help handleInput revert from blank inputs to most recent name */
-    const [graphCurrName, setName] = createSignal(props.displayStruct.displayName);
+    const [graphCurrName, setName] = createSignal("");
+
+    createEffect(() => {
+        setName(props.displayStruct.displayName);
+    });
 
     const [displayStruct, setDisplayStruct] = createStore(props.displayStruct as GraphStruct);
 
@@ -88,7 +92,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
         if (isChecked) {
             setDisplays(produce((s) => {
                 if (s[graphIndex]!.packetID != packet_id) {
-                    (s[graphIndex] as GraphStruct).y = (s[graphIndex] as GraphStruct).y.filter(_ => false); //sets all y values to false
+                    (s[graphIndex] as GraphStruct).y.map(() => false); //sets all y values to false
                     s[graphIndex]!.packetID = packet_id;
                 }
                 (s[graphIndex] as GraphStruct).x = fieldIndex;
@@ -135,13 +139,15 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                 <div class='flex flex-row leading-none justify-between mb-4'>
                     <img alt="Info" src={infoIcon} ref={infoIconRef} draggable={false} class="relative top-0 w-[23px] dark:invert z-[3]" />
 
-                    <h3 contenteditable={true} class="m-2 text-center font-bold w-[82%] absolute left-[50%] translate-x-[-50%]"
+                    <div role="textbox" tabIndex={0} contentEditable={true} class="m-2 text-center font-bold text-2xl w-[82%] absolute left-[50%] translate-x-[-50%]"
                         onBlur={handleInput} onKeyDown={handleKeyDown}>
                         {graphCurrName()}
-                    </h3>
+                    </div>
 
-                    <img alt="Settings" src={settingsIcon} draggable={false} onClick={() => setDisplaySettings(s => !s)}
-                        class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer" />
+                    <button onClick={() => setDisplaySettings(s => !s)} class="relative top-0 w-[25px] dark:invert z-[1] cursor-pointer">
+                        <img alt="Settings" src={settingsIcon} draggable={false}
+                            class="w-[25px]" />
+                    </button>
                 </div>
 
                 <Show when={displaySettings()}>
@@ -169,7 +175,7 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                 <For each={PacketStructureViewModels}>
                     {(PacketStructureViewModel: PacketStructureViewModel, packetIdx) =>
                         <div class='flex flex-col mb-4'>
-                            <div class='flex gap-2 leading-none w-fit cursor-pointer'
+                            <button class='flex gap-2 leading-none w-fit cursor-pointer'
                                 onClick={() => {
                                     setDisplays(produce(s => {
                                         const struct = (s[props.index] as GraphStruct);
@@ -177,12 +183,10 @@ const GraphSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element 
                                     }));
                                     store.set("display", displays);
                                 }}>
-                                <img alt="Dropdown" src={dropdownIcon}
-                                    class={`h-4 dark:invert`}
-                                    style={`transform: rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"});`}
-                                    draggable={false} />
+                                <img alt="Dropdown" src={dropdownIcon} class={`h-4 dark:invert`} draggable={false}
+                                    style={{transform: `rotate(${displays[props.index]?.packetsDisplayed[packetIdx()] ? "0deg" : "270deg"})`}} />
                                 <h3 class='font-bold'>{PacketStructureViewModel.name}</h3>
-                            </div>
+                            </button>
 
                             <Show when={displays[props.index]?.packetsDisplayed[packetIdx()]}>
                                 <div class='flex bg-neutral-200 dark:bg-gray-700 p-4 pt-0 pb-0 rounded-lg'>
