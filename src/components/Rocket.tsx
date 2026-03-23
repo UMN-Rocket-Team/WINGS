@@ -140,7 +140,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
         const dummy = new THREE.Mesh();
 
         const angle = (2 * Math.PI / model.numFins) * i;
-        dummy.rotateY(angle + Math.PI / 2);
+        dummy.rotateY(model.bodyTubeRadius ) * Math.sin(angle);
         dummy.position.z = (model.bodyTubeRadius ) * Math.cos(angle);
         dummy.position.x = (model.bodyTubeRadius ) * Math.sin(angle);
         dummy.position.y = -(model.bodyTubeLength + model.noseConeLength);
