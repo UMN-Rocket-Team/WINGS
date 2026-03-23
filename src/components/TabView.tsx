@@ -49,7 +49,7 @@ const TabView: Component<ParentProps<TabViewProps>> = (props) => {
                     {props.children}
                 </nav>
 
-                <div class="flex flex-grow flex-shrink">
+                <div class="flex flex-col flex-grow overflow-auto h-screen w-fullmin-h-0">
                     {props.tabs[selectedTabIndex()]({})}
                 </div>
             </div>
