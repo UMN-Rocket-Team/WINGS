@@ -129,6 +129,9 @@ fn iterate_receiving_loop(
             });
         },
     );
+    if result.parsed_packets.len() > 0 {
+        result.got_data = true;
+    }
     Ok(result)
 }
 

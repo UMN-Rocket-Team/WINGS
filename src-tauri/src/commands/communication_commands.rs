@@ -4,12 +4,12 @@
 //! communication devices, as well as updating the frontend with device changes.
 //! It interacts with the CommunicationManager and emits updates to the frontend.
 
-use tauri::{AppHandle, Manager};
-
 use crate::{
     communication_manager::{CommunicationManager, CommunicationManagerState},
     state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
 };
+use std::path::Path;
+use tauri::{AppHandle, Manager};
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
 /// Helper function for sending out an update of all coms manager devices.
@@ -147,7 +147,17 @@ pub fn add_file_manager(
     use_state_in_mutex(
         &communication_manager_state,
         &mut |communication_manager: &mut CommunicationManager| {
-            let new_id = communication_manager.add_file_manager();
+            let is_csv = Path::new(file_path)
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map_or(false, |ext| ext.eq_ignore_ascii_case("csv"));
+
+            let new_id = if is_csv {
+                communication_manager.add_csv_adapter()
+            } else {
+                communication_manager.add_binary_adapter()
+            };
+
             let _ = communication_manager.init_device(file_path, 0, new_id);
             update_coms(&app_handle, communication_manager);
         },
@@ -199,6 +209,31 @@ pub fn add_featherweight(
         &communication_manager_state,
         &mut |communication_manager: &mut CommunicationManager| {
             communication_manager.add_featherweight();
+            update_coms(&app_handle, communication_manager);
+        },
+    );
+    Ok(())
+}
+
+/// Adds a new Midwest device to the communication manager.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
+#[tauri::command(async)]
+pub fn add_midwest(
+    app_handle: AppHandle,
+    communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+) -> Result<(), String> {
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            communication_manager.add_midwest();
             update_coms(&app_handle, communication_manager);
         },
     );

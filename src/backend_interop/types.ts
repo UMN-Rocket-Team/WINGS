@@ -13,6 +13,20 @@ export type SerialUpdateResult = {
     parsedPackets: Packet[] | null,
 }
 
+/** 
+ * COTS product names that WINGS supports
+ */
+export type ProductName = "altusMetrum" | "rfd" | "featherweight" | "aim" | "midwest";
+
+/**
+ * Type of communications device
+ */
+export type ComDevice = {
+    id: number,
+    selection: string,
+    productName?: ProductName,
+}
+
 /**
  * The names of a serial port.
  */

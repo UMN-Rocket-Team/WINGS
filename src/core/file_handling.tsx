@@ -2,7 +2,7 @@ import { open, save } from '@tauri-apps/api/dialog';
 import { PacketStructureViewModel, PacketComponentType } from "../backend_interop/types";
 import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
 import { addPacket } from "../backend_interop/api_calls";
-import { Store } from"tauri-plugin-store-api";
+import { Store } from "tauri-plugin-store-api";
 /**
  * Exports the given PacketStructureViewModel as a .json file via a dialogue window.
  * 
@@ -32,11 +32,11 @@ const exportToLocation = async (selectedFilePath: string | null, packetView: Pac
     if (selectedFilePath != null) {
         let data: string = JSON.stringify(packetView);
         let filePathString: string = selectedFilePath as string;
-        
-        await writeTextFile({ contents: data, path: filePathString});
-        return(filePathString);
+
+        await writeTextFile({ contents: data, path: filePathString });
+        return (filePathString);
     }
-    return("");
+    return ("");
 }
 
 /**
@@ -47,10 +47,10 @@ const exportToLocation = async (selectedFilePath: string | null, packetView: Pac
 const updatePersistentFilePaths = async (filePathString: string) => {
     //adds new file directory to persistent data
     let prevSaves: String[] | null = await store.get("recentSaves");
-    if( Array.isArray(prevSaves)){
+    if (Array.isArray(prevSaves)) {
 
         //limit length
-        if (prevSaves.length >= 10){
+        if (prevSaves.length >= 10) {
             prevSaves.shift();
 
         }
@@ -73,12 +73,35 @@ const updatePersistentFilePaths = async (filePathString: string) => {
  * 
  * Creates a file dialogue box, allowing user to select multiple .json packet files. returns the file directories of said packets
  */
-export const runImportPacketWindow = async () => {
-    const selectedFilePaths = await open({ title: 'Import Flight Data', multiple: true, filters: [{ name: 'FlightData', extensions: ['json','wings','TXT'] }] });
+export type ImportWindowOptions = {
+    title?: string;
+    multiple?: boolean;
+    filterName?: string;
+    extensions?: string[];
+};
+
+export const runImportPacketWindow = async (options: ImportWindowOptions = {}) => {
+    const {
+        title = 'Import Flight Data',
+        multiple = true,
+        filterName = 'FlightData',
+        extensions = [],
+    } = options;
+
+    const openOptions: Parameters<typeof open>[0] = {
+        title,
+        multiple,
+        ...(extensions.length > 0 
+            ? { filters: [{ name: filterName, extensions }] } 
+            : {}
+        ),
+    };
+
+    const selectedFilePaths = await open(openOptions);
     return selectedFilePaths;
 }
 
-export const importPacketsFromDirectories = async (filePaths: string | string[] | null)=>{
+export const importPacketsFromDirectories = async (filePaths: string | string[] | null) => {
     const filePackets = await openPackets(filePaths);
     for (const packetView of filePackets) {
         addPacket(packetView);
@@ -115,7 +138,7 @@ export const openPackets = async (selectedFilePaths: string | string[] | null) =
  */
 const readPathAsPacket = async (path: string) => {
     let contents: string = await readTextFile(path as string);
-    
+
     let parsedContents: PacketStructureViewModel = JSON.parse(contents);
     return parsedContents;
 }
@@ -124,29 +147,29 @@ const readPathAsPacket = async (path: string) => {
 if (import.meta.vitest) {
     const { beforeEach, afterEach, describe, expect, it, vi } = import.meta.vitest
     const testDirectoryContents = '{"id":0,"name":"testPacketView","components":[{"type":"Delimiter","data":{"index":0,"name":"testDelimiter","identifier":"1D3NT1TY","offsetInPacket":0}}]}'
-    const testPacketView = {id: 0, name: "testPacketView", components: [{type: PacketComponentType.Delimiter,data:{index: 0,name: "testDelimiter", identifier: "1D3NT1TY", offsetInPacket: 0}}]};
+    const testPacketView = { id: 0, name: "testPacketView", components: [{ type: PacketComponentType.Delimiter, data: { index: 0, name: "testDelimiter", identifier: "1D3NT1TY", offsetInPacket: 0 } }] };
     const testDirectory = "fakeDirectory"
 
     describe("Describe", async () => {
-        beforeEach(async ()=> {
+        beforeEach(async () => {
             //replaces functions that read files
-            vi.mock('@tauri-apps/api/fs',() => ({
+            vi.mock('@tauri-apps/api/fs', () => ({
                 writeTextFile: vi.fn(),
                 readTextFile: vi.fn().mockResolvedValue('{"id":0,"name":"testPacketView","components":[{"type":"Delimiter","data":{"index":0,"name":"testDelimiter","identifier":"1D3NT1TY","offsetInPacket":0}}]}')
             }))
             //replaces functions that require user input
-            vi.mock('@tauri-apps/api/dialog',() => ({
+            vi.mock('@tauri-apps/api/dialog', () => ({
                 save: vi.fn().mockResolvedValue("fakeDirectory"),
                 open: vi.fn().mockResolvedValue("fakeDirectory")
             }))
             //replaces functions that reach out to backend
-            vi.mock('../backend_interop/api_calls',() => ({
+            vi.mock('../backend_interop/api_calls', () => ({
                 addPacket: vi.fn()
             }))
-            
+
         })
-        
-        afterEach(()=>{
+
+        afterEach(() => {
             vi.restoreAllMocks();
         })
 
@@ -155,8 +178,8 @@ if (import.meta.vitest) {
             expect(addPacket).toBeCalledWith(testPacketView);
             expect(addPacket).toHaveBeenCalledTimes(1);
 
-            await exportToLocation(testDirectory,testPacketView);
-            expect(writeTextFile).toBeCalledWith({contents: testDirectoryContents, path: testDirectory});
+            await exportToLocation(testDirectory, testPacketView);
+            expect(writeTextFile).toBeCalledWith({ contents: testDirectoryContents, path: testDirectory });
             expect(writeTextFile).toHaveBeenCalledTimes(1);
         })
     })

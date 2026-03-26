@@ -7,3 +7,6 @@ pub mod serial_packet_parser;
 pub mod serial_port_adapter;
 pub mod teledongle_adapter;
 pub mod teledongle_packet_parser;
+pub mod midwest_adapter;
+pub mod midwest_parser;
+pub mod csv_file_adapter;

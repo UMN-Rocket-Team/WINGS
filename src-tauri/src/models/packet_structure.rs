@@ -189,15 +189,17 @@ impl PacketStructure {
     }
 }
 
-#[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
-/// Represents metadata fields within a packet.
-pub struct PacketMetaDataFields {
-    pub(crate) index: usize,
-    pub(crate) name: String,
-    pub(crate) r#type: PacketFieldType,
-    pub(crate) metadata_type: PacketMetadataType,
-    pub(crate) link_index: usize,
-}
+// #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
+// Represents metadata fields within a packet.
+// pub struct PacketMetaDataFields {
+//     pub(crate) index: usize,
+//     pub(crate) name: String,
+//     pub(crate) r#type: PacketFieldType,
+//     pub(crate) metadata_type: PacketMetadataType,
+//     pub(crate) link_index: usize,
+// }
+
+
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 /// represents a field within a Packet where the groundstation can expect a piece of data to be stored.

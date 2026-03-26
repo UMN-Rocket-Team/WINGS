@@ -6,22 +6,24 @@ import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketStructu
  * The backend counterparts of each of the functions are documented, so there will not be any documentation here
  */
 
-export const initDevicePort = async (portName: string, baud: number, id: number) => await invoke<void>("init_device_port", { portName, baud, id});
+export const initDevicePort = async (portName: string, baud: number, id: number) => await invoke<void>("init_device_port", { portName, baud, id });
 
-export const deleteDevice = async (id: number) => await invoke<void>("delete_device", {id: id});
+export const deleteDevice = async (id: number) => await invoke<void>("delete_device", { id: id });
 
 export const addRfd = async () => await invoke<void>("add_rfd");
 
-export const addFileManager = async (filePath: string) => await invoke<void>("add_file_manager",{filePath});
+export const addFileManager = async (filePath: string) => await invoke<void>("add_file_manager", { filePath });
 
 export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum");
 
 export const addAim = async () => await invoke<void>("add_aim");
 
+export const addMidwest = async () => await invoke<void>("add_midwest");
+
 
 export const addFeatherWeight = async () => await invoke<void>("add_featherweight");
 
-export const startSendingLoop = async (interval: number, alreadySent: number, mode : SendingModes, writeId: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, writeId});
+export const startSendingLoop = async (interval: number, alreadySent: number, mode: SendingModes, writeId: number) => await invoke<void>("start_sending_loop", { interval, alreadySent, mode, writeId });
 
 export const stopSendingLoop = async () => await invoke<void>("stop_sending_loop");
 
@@ -53,4 +55,4 @@ export const registerEmptyPacketStructure = async () => await invoke<void>("regi
 
 export const deletePacketStructure = async (packetStructureId: number) => await invoke<void>('delete_packet_structure', { packetStructureId: packetStructureId });
 
-export const setMode = async (mode : SendingModes) => await invoke<void> ('mode_setter', {mode : mode});
+export const setMode = async (mode: SendingModes) => await invoke<void>('mode_setter', { mode: mode });
