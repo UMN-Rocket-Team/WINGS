@@ -11,7 +11,6 @@ import FileModal from "../modals/FilePathModal";
 export const [comDeviceSelections, setComDeviceSelections] = createStore<ComDevice[]>([]);
 let comDevicesIterator = 0;
 const [baud, setBaud] = createSignal(115200);
-const [sortOrder, setSortOrder] = createSignal<'asc' | 'desc'>('asc');
 
 // Simulation states for testing purposes
 /*
@@ -33,19 +32,14 @@ const SendingTab: Component = () => {
     const { availableDeviceNames: availablePortNames, parsedPacketCount, sendingLoopState, comDeviceList } = useBackend();
     const { showModal } = useModal();
 
-    // Groups devices by type and sorts them based on the current sortOrder state
+    // Grouping devices by type in organized columns
     const groupedDevices = createMemo(() => {
-
-        // eslint-disable-next-line solid/reactivity
-        const sorted = [...comDeviceList()].sort((a, b) =>
-            sortOrder() === 'asc' ? a.id - b.id : b.id - a.id
-        );
-
         return {
-            SerialPort: sorted.filter(d => d.device_type === 'SerialPort'),
-            AimXtra: sorted.filter(d => d.device_type === 'AimXtra'),
-            AltusMetrum: sorted.filter(d => d.device_type === 'TeleDongle'),
-            FeatherWeight: sorted.filter(d => d.device_type === 'FeatherWeight'),
+            SerialPort: [...comDeviceList()].filter(d => d.device_type === 'SerialPort'),
+            AimXtra: [...comDeviceList()].filter(d => d.device_type === 'AimXtra'),
+            AltusMetrum: [...comDeviceList()].filter(d => d.device_type === 'TeleDongle'),
+            FeatherWeight: [...comDeviceList()].filter(d => d.device_type === 'FeatherWeight'),
+
         };
     });
 
@@ -116,32 +110,69 @@ const SendingTab: Component = () => {
         const recentPaths = (await store.get("recentSaves") || []) as string[];
         showModal(FileModal, {
             pathStrings: recentPaths,
+            importWindowOptions: {
+                title: "Select File(s)",
+                multiple: true,
+                filterName: "DataFiles",
+                extensions: ["json", "wings", "csv", "TXT"],
+            },
             callBack: addFileDirectory
         });
     }
 
     // Handles the "Add SerialPort" button click, adding a new device selection and calling the addRfd API function
-    function clickAddSerialPort() {
-        setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); 
-        addRfd();
+    async function clickAddSerialPort() {
+        const newDevice = {
+            id: comDevicesIterator++,
+            selection: "",
+            productName: "rfd" as ProductName
+        };
+        setComDeviceSelections(comDeviceSelections.length, newDevice);
+        await addRfd();
     }
 
     // Handles the "Add AltusMetrum Product" button click, adding a new device selection and calling the addAltusMetrum API function
-    function clickAddAltusMetrum() {
-        setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); 
-        addAltusMetrum();  
+    async function clickAddAltusMetrum() {
+        const newDevice = {
+            id: comDevicesIterator++,
+            selection: "",
+            productName: "altusMetrum" as ProductName
+        };
+        setComDeviceSelections(comDeviceSelections.length, newDevice);
+        await addAltusMetrum();
     }
 
     // Handles the "Add AimXtra" button click, adding a new device selection and calling the addAim API function
-    function clickAddAimXtra() {
-        setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); 
-        addAim();
+    async function clickAddAimXtra() {
+        const newDevice = {
+            id: comDevicesIterator++,
+            selection: "",
+            productName: "aim" as ProductName
+        };
+        setComDeviceSelections(comDeviceSelections.length, newDevice);
+        await addAim();
     }
 
     // Handles the "Add FeatherWeight" button click, adding a new device selection and calling the addFeatherWeight API function
-    function clickAddFeatherWeight() {
-        setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: "" }]); 
-        addFeatherWeight();
+    async function clickAddFeatherWeight() {
+        const newDevice = {
+            id: comDevicesIterator++,
+            selection: "",
+            productName: "featherWeight" as ProductName
+        };
+        setComDeviceSelections(comDeviceSelections.length, newDevice);
+        await addFeatherWeight();
+    }
+    
+
+    async function clickAddMidwest() {
+        const newDevice = {
+            id: comDevicesIterator++,
+            selection: "",
+            productName: "midwest" as ProductName
+        };
+        setComDeviceSelections(comDeviceSelections.length, newDevice); 
+        await addMidwest();
     }
 
     // Array of button data for dynamic rendering
@@ -153,16 +184,21 @@ const SendingTab: Component = () => {
         {label: "Add AltusMetrum Product", onClick: clickAddAltusMetrum},
         {label: "Add AimXtra", onClick: clickAddAimXtra},
         {label: "Add FeatherWeight", onClick: clickAddFeatherWeight},
+        {label: "Add Midwest", onClick: clickAddMidwest},
+        
     ];
 
     // Array of column data for dynamic rendering of device lists
     // label: Column header text
     // devices: Corresponding list of devices filtered by type and sorted based on current sortOrder
     const columnsData = createMemo(() => [
+        {label: "Wings Files", },
+        {label: "CSV Files", },
         {label: "SerialPort", devices: groupedDevices().SerialPort},
         {label: "AltusMetrum", devices: groupedDevices().AltusMetrum},
         {label: "AimXtra", devices: groupedDevices().AimXtra},
         {label: "FeatherWeight", devices: groupedDevices().FeatherWeight},
+        
     ]);
 
     return (
@@ -184,13 +220,6 @@ const SendingTab: Component = () => {
                             <div class="flex flex-col w-64 flex-shrink-0">
                                 <div class="flex items-center gap-1 p-2 bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
                                     <h4 class="text-black dark:text-white text-sm font-medium">{column.label}</h4>
-                                     
-                                    <button 
-                                        class="px-1 py-0.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-black dark:text-white text-xs rounded transition-colors duration-200"
-                                        onClick={() => setSortOrder(sortOrder() === 'asc' ? 'desc' : 'asc')}
-                                    >
-                                        {sortOrder() === 'asc' ? '↑' : '↓'}
-                                    </button>
                                 </div>
 
                                 <div class="flex-1 overflow-auto space-y-1 max-h-full">
