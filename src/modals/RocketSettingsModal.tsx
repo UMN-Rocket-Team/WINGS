@@ -8,7 +8,6 @@ import { createStore, produce } from "solid-js/store";
 import infoIcon from "../assets/info-sym.svg";
 import { DisplayStruct } from "../core/display_registry";
 import { ROCKET_MODELS } from "../components/Rocket";
-import { store } from "../core/file_handling";
 
 export class RocketStruct implements DisplayStruct {
     // Implementing required values
@@ -99,12 +98,10 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
         setDisplays(produce(s => {
             s[index]!.displayName = newName;
         }));
-        store.set("display", displays);
     };
 
     const deleteDisplay = () => {
         setDisplays(displays.filter((_, index) => index !== props.index));
-        store.set("display", displays);
         props.closeModal({});
     };
 
@@ -140,7 +137,6 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                         const struct = (s[props.index] as RocketStruct);
                         struct.rocketModel = e.target.value;
                     }));
-                    store.set("display", displays);
                 }}
             >
                 <For each={Object.keys(ROCKET_MODELS)}>{modelName => (
@@ -161,7 +157,6 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                         struct.fieldPitch = -1;
                         struct.fieldYaw = -1;
                     }));
-                    store.set("display", displays);
                 }}
             >
                 <option value={-1}>
@@ -184,7 +179,6 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                             const struct = (s[props.index] as RocketStruct);
                             struct.fieldRoll = newField;
                         }));
-                        store.set("display", displays);
                     }}
                 />
 
@@ -197,7 +191,6 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                             const struct = (s[props.index] as RocketStruct);
                             struct.fieldPitch = newField;
                         }));
-                        store.set("display", displays);
                     }}
                 />
 
@@ -210,7 +203,6 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                             const struct = (s[props.index] as RocketStruct);
                             struct.fieldYaw = newField;
                         }));
-                        store.set("display", displays);
                     }}
                 />
             </Show>

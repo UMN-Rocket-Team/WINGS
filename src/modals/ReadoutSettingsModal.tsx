@@ -7,7 +7,6 @@ import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { createStore, produce } from "solid-js/store";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
-import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
 interface ReadoutStructField {
@@ -65,7 +64,6 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
         setDisplays(produce(s => {
             s[index]!.displayName = newName;
         }));
-        store.set("display", displays);
     }
 
     const getStructField = (packetId: number, fieldIndex: number): ReadoutStructField | undefined => {
@@ -94,7 +92,6 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                 struct.fields = struct.fields.filter(i => i.packetFieldIndex !== fieldIndex);
             }
         }));
-        store.set("display", displays);
     };
 
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -122,7 +119,6 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                 const struct = (s[props.index] as ReadoutStruct);
                                 struct.packetsDisplayed[packetIdx()] = !struct.packetsDisplayed[packetIdx()];
                             }));
-                            store.set("display", displays);
                         }}>
                         <img alt="Dropdown" src={dropdownIcon} 
                             class={`h-4 dark:invert`} 
@@ -163,7 +159,6 @@ const ReadoutSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                         componentField.unit = target.value;
                                                     }
                                                 }));
-                                                store.set("display", displays);
                                             }}
                                         />
                                     </Show>

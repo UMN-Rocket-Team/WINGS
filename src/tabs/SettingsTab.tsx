@@ -1,4 +1,4 @@
-import { batch, Component } from "solid-js";
+import { Component } from "solid-js";
 import FieldsScreen, { FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
 import logo from "../assets/logo.png";
 import { useBackend } from "../backend_interop/BackendProvider";
@@ -8,7 +8,7 @@ import { save } from "@tauri-apps/api/dialog";
 import { writeTextFile } from "@tauri-apps/api/fs";
 import { displays } from "../components/DisplaySettingsScreen";
 import { DisplayStruct } from "../core/display_registry";
-import { store } from "../core/file_handling";
+import { comDeviceSelections } from "./SendingTab";
 
 /**
  * Main Tab for hosting all groundstation settings
@@ -44,6 +44,7 @@ const SettingsTab: Component = () => {
         if (!selectedFilePath) return;
 
         const displaySetupData = {
+            "productNames": [...new Set(comDeviceSelections.map(c => c.productName))].filter(p => p !== undefined),
             "flexviewObjects": flexviewObjects as FlexviewObject[],
             "displays": displays as DisplayStruct[]
         }
@@ -62,12 +63,6 @@ const SettingsTab: Component = () => {
             direction: 'row'
         }]);
         setDisplays([]);
-
-        store.set("display", displays);
-        store.set("flexviewObjects", flexviewObjects);
-
-        // Navigate home, since RecursiveFlexviewEditor isn't reactive  
-        navigate("/");
     }
 
 

@@ -7,7 +7,6 @@ import { PacketComponentType, PacketField } from "../backend_interop/types";
 import { createStore, produce } from "solid-js/store";
 import infoIcon from "../assets/info-sym.svg";
 import dropdownIcon from "../assets/dropdown.svg";
-import { store } from "../core/file_handling";
 import { DisplayStruct } from "../core/display_registry";
 
 interface BooleanStructField {
@@ -70,7 +69,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
         setDisplays(produce(s => {
             s[index]!.displayName = newName;
         }));
-        store.set("display", displays);
     }
 
     const getStructField = (packetID: number, fieldIndex: number): BooleanStructField | undefined => {
@@ -93,7 +91,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                 struct.fields = struct.fields.filter(i => !(i.packetFieldIndex === fieldIndex && i.packetID === packetID));
             }
         }));
-        store.set("display", displays);
     };
 
     return <DefaultModalLayout close={() => props.closeModal({})} title="Select Fields">
@@ -121,7 +118,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                 const struct = (s[props.index] as BooleanStruct);
                                 struct.packetsDisplayed[packetIdx()] = !struct.packetsDisplayed[packetIdx()];
                             }));
-                            store.set("display", displays);
                         }}>
                         <img alt="Dropdown" src={dropdownIcon}
                             class={`h-4 dark:invert`}
@@ -162,7 +158,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                             componentField.unit = { ...componentField.unit, left: target.value };
                                                         }
                                                     }));
-                                                    store.set("display", displays);
                                                 }}
                                             />
 
@@ -178,7 +173,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                         componentField.sign = target.value;
                                                     }
                                                 }));
-                                                store.set("display", displays);
                                             }}>
                                                 <option value="<" selected>{"<"}</option>
                                             </select>
@@ -212,7 +206,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                     componentField.sign = target.value;
                                                 }
                                             }));
-                                            store.set("display", displays);
                                         }}>
                                             {!getComponentField()?.isRange ?
                                                 <For each={signs}>{(sign) => { return <option value={sign}>{sign}</option> }}</For> :
@@ -235,7 +228,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                         componentField.unit = { ...componentField.unit, right: target.value };
                                                     }
                                                 }));
-                                                store.set("display", displays);
                                             }}
                                         />
 
@@ -259,7 +251,6 @@ const BooleanSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Elemen
                                                             componentField.isRange = target.checked;
                                                         }
                                                     }));
-                                                    store.set("display", displays);
                                                 }}
                                             />
                                         </label>

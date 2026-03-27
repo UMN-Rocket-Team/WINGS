@@ -1,7 +1,7 @@
 import { ModalProps } from "../core/ModalProvider";
 import DefaultModalLayout from "../core/DefaultModalLayout";
 import { For, JSX } from "solid-js";
-import { runImportPacketWindow } from "../core/file_handling";
+import { ImportWindowOptions, runImportPacketWindow } from "../core/file_handling";
 
 interface callbackFunction {
     (filePaths: string[] | string | null): void;
@@ -36,15 +36,15 @@ const FileModal = (props: ModalProps<FileModalProps>): JSX.Element => {
 
     return (
         <DefaultModalLayout close={() => props.closeModal({})} title="File Select">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
-                    onClick={async () => runCallBack(await runImportPacketWindow())}>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={async () => runCallBack(await runImportPacketWindow(props.importWindowOptions))}>
                 Select Directory
             </button>
             <p class="text-lg font-semibold mt-4">Open Recent:</p>
-            <For each={props.pathStrings.reverse()}>{(item) => 
+            <For each={props.pathStrings.slice().reverse()}>{(item) =>
                 <div class="mt-2">
-                    <button class="bg-gray-200 hover:bg-gray-300 text-black font-semibold py-2 px-4 rounded w-full text-left" 
-                            onClick={() => runCallBack([item])}>
+                    <button class="bg-gray-200 hover:bg-gray-300 text-black font-semibold py-2 px-4 rounded w-full text-left"
+                        onClick={() => runCallBack([item])}>
                         {item}
                     </button>
                 </div>

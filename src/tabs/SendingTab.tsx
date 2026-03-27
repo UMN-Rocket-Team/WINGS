@@ -1,6 +1,6 @@
 import { Component, batch, createSignal, JSX, For, Show, createMemo } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFeatherWeight, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
 import { ComDevice, ProductName, SendingModes } from "../backend_interop/types";
@@ -8,12 +8,7 @@ import { createStore } from "solid-js/store";
 import { Store } from "tauri-plugin-store-api";
 import FileModal from "../modals/FilePathModal";
 
-type comDevice = {
-    id: number,
-    selection: string,
-}
-
-export const [comDeviceSelections, setComDeviceSelections] = createStore<comDevice[]>([]);
+export const [comDeviceSelections, setComDeviceSelections] = createStore<ComDevice[]>([]);
 let comDevicesIterator = 0;
 const [baud, setBaud] = createSignal(115200);
 
@@ -27,6 +22,10 @@ const [mode, selectMode] = createSignal(SendingModes.FromCSV);
 
 export const IterateComDevicesIterator = () => {
     return comDevicesIterator++;
+}
+
+export const EnsureComDevicesIteratorAtLeast = (minVal: number) => {
+    comDevicesIterator = Math.max(comDevicesIterator, minVal);
 }
 
 const SendingTab: Component = () => {
@@ -82,11 +81,11 @@ const SendingTab: Component = () => {
         if (Array.isArray(filePaths)) {
             for (const path of filePaths) {
                 setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: path }]);
-                addFileManager(path);
+                await addFileManager(path);
             }
         } else if (filePaths != null) {
             setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: filePaths }]);
-            addFileManager(filePaths);
+            await addFileManager(filePaths);
         }
     };
 
@@ -264,7 +263,7 @@ const SendingTab: Component = () => {
 
                 <datalist id="dataDevices">
                     <For each={availablePortNames()}>
-                        {(Device) => <option value={Device.name}/>}
+                        {(Device) => <option value={Device.name} />}
                     </For>
                 </datalist>
             </div>
