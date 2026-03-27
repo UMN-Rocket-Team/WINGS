@@ -1,4 +1,4 @@
-import { Component, batch, createSignal, JSX, For, Show } from "solid-js";
+import { Component, batch, createSignal, JSX, For, Show, createMemo, createEffect } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
@@ -35,11 +35,12 @@ const SendingTab: Component = () => {
     // Grouping devices by type in organized columns
     const groupedDevices = createMemo(() => {
         return {
-            SerialPort: [...comDeviceList()].filter(d => d.device_type === 'SerialPort'),
-            AimXtra: [...comDeviceList()].filter(d => d.device_type === 'AimXtra'),
-            AltusMetrum: [...comDeviceList()].filter(d => d.device_type === 'TeleDongle'),
+            FilePath:      [...comDeviceList()].filter(d => d.device_type === 'ByteFile'),
+            SerialPort:    [...comDeviceList()].filter(d => d.device_type === 'SerialPort'),
+            AimXtra:       [...comDeviceList()].filter(d => d.device_type === 'AimXtra'),
+            AltusMetrum:   [...comDeviceList()].filter(d => d.device_type === 'TeleDongle'),
             FeatherWeight: [...comDeviceList()].filter(d => d.device_type === 'FeatherWeight'),
-
+            Midwest:       [...comDeviceList()].filter(d => d.device_type === 'Midwest')
         };
     });
 
@@ -77,18 +78,6 @@ const SendingTab: Component = () => {
     };
     */
 
-    const addFileDirectory = async (filePaths: string | string[] | null) => {
-        if (Array.isArray(filePaths)) {
-            for (const path of filePaths) {
-                setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: path }]);
-                await addFileManager(path);
-            }
-        } else if (filePaths != null) {
-            setComDeviceSelections([...comDeviceSelections, { id: comDevicesIterator++, selection: filePaths }]);
-            await addFileManager(filePaths);
-        }
-    };
-
     async function applyNewSelectedPort(newSelectedDevice: string, baud: number, id: number) {
         try {
             setComDeviceSelections(device => device.id === id, "selection", () => newSelectedDevice)
@@ -104,102 +93,75 @@ const SendingTab: Component = () => {
     // Common styling for all "ADD" buttons
     const buttonClasses = "w-full text-black bg-gray-200 hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white";
 
+    const addFileDirectory = async (filePaths: string | string[] | null) => {
+        if (Array.isArray(filePaths)) {
+            for (const path of filePaths) {
+                setComDeviceSelections(comDeviceSelections.length, { 
+                    id: comDevicesIterator++, 
+                    selection: path,
+                    productName: "filepath"
+                });
+                
+                await addFileManager(path);
+            }
+        } else if (filePaths != null) {
+            setComDeviceSelections(comDeviceSelections.length, { 
+                id: comDevicesIterator++, 
+                selection: filePaths, 
+                productName: "filepath"
+            });
+            await addFileManager(filePaths);
+        }
+    }
+
     // Handles the "Add Path(s)" button click, showing the FileModal and passing the recent paths from the store
-    async function clickAddPath() {
+    async function addFilePath() {
         const store = new Store("persistent.dat");
-        const recentPaths = (await store.get("recentSaves") || []) as string[];
+        const recentPaths: string[] = (await store.get("recentSaves") || []) as string[];
         showModal(FileModal, {
             pathStrings: recentPaths,
-            importWindowOptions: {
-                title: "Select File(s)",
-                multiple: true,
-                filterName: "DataFiles",
-                extensions: ["json", "wings", "csv", "TXT"],
-            },
             callBack: addFileDirectory
         });
     }
 
-    // Handles the "Add SerialPort" button click, adding a new device selection and calling the addRfd API function
-    async function clickAddSerialPort() {
+    // Generic function to handle adding devices by type
+    async function addDeviceByType(productName: ProductName, addFunction: () => Promise<void>) {
         const newDevice = {
             id: comDevicesIterator++,
             selection: "",
-            productName: "rfd" as ProductName
+            productName: productName        
         };
         setComDeviceSelections(comDeviceSelections.length, newDevice);
-        await addRfd();
-    }
-
-    // Handles the "Add AltusMetrum Product" button click, adding a new device selection and calling the addAltusMetrum API function
-    async function clickAddAltusMetrum() {
-        const newDevice = {
-            id: comDevicesIterator++,
-            selection: "",
-            productName: "altusMetrum" as ProductName
-        };
-        setComDeviceSelections(comDeviceSelections.length, newDevice);
-        await addAltusMetrum();
-    }
-
-    // Handles the "Add AimXtra" button click, adding a new device selection and calling the addAim API function
-    async function clickAddAimXtra() {
-        const newDevice = {
-            id: comDevicesIterator++,
-            selection: "",
-            productName: "aim" as ProductName
-        };
-        setComDeviceSelections(comDeviceSelections.length, newDevice);
-        await addAim();
-    }
-
-    // Handles the "Add FeatherWeight" button click, adding a new device selection and calling the addFeatherWeight API function
-    async function clickAddFeatherWeight() {
-        const newDevice = {
-            id: comDevicesIterator++,
-            selection: "",
-            productName: "featherWeight" as ProductName
-        };
-        setComDeviceSelections(comDeviceSelections.length, newDevice);
-        await addFeatherWeight();
-    }
-    
-
-    async function clickAddMidwest() {
-        const newDevice = {
-            id: comDevicesIterator++,
-            selection: "",
-            productName: "midwest" as ProductName
-        };
-        setComDeviceSelections(comDeviceSelections.length, newDevice); 
-        await addMidwest();
+        await addFunction();
     }
 
     // Array of button data for dynamic rendering
     // label: Display text on button
     // onClick: Corresponding click handler function
     const buttonsData = [
-        {label: "Add Path(s)", onClick: clickAddPath},
-        {label: "Add SerialPort", onClick: clickAddSerialPort}, 
-        {label: "Add AltusMetrum Product", onClick: clickAddAltusMetrum},
-        {label: "Add AimXtra", onClick: clickAddAimXtra},
-        {label: "Add FeatherWeight", onClick: clickAddFeatherWeight},
-        {label: "Add Midwest", onClick: clickAddMidwest},
-        
+        {label: "Add Path(s)", onClick: addFilePath},
+        {label: "Add SerialPort", onClick: addDeviceByType.bind(null, "rfd", addRfd)}, 
+        {label: "Add AltusMetrum Product", onClick: addDeviceByType.bind(null, "altusMetrum", addAltusMetrum)},
+        {label: "Add AimXtra", onClick: addDeviceByType.bind(null, "aim", addAim)},
+        {label: "Add FeatherWeight", onClick: addDeviceByType.bind(null, "featherweight", addFeatherWeight)},
+        {label: "Add Midwest", onClick: addDeviceByType.bind(null, "midwest", addMidwest)}
     ];
 
     // Array of column data for dynamic rendering of device lists
     // label: Column header text
     // devices: Corresponding list of devices filtered by type and sorted based on current sortOrder
     const columnsData = createMemo(() => [
-        {label: "Wings Files", },
-        {label: "CSV Files", },
+        {label: "FilePath", devices: groupedDevices().FilePath},
         {label: "SerialPort", devices: groupedDevices().SerialPort},
         {label: "AltusMetrum", devices: groupedDevices().AltusMetrum},
         {label: "AimXtra", devices: groupedDevices().AimXtra},
         {label: "FeatherWeight", devices: groupedDevices().FeatherWeight},
-        
+        {label: "Midwest", devices: groupedDevices().Midwest}
     ]);
+
+    createEffect(() => {
+        console.log(comDeviceList());
+    });
 
     return (
         <div class="flex flex-col md:flex-row w-full min-h-0 gap-4 p-4">
