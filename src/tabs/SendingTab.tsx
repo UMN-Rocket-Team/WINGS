@@ -35,7 +35,7 @@ const SendingTab: Component = () => {
     // Grouping devices by type in organized columns
     const groupedDevices = createMemo(() => {
         return {
-            FilePath:      [...comDeviceList()].filter(d => d.device_type === 'ByteFile'),
+            FilePath:      [...comDeviceList()].filter(d => ['ByteFile', 'CSVFile'].includes(d.device_type)),
             SerialPort:    [...comDeviceList()].filter(d => d.device_type === 'SerialPort'),
             AimXtra:       [...comDeviceList()].filter(d => d.device_type === 'AimXtra'),
             AltusMetrum:   [...comDeviceList()].filter(d => d.device_type === 'TeleDongle'),
