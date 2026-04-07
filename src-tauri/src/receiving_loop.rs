@@ -156,6 +156,7 @@ mod tests {
             .manage(Mutex::new(CommunicationManager::default_state(Arc::new(
                 Mutex::new(PacketStructureManager::default()),
             ))))
+            .manage(DataProcessorState::default())
             .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
