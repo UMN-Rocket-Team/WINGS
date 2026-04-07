@@ -332,11 +332,12 @@ impl PacketStructureManager {
             let field_to_modify = &mut packet_structure.fields[field_index];
 
             minimum_offset = field_to_modify.offset_in_packet;
-            offset_diff = (r#type.size().unwrap_or(return Err(Error::GenericError)) as isize)
-                - (field_to_modify
-                    .r#type
-                    .size()
-                    .unwrap_or(return Err(Error::GenericError)) as isize);
+            let new_size = r#type.size().map_err(|_| Error::GenericError)?;
+            let old_size = field_to_modify
+                .r#type
+                .size()
+                .map_err(|_| Error::GenericError)?;
+            offset_diff = new_size as isize - old_size as isize;
 
             field_to_modify.r#type = r#type;
         }
@@ -648,10 +649,15 @@ mod tests {
     fn test_set_field_name() {
         // add our test packet
         let mut packet_structure_manager = PacketStructureManager::default();
+        let mut packet_structure = PacketStructure::make_default(String::from("First Name"));
+        packet_structure.fields.push(PacketField {
+            index: 0,
+            name: String::from("old_name"),
+            r#type: PacketFieldType::UnsignedByte,
+            offset_in_packet: 0,
+        });
         let id = packet_structure_manager
-            .register_packet_structure(&mut PacketStructure::make_default(String::from(
-                "First Name",
-            )))
+            .register_packet_structure(&mut packet_structure)
             .unwrap();
 
         packet_structure_manager
@@ -688,7 +694,7 @@ mod tests {
                 let packet_field2 = PacketField {
                     index: 1,
                     name: String::from("name2"),
-                    r#type: field_type,
+                    r#type: field_type2,
                     offset_in_packet: field_type.size().expect("wrong type"),
                 };
 
