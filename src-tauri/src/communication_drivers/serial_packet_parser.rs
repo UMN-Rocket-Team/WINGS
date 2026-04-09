@@ -1,7 +1,10 @@
 use std::cmp::max;
 
 use crate::{
-    models::packet::{Packet, PacketFieldValue},
+    models::{
+        packet::{Packet, PacketFieldValue},
+        packet_parser::PacketParser,
+    },
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -11,9 +14,9 @@ pub struct SerialPacketParser {
 }
 
 /// responsible converting raw data to packets
-impl SerialPacketParser {
+impl PacketParser for SerialPacketParser {
     // adds new unparsed data
-    pub fn push_data(&mut self, data: &[u8], print_flag: bool) {
+    fn push_data(&mut self, data: &[u8], print_flag: bool) {
         self.unparsed_data.extend(data);
         if print_flag {
             println!("Unparsed data: {:02X?}", self.unparsed_data);
@@ -21,7 +24,7 @@ impl SerialPacketParser {
     }
 
     /// processes the raw data queue, returning a Vector(aka. array) of the processed packets
-    pub fn parse_packets(
+    fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
         print_flag: bool,
