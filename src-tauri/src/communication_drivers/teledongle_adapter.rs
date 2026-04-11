@@ -12,21 +12,23 @@ use crate::{
     state::mutex_utils::use_state_in_mutex,
 };
 
-use super::teledongle_packet_parser::AltosPacketParser;
 const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 pub struct TeleDongleAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: AltosPacketParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for TeleDongleAdapter {
-    ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    /// creates a new instance of a comms device with the given packet structure manager.
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<impl PacketParser + 'static + Send>,
+    ) -> Self
     where
         Self: Sized,
     {
@@ -197,7 +199,7 @@ impl CommsIF for TeleDongleAdapter {
         });
         TeleDongleAdapter {
             port: None,
-            packet_parser: Default::default(),
+            packet_parser: Some(Box::new(packet_parser.unwrap())),
             baud: 0,
             id: 0,
             packet_structure_manager,
@@ -297,13 +299,18 @@ impl CommsIF for TeleDongleAdapter {
         data_vector: &mut Vec<u8>,
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
+        self.packet_parser
+            .as_mut()
+            .unwrap()
+            .push_data(data_vector, PRINT_PARSING);
         use_state_in_mutex(
             &self.packet_structure_manager,
             &mut |ps_manager| -> anyhow::Result<()> {
                 packet_vector.extend_from_slice(
                     &self
                         .packet_parser
+                        .as_mut()
+                        .unwrap()
                         .parse_packets(ps_manager, PRINT_PARSING)?,
                 );
                 Ok(())

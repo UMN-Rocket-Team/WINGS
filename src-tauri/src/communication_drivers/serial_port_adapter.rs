@@ -3,17 +3,17 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF, models::{packet::Packet, packet_parser::PacketParser},
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF,
+    models::{packet::Packet, packet_parser::PacketParser},
+    packet_structure_manager::PacketStructureManager,
+    state::mutex_utils::use_state_in_mutex,
 };
-
-use super::serial_packet_parser::SerialPacketParser;
 
 const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct SerialPortAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: SerialPacketParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
@@ -21,13 +21,16 @@ pub struct SerialPortAdapter {
 
 impl CommsIF for SerialPortAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<impl PacketParser + 'static>,
+    ) -> Self
     where
         Self: Sized,
     {
         SerialPortAdapter {
             port: None,
-            packet_parser: Default::default(),
+            packet_parser: Some(Box::new(packet_parser.unwrap())),
             baud: 0,
             id: 0,
             packet_structure_manager,

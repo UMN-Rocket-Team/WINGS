@@ -4,8 +4,10 @@
 //
 // ****
 use crate::{
-    communication_manager::CommsIF, models::packet::Packet,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF,
+    models::{packet::Packet, packet_parser::PacketParser},
+    packet_structure_manager::PacketStructureManager,
+    state::mutex_utils::use_state_in_mutex,
 };
 use anyhow::{bail, Context};
 use std::{
@@ -14,9 +16,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use super::{
-    midwest_adapter::register_midwest_packet_structures, serial_packet_parser::SerialPacketParser,
-};
+use super::midwest_adapter::register_midwest_packet_structures;
 
 const PRINT_PARSING: bool = false;
 
@@ -33,12 +33,15 @@ const PRINT_PARSING: bool = false;
 pub struct BinaryFileAdapter {
     file: Option<File>,
     id: usize,
-    packet_parser: SerialPacketParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 impl CommsIF for BinaryFileAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<impl PacketParser + 'static>,
+    ) -> Self
     where
         Self: Sized,
     {
@@ -48,9 +51,10 @@ impl CommsIF for BinaryFileAdapter {
                 eprintln!("Failed to register Midwest packet structures: {err}");
             }
         });
+        // Some(Box::new(SerialPacketParser::default())) as Box<dyn PacketParser>)
         BinaryFileAdapter {
             file: None,
-            packet_parser: Default::default(),
+            packet_parser: Some(Box::new(packet_parser.unwrap())),
             id: 0,
             packet_structure_manager,
         }
@@ -102,13 +106,18 @@ impl CommsIF for BinaryFileAdapter {
         data_vector: &mut Vec<u8>,
         packet_vector: &mut Vec<Packet>,
     ) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
+        self.packet_parser
+            .as_mut()
+            .unwrap()
+            .push_data(data_vector, PRINT_PARSING);
         use_state_in_mutex(
             &self.packet_structure_manager,
             &mut |ps_manager| -> anyhow::Result<()> {
                 packet_vector.extend_from_slice(
                     &self
                         .packet_parser
+                        .as_mut()
+                        .unwrap()
                         .parse_packets(ps_manager, PRINT_PARSING)?,
                 );
                 Ok(())

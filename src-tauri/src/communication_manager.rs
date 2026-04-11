@@ -16,13 +16,17 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter,
-        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter, 
-        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter, 
-        midwest_adapter::MidwestAdapter,
+        aim_adapter::AimAdapter, aim_parser::AimParser, binary_file_adapter::BinaryFileAdapter,
+        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter,
+        midwest_adapter::MidwestAdapter, midwest_parser::MidwestParser,
+        serial_packet_parser::SerialPacketParser, serial_port_adapter::SerialPortAdapter,
+        teledongle_adapter::TeleDongleAdapter, teledongle_packet_parser::AltosPacketParser,
     },
     file_handling::log_handlers::LogHandler,
-    models::packet::Packet,
+    models::{
+        packet::Packet,
+        packet_parser::{self, PacketParser},
+    },
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -64,7 +68,10 @@ pub struct CommunicationManager {
 /// data transfer, and identification.
 pub trait CommsIF {
     /// Create a new device adapter with the given packet structure manager.
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<impl PacketParser + 'static + Send>,
+    ) -> Self
     where
         Self: Sized;
 
@@ -211,17 +218,17 @@ impl CommunicationManager {
         }
 
         let mut ps_guard = self.ps_manager.lock().unwrap();
-        
+
         for packet in return_buffer.iter() {
-        let result = log.write_packet(packet.clone(), &mut *ps_guard);
-        if result.is_err() {
-            let new_result = result.unwrap_err().context("failed to export csv");
-            let context = new_result.chain();
-            for i in context {
-                eprintln!("CSV File Export{:#?}", i);
+            let result = log.write_packet(packet.clone(), &mut *ps_guard);
+            if result.is_err() {
+                let new_result = result.unwrap_err().context("failed to export csv");
+                let context = new_result.chain();
+                for i in context {
+                    eprintln!("CSV File Export{:#?}", i);
+                }
             }
         }
-    }
         Ok(())
     }
 
@@ -301,7 +308,8 @@ impl CommunicationManager {
 
     /// Adds an rfd device object to the manager
     pub fn add_serial_device(&mut self) -> usize {
-        let mut new_device: SerialPortAdapter = SerialPortAdapter::new(self.ps_manager.clone());
+        let mut new_device: SerialPortAdapter =
+            SerialPortAdapter::new(self.ps_manager.clone(), Some(SerialPacketParser::default()));
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -311,7 +319,8 @@ impl CommunicationManager {
 
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self) -> usize {
-        let mut new_device: TeleDongleAdapter = TeleDongleAdapter::new(self.ps_manager.clone());
+        let mut new_device: TeleDongleAdapter =
+            TeleDongleAdapter::new(self.ps_manager.clone(), Some(AltosPacketParser::default()));
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -321,7 +330,8 @@ impl CommunicationManager {
 
     /// Adds a byte reading device object to the manager
     pub fn add_binary_adapter(&mut self) -> usize {
-        let mut new_device: BinaryFileAdapter = BinaryFileAdapter::new(self.ps_manager.clone());
+        let mut new_device: BinaryFileAdapter =
+            BinaryFileAdapter::new(self.ps_manager.clone(), Some(SerialPacketParser::default()));
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -331,7 +341,8 @@ impl CommunicationManager {
 
     /// Adds a CSV reading device object to the manager
     pub fn add_csv_adapter(&mut self) -> usize {
-        let mut new_device: CSVReadDriver = CSVReadDriver::new(self.ps_manager.clone());
+        let mut new_device: CSVReadDriver =
+            CSVReadDriver::new(self.ps_manager.clone(), None::<SerialPacketParser>);
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -341,7 +352,8 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_aim(&mut self) -> usize {
-        let mut new_device: AimAdapter = AimAdapter::new(self.ps_manager.clone());
+        let mut new_device: AimAdapter =
+            AimAdapter::new(self.ps_manager.clone(), Some(AimParser::default()));
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -351,8 +363,10 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_featherweight(&mut self) -> usize {
-        let mut new_device: FeatherweightAdapter =
-            FeatherweightAdapter::new(self.ps_manager.clone());
+        let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(
+            self.ps_manager.clone(),
+            Some(FeatherWeightParser::default()),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -363,7 +377,7 @@ impl CommunicationManager {
     /// Adds an byte reading device object to the manager
     pub fn add_midwest(&mut self) -> usize {
         let mut new_device: MidwestAdapter =
-            MidwestAdapter::new(self.ps_manager.clone());
+            MidwestAdapter::new(self.ps_manager.clone(), Some(MidwestParser::default()));
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
