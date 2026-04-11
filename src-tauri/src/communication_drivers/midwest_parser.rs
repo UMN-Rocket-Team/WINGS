@@ -119,7 +119,7 @@ impl MidwestParser {
                 {
                     let field = &packet_structure.fields[k];
                     let field_start_index = packet_start_index + field.offset_in_packet;
-                    
+
                     *field_data_item = field.r#type.parse(
                         &self.unparsed_data
                             [field_start_index..(field_start_index + field.r#type.size()?)],
@@ -128,7 +128,6 @@ impl MidwestParser {
                     if field.name == "eul_pitch" {
                         field_data_item.edit_number(&mut |i| *i - 90.0);
                     }
-                    
                 }
                 if print_flag {
                     println!(
@@ -245,11 +244,26 @@ mod tests {
             .parse_packets(&packet_structure_manager, false)
             .expect("");
         assert_eq!(parsed[0].structure_id, id); //does the packet have the right ID?
-        assert_eq!(parsed[0].field_data[0], PacketFieldValue::Number(0.0 - 90.0)); //does the data parse correctly?
-        assert_eq!(parsed[0].field_data[1], PacketFieldValue::Number(1.0 - 90.0));
-        assert_eq!(parsed[0].field_data[2], PacketFieldValue::Number(2.0 - 90.0));
-        assert_eq!(parsed[0].field_data[3], PacketFieldValue::Number(3.0 - 90.0));
-        assert_eq!(parsed[0].field_data[4], PacketFieldValue::Number(4.0 - 90.0));
+        assert_eq!(
+            parsed[0].field_data[0],
+            PacketFieldValue::Number(0.0 - 90.0)
+        ); //does the data parse correctly?
+        assert_eq!(
+            parsed[0].field_data[1],
+            PacketFieldValue::Number(1.0 - 90.0)
+        );
+        assert_eq!(
+            parsed[0].field_data[2],
+            PacketFieldValue::Number(2.0 - 90.0)
+        );
+        assert_eq!(
+            parsed[0].field_data[3],
+            PacketFieldValue::Number(3.0 - 90.0)
+        );
+        assert_eq!(
+            parsed[0].field_data[4],
+            PacketFieldValue::Number(4.0 - 90.0)
+        );
     }
 
     /// test that data isn't mistaken for packets
