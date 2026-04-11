@@ -17,9 +17,9 @@ use serde::Serialize;
 use crate::{
     communication_drivers::{
         aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter,
-        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter, 
-        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter, 
-        midwest_adapter::MidwestAdapter,
+        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter,
+        midwest_adapter::MidwestAdapter, serial_port_adapter::SerialPortAdapter,
+        teledongle_adapter::TeleDongleAdapter,
     },
     file_handling::log_handlers::LogHandler,
     models::packet::Packet,
@@ -211,17 +211,17 @@ impl CommunicationManager {
         }
 
         let mut ps_guard = self.ps_manager.lock().unwrap();
-        
+
         for packet in return_buffer.iter() {
-        let result = log.write_packet(packet.clone(), &mut *ps_guard);
-        if result.is_err() {
-            let new_result = result.unwrap_err().context("failed to export csv");
-            let context = new_result.chain();
-            for i in context {
-                eprintln!("CSV File Export{:#?}", i);
+            let result = log.write_packet(packet.clone(), &mut *ps_guard);
+            if result.is_err() {
+                let new_result = result.unwrap_err().context("failed to export csv");
+                let context = new_result.chain();
+                for i in context {
+                    eprintln!("CSV File Export{:#?}", i);
+                }
             }
         }
-    }
         Ok(())
     }
 
@@ -362,8 +362,7 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_midwest(&mut self) -> usize {
-        let mut new_device: MidwestAdapter =
-            MidwestAdapter::new(self.ps_manager.clone());
+        let mut new_device: MidwestAdapter = MidwestAdapter::new(self.ps_manager.clone());
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects

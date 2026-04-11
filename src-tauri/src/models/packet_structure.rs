@@ -199,7 +199,6 @@ impl PacketStructure {
 //     pub(crate) link_index: usize,
 // }
 
-
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 /// represents a field within a Packet where the groundstation can expect a piece of data to be stored.
