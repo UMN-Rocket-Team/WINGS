@@ -472,7 +472,9 @@ mod tests {
     /// user validated test for basic packet recognition and parsing
     #[test]
     fn test_parse_from_json() {
-        let path = Path::new(".\\test_utilities\\aim_test_files\\out.txt");
+        let path = Path::new("test_utilities")
+            .join("aim_test_files")
+            .join("out.txt");
         let json: serde_json::Value = serde_json::from_str(&fs::read_to_string(path).unwrap())
             .expect("JSON was not well-formatted");
         let mut json_string_array = vec![];
