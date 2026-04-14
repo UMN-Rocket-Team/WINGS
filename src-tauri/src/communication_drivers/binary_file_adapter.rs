@@ -101,27 +101,11 @@ impl CommsIF for BinaryFileAdapter {
         Ok(()) // returns ok if everything succeeded
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
+    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
         self.packet_parser
-            .as_mut()
-            .unwrap()
-            .push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(
-            &self.packet_structure_manager,
-            &mut |ps_manager| -> anyhow::Result<()> {
-                packet_vector.extend_from_slice(
-                    &self
-                        .packet_parser
-                        .as_mut()
-                        .unwrap()
-                        .parse_packets(ps_manager, PRINT_PARSING)?,
-                );
-                Ok(())
-            },
-        )
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager
     }
 }

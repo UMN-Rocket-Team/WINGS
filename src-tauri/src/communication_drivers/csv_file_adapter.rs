@@ -5,8 +5,11 @@
 // ****
 use crate::{
     communication_manager::CommsIF,
-    models::packet::{Packet, PacketFieldValue},
-    models::packet_structure::{PacketField, PacketFieldType, PacketStructure},
+    models::{
+        packet::{Packet, PacketFieldValue},
+        packet_parser::PacketParser,
+        packet_structure::{PacketField, PacketFieldType, PacketStructure},
+    },
     packet_structure_manager::{Error as PacketStructureManagerError, PacketStructureManager},
 };
 use anyhow::bail;
@@ -79,7 +82,10 @@ impl CSVReadDriver {
 }
 
 impl CommsIF for CSVReadDriver {
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        _: Option<impl PacketParser + 'static>,
+    ) -> Self
     where
         Self: Sized,
     {
@@ -126,6 +132,15 @@ impl CommsIF for CSVReadDriver {
     fn get_device_raw_data(&mut self, _: &mut Vec<u8>) -> anyhow::Result<()> {
         Ok(())
     }
+
+    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
+        None
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager
+    }
+
     //Reads a line of data from a csv file into a data packet of a specified type
     fn parse_device_data(
         &mut self,
@@ -217,7 +232,7 @@ mod tests {
     fn test_registers_packet_name_from_file_stem_and_header_fields() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc.clone());
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc.clone(), None);
 
         let result = csv_read_driver.init_device("test_utilities/csv_test_files/test.csv", 0);
         assert!(result.is_ok());
@@ -244,7 +259,7 @@ mod tests {
     fn test_basic_parsing() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -265,7 +280,7 @@ mod tests {
     fn test_nonpositive_parsing() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test2.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -285,7 +300,7 @@ mod tests {
     fn test_parsing_missing_columns_in_row() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result =
             csv_read_driver.init_device("test_utilities/csv_test_files/test_missing_field.csv", 0);
         assert!(result.is_ok());
@@ -299,7 +314,7 @@ mod tests {
     fn test_parsing_two_rows() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test5.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -330,7 +345,7 @@ mod tests {
     fn test_big_num_parsing() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test3.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -350,7 +365,7 @@ mod tests {
     fn test_decimal_parsing() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test4.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
@@ -370,7 +385,7 @@ mod tests {
     fn test_parsing_three_rows() {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
-        let mut csv_read_driver = CSVReadDriver::new(manager_arc);
+        let mut csv_read_driver = CSVReadDriver::new(manager_arc, None);
         let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test5.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];

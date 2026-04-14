@@ -99,20 +99,11 @@ impl CommsIF for SerialPortAdapter {
         Ok(())
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(
-            &self.packet_structure_manager,
-            &mut |parser| -> anyhow::Result<()> {
-                packet_vector
-                    .extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?);
-                Ok(())
-            },
-        )?;
-        Ok(())
+    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
+        self.packet_parser
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager
     }
 }

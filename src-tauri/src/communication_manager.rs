@@ -27,8 +27,10 @@ use crate::{
         packet::Packet,
         packet_parser::{self, PacketParser},
     },
-    packet_structure_manager::PacketStructureManager,
+    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
 };
+
+const PRINT_PARSING: bool = false;
 
 /// Represents a device name and its metadata for display and selection.
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
@@ -83,16 +85,39 @@ pub trait CommsIF {
     //Implements the communications side of the communications object (the bare minimum to get data), then returns it inside the Vec<u8>
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()>;
 
-    //Converts raw data into actual packets according to how the device specifies it
-    fn parse_device_data(
-        &mut self,
-        raw_data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()>;
+    
     fn is_init(&self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
     fn get_type(&self) -> String;
+    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>>;
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>>;
+
+
+    //Converts raw data into actual packets according to how the device specifies it
+    fn parse_device_data(
+        &mut self,
+        data_vector: &mut Vec<u8>,
+        packet_vector: &mut Vec<Packet>,
+    ) -> anyhow::Result<()> {
+        self.get_parser()
+            .as_mut()
+            .unwrap()
+            .push_data(data_vector, PRINT_PARSING);
+        use_state_in_mutex(
+            &self.get_packet_structure_manager(),
+            &mut |ps_manager| -> anyhow::Result<()> {
+                packet_vector.extend_from_slice(
+                    &self
+                        .get_parser()
+                        .as_mut()
+                        .unwrap()
+                        .parse_packets(ps_manager, PRINT_PARSING)?,
+                );
+                Ok(())
+            },
+        )
+    }
 }
 
 impl CommunicationManager {
@@ -342,7 +367,7 @@ impl CommunicationManager {
     /// Adds a CSV reading device object to the manager
     pub fn add_csv_adapter(&mut self) -> usize {
         let mut new_device: CSVReadDriver =
-            CSVReadDriver::new(self.ps_manager.clone(), None::<SerialPacketParser>);
+            CSVReadDriver::new(self.ps_manager.clone(), None);
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects

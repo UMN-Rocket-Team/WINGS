@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF, models::packet::Packet,
+    communication_manager::CommsIF, models::{packet::Packet, packet_parser::PacketParser},
     packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
 };
 
@@ -19,7 +19,10 @@ pub struct FeatherweightAdapter {
 
 impl CommsIF for FeatherweightAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<impl PacketParser + 'static>,
+    ) -> Self
     where
         Self: Sized,
     {
@@ -119,5 +122,13 @@ impl CommsIF for FeatherweightAdapter {
             self.gps_packet_id,
         )?);
         Ok(())
+    }
+
+    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
+        None
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        Arc::new(Mutex::new(PacketStructureManager::default()))
     }
 }

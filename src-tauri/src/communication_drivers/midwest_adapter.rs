@@ -4,7 +4,7 @@ use anyhow::bail;
 
 use crate::{
     communication_manager::CommsIF,
-    models::{packet::Packet, packet_structure::PacketStructure},
+    models::{packet::Packet, packet_parser::PacketParser, packet_structure::PacketStructure},
     packet_structure_manager::PacketStructureManager,
     state::mutex_utils::use_state_in_mutex,
 };
@@ -112,7 +112,7 @@ pub fn register_midwest_packet_structures(
 #[derive(Default)]
 pub struct MidwestAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: MidwestParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
@@ -120,7 +120,10 @@ pub struct MidwestAdapter {
 
 impl CommsIF for MidwestAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<impl PacketParser + 'static>,
+    ) -> Self
     where
         Self: Sized,
     {
@@ -131,7 +134,7 @@ impl CommsIF for MidwestAdapter {
         });
         MidwestAdapter {
             port: None,
-            packet_parser: Default::default(),
+            packet_parser: Some(Box::new(packet_parser.unwrap())),
             baud: 0,
             id: 0,
             packet_structure_manager,
@@ -203,23 +206,11 @@ impl CommsIF for MidwestAdapter {
         Ok(())
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(
-            &self.packet_structure_manager,
-            &mut |ps_manager| -> anyhow::Result<()> {
-                packet_vector.extend_from_slice(
-                    &self
-                        .packet_parser
-                        .parse_packets(ps_manager, PRINT_PARSING)?,
-                );
-                Ok(())
-            },
-        )?;
-        Ok(())
+    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
+        self.packet_parser
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager
     }
 }
