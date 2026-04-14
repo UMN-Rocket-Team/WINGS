@@ -15,15 +15,11 @@ pub struct SerialPacketParser {
 
 /// responsible converting raw data to packets
 impl PacketParser for SerialPacketParser {
-    // adds new unparsed data
-    fn push_data(&mut self, data: &[u8], print_flag: bool) {
-        self.unparsed_data.extend(data);
-        if print_flag {
-            println!("Unparsed data: {:02X?}", self.unparsed_data);
-        }
+    fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
+        self.unparsed_data.as_mut()
     }
 
-    /// processes the raw data queue, returning a Vector(aka. array) of the processed packets
+
     fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
