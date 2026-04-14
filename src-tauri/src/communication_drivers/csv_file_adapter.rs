@@ -179,10 +179,7 @@ impl CommsIF for CSVReadDriver {
                     Err(e) => {
                         return Err(anyhow::anyhow!(format!(
                             "Failed to parse value {:?} for field '{}' (index {}): {}",
-                            given_value,
-                            field.name,
-                            field.index,
-                            e
+                            given_value, field.name, field.index, e
                         )))
                     }
                 };
@@ -289,7 +286,8 @@ mod tests {
         let packet_structure_manager = PacketStructureManager::default();
         let manager_arc = Arc::new(Mutex::new(packet_structure_manager));
         let mut csv_read_driver = CSVReadDriver::new(manager_arc);
-        let mut result = csv_read_driver.init_device("test_utilities/csv_test_files/test_missing_field.csv", 0);
+        let mut result =
+            csv_read_driver.init_device("test_utilities/csv_test_files/test_missing_field.csv", 0);
         assert!(result.is_ok());
         let packet_vector = &mut vec![];
         result = csv_read_driver.parse_device_data(&mut vec![], packet_vector);
