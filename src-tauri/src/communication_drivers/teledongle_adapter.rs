@@ -292,11 +292,11 @@ impl CommsIF for TeleDongleAdapter {
         Ok(())
     }
 
-    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
-        self.packet_parser
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
+        self.packet_parser.as_deref_mut()
     }
 
     fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
-        self.packet_structure_manager
+        self.packet_structure_manager.clone()
     }
 }

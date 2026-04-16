@@ -124,7 +124,7 @@ impl CommsIF for FeatherweightAdapter {
         Ok(())
     }
 
-    fn get_parser(&self) -> Option<Box<dyn PacketParser + 'static>> {
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
         None
     }
 
