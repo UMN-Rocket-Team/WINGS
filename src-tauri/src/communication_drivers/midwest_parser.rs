@@ -12,6 +12,12 @@ pub struct MidwestParser {
 
 /// responsible converting raw data to packets
 impl PacketParser for MidwestParser {
+    fn new() -> Self
+        where
+            Self: Sized {
+        Self::default()
+    }
+
     fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
         self.unparsed_data.as_mut()
     }

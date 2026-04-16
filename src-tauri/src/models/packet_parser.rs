@@ -2,6 +2,10 @@ use crate::models::packet::Packet;
 use crate::packet_structure_manager::PacketStructureManager;
 
 pub trait PacketParser: Send {
+    fn new() -> Self
+    where
+        Self: Sized;
+
     /// Get a mutable reference to the unparsed data vector, which is where incoming data is stored
     /// before being parsed into packets.
     fn get_unparsed_data(&mut self) -> &mut Vec<u8>;
@@ -15,7 +19,7 @@ pub trait PacketParser: Send {
         }
     }
 
-    /// Parse packets from unparsed data, using the packet structure manager to determine how to parse the data, 
+    /// Parse packets from unparsed data, using the packet structure manager to determine how to parse the data,
     /// and return a vector of parsed packets. If print_flag is true, print the parsed packets.
     fn parse_packets(
         &mut self,

@@ -144,8 +144,7 @@ impl PacketStructureManager {
         return return_id;
     }
 
-    //enforces a packet to have the number of fields that you need it to have
-
+    ///enforces a packet to have the number of fields that you need it to have
     pub fn enforce_packet_fields(&mut self, name: &str, names: Vec<&str>) -> usize {
         let id = self.get_packet_structure_by_name(name);
         let ps = self.get_packet_structure_mut(id);
