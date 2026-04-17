@@ -179,7 +179,6 @@ impl PacketStructureManager {
         &mut self,
         packet_structure: &mut PacketStructure,
     ) -> Result<usize, Error> {
-
         let mut next_packet_id = LOWEST_ID;
         for registered_packet_structure in self.packet_structures.iter() {
             if registered_packet_structure.name == packet_structure.name {
@@ -191,12 +190,10 @@ impl PacketStructureManager {
 
         if let Some(existing_id) = self.name_to_id.get(&packet_structure.name) {
             return Err(Error::NameAlreadyRegistered(*existing_id));
-        }
-        else {
+        } else {
             packet_structure.id = next_packet_id;
             self.packet_structures.push(packet_structure.clone());
         }
-        
 
         self.name_to_id
             .insert(packet_structure.name.clone(), packet_structure.id);
