@@ -88,14 +88,16 @@ pub fn register_midwest_packet_structures(
     // Midwest Control Telemetry Data Packet.
     let mut midwest_control_telemetry_structure = PacketStructure::default();
     midwest_control_telemetry_structure.ez_make(
-        "ba5eba11 u32 11 u8 0028 F32 F32 F32 F32 F32 F32 ca11ab1e",
+        "ba5eba11 u32 20 u8 0030 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
         &[
             "timestamp",
             "rocket_state",
             "PD_error",
-            "loop_update_rule",
+            "loop_update_rate",
             "target_pos",
-            "model_vel",
+            "model_accel_vel",
+            "model_baro_vel",
+            "model_lookup_vel",
             "model_theta",
             "model_servo_command",
         ],
