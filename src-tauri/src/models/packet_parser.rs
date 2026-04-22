@@ -27,7 +27,3 @@ pub trait PacketParser: Send {
         print_flag: bool,
     ) -> anyhow::Result<Vec<Packet>>;
 }
-
-pub struct PacketParserStruct {
-    unparsed_data: Vec<u8>,
-}

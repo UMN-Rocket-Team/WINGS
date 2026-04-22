@@ -12,6 +12,15 @@ use crate::{
 use super::midwest_parser::MidwestParser;
 const PRINT_PARSING: bool = false;
 
+#[derive(Default)]
+pub struct MidwestAdapter {
+    port: Option<Box<dyn serialport::SerialPort>>,
+    packet_parser: Option<Box<dyn PacketParser>>,
+    baud: u32,
+    id: usize,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+}
+
 pub fn register_midwest_packet_structures(
     ps_manager: &mut PacketStructureManager,
 ) -> anyhow::Result<()> {
@@ -111,14 +120,6 @@ pub fn register_midwest_packet_structures(
     Ok(())
 }
 
-#[derive(Default)]
-pub struct MidwestAdapter {
-    port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: Option<Box<dyn PacketParser>>,
-    baud: u32,
-    id: usize,
-    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
-}
 
 impl CommsIF for MidwestAdapter {
     ///creates a new instance of a comms device with the given packet structure manager

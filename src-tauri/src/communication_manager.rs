@@ -380,10 +380,8 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_featherweight(&mut self) -> usize {
-        let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(
-            self.ps_manager.clone(),
-            Some(FeatherWeightParser::default()),
-        );
+        let mut new_device: FeatherweightAdapter =
+            FeatherweightAdapter::new(self.ps_manager.clone(), None as Option<SerialPacketParser>);
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
