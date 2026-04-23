@@ -1,7 +1,10 @@
 use std::cmp::max;
 
 use crate::{
-    models::{packet::{Packet, PacketFieldValue}, packet_parser::PacketParser},
+    models::{
+        packet::{Packet, PacketFieldValue},
+        packet_parser::PacketParser,
+    },
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -13,8 +16,9 @@ pub struct MidwestParser {
 /// responsible converting raw data to packets
 impl PacketParser for MidwestParser {
     fn new() -> Self
-        where
-            Self: Sized {
+    where
+        Self: Sized,
+    {
         Self::default()
     }
 

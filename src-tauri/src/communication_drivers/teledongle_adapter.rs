@@ -7,7 +7,7 @@ use anyhow::bail;
 
 use crate::{
     communication_manager::CommsIF,
-    models::{packet::Packet, packet_parser::PacketParser, packet_structure::PacketStructure},
+    models::{packet_parser::PacketParser, packet_structure::PacketStructure},
     packet_structure_manager::PacketStructureManager,
     state::mutex_utils::use_state_in_mutex,
 };

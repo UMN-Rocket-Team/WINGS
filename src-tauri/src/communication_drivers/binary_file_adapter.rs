@@ -4,10 +4,8 @@
 //
 // ****
 use crate::{
-    communication_manager::CommsIF,
-    models::{packet::Packet, packet_parser::PacketParser},
-    packet_structure_manager::PacketStructureManager,
-    state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
+    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
 };
 use anyhow::{bail, Context};
 use std::{
@@ -17,8 +15,6 @@ use std::{
 };
 
 use super::midwest_adapter::register_midwest_packet_structures;
-
-const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 /// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface.

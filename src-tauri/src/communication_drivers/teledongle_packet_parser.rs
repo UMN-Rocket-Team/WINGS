@@ -19,15 +19,15 @@ pub struct AltosPacketParser {
 /// responsible converting raw data to packets
 impl PacketParser for AltosPacketParser {
     fn new() -> Self
-        where
-            Self: Sized {
+    where
+        Self: Sized,
+    {
         Self::default()
     }
 
     fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
         self.unparsed_data.as_mut()
     }
-
 
     fn parse_packets(
         &mut self,
