@@ -18,15 +18,13 @@ use crate::{
     communication_drivers::{
         aim_adapter::AimAdapter, aim_parser::AimParser, binary_file_adapter::BinaryFileAdapter,
         csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter,
-        midwest_adapter::MidwestAdapter, midwest_parser::MidwestParser,
-        serial_packet_parser::SerialPacketParser, serial_port_adapter::SerialPortAdapter,
-        teledongle_adapter::TeleDongleAdapter, teledongle_packet_parser::AltosPacketParser,
+        featherweight_parser::FeatherweightParser, midwest_adapter::MidwestAdapter,
+        midwest_parser::MidwestParser, serial_packet_parser::SerialPacketParser,
+        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter,
+        teledongle_packet_parser::AltosPacketParser,
     },
     file_handling::log_handlers::LogHandler,
-    models::{
-        packet::Packet,
-        packet_parser::{self, PacketParser},
-    },
+    models::{packet::Packet, packet_parser::PacketParser},
     packet_structure_manager::PacketStructureManager,
     state::mutex_utils::use_state_in_mutex,
 };
@@ -380,8 +378,10 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_featherweight(&mut self) -> usize {
-        let mut new_device: FeatherweightAdapter =
-            FeatherweightAdapter::new(self.ps_manager.clone(), None as Option<SerialPacketParser>);
+        let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(
+            self.ps_manager.clone(),
+            Some(FeatherweightParser::default()),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects

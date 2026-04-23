@@ -3,18 +3,38 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF, models::{packet::Packet, packet_parser::PacketParser},
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
     packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
 };
 
-use super::featherweight_parser;
+const FEATHERWEIGHT_GPS_NAME: &str = "FW GPS";
 
 #[derive(Default)]
 pub struct FeatherweightAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
-    gps_packet_id: usize,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+}
+
+pub fn register_featherweight_packet_structures(
+    ps_manager: &mut PacketStructureManager,
+) -> anyhow::Result<()> {
+    ps_manager.enforce_packet_fields(
+        FEATHERWEIGHT_GPS_NAME,
+        vec![
+            "TimeStamp", //Milliseconds
+            "Altitude",  //Feet
+            "Lat",       //Degrees
+            "Long",      //Degrees
+            "Vel Lat",   //Feet per second
+            "Vel Long",  //Feet per second
+            "Vel Vert",  //Feet per second
+        ],
+    );
+
+    Ok(())
 }
 
 impl CommsIF for FeatherweightAdapter {
@@ -26,25 +46,18 @@ impl CommsIF for FeatherweightAdapter {
     where
         Self: Sized,
     {
-        let id = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-            ps_manager.enforce_packet_fields(
-                "FW GPS",
-                vec![
-                    "TimeStamp", //Milliseconds
-                    "Altitude",  //Feet
-                    "Lat",       //Degrees
-                    "Long",      //Degrees
-                    "Vel Lat",   //Feet per second
-                    "Vel Long",  //Feet per second
-                    "Vel Vert",  //Feet per second
-                ],
-            )
+        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
+            if let Err(err) = register_featherweight_packet_structures(ps_manager) {
+                eprintln!("Failed to register Featherweight packet structures: {err}");
+            }
         });
+
         FeatherweightAdapter {
             port: None,
+            packet_parser: Some(Box::new(packet_parser.unwrap())),
             baud: 115200,
             id: 0,
-            gps_packet_id: id,
+            packet_structure_manager,
         }
     }
 
@@ -54,7 +67,6 @@ impl CommsIF for FeatherweightAdapter {
     ///
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
     fn init_device(&mut self, port_name: &str, _baud: u32) -> anyhow::Result<()> {
-        println!("initial how");
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -112,23 +124,11 @@ impl CommsIF for FeatherweightAdapter {
         Ok(())
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        packet_vector.push(featherweight_parser::packet_from_byte_stream(
-            data_vector,
-            self.gps_packet_id,
-        )?);
-        Ok(())
-    }
-
     fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
-        None
+        self.packet_parser.as_deref_mut()
     }
 
     fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
-        Arc::new(Mutex::new(PacketStructureManager::default()))
+        self.packet_structure_manager.clone()
     }
 }
