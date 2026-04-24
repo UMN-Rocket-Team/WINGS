@@ -7,7 +7,6 @@ use crate::{
     packet_structure_manager::PacketStructureManager,
 };
 
-const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct SerialPortAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
@@ -21,14 +20,14 @@ impl CommsIF for SerialPortAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
     fn new(
         packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
-        packet_parser: Option<impl PacketParser + 'static>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
     ) -> Self
     where
         Self: Sized,
     {
         SerialPortAdapter {
             port: None,
-            packet_parser: Some(Box::new(packet_parser.unwrap())),
+            packet_parser,
             baud: 0,
             id: 0,
             packet_structure_manager,

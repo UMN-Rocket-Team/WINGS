@@ -123,7 +123,7 @@ impl CommsIF for MidwestAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
     fn new(
         packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
-        packet_parser: Option<impl PacketParser + 'static>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
     ) -> Self
     where
         Self: Sized,
@@ -135,7 +135,7 @@ impl CommsIF for MidwestAdapter {
         });
         MidwestAdapter {
             port: None,
-            packet_parser: Some(Box::new(packet_parser.unwrap())),
+            packet_parser,
             baud: 0,
             id: 0,
             packet_structure_manager,

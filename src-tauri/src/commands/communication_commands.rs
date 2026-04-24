@@ -6,6 +6,7 @@
 
 use crate::{
     communication_manager::{CommunicationManager, CommunicationManagerState},
+    models::{packet_parser::create_parser_from_product_name, product::ProductName},
     state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
 };
 use std::path::Path;
@@ -142,6 +143,7 @@ pub fn add_altus_metrum(
 pub fn add_file_manager(
     app_handle: tauri::AppHandle,
     file_path: &str,
+    product_name: Option<ProductName>,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
 ) -> Result<(), String> {
     use_state_in_mutex(
@@ -155,7 +157,9 @@ pub fn add_file_manager(
             let new_id = if is_csv {
                 communication_manager.add_csv_adapter()
             } else {
-                communication_manager.add_binary_adapter()
+                let selected_product = product_name.unwrap_or(ProductName::Rfd);
+                let parser = create_parser_from_product_name(selected_product);
+                communication_manager.add_binary_adapter(parser)
             };
 
             let _ = communication_manager.init_device(file_path, 0, new_id);

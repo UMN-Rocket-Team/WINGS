@@ -32,25 +32,26 @@ pub struct BinaryFileAdapter {
     packet_parser: Option<Box<dyn PacketParser>>,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
+
 impl CommsIF for BinaryFileAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
     fn new(
         packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
-        packet_parser: Option<impl PacketParser + 'static>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
     ) -> Self
     where
         Self: Sized,
     {
-        // register midwest packet structures for binary files from Midwest flights
+        // Register midwest packet structures for binary files from Midwest flights.
         use_state_in_mutex(&packet_structure_manager, &mut |ps_ref| {
             if let Err(err) = register_midwest_packet_structures(ps_ref) {
                 eprintln!("Failed to register Midwest packet structures: {err}");
             }
         });
-        // Some(Box::new(SerialPacketParser::default())) as Box<dyn PacketParser>)
+
         BinaryFileAdapter {
             file: None,
-            packet_parser: Some(Box::new(packet_parser.unwrap())),
+            packet_parser,
             id: 0,
             packet_structure_manager,
         }

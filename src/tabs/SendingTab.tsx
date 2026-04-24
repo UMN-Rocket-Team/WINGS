@@ -1,9 +1,9 @@
-import { Component, batch, createSignal, JSX, For, Show, createMemo, createEffect } from "solid-js";
+import { Component, createSignal, For, createMemo, createEffect } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, startSendingLoop, stopSendingLoop } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
-import { ComDevice, ProductName, SendingModes } from "../backend_interop/types";
+import { ComDevice, ProductName, } from "../backend_interop/types";
 import { createStore } from "solid-js/store";
 import { Store } from "tauri-plugin-store-api";
 import FileModal from "../modals/FilePathModal";
@@ -99,7 +99,6 @@ const SendingTab: Component = () => {
                 setComDeviceSelections(comDeviceSelections.length, { 
                     id: comDevicesIterator++, 
                     selection: path,
-                    productName: "filepath"
                 });
                 
                 await addFileManager(path);
@@ -108,7 +107,6 @@ const SendingTab: Component = () => {
             setComDeviceSelections(comDeviceSelections.length, { 
                 id: comDevicesIterator++, 
                 selection: filePaths, 
-                productName: "filepath"
             });
             await addFileManager(filePaths);
         }
@@ -231,61 +229,7 @@ const SendingTab: Component = () => {
             </div>
 
             <div class="flex-1"/>
-
-            {/* 
-            <div class="flex- flex-grow flex-col gap-4">
-                <datalist id="radioTestAvailablePorts">
-                    <For each={comDeviceList()}>
-                        {(device) => <option value={device.id} />}
-                    </For>
-                </datalist>
-                <label class="flex gap-1">
-                    <span>Sending radio Device:</span>
-                    <input class="border border-gray-400 rounded flex-grow dark:border-gray-600" autocomplete="off" list="radioTestAvailablePorts"
-                        value={sendPort() ?? ""}
-                        onChange={event => setSendPort((event.target as HTMLInputElement).value)}
-                        disabled={isSimulating()} />
-                </label>
-                <label class="flex gap-1 items-center">
-                    <span>Sending a packet every:</span>
-                    <input
-                        class="border border-gray-400 rounded flex-grow px-2 py-1 dark:border-gray-600"
-                        type="number"
-                        min={0}
-                        value={sendInterval()}
-                        onBeforeInput={(e) => {
-                            if (e.data?.match(/[^0-9]/) ?? false) {
-                                e.preventDefault();
-                            }
-                        }}
-                        onChange={(e) => {
-                            const el = e.target as HTMLInputElement;
-                            const val = el.value.trim() === '' ? 500 : Math.max(0, +el.value);
-                            el.value = val.toString();
-                            setSendInterval(val);
-                        }}
-                    />
-                    <span>ms</span>
-                </label>
-                <label>Select Mode:</label>
-                <select value={mode()} onChange={e => selectMode((e.currentTarget as HTMLSelectElement).value as SendingModes)}>
-                    <For each={Object.values(SendingModes).filter(k => isNaN(Number(k)))}>
-                        {(mode) => <option value={mode}>{mode}</option>}
-                    </For>
-                </select>
-                <button
-                    class="py-2 px-4 rounded border-0 text-black"
-                    classList={{
-                        "bg-red-500": isSimulating(),
-                        "bg-green-500": !isSimulating(),
-                    }}
-                    onClick={() => (isSimulating() ? stopSimulating() : startSimulating())}
-                >
-                    {isSimulating() ? "Stop Sending" : "Start Sending"}
-                </button>
-            </div> 
-            */}
-
+            
             <div class="flex flex-col md:w-1/2 gap-4 min-w-0">
                 <p><b>Sent: </b>{sendingLoopState()?.packetsSent} packets</p>
                 <p><b>Received: </b>{parsedPacketCount()} packets</p>
