@@ -5,7 +5,7 @@
 // ****
 use crate::{
     communication_manager::CommsIF, models::packet_parser::PacketParser,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    packet_structure_manager::PacketStructureManager,
 };
 use anyhow::{bail, Context};
 use std::{
@@ -13,8 +13,6 @@ use std::{
     io::Read,
     sync::{Arc, Mutex},
 };
-
-use super::midwest_adapter::register_midwest_packet_structures;
 
 #[derive(Default)]
 /// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface.
@@ -42,13 +40,6 @@ impl CommsIF for BinaryFileAdapter {
     where
         Self: Sized,
     {
-        // Register midwest packet structures for binary files from Midwest flights.
-        use_state_in_mutex(&packet_structure_manager, &mut |ps_ref| {
-            if let Err(err) = register_midwest_packet_structures(ps_ref) {
-                eprintln!("Failed to register Midwest packet structures: {err}");
-            }
-        });
-
         BinaryFileAdapter {
             file: None,
             packet_parser,

@@ -32,6 +32,16 @@ pub trait PacketParser: Send {
         packet_structure_manager: &PacketStructureManager,
         print_flag: bool,
     ) -> anyhow::Result<Vec<Packet>>;
+
+    /// Register packet structures needed by this parser.
+    fn register_packet_structures(
+        _packet_structure_manager: &mut PacketStructureManager,
+    ) -> anyhow::Result<()>
+    where
+        Self: Sized,
+    {
+        Ok(())
+    }
 }
 
 /**
@@ -47,5 +57,29 @@ pub fn create_parser_from_product_name(
         ProductName::Featherweight => Box::new(FeatherweightParser::new()),
         ProductName::Aim => Box::new(AimParser::new()),
         ProductName::Midwest => Box::new(MidwestParser::new()),
+    }
+}
+
+/*
+ * Function to register packet structures for a given product's parser.
+ * This should be called during initialization to ensure the packet structure manager
+ * has the necessary structures for parsing incoming data.
+*/
+pub fn register_packet_structures_for_product(
+    parser_name: ProductName,
+    packet_structure_manager: &mut PacketStructureManager,
+) -> anyhow::Result<()> {
+    match parser_name {
+        ProductName::AltusMetrum => {
+            AltosPacketParser::register_packet_structures(packet_structure_manager)
+        }
+        ProductName::Rfd => {
+            SerialPacketParser::register_packet_structures(packet_structure_manager)
+        }
+        ProductName::Featherweight => {
+            FeatherweightParser::register_packet_structures(packet_structure_manager)
+        }
+        ProductName::Aim => AimParser::register_packet_structures(packet_structure_manager),
+        ProductName::Midwest => MidwestParser::register_packet_structures(packet_structure_manager),
     }
 }

@@ -47,6 +47,24 @@ impl PacketParser for FeatherweightParser {
         Self::default()
     }
 
+    fn register_packet_structures(
+        packet_structure_manager: &mut PacketStructureManager,
+    ) -> anyhow::Result<()> {
+        packet_structure_manager.enforce_packet_fields(
+            FEATHERWEIGHT_GPS_NAME,
+            vec![
+                "TimeStamp", //Milliseconds
+                "Altitude",  //Feet
+                "Lat",       //Degrees
+                "Long",      //Degrees
+                "Vel Lat",   //Feet per second
+                "Vel Long",  //Feet per second
+                "Vel Vert",  //Feet per second
+            ],
+        );
+        Ok(())
+    }
+
     fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
         self.unparsed_data.as_mut()
     }

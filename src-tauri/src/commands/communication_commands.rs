@@ -6,7 +6,10 @@
 
 use crate::{
     communication_manager::{CommunicationManager, CommunicationManagerState},
-    models::{packet_parser::create_parser_from_product_name, product::ProductName},
+    models::{
+        packet_parser::{create_parser_from_product_name, register_packet_structures_for_product},
+        product::ProductName,
+    },
     state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
 };
 use tauri::{AppHandle, Manager};
@@ -177,6 +180,11 @@ pub fn add_binary_file(
     use_state_in_mutex(
         &communication_manager_state,
         &mut |communication_manager: &mut CommunicationManager| {
+            use_state_in_mutex(&communication_manager.ps_manager, &mut |ps_manager| {
+                if let Err(err) = register_packet_structures_for_product(product_name, ps_manager) {
+                    eprintln!("Failed to register packet structures: {err}");
+                }
+            });
             let parser = create_parser_from_product_name(product_name);
             let new_id = communication_manager.add_binary_adapter(parser);
             let _ = communication_manager.init_device(file_path, 0, new_id);

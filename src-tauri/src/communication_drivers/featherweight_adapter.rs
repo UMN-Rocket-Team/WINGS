@@ -4,10 +4,8 @@ use anyhow::bail;
 
 use crate::{
     communication_manager::CommsIF, models::packet_parser::PacketParser,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    packet_structure_manager::PacketStructureManager,
 };
-
-const FEATHERWEIGHT_GPS_NAME: &str = "FW GPS";
 
 #[derive(Default)]
 pub struct FeatherweightAdapter {
@@ -18,24 +16,6 @@ pub struct FeatherweightAdapter {
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
-pub fn register_featherweight_packet_structures(
-    ps_manager: &mut PacketStructureManager,
-) -> anyhow::Result<()> {
-    ps_manager.enforce_packet_fields(
-        FEATHERWEIGHT_GPS_NAME,
-        vec![
-            "TimeStamp", //Milliseconds
-            "Altitude",  //Feet
-            "Lat",       //Degrees
-            "Long",      //Degrees
-            "Vel Lat",   //Feet per second
-            "Vel Long",  //Feet per second
-            "Vel Vert",  //Feet per second
-        ],
-    );
-
-    Ok(())
-}
 
 impl CommsIF for FeatherweightAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
@@ -46,12 +26,6 @@ impl CommsIF for FeatherweightAdapter {
     where
         Self: Sized,
     {
-        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-            if let Err(err) = register_featherweight_packet_structures(ps_manager) {
-                eprintln!("Failed to register Featherweight packet structures: {err}");
-            }
-        });
-
         FeatherweightAdapter {
             port: None,
             packet_parser,

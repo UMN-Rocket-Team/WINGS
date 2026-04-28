@@ -118,6 +118,140 @@ impl PacketParser for AimParser {
         Self::default()
     }
 
+    fn register_packet_structures(
+        packet_structure_manager: &mut PacketStructureManager,
+    ) -> anyhow::Result<()> {
+        packet_structure_manager.enforce_packet_fields(META, vec!["System time", "RSSI", "SNR"]);
+        packet_structure_manager.enforce_packet_fields(
+            ACCEL_Z,
+            vec!["System time", "Delta time", "Z acceleration"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            PRESSURE,
+            vec!["System time", "Delta time", "Pressure(Pa)"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            COMP_BATT,
+            vec!["System time", "Delta time", "ADC(V)"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            EJECT_BATT,
+            vec!["System time", "Delta time", "ADC(V)"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            TEMP,
+            vec!["System time", "Delta time", "Temperature"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            LINE_A,
+            vec!["System time", "Delta time", "ADC", "Is_On", "Is_Input"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            LINE_B,
+            vec!["System time", "Delta time", "ADC", "Is_On", "Is_Input"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            LINE_C,
+            vec!["System time", "Delta time", "ADC", "Is_On", "Is_Input"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            LINE_D,
+            vec!["System time", "Delta time", "ADC", "Is_On", "Is_Input"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            ACCEL_XY,
+            vec![
+                "System time",
+                "Delta time",
+                "X acceleration",
+                "Y acceleration",
+            ],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            GYRO,
+            vec![
+                "System time",
+                "Delta time",
+                "X rotation",
+                "Y rotation",
+                "Z rotation",
+            ],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            MAG,
+            vec!["System time", "Delta time", "X flux", "Y flux", "Z flux"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            GPS,
+            vec![
+                "System time",
+                "Delta time",
+                "Lat",
+                "Long",
+                "MSL(mm)",
+                "lock",
+                "sat_num",
+            ],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            RSSI,
+            vec!["System time", "Delta time", "RSSI"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            STATUS,
+            vec![
+                "System time",
+                "Delta time",
+                "State",
+                "Line D on",
+                "Line C on",
+                "Line B on",
+                "Line A on",
+                "Line A continuity",
+                "Line B continuity",
+                "Line C continuity",
+                "Line D continuity",
+                "Line A input",
+                "Line B input",
+                "Line C input",
+                "Line D input",
+            ],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            IDENTIFIER,
+            vec!["System time", "Delta time", "Identifier"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            GPS_TIME,
+            vec![
+                "System time",
+                "Delta time",
+                "iTOW",
+                "GPS Week",
+                "Valid time",
+                "Valid leap secs",
+                "leap secs",
+            ],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            TIMESTAMP,
+            vec!["System time", "Delta time", "Timestamp"],
+        );
+        packet_structure_manager.enforce_packet_fields(
+            ORIENTATION,
+            vec![
+                "System time",
+                "Delta time",
+                "Quat x",
+                "Quat y",
+                "Quat z",
+                "Quat w",
+            ],
+        );
+
+        Ok(())
+    }
+
     fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
         self.unparsed_data.as_mut()
     }
@@ -454,7 +588,6 @@ mod tests {
     use std::{fs, path::Path};
 
     use crate::{
-        communication_drivers::aim_adapter::register_aim_packet_structures,
         models::{packet::Packet, packet_parser::PacketParser},
         packet_structure_manager::PacketStructureManager,
     };
@@ -484,7 +617,7 @@ mod tests {
                     byte_array.append(&mut hex::decode(string).expect("uh oh stinky"));
                 }
                 let mut packet_structure_manager = PacketStructureManager::default();
-                register_aim_packet_structures(&mut packet_structure_manager)
+                AimParser::register_packet_structures(&mut packet_structure_manager)
                     .expect("packet structure registration");
 
                 let mut aim = AimParser::default();

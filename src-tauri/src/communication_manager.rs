@@ -336,6 +336,11 @@ impl CommunicationManager {
 
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self) -> usize {
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = AltosPacketParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Altus packet structures: {err}");
+            }
+        });
         let mut new_device: TeleDongleAdapter = TeleDongleAdapter::new(
             self.ps_manager.clone(),
             Some(Box::new(AltosPacketParser::default())),
@@ -370,6 +375,11 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_aim(&mut self) -> usize {
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = AimParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Aim packet structures: {err}");
+            }
+        });
         let mut new_device: AimAdapter = AimAdapter::new(
             self.ps_manager.clone(),
             Some(Box::new(AimParser::default())),
@@ -383,6 +393,11 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_featherweight(&mut self) -> usize {
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = FeatherweightParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Featherweight packet structures: {err}");
+            }
+        });
         let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(
             self.ps_manager.clone(),
             Some(Box::new(FeatherweightParser::default())),
@@ -396,6 +411,11 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_midwest(&mut self) -> usize {
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = MidwestParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Midwest packet structures: {err}");
+            }
+        });
         let mut new_device: MidwestAdapter = MidwestAdapter::new(
             self.ps_manager.clone(),
             Some(Box::new(MidwestParser::default())),
