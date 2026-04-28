@@ -32,7 +32,7 @@ use tauri::Manager;
 
 use crate::commands::{
     communication_commands::{
-        add_aim, add_altus_metrum, add_featherweight, add_file_manager, add_midwest, add_rfd,
+        add_aim, add_altus_metrum, add_featherweight, add_binary_file, add_csv_file, add_midwest, add_rfd,
         delete_device, init_device_port,
     },
     file_commands::set_read,
@@ -82,7 +82,8 @@ fn main() {
             // Device-specific commands
             add_altus_metrum,
             add_rfd,
-            add_file_manager,
+            add_csv_file,
+            add_binary_file,
             add_aim,
             add_featherweight,
             add_midwest,
