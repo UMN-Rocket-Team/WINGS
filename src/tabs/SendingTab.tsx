@@ -1,6 +1,6 @@
 import { Component, createSignal, For, createMemo, createEffect } from "solid-js";
 import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addFileManager, addRfd, deleteDevice, initDevicePort, } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addCsvFile, addBinaryFile, addRfd, deleteDevice, initDevicePort, } from "../backend_interop/api_calls";
 import ErrorModal from "../modals/ErrorModal";
 import { useModal } from "../core/ModalProvider";
 import { ComDevice, ProductName, } from "../backend_interop/types";
@@ -35,12 +35,12 @@ const SendingTab: Component = () => {
     // Grouping devices by type in organized columns
     const groupedDevices = createMemo(() => {
         return {
-            FilePath:      [...comDeviceList()].filter(d => ['ByteFile', 'CSVFile'].includes(d.device_type)),
-            SerialPort:    [...comDeviceList()].filter(d => d.device_type === 'SerialPort'),
-            AimXtra:       [...comDeviceList()].filter(d => d.device_type === 'AimXtra'),
-            AltusMetrum:   [...comDeviceList()].filter(d => d.device_type === 'TeleDongle'),
+            FilePath: [...comDeviceList()].filter(d => ['ByteFile', 'CSVFile'].includes(d.device_type)),
+            SerialPort: [...comDeviceList()].filter(d => d.device_type === 'SerialPort'),
+            AimXtra: [...comDeviceList()].filter(d => d.device_type === 'AimXtra'),
+            AltusMetrum: [...comDeviceList()].filter(d => d.device_type === 'TeleDongle'),
             FeatherWeight: [...comDeviceList()].filter(d => d.device_type === 'FeatherWeight'),
-            Midwest:       [...comDeviceList()].filter(d => d.device_type === 'Midwest')
+            Midwest: [...comDeviceList()].filter(d => d.device_type === 'Midwest')
         };
     });
 
@@ -93,33 +93,10 @@ const SendingTab: Component = () => {
     // Common styling for all "ADD" buttons
     const buttonClasses = "w-full text-black bg-gray-200 hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 dark:text-white";
 
-    const addFileDirectory = async (filePaths: string | string[] | null) => {
-        if (Array.isArray(filePaths)) {
-            for (const path of filePaths) {
-                setComDeviceSelections(comDeviceSelections.length, { 
-                    id: comDevicesIterator++, 
-                    selection: path,
-                });
-                
-                await addFileManager(path);
-            }
-        } else if (filePaths != null) {
-            setComDeviceSelections(comDeviceSelections.length, { 
-                id: comDevicesIterator++, 
-                selection: filePaths, 
-            });
-            await addFileManager(filePaths);
-        }
-    }
-
     // Handles the "Add Path(s)" button click, showing the FileModal and passing the recent paths from the store
     async function addFilePath() {
         const store = new Store("persistent.dat");
-        const recentPaths: string[] = (await store.get("recentSaves") || []) as string[];
-        showModal(FileModal, {
-            pathStrings: recentPaths,
-            callBack: addFileDirectory
-        });
+        showModal(FileModal, {});
     }
 
     // Generic function to handle adding devices by type
@@ -127,7 +104,7 @@ const SendingTab: Component = () => {
         const newDevice = {
             id: comDevicesIterator++,
             selection: "",
-            productName: productName        
+            productName: productName
         };
         setComDeviceSelections(comDeviceSelections.length, newDevice);
         await addFunction();
@@ -137,24 +114,24 @@ const SendingTab: Component = () => {
     // label: Display text on button
     // onClick: Corresponding click handler function
     const buttonsData = [
-        {label: "Add Path(s)", onClick: addFilePath},
-        {label: "Add SerialPort", onClick: addDeviceByType.bind(null, "rfd", addRfd)}, 
-        {label: "Add AltusMetrum Product", onClick: addDeviceByType.bind(null, "altusMetrum", addAltusMetrum)},
-        {label: "Add AimXtra", onClick: addDeviceByType.bind(null, "aim", addAim)},
-        {label: "Add FeatherWeight", onClick: addDeviceByType.bind(null, "featherweight", addFeatherWeight)},
-        {label: "Add Midwest", onClick: addDeviceByType.bind(null, "midwest", addMidwest)}
+        { label: "Add Path(s)", onClick: addFilePath },
+        { label: "Add SerialPort", onClick: addDeviceByType.bind(null, "rfd", addRfd) },
+        { label: "Add AltusMetrum Product", onClick: addDeviceByType.bind(null, "altusMetrum", addAltusMetrum) },
+        { label: "Add AimXtra", onClick: addDeviceByType.bind(null, "aim", addAim) },
+        { label: "Add FeatherWeight", onClick: addDeviceByType.bind(null, "featherweight", addFeatherWeight) },
+        { label: "Add Midwest", onClick: addDeviceByType.bind(null, "midwest", addMidwest) }
     ];
 
     // Array of column data for dynamic rendering of device lists
     // label: Column header text
     // devices: Corresponding list of devices filtered by type and sorted based on current sortOrder
     const columnsData = createMemo(() => [
-        {label: "FilePath", devices: groupedDevices().FilePath},
-        {label: "SerialPort", devices: groupedDevices().SerialPort},
-        {label: "AltusMetrum", devices: groupedDevices().AltusMetrum},
-        {label: "AimXtra", devices: groupedDevices().AimXtra},
-        {label: "FeatherWeight", devices: groupedDevices().FeatherWeight},
-        {label: "Midwest", devices: groupedDevices().Midwest}
+        { label: "FilePath", devices: groupedDevices().FilePath },
+        { label: "SerialPort", devices: groupedDevices().SerialPort },
+        { label: "AltusMetrum", devices: groupedDevices().AltusMetrum },
+        { label: "AimXtra", devices: groupedDevices().AimXtra },
+        { label: "FeatherWeight", devices: groupedDevices().FeatherWeight },
+        { label: "Midwest", devices: groupedDevices().Midwest }
     ]);
 
     createEffect(() => {
@@ -191,18 +168,18 @@ const SendingTab: Component = () => {
                                                 <div class="flex items-center gap-1 p-2 bg-white dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
                                                     <span class="text-black dark:text-white text-xs">{device.id}</span>
 
-                                                    <input 
-                                                        class="flex-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-black dark:text-white text-xs placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors duration-200" 
+                                                    <input
+                                                        class="flex-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-black dark:text-white text-xs placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors duration-200"
                                                         autocomplete="off"
-                                                        list="dataDevices" 
+                                                        list="dataDevices"
                                                         value={comDeviceSelections[globalIndex]?.selection ?? ""}
                                                         placeholder="path..."
                                                         onChange={event => {
                                                             applyNewSelectedPort((event.target as HTMLInputElement).value!, baud(), device.id)
-                                                        }} 
+                                                        }}
                                                     />
 
-                                                    <button 
+                                                    <button
                                                         class="px-1 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-black dark:text-white text-xs rounded transition-colors duration-200"
                                                         onClick={() => {
                                                             deleteDevice(device.id);
@@ -219,7 +196,7 @@ const SendingTab: Component = () => {
                             </div>
                         )}
                     </For>
-                </div>              
+                </div>
 
                 <datalist id="dataDevices">
                     <For each={availablePortNames()}>
@@ -228,8 +205,8 @@ const SendingTab: Component = () => {
                 </datalist>
             </div>
 
-            <div class="flex-1"/>
-            
+            <div class="flex-1" />
+
             <div class="flex flex-col md:w-1/2 gap-4 min-w-0">
                 <p><b>Sent: </b>{sendingLoopState()?.packetsSent} packets</p>
                 <p><b>Received: </b>{parsedPacketCount()} packets</p>
@@ -244,7 +221,7 @@ const SendingTab: Component = () => {
                     data_indicator
                 </button>
 
-                <br/>
+                <br />
 
                 <datalist id="commonBauds">
                     <option value="4800" />
@@ -283,7 +260,7 @@ const SendingTab: Component = () => {
                 </label>
             </div>
 
-            <div class="flex-1"/>
+            <div class="flex-1" />
         </div>
     );
 };

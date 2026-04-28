@@ -13,8 +13,11 @@ export const deleteDevice = async (id: number) => await invoke<void>("delete_dev
 
 export const addRfd = async () => await invoke<void>("add_rfd");
 
-export const addFileManager = async (filePath: string, productName?: ProductName) =>
-    await invoke<void>("add_file_manager", { filePath, productName });
+export const addCsvFile = async (filePath: string) =>
+    await invoke<void>("add_csv_file", { filePath });
+
+export const addBinaryFile = async (filePath: string, productName: ProductName) =>
+    await invoke<void>("add_binary_file", { filePath, productName });
 
 export const addAltusMetrum = async () => await invoke<void>("add_altus_metrum");
 
