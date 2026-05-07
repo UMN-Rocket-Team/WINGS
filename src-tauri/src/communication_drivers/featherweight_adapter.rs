@@ -16,7 +16,6 @@ pub struct FeatherweightAdapter {
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
-
 impl CommsIF for FeatherweightAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
     fn new(

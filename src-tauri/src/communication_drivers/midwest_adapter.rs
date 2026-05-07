@@ -3,8 +3,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF,
-    models::packet_parser::PacketParser,
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -16,7 +15,6 @@ pub struct MidwestAdapter {
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
-
 
 impl CommsIF for MidwestAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
