@@ -2,7 +2,7 @@ import { batch, Component, createMemo, createSignal, For, Match, Show, Switch } 
 import { addDelimiter, addField, addGapAfter, deletePacketStructure, deletePacketStructureComponent, registerEmptyPacketStructure, setDelimiterIdentifier, setDelimiterName, setFieldMetadataType, setFieldName, setFieldType, setGapSize, setPacketName } from "../backend_interop/api_calls";
 import { PacketComponentType, PacketDelimiter, PacketField, PacketFieldType, PacketGap, PacketMetadataType } from "../backend_interop/types";
 import { createInvokeApiSetterFunction } from "../core/packet_editor_helpers";
-import { runImportPacketWindow, runExportPacketWindow, importPacketsFromDirectories} from "../core/file_handling";
+import { runImportPacketWindow, runExportPacketWindow, importPacketsFromDirectories } from "../core/file_handling";
 import { useBackend } from "../backend_interop/BackendProvider";
 import { useModal } from "../core/ModalProvider";
 import ErrorModal from "../modals/ErrorModal";
@@ -67,45 +67,41 @@ const PacketEditor: Component = () => {
             <div class="flex flex-col gap-2">
                 <div class="h-[100%] flex flex-col overflow-scroll flex-grow tab">
                     <h1 class="m-0 text-xl font-bold text-black dark:text-white">Packets</h1>
-                        
-                        <For each={PacketStructureViewModels}>
-                            {packetStructure => (
-                                <button class={`flex justify-between gap-4 m-1 text-black bg-gray-100 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 
+
+                    <For each={PacketStructureViewModels}>
+                        {packetStructure => (
+                            <button class={`flex justify-between gap-4 m-1 text-black bg-gray-100 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 
                                     dark:text-white
                                     dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 
                                     ${selectedPacketStructureID() === packetStructure.id ? "widgetSelected" : "widgetNotSelected"} widgetGeneral`} onClick={() => batch(() => {
-                                    setSelectedPacketStructureID(packetStructure.id);
-                                    setSelectedPacketComponentIndex(0);
-                                })}>
-                                    <span class="" style={{ "white-space": "nowrap" }}>{packetStructure.name}</span>
-                                </button>
-                            )}
-                        </For>
+                                setSelectedPacketStructureID(packetStructure.id);
+                                setSelectedPacketComponentIndex(0);
+                            })}>
+                                <span class="" style={{ "white-space": "nowrap" }}>{packetStructure.name}</span>
+                            </button>
+                        )}
+                    </For>
                 </div>
                 <button class="externalButton m-1 text-black bg-gray-100 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 
-                    dark:text-white dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
+                    dark:text-white dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
                     onClick={async () => {
-                        const store = new Store("persistent.dat");
-                        const recentPaths = (await store.get("recentSaves") || []) as string[];
-                        showModal(FileModal, {
-                            pathStrings: recentPaths,
-                            callBack: importPacketsFromDirectories
-                    })
-                }}>
+                        showModal(FileModal, {});
+                    }
+                    }>
                     Import Packet
                 </button>
                 {/*<button class="externalButton" onClick={async () => await runImportPacketWindow()}>Add Packet</button>*/}
                 <button class="externalButton m-0 text-black bg-gray-100 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 
-                    dark:text-white dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
+                    dark:text-white dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
                     onClick={async () => await runExportPacketWindow(selectedPacket()!)}
                 >
-                        Export Packet...
+                    Export Packet...
                 </button>
-                
+
                 <button class="externalButton m-0 text-black bg-gray-100 hover:bg-gray-300
                     focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm 
                     px-5 py-2.5 dark:text-white dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700
-                    dark:border-gray-700" 
+                    dark:border-gray-700"
                     onClick={async () => await showErrorModalOnError(registerEmptyPacketStructure, 'Failed to add empty packet')}
                 >
                     Add Empty Packet
@@ -210,7 +206,7 @@ const PacketEditor: Component = () => {
                                     <div class="flex flex-col">
                                         <label for="fieldType">Type</label>
                                         {/* <form class="max-w-sm mx-auto"> */}
-                                            {/* <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label> */}
+                                        {/* <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label> */}
                                         {/* <select id="fieldType" 
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             onInput={async e => await invokeApiSetter(setFieldType, ((e.target as HTMLSelectElement).value as PacketFieldType))}
@@ -281,39 +277,39 @@ const PacketEditor: Component = () => {
                         </Switch>
                     </div>
                     <Switch>
-                            <Match when={selectedPacketComponentIndex() === null}>
-                                <>Error, this should never display</>
-                            </Match>
-                            {/* Selected packet structure field editor */}
-                            <Match when={selectedFieldData() !== null}>
-                                <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
+                        <Match when={selectedPacketComponentIndex() === null}>
+                            <>Error, this should never display</>
+                        </Match>
+                        {/* Selected packet structure field editor */}
+                        <Match when={selectedFieldData() !== null}>
+                            <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
                                 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 bg-gray-100 text-black
-                                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
-                                    onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
-                                >
-                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Field"}
-                                </button>
-                            </Match>
-                            {/* Selected packet structure delimiter editor */}
-                            <Match when={selectedDelimiterData() !== null}>
-                                <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
+                                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                                onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
+                            >
+                                Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Field"}
+                            </button>
+                        </Match>
+                        {/* Selected packet structure delimiter editor */}
+                        <Match when={selectedDelimiterData() !== null}>
+                            <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
                                 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 bg-gray-100 text-black
-                                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
-                                    onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
-                                >
-                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Delimiter"}
-                                </button>
-                            </Match>
-                            {/* Selected packet structure gap editor */}
-                            <Match when={selectedGapData() !== null}>
-                                <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
+                                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                                onClick={async () => await invokeApiSetter(deletePacketStructureComponent, selectedPacketStructureComponent()!.type)}
+                            >
+                                Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Delimiter"}
+                            </button>
+                        </Match>
+                        {/* Selected packet structure gap editor */}
+                        <Match when={selectedGapData() !== null}>
+                            <button class="redButton relative bottom-0 pt-2 mt-5 m-0 dark:text-white hover:bg-gray-300 focus:outline-none focus:ring-4 
                                 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 bg-gray-100 text-black
-                                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" 
-                                    onClick={async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, 0)}
-                                >
-                                    Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
-                                </button>
-                            </Match>
+                                dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                                onClick={async () => await setGapSize(selectedPacketStructureID()!, selectedGapData()!.offsetInPacket, 0)}
+                            >
+                                Delete {(selectedPacketStructureComponent()?.data as any)?.name ?? "Gap"}
+                            </button>
+                        </Match>
                     </Switch>
                 </Show>
             </div>

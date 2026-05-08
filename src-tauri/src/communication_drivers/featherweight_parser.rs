@@ -2,36 +2,127 @@ use chrono::NaiveDate;
 
 use anyhow::{bail, Context};
 
-use crate::models::packet::{Packet, PacketFieldValue};
+use crate::{
+    models::{
+        packet::{Packet, PacketFieldValue},
+        packet_parser::PacketParser,
+    },
+    packet_structure_manager::PacketStructureManager,
+};
 
-/// Finding the GPS Packet withing the Byte stream and returning it
-///
-/// Because the data is mostly given in ascii, it is converted to a string,
-/// we then find the GPS packet by using the alignment character and ParseType field
-/// The data is cut down to just the first line with a gps packet
-///     ( we assume one gps packet per transmission since gps packets are only sent once every couple of seconds so multiple would be highly unlikely)
-/// once the data is cut down it is then sent to the parser to be
-pub fn packet_from_byte_stream(buffer: &[u8], gps_packet_id: usize) -> anyhow::Result<Packet> {
-    let res = String::from_utf8_lossy(buffer);
+const FEATHERWEIGHT_GPS_NAME: &str = "FW GPS";
+const GPS_MARKER: &[u8] = b"@ GPS_STAT";
+const MAX_BUFFER_BYTES: usize = 1024;
 
-    #[cfg(debug_assertions)]
-    println!("{:?}", res);
+#[derive(Default)]
+pub struct FeatherweightParser {
+    unparsed_data: Vec<u8>,
+}
 
-    let res2 = res.trim_matches(char::from(0));
-    let packet_loc = res2
-        .find("@ GPS_STAT")
-        .ok_or(anyhow::anyhow!("no Gps Packet"))?;
-
-    let mut after_at = res2[packet_loc..].to_owned();
-    if let Some(line_end) = after_at.find("\r\n").or_else(|| after_at.find('\n')) {
-        after_at.truncate(line_end);
+fn find_subslice(data: &[u8], needle: &[u8], start_index: usize) -> Option<usize> {
+    if needle.is_empty() || start_index >= data.len() {
+        return None;
     }
 
-    let arr = parser(&after_at)?;
-    Ok(Packet {
-        structure_id: gps_packet_id,
-        field_data: arr,
-    })
+    data[start_index..]
+        .windows(needle.len())
+        .position(|window| window == needle)
+        .map(|index| index + start_index)
+}
+
+fn gps_packet_id(packet_structure_manager: &PacketStructureManager) -> anyhow::Result<usize> {
+    packet_structure_manager
+        .packet_structures
+        .iter()
+        .find(|packet_structure| packet_structure.name == FEATHERWEIGHT_GPS_NAME)
+        .map(|packet_structure| packet_structure.id)
+        .ok_or_else(|| anyhow::anyhow!("Featherweight packet structure not registered"))
+}
+
+impl PacketParser for FeatherweightParser {
+    fn new() -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
+    }
+
+    fn register_packet_structures(
+        packet_structure_manager: &mut PacketStructureManager,
+    ) -> anyhow::Result<()> {
+        packet_structure_manager.enforce_packet_fields(
+            FEATHERWEIGHT_GPS_NAME,
+            vec![
+                "TimeStamp", //Milliseconds
+                "Altitude",  //Feet
+                "Lat",       //Degrees
+                "Long",      //Degrees
+                "Vel Lat",   //Feet per second
+                "Vel Long",  //Feet per second
+                "Vel Vert",  //Feet per second
+            ],
+        );
+        Ok(())
+    }
+
+    fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
+        self.unparsed_data.as_mut()
+    }
+
+    fn parse_packets(
+        &mut self,
+        packet_structure_manager: &PacketStructureManager,
+        print_flag: bool,
+    ) -> anyhow::Result<Vec<Packet>> {
+        if print_flag {
+            println!("Unparsed data length: {}", self.unparsed_data.len());
+        }
+
+        let gps_packet_id = gps_packet_id(packet_structure_manager)?;
+        let mut packets = Vec::new();
+        let mut search_index = 0;
+        let mut consumed_up_to = 0;
+
+        while let Some(packet_start_index) =
+            find_subslice(&self.unparsed_data, GPS_MARKER, search_index)
+        {
+            let maybe_line_end = self.unparsed_data[packet_start_index..]
+                .iter()
+                .position(|byte| *byte == b'\n');
+
+            let Some(line_end_relative_index) = maybe_line_end else {
+                break;
+            };
+
+            let line_end_index = packet_start_index + line_end_relative_index;
+            let mut line_bytes = &self.unparsed_data[packet_start_index..line_end_index];
+            if let Some((last_byte, rest)) = line_bytes.split_last() {
+                if *last_byte == b'\r' {
+                    line_bytes = rest;
+                }
+            }
+
+            let line = String::from_utf8_lossy(line_bytes);
+            let parsed_fields = parser(line.trim_matches(char::from(0)))?;
+
+            packets.push(Packet {
+                structure_id: gps_packet_id,
+                field_data: parsed_fields,
+            });
+
+            consumed_up_to = line_end_index + 1;
+            search_index = consumed_up_to;
+        }
+
+        if consumed_up_to > 0 {
+            self.unparsed_data.drain(0..consumed_up_to);
+        } else if self.unparsed_data.len() > MAX_BUFFER_BYTES {
+            let bytes_to_drain = self.unparsed_data.len() - MAX_BUFFER_BYTES;
+            self.unparsed_data.drain(0..bytes_to_drain);
+        }
+
+        Ok(packets)
+    }
 }
 
 /// Parses String into Vector of packet field values

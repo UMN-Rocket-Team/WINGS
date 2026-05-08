@@ -4,8 +4,8 @@
 //
 // ****
 use crate::{
-    communication_manager::CommsIF, models::packet::Packet,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
+    packet_structure_manager::PacketStructureManager,
 };
 use anyhow::{bail, Context};
 use std::{
@@ -13,12 +13,6 @@ use std::{
     io::Read,
     sync::{Arc, Mutex},
 };
-
-use super::{
-    midwest_adapter::register_midwest_packet_structures, serial_packet_parser::SerialPacketParser,
-};
-
-const PRINT_PARSING: bool = false;
 
 #[derive(Default)]
 /// The `ByteReadDriver` is an implementation of the `CommsIF` communications interface.
@@ -33,24 +27,22 @@ const PRINT_PARSING: bool = false;
 pub struct BinaryFileAdapter {
     file: Option<File>,
     id: usize,
-    packet_parser: SerialPacketParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
+
 impl CommsIF for BinaryFileAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
+    ) -> Self
     where
         Self: Sized,
     {
-        // register midwest packet structures for binary files from Midwest flights
-        use_state_in_mutex(&packet_structure_manager, &mut |ps_ref| {
-            if let Err(err) = register_midwest_packet_structures(ps_ref) {
-                eprintln!("Failed to register Midwest packet structures: {err}");
-            }
-        });
         BinaryFileAdapter {
             file: None,
-            packet_parser: Default::default(),
+            packet_parser,
             id: 0,
             packet_structure_manager,
         }
@@ -97,22 +89,11 @@ impl CommsIF for BinaryFileAdapter {
         Ok(()) // returns ok if everything succeeded
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(
-            &self.packet_structure_manager,
-            &mut |ps_manager| -> anyhow::Result<()> {
-                packet_vector.extend_from_slice(
-                    &self
-                        .packet_parser
-                        .parse_packets(ps_manager, PRINT_PARSING)?,
-                );
-                Ok(())
-            },
-        )
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
+        self.packet_parser.as_deref_mut()
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager.clone()
     }
 }

@@ -1,7 +1,11 @@
 use std::cmp::max;
 
 use crate::{
-    models::packet::{Packet, PacketFieldValue},
+    models::{
+        packet::{Packet, PacketFieldValue},
+        packet_parser::PacketParser,
+        packet_structure::PacketStructure,
+    },
     packet_structure_manager::PacketStructureManager,
 };
 
@@ -9,18 +13,108 @@ use crate::{
 pub struct MidwestParser {
     unparsed_data: Vec<u8>,
 }
+
 /// responsible converting raw data to packets
-impl MidwestParser {
-    // adds new unparsed data
-    pub fn push_data(&mut self, data: &[u8], print_flag: bool) {
-        self.unparsed_data.extend(data);
-        if print_flag {
-            println!("Unparsed data: {:02X?}", self.unparsed_data);
-        }
+impl PacketParser for MidwestParser {
+    fn new() -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
     }
 
-    /// processes the raw data queue, returning a Vector(aka. array) of the processed packets
-    pub fn parse_packets(
+    fn register_packet_structures(
+        packet_structure_manager: &mut PacketStructureManager,
+    ) -> anyhow::Result<()> {
+        // Midwest BNO Data Packet.
+        let mut midwest_bno_structure = PacketStructure::default();
+        midwest_bno_structure.ez_make(
+            "ba5eba11 u32 02 u8 0034 F32 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
+            &[
+                "timestamp",
+                "rocket_state",
+                "acc_x",
+                "acc_y",
+                "acc_z",
+                "gyro_x",
+                "gyro_y",
+                "gyro_z",
+                "eul_heading",
+                "eul_roll",
+                "eul_pitch",
+            ],
+            true,
+        );
+        midwest_bno_structure.name = "midwest_bno".to_owned();
+        packet_structure_manager
+            .register_or_replace_packet_structure(&mut midwest_bno_structure)
+            .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+        // Midwest Alt Data Packet.
+        let mut midwest_alt_structure = PacketStructure::default();
+        midwest_alt_structure.ez_make(
+            "ba5eba11 u32 04 u8 0018 F32 F32 ca11ab1e",
+            &["timestamp", "rocket_state", "temperature", "pressure"],
+            true,
+        );
+        midwest_alt_structure.name = "midwest_alt".to_owned();
+        packet_structure_manager
+            .register_or_replace_packet_structure(&mut midwest_alt_structure)
+            .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+        // Midwest GPS Data Packet.
+        let mut midwest_gps_structure = PacketStructure::default();
+        midwest_gps_structure.ez_make(
+            "ba5eba11 u32 08 u8 0028 u32 F32 F32 u32 u8 u8 F32 ca11ab1e",
+            &[
+                "timestamp",
+                "rocket_state",
+                "time_of_week",
+                "pos_lat",
+                "pos_lon",
+                "height_msl",
+                "fixType",
+                "numSatellites",
+                "pDOP",
+            ],
+            true,
+        );
+        midwest_gps_structure.name = "midwest_gps".to_owned();
+        packet_structure_manager
+            .register_or_replace_packet_structure(&mut midwest_gps_structure)
+            .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+        // Midwest Control Telemetry Data Packet.
+        let mut midwest_control_telemetry_structure = PacketStructure::default();
+        midwest_control_telemetry_structure.ez_make(
+            "ba5eba11 u32 20 u8 0030 F32 F32 F32 F32 F32 F32 F32 F32 ca11ab1e",
+            &[
+                "timestamp",
+                "rocket_state",
+                "PD_error",
+                "loop_update_rate",
+                "target_pos",
+                "model_accel_vel",
+                "model_baro_vel",
+                "model_lookup_vel",
+                "model_theta",
+                "model_servo_command",
+            ],
+            true,
+        );
+        midwest_control_telemetry_structure.name = "midwest_control_telemetry".to_owned();
+        packet_structure_manager
+            .register_or_replace_packet_structure(&mut midwest_control_telemetry_structure)
+            .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+
+        Ok(())
+    }
+
+    fn get_unparsed_data(&mut self) -> &mut Vec<u8> {
+        self.unparsed_data.as_mut()
+    }
+
+    fn parse_packets(
         &mut self,
         packet_structure_manager: &PacketStructureManager,
         print_flag: bool,

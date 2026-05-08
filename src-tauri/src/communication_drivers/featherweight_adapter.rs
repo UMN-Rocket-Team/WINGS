@@ -3,45 +3,34 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF, models::packet::Packet,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
+    packet_structure_manager::PacketStructureManager,
 };
-
-use super::featherweight_parser;
 
 #[derive(Default)]
 pub struct FeatherweightAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
-    gps_packet_id: usize,
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for FeatherweightAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
+    ) -> Self
     where
         Self: Sized,
     {
-        let id = use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-            ps_manager.enforce_packet_fields(
-                "FW GPS",
-                vec![
-                    "TimeStamp", //Milliseconds
-                    "Altitude",  //Feet
-                    "Lat",       //Degrees
-                    "Long",      //Degrees
-                    "Vel Lat",   //Feet per second
-                    "Vel Long",  //Feet per second
-                    "Vel Vert",  //Feet per second
-                ],
-            )
-        });
         FeatherweightAdapter {
             port: None,
+            packet_parser,
             baud: 115200,
             id: 0,
-            gps_packet_id: id,
+            packet_structure_manager,
         }
     }
 
@@ -51,7 +40,6 @@ impl CommsIF for FeatherweightAdapter {
     ///
     /// Returns an error if port_name is invalid, or if unable to clear the device buffer
     fn init_device(&mut self, port_name: &str, _baud: u32) -> anyhow::Result<()> {
-        println!("initial how");
         if port_name.is_empty() {
             self.port = None;
         } else {
@@ -109,15 +97,11 @@ impl CommsIF for FeatherweightAdapter {
         Ok(())
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        packet_vector.push(featherweight_parser::packet_from_byte_stream(
-            data_vector,
-            self.gps_packet_id,
-        )?);
-        Ok(())
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
+        self.packet_parser.as_deref_mut()
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager.clone()
     }
 }

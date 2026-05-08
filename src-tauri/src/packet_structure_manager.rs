@@ -144,8 +144,7 @@ impl PacketStructureManager {
         return return_id;
     }
 
-    //enforces a packet to have the number of fields that you need it to have
-
+    ///enforces a packet to have the number of fields that you need it to have
     pub fn enforce_packet_fields(&mut self, name: &str, names: Vec<&str>) -> usize {
         let id = self.get_packet_structure_by_name(name);
         let ps = self.get_packet_structure_mut(id);
@@ -211,6 +210,31 @@ impl PacketStructureManager {
             );
         }
         Ok(packet_structure.id)
+    }
+
+    /// Registers a packet structure, replacing an existing one with the same name.
+    pub fn register_or_replace_packet_structure(
+        &mut self,
+        packet_structure: &mut PacketStructure,
+    ) -> Result<usize, Error> {
+        if let Some(existing_id) = self.name_to_id.get(&packet_structure.name).copied() {
+            packet_structure.id = existing_id;
+            let existing = self.get_packet_structure_mut(existing_id)?;
+            *existing = packet_structure.clone();
+
+            self.update_tracked_values();
+            if self.app.is_some() {
+                emit_packet_structure_update_event(
+                    &self.app.clone().unwrap(),
+                    vec![existing_id],
+                    None,
+                    &self,
+                );
+            }
+            Ok(existing_id)
+        } else {
+            self.register_packet_structure(packet_structure)
+        }
     }
 
     /// Get a immutable borrow to a packet structure by its ID.

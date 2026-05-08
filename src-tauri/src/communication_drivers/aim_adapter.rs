@@ -1,38 +1,44 @@
-use std::{ffi::CString, sync::Arc, thread::sleep, time::Duration};
+use std::{
+    ffi::CString,
+    sync::{Arc, Mutex},
+    thread::sleep,
+    time::Duration,
+};
 
 use anyhow::bail;
 use hidapi::{HidApi, HidDevice};
 
 use crate::{
-    communication_manager::CommsIF, models::packet::Packet,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
+    packet_structure_manager::PacketStructureManager,
 };
 
-use super::aim_parser::AimParser;
 pub struct AimAdapter {
     device: Option<HidDevice>,
-    packet_parser: AimParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
     last_read: [u8; 64],
+    packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
 }
 
 impl CommsIF for AimAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<std::sync::Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
+    ) -> Self
     where
         Self: Sized,
     {
-        use_state_in_mutex(&packet_structure_manager, &mut |ps_manager| {
-            let parser = AimParser::default(ps_manager);
-            AimAdapter {
-                device: None,
-                packet_parser: parser,
-                baud: 0,
-                id: 0,
-                last_read: [0; 64],
-            }
-        })
+        AimAdapter {
+            device: None,
+            packet_parser,
+            baud: 0,
+            id: 0,
+            packet_structure_manager,
+            last_read: [0; 64],
+        }
     }
 
     /// used to connect the object with a specific device
@@ -130,12 +136,11 @@ impl CommsIF for AimAdapter {
         Ok(())
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        self.packet_parser
-            .parse_transmission(data_vector, packet_vector)
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
+        self.packet_parser.as_deref_mut()
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager.clone()
     }
 }

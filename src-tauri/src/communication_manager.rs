@@ -16,15 +16,20 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_adapter::AimAdapter, binary_file_adapter::BinaryFileAdapter,
+        aim_adapter::AimAdapter, aim_parser::AimParser, binary_file_adapter::BinaryFileAdapter,
         csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter,
-        midwest_adapter::MidwestAdapter, serial_port_adapter::SerialPortAdapter,
-        teledongle_adapter::TeleDongleAdapter,
+        featherweight_parser::FeatherweightParser, midwest_adapter::MidwestAdapter,
+        midwest_parser::MidwestParser, serial_packet_parser::SerialPacketParser,
+        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter,
+        teledongle_packet_parser::AltosPacketParser,
     },
     file_handling::log_handlers::LogHandler,
-    models::packet::Packet,
+    models::{packet::Packet, packet_parser::PacketParser},
     packet_structure_manager::PacketStructureManager,
+    state::mutex_utils::use_state_in_mutex,
 };
+
+const PRINT_PARSING: bool = false;
 
 /// Represents a device name and its metadata for display and selection.
 #[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
@@ -64,7 +69,10 @@ pub struct CommunicationManager {
 /// data transfer, and identification.
 pub trait CommsIF {
     /// Create a new device adapter with the given packet structure manager.
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
+    ) -> Self
     where
         Self: Sized;
 
@@ -76,16 +84,30 @@ pub trait CommsIF {
     //Implements the communications side of the communications object (the bare minimum to get data), then returns it inside the Vec<u8>
     fn get_device_raw_data(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()>;
 
-    //Converts raw data into actual packets according to how the device specifies it
-    fn parse_device_data(
-        &mut self,
-        raw_data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()>;
     fn is_init(&self) -> bool;
     fn set_id(&mut self, id: usize);
     fn get_id(&self) -> usize;
     fn get_type(&self) -> String;
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)>;
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>>;
+
+    //Converts raw data into actual packets according to how the device specifies it
+    fn parse_device_data(
+        &mut self,
+        data_vector: &mut Vec<u8>,
+        packet_vector: &mut Vec<Packet>,
+    ) -> anyhow::Result<()> {
+        let psm = self.get_packet_structure_manager();
+        let parser = self
+            .get_parser()
+            .ok_or_else(|| anyhow::anyhow!("Parser not initialized"))?;
+        parser.push_data(data_vector, PRINT_PARSING);
+        use_state_in_mutex(&*psm, &mut |ps_manager| -> anyhow::Result<()> {
+            let parsed = parser.parse_packets(ps_manager, PRINT_PARSING)?;
+            packet_vector.extend_from_slice(&parsed);
+            Ok(())
+        })
+    }
 }
 
 impl CommunicationManager {
@@ -301,7 +323,10 @@ impl CommunicationManager {
 
     /// Adds an rfd device object to the manager
     pub fn add_serial_device(&mut self) -> usize {
-        let mut new_device: SerialPortAdapter = SerialPortAdapter::new(self.ps_manager.clone());
+        let mut new_device: SerialPortAdapter = SerialPortAdapter::new(
+            self.ps_manager.clone(),
+            Some(Box::new(SerialPacketParser::default())),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -311,7 +336,15 @@ impl CommunicationManager {
 
     /// Adds an altus metrum device object to the manager
     pub fn add_altus_metrum(&mut self) -> usize {
-        let mut new_device: TeleDongleAdapter = TeleDongleAdapter::new(self.ps_manager.clone());
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = AltosPacketParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Altus packet structures: {err}");
+            }
+        });
+        let mut new_device: TeleDongleAdapter = TeleDongleAdapter::new(
+            self.ps_manager.clone(),
+            Some(Box::new(AltosPacketParser::default())),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -320,8 +353,9 @@ impl CommunicationManager {
     }
 
     /// Adds a byte reading device object to the manager
-    pub fn add_binary_adapter(&mut self) -> usize {
-        let mut new_device: BinaryFileAdapter = BinaryFileAdapter::new(self.ps_manager.clone());
+    pub fn add_binary_adapter(&mut self, parser: Box<dyn PacketParser + 'static>) -> usize {
+        let mut new_device: BinaryFileAdapter =
+            BinaryFileAdapter::new(self.ps_manager.clone(), Some(parser));
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -331,7 +365,7 @@ impl CommunicationManager {
 
     /// Adds a CSV reading device object to the manager
     pub fn add_csv_adapter(&mut self) -> usize {
-        let mut new_device: CSVReadDriver = CSVReadDriver::new(self.ps_manager.clone());
+        let mut new_device: CSVReadDriver = CSVReadDriver::new(self.ps_manager.clone(), None);
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -341,7 +375,15 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_aim(&mut self) -> usize {
-        let mut new_device: AimAdapter = AimAdapter::new(self.ps_manager.clone());
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = AimParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Aim packet structures: {err}");
+            }
+        });
+        let mut new_device: AimAdapter = AimAdapter::new(
+            self.ps_manager.clone(),
+            Some(Box::new(AimParser::default())),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -351,8 +393,15 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_featherweight(&mut self) -> usize {
-        let mut new_device: FeatherweightAdapter =
-            FeatherweightAdapter::new(self.ps_manager.clone());
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = FeatherweightParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Featherweight packet structures: {err}");
+            }
+        });
+        let mut new_device: FeatherweightAdapter = FeatherweightAdapter::new(
+            self.ps_manager.clone(),
+            Some(Box::new(FeatherweightParser::default())),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects
@@ -362,7 +411,15 @@ impl CommunicationManager {
 
     /// Adds an byte reading device object to the manager
     pub fn add_midwest(&mut self) -> usize {
-        let mut new_device: MidwestAdapter = MidwestAdapter::new(self.ps_manager.clone());
+        use_state_in_mutex(&self.ps_manager, &mut |ps_manager| {
+            if let Err(err) = MidwestParser::register_packet_structures(ps_manager) {
+                eprintln!("Failed to register Midwest packet structures: {err}");
+            }
+        });
+        let mut new_device: MidwestAdapter = MidwestAdapter::new(
+            self.ps_manager.clone(),
+            Some(Box::new(MidwestParser::default())),
+        );
         new_device.set_id(self.id_iterator);
         self.id_iterator += 1;
         self.comms_objects

@@ -6,9 +6,12 @@
 
 use crate::{
     communication_manager::{CommunicationManager, CommunicationManagerState},
+    models::{
+        packet_parser::{create_parser_from_product_name, register_packet_structures_for_product},
+        product::ProductName,
+    },
     state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
 };
-use std::path::Path;
 use tauri::{AppHandle, Manager};
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
@@ -127,19 +130,19 @@ pub fn add_altus_metrum(
     Ok(())
 }
 
-/// Adds a new file manager device to the communication manager and initializes it with the given file path.
+/// Adds a new CSV file manager device to the communication manager and initializes it with the given file path.
 ///
 /// Emits an update to the frontend after addition.
 ///
 /// # Arguments
 /// * `app_handle` - The Tauri app handle.
-/// * `file_path` - The path to the file to use for the device.
+/// * `file_path` - The path to the CSV file to use for the device.
 /// * `communication_manager_state` - The shared state of the communication manager.
 ///
 /// # Returns
 /// Result<(), String> - Always Ok.
 #[tauri::command(async)]
-pub fn add_file_manager(
+pub fn add_csv_file(
     app_handle: tauri::AppHandle,
     file_path: &str,
     communication_manager_state: tauri::State<'_, CommunicationManagerState>,
@@ -147,17 +150,43 @@ pub fn add_file_manager(
     use_state_in_mutex(
         &communication_manager_state,
         &mut |communication_manager: &mut CommunicationManager| {
-            let is_csv = Path::new(file_path)
-                .extension()
-                .and_then(|ext| ext.to_str())
-                .map_or(false, |ext| ext.eq_ignore_ascii_case("csv"));
+            let new_id = communication_manager.add_csv_adapter();
+            let _ = communication_manager.init_device(file_path, 0, new_id);
+            update_coms(&app_handle, communication_manager);
+        },
+    );
+    Ok(())
+}
 
-            let new_id = if is_csv {
-                communication_manager.add_csv_adapter()
-            } else {
-                communication_manager.add_binary_adapter()
-            };
-
+/// Adds a new binary file manager device to the communication manager and initializes it with the given file path.
+///
+/// Emits an update to the frontend after addition.
+///
+/// # Arguments
+/// * `app_handle` - The Tauri app handle.
+/// * `file_path` - The path to the binary file to use for the device.
+/// * `product_name` - The product name whose parser will be used to parse the binary file data.
+/// * `communication_manager_state` - The shared state of the communication manager.
+///
+/// # Returns
+/// Result<(), String> - Always Ok.
+#[tauri::command(async)]
+pub fn add_binary_file(
+    app_handle: tauri::AppHandle,
+    file_path: &str,
+    product_name: ProductName,
+    communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+) -> Result<(), String> {
+    use_state_in_mutex(
+        &communication_manager_state,
+        &mut |communication_manager: &mut CommunicationManager| {
+            use_state_in_mutex(&communication_manager.ps_manager, &mut |ps_manager| {
+                if let Err(err) = register_packet_structures_for_product(product_name, ps_manager) {
+                    eprintln!("Failed to register packet structures: {err}");
+                }
+            });
+            let parser = create_parser_from_product_name(product_name);
+            let new_id = communication_manager.add_binary_adapter(parser);
             let _ = communication_manager.init_device(file_path, 0, new_id);
             update_coms(&app_handle, communication_manager);
         },

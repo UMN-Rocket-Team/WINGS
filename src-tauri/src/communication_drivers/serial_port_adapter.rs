@@ -3,17 +3,14 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF, models::packet::Packet,
-    packet_structure_manager::PacketStructureManager, state::mutex_utils::use_state_in_mutex,
+    communication_manager::CommsIF, models::packet_parser::PacketParser,
+    packet_structure_manager::PacketStructureManager,
 };
 
-use super::serial_packet_parser::SerialPacketParser;
-
-const PRINT_PARSING: bool = false;
 #[derive(Default)]
 pub struct SerialPortAdapter {
     port: Option<Box<dyn serialport::SerialPort>>,
-    packet_parser: SerialPacketParser,
+    packet_parser: Option<Box<dyn PacketParser>>,
     baud: u32,
     id: usize,
     packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
@@ -21,13 +18,16 @@ pub struct SerialPortAdapter {
 
 impl CommsIF for SerialPortAdapter {
     ///creates a new instance of a comms device with the given packet structure manager
-    fn new(packet_structure_manager: Arc<Mutex<PacketStructureManager>>) -> Self
+    fn new(
+        packet_structure_manager: Arc<Mutex<PacketStructureManager>>,
+        packet_parser: Option<Box<dyn PacketParser + 'static>>,
+    ) -> Self
     where
         Self: Sized,
     {
         SerialPortAdapter {
             port: None,
-            packet_parser: Default::default(),
+            packet_parser,
             baud: 0,
             id: 0,
             packet_structure_manager,
@@ -96,20 +96,11 @@ impl CommsIF for SerialPortAdapter {
         Ok(())
     }
 
-    fn parse_device_data(
-        &mut self,
-        data_vector: &mut Vec<u8>,
-        packet_vector: &mut Vec<Packet>,
-    ) -> anyhow::Result<()> {
-        self.packet_parser.push_data(data_vector, PRINT_PARSING);
-        use_state_in_mutex(
-            &self.packet_structure_manager,
-            &mut |parser| -> anyhow::Result<()> {
-                packet_vector
-                    .extend_from_slice(&self.packet_parser.parse_packets(parser, PRINT_PARSING)?);
-                Ok(())
-            },
-        )?;
-        Ok(())
+    fn get_parser(&mut self) -> Option<&mut (dyn PacketParser + 'static)> {
+        self.packet_parser.as_deref_mut()
+    }
+
+    fn get_packet_structure_manager(&self) -> Arc<Mutex<PacketStructureManager>> {
+        self.packet_structure_manager.clone()
     }
 }
