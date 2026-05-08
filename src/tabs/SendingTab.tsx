@@ -95,7 +95,6 @@ const SendingTab: Component = () => {
 
     // Handles the "Add Path(s)" button click, showing the FileModal and passing the recent paths from the store
     async function addFilePath() {
-        const store = new Store("persistent.dat");
         showModal(FileModal, {});
     }
 
