@@ -1,11 +1,12 @@
-use crate::communication_drivers::aim_parser::AimParser;
-use crate::communication_drivers::featherweight_parser::FeatherweightParser;
-use crate::communication_drivers::midwest_parser::MidwestParser;
-use crate::communication_drivers::serial_packet_parser::SerialPacketParser;
-use crate::communication_drivers::teledongle_packet_parser::AltosPacketParser;
-use crate::models::packet::Packet;
-use crate::models::product::ProductName;
-use crate::packet_structure_manager::PacketStructureManager;
+use crate::{
+    communication_drivers::{
+        aim::aim_parser::AimParser, featherweight::featherweight_parser::FeatherweightParser,
+        midwest::midwest_parser::MidwestParser, serial::serial_packet_parser::SerialPacketParser,
+        teledongle::teledongle_packet_parser::AltosPacketParser,
+    },
+    models::{packet::Packet, product::ProductName},
+    packet_structure_manager::PacketStructureManager,
+};
 
 pub trait PacketParser: Send {
     fn new() -> Self

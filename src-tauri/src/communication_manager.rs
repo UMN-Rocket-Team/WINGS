@@ -16,12 +16,19 @@ use serde::Serialize;
 
 use crate::{
     communication_drivers::{
-        aim_adapter::AimAdapter, aim_parser::AimParser, binary_file_adapter::BinaryFileAdapter,
-        csv_file_adapter::CSVReadDriver, featherweight_adapter::FeatherweightAdapter,
-        featherweight_parser::FeatherweightParser, midwest_adapter::MidwestAdapter,
-        midwest_parser::MidwestParser, serial_packet_parser::SerialPacketParser,
-        serial_port_adapter::SerialPortAdapter, teledongle_adapter::TeleDongleAdapter,
-        teledongle_packet_parser::AltosPacketParser,
+        aim::{aim_adapter::AimAdapter, aim_parser::AimParser},
+        binary_file::binary_file_adapter::BinaryFileAdapter,
+        csv_file::csv_file_adapter::CSVReadDriver,
+        featherweight::{
+            featherweight_adapter::FeatherweightAdapter, featherweight_parser::FeatherweightParser,
+        },
+        midwest::{midwest_adapter::MidwestAdapter, midwest_parser::MidwestParser},
+        serial::{
+            serial_packet_parser::SerialPacketParser, serial_port_adapter::SerialPortAdapter,
+        },
+        teledongle::{
+            teledongle_adapter::TeleDongleAdapter, teledongle_packet_parser::AltosPacketParser,
+        },
     },
     file_handling::log_handlers::LogHandler,
     models::{packet::Packet, packet_parser::PacketParser},
