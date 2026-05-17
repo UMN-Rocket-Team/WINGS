@@ -163,7 +163,7 @@ if (import.meta.vitest) {
                 open: vi.fn().mockResolvedValue("fakeDirectory")
             }))
             //replaces functions that reach out to backend
-            vi.mock('../backend_interop/api_calls', () => ({
+            vi.mock('@/backend_interop/api_calls', () => ({
                 addPacket: vi.fn()
             }))
 
