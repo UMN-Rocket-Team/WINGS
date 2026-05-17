@@ -2,14 +2,14 @@ import { Component } from "solid-js";
 import { ModalProps } from "./ModalProvider";
 import { SettingsModalProps } from "@/components/DisplaySettingsScreen";
 import Boolean from "@/components/displays/Boolean";
-import GraphSettingsModal, { GraphStruct } from "@/modals/GraphSettingsModal";
+import GraphSettingsModal, { GraphStruct } from "@/modals/settings/GraphSettingsModal";
 import GraphDisplayElement from "@/components/displays/SolidChart";
-import BooleanSettingsModal, { BooleanStruct } from "@/modals/BooleanSettingsModal";
-import ReadoutSettingsModal, { ReadoutStruct } from "@/modals/ReadoutSettingsModal";
+import BooleanSettingsModal, { BooleanStruct } from "@/modals/settings/BooleanSettingsModal";
+import ReadoutSettingsModal, { ReadoutStruct } from "@/modals/settings/ReadoutSettingsModal";
 import ReadoutDisplayElement from "@/components/displays/Readout";
-import OscilloscopeGraphSettingsModal, { OscilloscopeGraphStruct } from "@/modals/OscilloscopeGraphSettingsModal";
+import OscilloscopeGraphSettingsModal, { OscilloscopeGraphStruct } from "@/modals/settings/OscilloscopeGraphSettingsModal";
 import OscilloscopeGraphDisplayElement from "@/components/displays/OscilloscopeChart";
-import RocketSettingsModal, { RocketStruct } from "@/modals/RocketSettingsModal";
+import RocketSettingsModal, { RocketStruct } from "@/modals/settings/RocketSettingsModal";
 import RocketElement from "@/components/displays/Rocket";
 
 /**

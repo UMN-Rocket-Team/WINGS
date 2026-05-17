@@ -1,5 +1,5 @@
 import { Component, For, JSX, createEffect, createSignal, onMount } from "solid-js";
-import { BooleanStruct } from "@/modals/BooleanSettingsModal";
+import { BooleanStruct } from "@/modals/settings/BooleanSettingsModal";
 import { useBackend } from "@/backend_interop/BackendProvider";
 import { unDecimatedPackets } from "@/backend_interop/buffers";
 import { PacketComponentType, PacketField, PacketComponent } from "@/backend_interop/types";

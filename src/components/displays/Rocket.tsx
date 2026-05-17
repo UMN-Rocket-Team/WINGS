@@ -1,6 +1,6 @@
 import { Component, createEffect, JSX, onCleanup, onMount } from "solid-js";
 import * as THREE from "three";
-import { RocketStruct } from "@/modals/RocketSettingsModal";
+import { RocketStruct } from "@/modals/settings/RocketSettingsModal";
 import { useBackend } from "@/backend_interop/BackendProvider";
 import { unDecimatedPackets } from "@/backend_interop/buffers";
 
@@ -85,7 +85,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     rocketRotationGroup.add(rocketGeometryGroup);
     scene.add(rocketRotationGroup);
 
-    const bodyTubeMaterial = new THREE.MeshBasicMaterial({color: model.bodyTubeColor});
+    const bodyTubeMaterial = new THREE.MeshBasicMaterial({ color: model.bodyTubeColor });
     const bodyTubeGeometry = new THREE.CylinderGeometry(
         model.bodyTubeRadius, // radius top
         model.bodyTubeRadius, // radius bottom
@@ -99,7 +99,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
     bodyTube.position.y = -(model.noseConeLength + model.bodyTubeLength);
     rocketGeometryGroup.add(bodyTube);
 
-    const noseConeMaterial = new THREE.MeshBasicMaterial({color: model.noseConeColor});
+    const noseConeMaterial = new THREE.MeshBasicMaterial({ color: model.noseConeColor });
     const noseConeGeometry = new THREE.ConeGeometry(
         model.bodyTubeRadius, // radius
         model.noseConeLength, // height
@@ -141,8 +141,8 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
 
         const angle = (2 * Math.PI / model.numFins) * i;
         dummy.rotateY(angle + Math.PI / 2);
-        dummy.position.z = (model.bodyTubeRadius ) * Math.cos(angle);
-        dummy.position.x = (model.bodyTubeRadius ) * Math.sin(angle);
+        dummy.position.z = (model.bodyTubeRadius) * Math.cos(angle);
+        dummy.position.x = (model.bodyTubeRadius) * Math.sin(angle);
         dummy.position.y = -(model.bodyTubeLength + model.noseConeLength);
 
         // Update the matrix for the instances mesh
@@ -189,7 +189,7 @@ const RocketElement: Component<RocketStruct> = (rocket): JSX.Element => {
 
     const resizeObserver = new ResizeObserver((changes) => {
         for (const change of changes) {
-            const {width, height} = change.contentRect;
+            const { width, height } = change.contentRect;
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
             renderer.setSize(width, height);

@@ -1,5 +1,5 @@
 import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
-import { ReadoutStruct } from "@/modals/ReadoutSettingsModal";
+import { ReadoutStruct } from "@/modals/settings/ReadoutSettingsModal";
 import { useBackend } from "@/backend_interop/BackendProvider";
 import { unDecimatedPackets, parsedPackets } from "@/backend_interop/buffers";
 import { PacketComponentType, PacketField } from "@/backend_interop/types";
@@ -92,14 +92,14 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
     const [values, setValues] = createSignal([] as number[]);
 
     const update = () => {
-        if (unDecimatedPackets[readout.packetID] === undefined){
+        if (unDecimatedPackets[readout.packetID] === undefined) {
             setValues(readout.fields.map(() => {
                 const latestValue = NaN;
                 return latestValue;
-            }));   
-            return;     
+            }));
+            return;
         }
-        const lastPacket = unDecimatedPackets[readout.packetID][(unDecimatedPackets[readout.packetID].length) -1];
+        const lastPacket = unDecimatedPackets[readout.packetID][(unDecimatedPackets[readout.packetID].length) - 1];
         if (!lastPacket) {
             setValues([]);
             return;
@@ -126,8 +126,8 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
 
     return <div class="h-100% gap-2 flex flex-col align-center justify-center text-center">
         <div class="font-bold m-b-2 text-lg font-mono-Kode" style={{
-                        "font-size": "30px",
-                    }}>
+            "font-size": "30px",
+        }}>
             {readout.displayName}
         </div>
 
@@ -142,21 +142,21 @@ const ReadoutDisplayElement: Component<ReadoutStruct> = (readout): JSX.Element =
                 const value_string = value.toFixed(7)
                 const delimited_array = value_string.split(".")
                 console.log(delimited_array)
-                const pre_dec = delimited_array[0].substring(delimited_array[0].length - 5,delimited_array[0].length)
-                const post_dec = delimited_array[1].substring(0,3)
+                const pre_dec = delimited_array[0].substring(delimited_array[0].length - 5, delimited_array[0].length)
+                const post_dec = delimited_array[1].substring(0, 3)
 
-                const prePadding = " ".repeat(Math.max(5 - pre_dec.length,0))
-                const postPadding = " ".repeat(Math.max(3 - post_dec.length,0))
-                const postUnitPadding = " ".repeat(Math.max(10 - item.unit.length,0))
+                const prePadding = " ".repeat(Math.max(5 - pre_dec.length, 0))
+                const postPadding = " ".repeat(Math.max(3 - post_dec.length, 0))
+                const postUnitPadding = " ".repeat(Math.max(10 - item.unit.length, 0))
                 if (item.unit) {
                     return prePadding + pre_dec + "." + post_dec + postPadding + " " + `${item.unit}` + postUnitPadding;
                 }
                 return (prePadding + pre_dec + "." + post_dec + postPadding + " ".repeat(11));
             };
-            
+
             return <>
-                <div 
-                    class = "dark:text-gray-200 font-mono-Kode font-semibold"
+                <div
+                    class="dark:text-gray-200 font-mono-Kode font-semibold"
                     style={{
                         "font-size": "20px",
                     }}>
