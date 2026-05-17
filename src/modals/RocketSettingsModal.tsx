@@ -1,13 +1,13 @@
 import { ModalProps } from "@/core/ModalProvider";
 import DefaultModalLayout from "@/core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import {SettingsModalProps, displays, setDisplays } from "@/components/DisplaySettingsScreen";
+import { SettingsModalProps, displays, setDisplays } from "@/components/DisplaySettingsScreen";
 import { useBackend } from "@/backend_interop/BackendProvider";
 import { PacketComponentType, PacketField, PacketStructureViewModel } from "@/backend_interop/types";
 import { createStore, produce } from "solid-js/store";
 import infoIcon from "@/assets/info-sym.svg";
 import { DisplayStruct } from "@/core/display_registry";
-import { ROCKET_MODELS } from "@/components/Rocket";
+import { ROCKET_MODELS } from "@/components/displays/Rocket";
 
 export class RocketStruct implements DisplayStruct {
     // Implementing required values
@@ -128,7 +128,7 @@ const RocketSettingsModal = (props: ModalProps<SettingsModalProps>): JSX.Element
                     {props.displayStruct.displayName}
                 </div>
             </div>
-            
+
             <p>Select rocket model:</p>
             <select
                 value={displayStruct.rocketModel}

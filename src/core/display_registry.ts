@@ -1,16 +1,16 @@
 import { Component } from "solid-js";
 import { ModalProps } from "./ModalProvider";
 import { SettingsModalProps } from "@/components/DisplaySettingsScreen";
-import Boolean from "@/components/Boolean";
+import Boolean from "@/components/displays/Boolean";
 import GraphSettingsModal, { GraphStruct } from "@/modals/GraphSettingsModal";
-import GraphDisplayElement from "@/components/SolidChart";
+import GraphDisplayElement from "@/components/displays/SolidChart";
 import BooleanSettingsModal, { BooleanStruct } from "@/modals/BooleanSettingsModal";
 import ReadoutSettingsModal, { ReadoutStruct } from "@/modals/ReadoutSettingsModal";
-import ReadoutDisplayElement from "@/components/Readout";
+import ReadoutDisplayElement from "@/components/displays/Readout";
 import OscilloscopeGraphSettingsModal, { OscilloscopeGraphStruct } from "@/modals/OscilloscopeGraphSettingsModal";
-import OscilloscopeGraphDisplayElement from "@/components/OscilloscopeChart";
+import OscilloscopeGraphDisplayElement from "@/components/displays/OscilloscopeChart";
 import RocketSettingsModal, { RocketStruct } from "@/modals/RocketSettingsModal";
-import RocketElement from "@/components/Rocket";
+import RocketElement from "@/components/displays/Rocket";
 
 /**
  * contains all of the "settings" data that a displayType needs, this is edited by the modal, and read by the displayComponent
@@ -59,7 +59,7 @@ export interface DisplayTypeDefinition {
  * use this to easily get access to all of the information about a specific display type
  */
 export const displayRegistry = new Map<string, DisplayTypeDefinition>();
-  
+
 
 // Example of registering a new class
 //
@@ -97,7 +97,7 @@ displayRegistry.set("indicator", {
 
 displayRegistry.set("oscilloscopeGraph", {
     type: "oscilloscopeGraph",
-    displayName: "Oscilloscope Graph", 
+    displayName: "Oscilloscope Graph",
     structClass: OscilloscopeGraphStruct,
     settingsModal: OscilloscopeGraphSettingsModal,
     displayComponent: OscilloscopeGraphDisplayElement as Component<DisplayStruct>
