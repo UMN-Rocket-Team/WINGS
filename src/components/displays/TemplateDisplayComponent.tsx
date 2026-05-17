@@ -1,9 +1,9 @@
 import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
-import { ReadoutStruct } from "@/modals/ReadoutSettingsModal";
+import { ReadoutStruct } from "@/modals/settings/ReadoutSettingsModal";
 import { useBackend } from "@/backend_interop/BackendProvider";
 import { unDecimatedPackets, parsedPackets } from "@/backend_interop/buffers";
 import { PacketComponentType, PacketField } from "@/backend_interop/types";
-import { TemplateStruct } from "@/modals/TemplateSettingsModal";
+import { TemplateStruct } from "@/modals/settings/TemplateSettingsModal";
 
 
 /**
@@ -20,13 +20,13 @@ const TemplateDisplayElement: Component<TemplateStruct> = (props): JSX.Element =
     const update = () => {
 
         // If the packet hasn't been received set all values to Nan
-        if (unDecimatedPackets[props.packetID] === undefined){
+        if (unDecimatedPackets[props.packetID] === undefined) {
             setValues(props.fields.map(() => {
                 return NaN;
-            }));   
-            return;     
+            }));
+            return;
         }
-        const lastPacket = unDecimatedPackets[props.packetID][(unDecimatedPackets[props.packetID].length) -1];
+        const lastPacket = unDecimatedPackets[props.packetID][(unDecimatedPackets[props.packetID].length) - 1];
 
         // If the last packet is Nan or undefined(which is unexpected behavior), stop looking for that packet
         if (!lastPacket) {
