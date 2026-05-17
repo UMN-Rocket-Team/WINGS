@@ -9,8 +9,16 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": ["vite/client","vitest/importMeta"],
+    "types": [
+      "vite/client",
+      "vitest/importMeta"
+    ],
     "noEmit": true,
     "isolatedModules": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+    },
   }
 }

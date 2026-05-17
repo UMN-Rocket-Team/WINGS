@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 import solidPlugin from "vite-plugin-solid";
 // Import Tailwind CSS
 import tailwindcss from 'tailwindcss';
+import path from "path";
 
 export default defineConfig({
   esbuild: {
@@ -38,6 +39,11 @@ export default defineConfig({
         tailwindcss,
         // Add any other PostCSS plugins here if needed
       ],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, "./src"),
     },
   },
 });
