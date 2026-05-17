@@ -1,9 +1,9 @@
-import { ModalProps } from "../core/ModalProvider";
-import DefaultModalLayout from "../core/DefaultModalLayout";
+import { ModalProps } from "@/core/ModalProvider";
+import DefaultModalLayout from "@/core/DefaultModalLayout";
 import { For, JSX, createSignal, Show } from "solid-js";
-import { ImportWindowOptions, runImportPacketWindow } from "../core/file_handling";
-import { ProductName } from "../backend_interop/types";
-import { addCsvFile, addBinaryFile } from "../backend_interop/api_calls";
+import { ImportWindowOptions, runImportPacketWindow } from "@/core/file_handling";
+import { ProductName } from "@/backend_interop/types";
+import { addCsvFile, addBinaryFile } from "@/backend_interop/api_calls";
 
 /**
  * The properties required for the {@link FileModal} component.

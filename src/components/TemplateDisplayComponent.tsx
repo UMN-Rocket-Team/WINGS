@@ -1,9 +1,9 @@
 import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
-import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets, parsedPackets } from "../backend_interop/buffers";
-import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { TemplateStruct } from "../modals/TemplateSettingsModal";
+import { ReadoutStruct } from "@/modals/ReadoutSettingsModal";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { unDecimatedPackets, parsedPackets } from "@/backend_interop/buffers";
+import { PacketComponentType, PacketField } from "@/backend_interop/types";
+import { TemplateStruct } from "@/modals/TemplateSettingsModal";
 
 
 /**

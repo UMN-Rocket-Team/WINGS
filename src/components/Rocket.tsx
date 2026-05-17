@@ -1,8 +1,8 @@
 import { Component, createEffect, JSX, onCleanup, onMount } from "solid-js";
 import * as THREE from "three";
-import { RocketStruct } from "../modals/RocketSettingsModal";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets } from "../backend_interop/buffers";
+import { RocketStruct } from "@/modals/RocketSettingsModal";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { unDecimatedPackets } from "@/backend_interop/buffers";
 
 const FOV = 75; // degrees
 

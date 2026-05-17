@@ -1,9 +1,9 @@
-import { Component, For, JSX, createEffect, createSignal, Show, onMount } from "solid-js";
-import { BooleanStruct } from "../modals/BooleanSettingsModal";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets } from "../backend_interop/buffers";
-import { PacketComponentType, PacketField, PacketComponent } from "../backend_interop/types";
-import { useModal } from "../core/ModalProvider";
+import { Component, For, JSX, createEffect, createSignal, onMount } from "solid-js";
+import { BooleanStruct } from "@/modals/BooleanSettingsModal";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { unDecimatedPackets } from "@/backend_interop/buffers";
+import { PacketComponentType, PacketField, PacketComponent } from "@/backend_interop/types";
+import { useModal } from "@/core/ModalProvider";
 
 const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
     enum Colors {
@@ -15,8 +15,8 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
     const { showModal } = useModal();
 
     let textAreaRef: HTMLTextAreaElement | undefined;
-    onMount(() => {if (textAreaRef) textAreaRef.style.height = textAreaRef?.scrollHeight + "px"});
-    
+    onMount(() => { if (textAreaRef) textAreaRef.style.height = textAreaRef?.scrollHeight + "px" });
+
     const { parsedPacketCount, PacketStructureViewModels } = useBackend();
 
     // each index corresponds to boolean.fields value
@@ -24,28 +24,28 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
 
     const update = () => {
         const updatePacket = (packetID: number) => {
-            if (unDecimatedPackets[packetID] === undefined){
+            if (unDecimatedPackets[packetID] === undefined) {
                 setValues((v) => { // Setting all values in packet of packetID to 0
                     let newVals = boolean.fields.map((field, i) =>
                         field.packetID === packetID ? 0 : v[i]
                     );
                     return newVals;
-                });   
-                return;     
+                });
+                return;
             }
-            
-            const lastPacket = unDecimatedPackets[packetID][(unDecimatedPackets[packetID].length) -1];
+
+            const lastPacket = unDecimatedPackets[packetID][(unDecimatedPackets[packetID].length) - 1];
             if (!lastPacket) {
                 setValues((v) => { // Removing all values in packet of packetID
                     let newVals: number[] = [];
-                    for (let i=0; i<boolean.fields.length; i++) {
+                    for (let i = 0; i < boolean.fields.length; i++) {
                         const field = boolean.fields[i];
                         if (field.packetID !== packetID) newVals.push(v[i]);
                     }
-        
+
                     return newVals;
-                });   
-                return;  
+                });
+                return;
             }
 
             setValues((v) => { // Changing all values in packet of packetID to values from lastPacket
@@ -56,7 +56,7 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
             });
         }
 
-        let updatedPackets: {[id: number]: boolean} = {};
+        let updatedPackets: { [id: number]: boolean } = {};
         boolean.fields.forEach((f) => {
             if (!updatedPackets[f.packetID]) {
                 updatePacket(f.packetID);
@@ -131,7 +131,7 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
                             default:
                                 meetsCondition = value === unit;
                                 break;
-                        }                        
+                        }
                     }
 
                     return meetsCondition ? Colors.GREEN : Colors.RED;
@@ -139,14 +139,15 @@ const Boolean: Component<BooleanStruct> = (boolean): JSX.Element => {
 
                 return <>
                     <div class="w-[112px] aspect-square rounded-xl border-0 px-2 py-2 flex flex-col justify-center items-center"
-                            style={`box-shadow: 0px 0px 6px 6px ${!(getColor() === Colors.GREY) && getColor()}; 
-                                background-color: ${getColor()}`}> 
+                        style={`box-shadow: 0px 0px 6px 6px ${!(getColor() === Colors.GREY) && getColor()}; 
+                                background-color: ${getColor()}`}>
                         <div class="break-words w-full overflow-visible">
                             <div class="whitespace-normal"><b>{field().name}</b></div>
 
                             <div
                                 class="wrap-break-word font-sans text-ellipsis"
-                                style={{ "word-wrap": "break-word", "white-space": "pre-wrap",
+                                style={{
+                                    "word-wrap": "break-word", "white-space": "pre-wrap",
                                     "font-family": '"Helvetica Neue", Helvetica, Arial, sans-serif'
                                 }}>
                                 {getValue()}

@@ -12,7 +12,7 @@ import {
     DisplayComDevice
 } from "./types";
 import { emit, listen, UnlistenFn } from "@tauri-apps/api/event";
-import { comDeviceSelections, EnsureComDevicesIteratorAtLeast, setComDeviceSelections } from "../tabs/SendingTab";
+import { comDeviceSelections, EnsureComDevicesIteratorAtLeast, setComDeviceSelections } from "@/tabs/SendingTab";
 
 /**
  * The global state managed by the {@link BackendContext}.
