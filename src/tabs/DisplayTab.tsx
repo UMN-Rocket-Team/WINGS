@@ -1,6 +1,6 @@
 import { Component, For, JSX, Show } from "solid-js";
-import { displays, FlexviewObject, flexviewObjects } from "../components/DisplaySettingsScreen";
-import { displayRegistry} from "../core/display_registry";
+import { displays, FlexviewObject, flexviewObjects } from "@/components/DisplaySettingsScreen";
+import { displayRegistry} from "@/core/display_registry";
 
 const RecursiveFlexviewViewer = (props: {
     object: FlexviewObject

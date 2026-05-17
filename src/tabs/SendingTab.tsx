@@ -1,12 +1,12 @@
 import { Component, createSignal, For, createMemo, createEffect } from "solid-js";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addCsvFile, addBinaryFile, addRfd, deleteDevice, initDevicePort, } from "../backend_interop/api_calls";
-import ErrorModal from "../modals/ErrorModal";
-import { useModal } from "../core/ModalProvider";
-import { ComDevice, ProductName, } from "../backend_interop/types";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { addAim, addAltusMetrum, addFeatherWeight, addMidwest, addCsvFile, addBinaryFile, addRfd, deleteDevice, initDevicePort, } from "@/backend_interop/api_calls";
+import ErrorModal from "@/modals/ErrorModal";
+import { useModal } from "@/core/ModalProvider";
+import { ComDevice, ProductName, } from "@/backend_interop/types";
 import { createStore } from "solid-js/store";
 import { Store } from "tauri-plugin-store-api";
-import FileModal from "../modals/FilePathModal";
+import FileModal from "@/modals/FilePathModal";
 
 export const [comDeviceSelections, setComDeviceSelections] = createStore<ComDevice[]>([]);
 let comDevicesIterator = 0;

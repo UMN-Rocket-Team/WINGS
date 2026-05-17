@@ -1,7 +1,7 @@
 import { Component, Match, Switch } from "solid-js";
 import { ThemeContextValue, useTheme } from "./ThemeProvider";
-import moonIcon from "../assets/moon.svg";
-import sunIcon from "../assets/sun.svg";
+import moonIcon from "@/assets/moon.svg";
+import sunIcon from "@/assets/sun.svg";
 
 /**
  * A component that allows the user to toggle the theme between light and dark mode

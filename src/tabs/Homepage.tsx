@@ -1,20 +1,20 @@
 import { useNavigate } from "@solidjs/router";
 import { Component } from "solid-js";
-import Credits from "../components/Credits";
-import { useModal } from "../core/ModalProvider";
-import ThemeSwitcher from "../theme/ThemeSwitcher";
-import logo from "../assets/logo.png";
+import Credits from "@/components/Credits";
+import { useModal } from "@/core/ModalProvider";
+import ThemeSwitcher from "@/theme/ThemeSwitcher";
+import logo from "@/assets/logo.png";
 import { open } from '@tauri-apps/api/dialog';
 import { open as openHref } from '@tauri-apps/api/shell';
 import { readTextFile } from "@tauri-apps/api/fs";
-import { setParsedPackets } from "../backend_interop/buffers";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { Packet, PacketStructureViewModel, ProductName } from "../backend_interop/types";
-import ErrorModal, { ErrorModalProps } from "../modals/ErrorModal";
-import { displays, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
-import { DisplayStruct } from "../core/display_registry";
+import { setParsedPackets } from "@/backend_interop/buffers";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { Packet, PacketStructureViewModel, ProductName } from "@/backend_interop/types";
+import ErrorModal, { ErrorModalProps } from "@/modals/ErrorModal";
+import { displays, FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "@/components/DisplaySettingsScreen";
+import { DisplayStruct } from "@/core/display_registry";
 import { createStore } from "solid-js/store";
-import { addAim, addAltusMetrum, addFeatherWeight, addRfd } from "../backend_interop/api_calls";
+import { addAim, addAltusMetrum, addFeatherWeight, addRfd } from "@/backend_interop/api_calls";
 
 export type PacketBundle = {
     parsedPacketsArray: Packet[],

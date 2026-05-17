@@ -1,8 +1,8 @@
 import { Component, For, JSX, Show, createEffect, createSignal } from "solid-js";
-import { ReadoutStruct } from "../modals/ReadoutSettingsModal";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets, parsedPackets } from "../backend_interop/buffers";
-import { PacketComponentType, PacketField } from "../backend_interop/types";
+import { ReadoutStruct } from "@/modals/ReadoutSettingsModal";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { unDecimatedPackets, parsedPackets } from "@/backend_interop/buffers";
+import { PacketComponentType, PacketField } from "@/backend_interop/types";
 
 let _canvas: HTMLCanvasElement | null = null;
 let _ctx: CanvasRenderingContext2D | null = null;

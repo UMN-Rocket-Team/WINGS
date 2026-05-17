@@ -1,11 +1,11 @@
 import { Component, createEffect, createMemo, For, Match, Show, Switch } from "solid-js";
-import { useModal } from "../core/ModalProvider";
+import { useModal } from "@/core/ModalProvider";
 import { createStore } from "solid-js/store";
-import { useBackend } from "../backend_interop/BackendProvider";
-import settingsIcon from "../assets/settings.png";
-import closeIcon from "../assets/close.svg";
-import { displayRegistry, DisplayStruct } from "../core/display_registry";
-import { loadedDisplayData, setLoadedDisplayData } from "../tabs/Homepage";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import settingsIcon from "@/assets/settings.png";
+import closeIcon from "@/assets/close.svg";
+import { displayRegistry, DisplayStruct } from "@/core/display_registry";
+import { loadedDisplayData, setLoadedDisplayData } from "@/tabs/Homepage";
 
 /**
  * general set of props to give each display settingsModal

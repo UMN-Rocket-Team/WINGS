@@ -2,10 +2,10 @@ import { Component, createEffect, onCleanup, onMount } from "solid-js";
 import { CategoryScale, Chart, ChartConfiguration, ChartTypeRegistry, LineController, LineElement, Point, PointElement, LinearScale, TimeScale, Title, Tooltip } from "chart.js";
 import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-luxon';
-import { useBackend } from "../backend_interop/BackendProvider";
-import { unDecimatedPackets } from "../backend_interop/buffers";
-import { PacketComponentType, PacketField } from "../backend_interop/types";
-import { OscilloscopeGraphStruct } from "../modals/OscilloscopeGraphSettingsModal";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { unDecimatedPackets } from "@/backend_interop/buffers";
+import { PacketComponentType, PacketField } from "@/backend_interop/types";
+import { OscilloscopeGraphStruct } from "@/modals/OscilloscopeGraphSettingsModal";
 
 // Register the necessary components with ChartJS so that they can be used later
 // Note: any components that are not registered here will act like no-ops if they are attempted to be used later!

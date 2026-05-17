@@ -1,14 +1,14 @@
-import { ModalProps } from "../core/ModalProvider";
-import DefaultModalLayout from "../core/DefaultModalLayout";
+import { ModalProps } from "@/core/ModalProvider";
+import DefaultModalLayout from "@/core/DefaultModalLayout";
 import { For, JSX, Show, createSignal, onMount } from "solid-js";
-import {SettingsModalProps, displays, setDisplays } from "../components/DisplaySettingsScreen";
-import { useBackend } from "../backend_interop/BackendProvider";
-import { PacketComponentType, PacketField } from "../backend_interop/types";
+import {SettingsModalProps, displays, setDisplays } from "@/components/DisplaySettingsScreen";
+import { useBackend } from "@/backend_interop/BackendProvider";
+import { PacketComponentType, PacketField } from "@/backend_interop/types";
 import { createStore, produce } from "solid-js/store";
-import settingsIcon from "../assets/settings.png";
-import infoIcon from "../assets/info-sym.svg";
-import dropdownIcon from "../assets/dropdown.svg";
-import { DisplayStruct } from "../core/display_registry";
+import settingsIcon from "@/assets/settings.png";
+import infoIcon from "@/assets/info-sym.svg";
+import dropdownIcon from "@/assets/dropdown.svg";
+import { DisplayStruct } from "@/core/display_registry";
 
 
 export class TemplateStruct implements DisplayStruct {

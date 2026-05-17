@@ -1,13 +1,13 @@
 import { Component } from "solid-js";
-import FieldsScreen, { FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "../components/DisplaySettingsScreen";
-import logo from "../assets/logo.png";
-import { useBackend } from "../backend_interop/BackendProvider";
+import FieldsScreen, { FlexviewObject, flexviewObjects, setDisplays, setFlexviewObjects } from "@/components/DisplaySettingsScreen";
+import logo from "@/assets/logo.png";
+import { useBackend } from "@/backend_interop/BackendProvider";
 import { useNavigate } from "@solidjs/router";
-import { clearParsedPackets } from "../backend_interop/buffers";
+import { clearParsedPackets } from "@/backend_interop/buffers";
 import { save } from "@tauri-apps/api/dialog";
 import { writeTextFile } from "@tauri-apps/api/fs";
-import { displays } from "../components/DisplaySettingsScreen";
-import { DisplayStruct } from "../core/display_registry";
+import { displays } from "@/components/DisplaySettingsScreen";
+import { DisplayStruct } from "@/core/display_registry";
 import { comDeviceSelections } from "./SendingTab";
 
 /**

@@ -1,7 +1,7 @@
 import { open, save } from '@tauri-apps/api/dialog';
-import { PacketStructureViewModel, PacketComponentType } from "../backend_interop/types";
+import { PacketStructureViewModel, PacketComponentType } from "@/backend_interop/types";
 import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
-import { addPacket } from "../backend_interop/api_calls";
+import { addPacket } from "@/backend_interop/api_calls";
 import { Store } from "tauri-plugin-store-api";
 /**
  * Exports the given PacketStructureViewModel as a .json file via a dialogue window.
