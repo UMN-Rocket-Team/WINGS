@@ -12,7 +12,7 @@ use crate::{
     },
     state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
 };
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter};
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
 /// Helper function for sending out an update of all coms manager devices.
@@ -20,7 +20,7 @@ const COM_DEVICE_UPDATE: &str = "com-device-update";
 fn update_coms(app_handle: &AppHandle, communication_manager: &mut CommunicationManager) {
     let mut return_me = vec![];
     communication_manager.update_display_com_devices(&mut return_me);
-    let success = app_handle.emit_all(COM_DEVICE_UPDATE, &return_me);
+    let success = app_handle.emit(COM_DEVICE_UPDATE, &return_me);
     //notify devs if backend is failing to send updates to the frontend
     if success.is_err() {
         println!("WARNING: communication_commands.rs failed to communicate with frontend, \n| Warning Error:{:#?}",success)

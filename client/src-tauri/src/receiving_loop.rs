@@ -141,9 +141,7 @@ mod tests {
     use std::sync::Arc;
 
     use crate::{
-        file_handling::log_handlers::FileHandlingState,
-        packet_structure_manager::PacketStructureManager,
-        state::packet_structure_manager_state::default_packet_structure_manager,
+        file_handling::log_handlers::{FileHandlingState, LogHandler}, packet_structure_manager::PacketStructureManager, state::packet_structure_manager_state::default_packet_structure_manager,
     };
 
     use super::*; // lets the unit tests use everything in this file
@@ -151,19 +149,19 @@ mod tests {
 
     #[test]
     fn run_loop_once() {
-        let app_handle = tauri::test::mock_builder()
+        let app = tauri::Builder::default()
             .setup(|_app| Ok(()))
             .manage(Mutex::new(CommunicationManager::default_state(Arc::new(
                 Mutex::new(PacketStructureManager::default()),
             ))))
             .manage(DataProcessorState::default())
-            .manage(FileHandlingState::new(self))
             .build(tauri::generate_context!())
             .expect("failed to build app");
+        app.manage(FileHandlingState::new(LogHandler::new(&app.handle())));
         assert!(iterate_receiving_loop(
-            app_handle.state::<CommunicationManagerState>(),
-            app_handle.state::<FileHandlingState>(),
-            app_handle.state::<DataProcessorState>()
+            app.state::<CommunicationManagerState>(),
+            app.state::<FileHandlingState>(),
+            app.state::<DataProcessorState>()
         )
         .is_ok())
     }
@@ -172,15 +170,16 @@ mod tests {
     #[ignore]
     //runs the receiving loop with the expectation that one RFD is connected, will print any hardcoded packets(packets in packet_structure_manager_state.rs) that are received.
     fn can_receive_and_parse_data_with_rfds() {
-        //init app
-        let app_handle = tauri::test::mock_builder()
+        //init app        
+        let app_handle = tauri::Builder::default()
             .setup(|_app| Ok(()))
-            .manage(Mutex::new(CommunicationManager::default_state(Arc::new(
-                Mutex::new(PacketStructureManager::default()),
-            ))))
-            .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
+        app_handle
+            .manage(Mutex::new(CommunicationManager::default_state(Arc::new(
+                Mutex::new(PacketStructureManager::default()),
+            ))));
+        app_handle.manage(FileHandlingState::new(LogHandler::new(&app_handle)));
 
         let mut new_id = 0;
 
@@ -231,14 +230,15 @@ mod tests {
     //runs the receiving loop with the expectation that an RFD and teledongle COM14 are connected
     fn can_receive_and_parse_data_with_multiple_rfds() {
         //init app
-        let app_handle = tauri::test::mock_builder()
+        let app_handle = tauri::Builder::default()
             .setup(|_app| Ok(()))
             .manage(Mutex::new(CommunicationManager::default_state(Arc::new(
                 Mutex::new(PacketStructureManager::default()),
             ))))
-            .manage(FileHandlingState::default())
             .build(tauri::generate_context!())
             .expect("failed to build app");
+
+        app_handle.manage(FileHandlingState::new(LogHandler::new(&app_handle)));
 
         let mut new_id = 0;
         let mut new_id_2 = 0;

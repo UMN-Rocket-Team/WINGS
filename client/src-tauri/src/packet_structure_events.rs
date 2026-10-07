@@ -12,7 +12,7 @@ use crate::{
     state::mutex_utils::use_state_in_mutex,
 };
 use serde::Serialize;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::{
     models::packet_view_model::create_packet_view_model,
@@ -76,7 +76,7 @@ pub fn emit_packet_structure_update_event(
 
     // Emit the event with the collected updates to all frontend windows.
     app_handle
-        .emit_all("packet-structures-update", &packet_view_model_updates)
+        .emit("packet-structures-update", &packet_view_model_updates)
         .unwrap();
 }
 

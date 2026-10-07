@@ -21,14 +21,14 @@ use std::sync::{Arc, Mutex};
 
 use communication_manager::CommunicationManager;
 use data_processing::DataProcessor;
-use file_handling::{config_struct::ConfigStruct, log_handlers::FileHandlingState};
+use file_handling::{config_struct::ConfigStruct, log_handlers::{FileHandlingState, LogHandler}};
 use packet_structure_events::send_initial_packet_structure_update_event;
 
 use packet_structure_manager::PacketStructureManager;
 use receiving_loop::MainLoop;
 use sending_loop::SendingLoopState;
 use state::packet_structure_manager_state::default_packet_structure_manager;
-use tauri::{Listener, Manager};
+use tauri::{AppHandle, Listener, Manager};
 
 use crate::commands::{
     communication_commands::{
@@ -56,7 +56,7 @@ fn main() {
     let comms = Mutex::new(CommunicationManager::default_state(ps_manager.clone()));
 
     // Build the Tauri application.
-    let app_handle = tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         // Register all command handlers that can be invoked from the frontend
@@ -92,31 +92,34 @@ fn main() {
             // File read command
             set_read
         ])
-        // Manage shared state objects so they can be accessed in commands and event handlers.
-        .manage(default_packet_structure_manager())
-        .manage(Mutex::new(config))
-        .manage(comms)
-        .manage(data)
-        .manage(SendingLoopState::default())
-        .manage(FileHandlingState::new(self))
-        // Setup hook runs once when the app starts, used for initialization and event listeners.
-        .setup(move |app| {
-            let app_handle_1 = app.handle();
-            let app_handle_2 = app.handle();
+        .setup(move |setup_app| {
 
-            app.listen_any("initialized", move |_| {
-                // Send initial packet structure update to the frontend.
-                send_initial_packet_structure_update_event(app_handle_1.clone());
-                // Initialize and start the background refresh timer
-                // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
-                // program and accessed upon termination
-                if app_handle_2.try_state::<MainLoop>().is_none() {
-                    app_handle_2.manage(MainLoop::new(app_handle_2.clone()));
-                }
-            });
+            let app_handle = setup_app.handle();
 
+            // Manage shared state objects so they can be accessed in commands and event handlers.
+            app_handle.manage(default_packet_structure_manager());
+            app_handle.manage(Mutex::new(config));
+            app_handle.manage(comms);
+            app_handle.manage(data);
+            app_handle.manage(SendingLoopState::default());
+            app_handle.manage(FileHandlingState::new(LogHandler::new(app_handle)));
             Ok(())
         })
+        // .setup(move |setup_app| {
+        //     let initialization_handler = move |_e| {
+        //         // Send initial packet structure update to the frontend.
+        //         send_initial_packet_structure_update_event(app_handle.clone());
+        //         // Initialize and start the background refresh timer
+        //         // Let the tauri app manage the necessary state so that it can be kept alive for the duration of the
+        //         // program and accessed upon termination
+        //         if app_handle.try_state::<MainLoop>().is_none() {
+        //             app_handle.manage(MainLoop::new(app_handle.clone()));
+        //         }
+        //     };
+        //     setup_app.listen_any("initialized", initialization_handler);
+
+        //     Ok(())
+        // })
         // Handle window close events to clean up resources.
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
@@ -124,7 +127,8 @@ fn main() {
                 window.app_handle().state::<MainLoop>().destroy()
             }
         })
-        .plugin(tauri_plugin_store::Builder::default().build())
-        .run(tauri::generate_context!())
+        .plugin(tauri_plugin_store::Builder::default().build());
+
+        builder.run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
