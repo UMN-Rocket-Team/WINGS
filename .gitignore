@@ -1,6 +1,8 @@
 node_modules
 dist
+target
 .vscode
 .DS_Store
 *.wings
 *raw_data.json
+package-lock.json

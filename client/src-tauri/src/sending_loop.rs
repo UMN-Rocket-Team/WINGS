@@ -6,7 +6,7 @@ use std::{
 
 use csv::StringRecord;
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 use crate::{
     communication_manager::CommunicationManager,
@@ -114,7 +114,7 @@ impl SendingLoop {
         });
 
         // Send an initial state update so the frontend knows the port was opened successfully
-        let _ = app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::starting());
+        let _ = app_handle.emit(SENDING_LOOP_UPDATE, SendingState::starting());
         // Sleeping always needs to happen at the end of the task, even if we return early.
         let sleep = move || {
             thread::sleep(interval);
@@ -202,7 +202,7 @@ impl SendingLoop {
                     //println!("Sent packet {}: {:?}", packets_sent, packet);
 
                     let _ =
-                        app_handle.emit_all(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
+                        app_handle.emit(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
                 }
                 Err(err) => {
                     println!("Failed to write to test port: {}", err);

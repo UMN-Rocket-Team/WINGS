@@ -28,7 +28,7 @@ use packet_structure_manager::PacketStructureManager;
 use receiving_loop::MainLoop;
 use sending_loop::SendingLoopState;
 use state::packet_structure_manager_state::default_packet_structure_manager;
-use tauri::Manager;
+use tauri::{Listener, Manager};
 
 use crate::commands::{
     communication_commands::{
@@ -56,7 +56,9 @@ fn main() {
     let comms = Mutex::new(CommunicationManager::default_state(ps_manager.clone()));
 
     // Build the Tauri application.
-    tauri::Builder::default()
+    let app_handle = tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         // Register all command handlers that can be invoked from the frontend
         .invoke_handler(tauri::generate_handler![
             // Device and communication commands
@@ -96,13 +98,13 @@ fn main() {
         .manage(comms)
         .manage(data)
         .manage(SendingLoopState::default())
-        .manage(FileHandlingState::default())
+        .manage(FileHandlingState::new(self))
         // Setup hook runs once when the app starts, used for initialization and event listeners.
         .setup(move |app| {
             let app_handle_1 = app.handle();
             let app_handle_2 = app.handle();
 
-            app.listen_global("initialized", move |_| {
+            app.listen_any("initialized", move |_| {
                 // Send initial packet structure update to the frontend.
                 send_initial_packet_structure_update_event(app_handle_1.clone());
                 // Initialize and start the background refresh timer
@@ -116,10 +118,10 @@ fn main() {
             Ok(())
         })
         // Handle window close events to clean up resources.
-        .on_window_event(|event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
                 // Timer internals need to manually dropped, do that here at program termination
-                event.window().app_handle().state::<MainLoop>().destroy()
+                window.app_handle().state::<MainLoop>().destroy()
             }
         })
         .plugin(tauri_plugin_store::Builder::default().build())

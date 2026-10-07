@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use anyhow::Error;
 use chrono::Duration;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use timer::{Guard, Timer};
 
 use crate::{
@@ -35,14 +35,14 @@ impl MainLoop {
             ) {
                 Ok(result) => {
                     //sends packets to frontend
-                    // app_handle.emit_all("serial-update", result).unwrap();
+                    // app_handle.emit("serial-update", result).unwrap();
                     if result.new_available_port_names.is_some()
                         || !result.parsed_packets.is_empty()
                     {
-                        app_handle.emit_all("serial-update", result).unwrap();
+                        app_handle.emit("serial-update", result).unwrap();
                     }
                 }
-                Err(message) => app_handle.emit_all("error", message.to_string()).unwrap(),
+                Err(message) => app_handle.emit("error", message.to_string()).unwrap(),
             };
         });
 
@@ -157,7 +157,7 @@ mod tests {
                 Mutex::new(PacketStructureManager::default()),
             ))))
             .manage(DataProcessorState::default())
-            .manage(FileHandlingState::default())
+            .manage(FileHandlingState::new(self))
             .build(tauri::generate_context!())
             .expect("failed to build app");
         assert!(iterate_receiving_loop(

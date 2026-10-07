@@ -7,12 +7,9 @@
 use anyhow::{bail, Error};
 use chrono::{DateTime, Utc};
 use csv::{Reader, StringRecord, Writer};
+use tauri::Manager;
 use std::{
-    collections::BTreeMap,
-    fs::{self, File},
-    io::Write,
-    path::{Path, PathBuf},
-    sync::Mutex,
+    collections::BTreeMap, fs::{self, File}, io::Write, path::{Path, PathBuf}, sync::Mutex,
 };
 
 use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
@@ -21,8 +18,45 @@ const DAY_FORMAT: &str = "%F";
 const TIME_FORMAT: &str = "%X";
 const LOG_TIME_FORMAT: &str = "%b_%d_%H_%M";
 
+struct PacketWriter {
+    writer: Writer<File>,
+    index: usize,
+}
+
 pub type FileHandlingState = Mutex<LogHandler>;
 /// Acts as a general data structure to store all files that the ground station is currently interacting with
+
+#[derive(Debug)]
+pub enum LogError {
+    NoDataDirectory,
+    FailedToInitialize,
+}
+
+impl std::fmt::Display for LogError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let description = match self {
+            
+            LogError::FailedToInitialize => "Could not initialize logger",
+            LogError::NoDataDirectory => "No data directory",
+        };
+        write!(f, "{}", description)
+    }
+}
+
+impl std::error::Error for LogError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    fn cause(&self) -> Option<&dyn std::error::Error> {
+        self.source()
+    }
+}
+
 pub struct LogHandler {
     csv_writers: Vec<PacketWriter>, //a list of all csv writers within the FileHandler(one for each packet)
     csv_reader: Option<Reader<File>>,
@@ -32,12 +66,7 @@ pub struct LogHandler {
     testing: bool, //flag that should disable all writing and print values to terminal instead
 }
 
-struct PacketWriter {
-    writer: Writer<File>,
-    index: usize,
-}
-
-impl Default for LogHandler {
+impl LogHandler {
     /// Makes a default configuration for the file handler
     ///
     /// the handler will first generate a logs directory in parallel to the execution directory
@@ -50,8 +79,11 @@ impl Default for LogHandler {
     /// # Panics
     ///
     /// this program will panic if it is unable to generate valid write files, this is done to prevent wings from starting without a log to save to
-    fn default() -> Self {
-        let mut path_buf = tauri::api::path::data_dir().expect("no data dir found on this system");
+    fn new(app: &tauri::AppHandle) -> Result<Self, LogError>  {
+        let mut path_buf = match app.path().app_data_dir() {
+            Ok(data_dir) => data_dir,
+            Err(e) => return Err(LogError::NoDataDirectory),
+        };
         path_buf.push(BASE_DIRECTORY);
         let time = Utc::now();
         path_buf.push(&format!("{}", time.format(DAY_FORMAT)));
@@ -64,7 +96,7 @@ impl Default for LogHandler {
             .expect(&format!("failed to register: {:#?}", &path_buf));
         let general_directory = path_buf.clone();
         println!("{:#?}", path_buf);
-        Self {
+        Ok(Self {
             csv_writers: vec![],
             csv_reader: match csv::ReaderBuilder::new()
                 .has_headers(false)
@@ -85,7 +117,7 @@ impl Default for LogHandler {
             base_path: general_directory,
             time: time.clone(),
             testing: false,
-        }
+        })
     }
 }
 
