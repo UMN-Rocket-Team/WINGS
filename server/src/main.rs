@@ -2,24 +2,39 @@ use axum::{
     routing::{get, post},
     http::StatusCode,
     Json, Router,
+    extract::{ws::{Message, WebSocket, WebSocketUpgrade}, State}, response::IntoResponse
 };
+
+mod controllers;
+
+use std::sync::Arc;
 use serde::{Deserialize, Serialize};
+use tokio::sync::broadcast;
+
+struct AppState {
+    tx: broadcast::Sender<String>
+}
 
 #[tokio::main]
 async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
+    let (tx, _rx) = broadcast::channel(100);
+    let app_state = Arc::new(AppState{tx});
     // build our application with a route
     let app = Router::new()
         // `GET /` goes to `root`
         .route("/", get(root))
         // `POST /users` goes to `create_user`
-        .route("/users", post(create_user));
+        .route("/users", post(create_user))
+        .nest("/ws", controllers::ws_controller::routes())
+        .with_state(app_state);
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await;
+    
 }
 
 // basic handler that responds with a static string
