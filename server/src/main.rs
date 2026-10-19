@@ -5,6 +5,8 @@ use axum::{
     extract::{ws::{Message, WebSocket, WebSocketUpgrade}, State}, response::IntoResponse
 };
 
+mod controllers;
+
 use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
@@ -26,7 +28,7 @@ async fn main() {
         .route("/", get(root))
         // `POST /users` goes to `create_user`
         .route("/users", post(create_user))
-        .route("/live", get(ws_handler))
+        .nest("/ws", controllers::ws_controller::routes())
         .with_state(app_state);
 
     // run our app with hyper, listening globally on port 3000
@@ -38,18 +40,6 @@ async fn main() {
 // basic handler that responds with a static string
 async fn root() -> &'static str {
     "Hello, World!"
-}
-
-fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>) {
-    ws.on_upgrade(|socket| {handle_socket(socket, state)})
-}
-
-async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
-    
-    let msg = Message::string("Opening packet stream..");
-    while let Ok(msg) = state.tx.send(msg).await {
-        // probably async transmission of packets via packetparser library here
-    }
 }
 
 async fn create_user(
