@@ -18,7 +18,6 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    
     let (tx, _rx) = broadcast::channel(100);
     let app_state = Arc::new(AppState{tx});
     // build our application with a route
@@ -33,23 +32,6 @@ async fn main() {
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await;
-
-    let mut rx = state.tx.subscribe();
-
-    let mut send_task = tokio::spawn(async move {
-        while let Ok(msg) = rx.recv().await {
-            if msg == String::new() {
-                break;
-            }
-            if sender.send(Message::Text(msg)).await.is_err() {
-                break;
-            }
-        }
-    });
-
-    tokio::select! {
-        _ = (&mut recv_task) => send_task.abort(),
-    };
     
 }
 
@@ -62,8 +44,12 @@ fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>) {
     ws.on_upgrade(|socket| {handle_socket(socket, state)})
 }
 
-fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
-    let _ = state.tx.send("msg");
+async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
+    
+    let msg = Message::string("Opening packet stream..");
+    while let Ok(msg) = state.tx.send(msg).await {
+        // probably async transmission of packets via packetparser library here
+    }
 }
 
 async fn create_user(
