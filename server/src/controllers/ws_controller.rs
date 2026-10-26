@@ -36,11 +36,9 @@ async fn generate_string() -> Utf8Bytes {
 }
 
 async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
-    // By splitting socket we can send and receive at the same time. In this example we will send
-    // unsolicited messages to client based on some sort of server's internal event (i.e .timer).
+    // split socket on a user basis for communication wih a single client
     let (mut sender, mut _receiver) = socket.split();
 
-    // Spawn a task that will push several messages to the client (does not matter what client does)
     let mut send_task = tokio::spawn(async move {
         /*
         some async stuff that we will hook up later
