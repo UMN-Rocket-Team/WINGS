@@ -2,6 +2,7 @@
   "name": "wings",
   "version": "2.2.0",
   "description": "The Ground Station of the University of Minnesota Twin Cities Rocket Team",
+  "packageManager": "pnpm@12.8.1",
   "scripts": {
     "start": "vite",
     "dev": "vite",
@@ -48,6 +49,5 @@
     "solid-js": "^1.9.7",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v2",
     "three": "^0.175.0"
-  },
-  "packageManager": "pnpm@12.8.1"
+  }
 }

@@ -45,7 +45,7 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.100.0-nightly
+          toolchain: nightly
           components: rustfmt
 
       - name: Ensure frontend dist exists
@@ -72,7 +72,7 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.100.0-nightly
+          toolchain: nightly
           components: rustfmt
 
       - name: Build
