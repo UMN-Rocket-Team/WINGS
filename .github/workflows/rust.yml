@@ -11,6 +11,10 @@ env:
 jobs:
   frontend:
     runs-on: ubuntu-22.04
+    
+    strategy:
+      matrix:
+        node-version: [24]
 
     defaults:
       run:
