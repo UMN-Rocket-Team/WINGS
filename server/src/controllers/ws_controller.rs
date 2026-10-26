@@ -1,18 +1,25 @@
 use std::sync::Arc;
 
-use axum::{Router, extract::{State, ws::{ Message, Utf8Bytes, WebSocket, WebSocketUpgrade}}, response::IntoResponse, routing::{any, get} };
-use tokio::sync::broadcast;
+use axum::{
+    Router,
+    extract::{
+        State,
+        ws::{Message, Utf8Bytes, WebSocket, WebSocketUpgrade},
+    },
+    response::IntoResponse,
+    routing::{any, get},
+};
 use futures::{sink::SinkExt, stream::StreamExt};
-
+use tokio::sync::broadcast;
 
 pub struct AppState {
     tx: broadcast::Sender<String>,
-    _rx: broadcast::Receiver<String>
+    _rx: broadcast::Receiver<String>,
 }
 
 pub fn routes() -> Router {
     let (tx, _rx) = broadcast::channel(100);
-    let app_state = Arc::new(AppState{tx, _rx});
+    let app_state = Arc::new(AppState { tx, _rx });
     Router::new()
         .route("/live", any(ws_handler))
         .with_state(app_state)
@@ -29,11 +36,10 @@ async fn generate_string() -> Utf8Bytes {
 }
 
 async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
-
     // By splitting socket we can send and receive at the same time. In this example we will send
     // unsolicited messages to client based on some sort of server's internal event (i.e .timer).
     let (mut sender, mut _receiver) = socket.split();
-    
+
     // Spawn a task that will push several messages to the client (does not matter what client does)
     let mut send_task = tokio::spawn(async move {
         /*
@@ -49,7 +55,11 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
          */
 
         for i in 0..20 {
-            if sender.send(Message::Text(Utf8Bytes::from(format!("{}",i)))).await.is_err() {
+            if sender
+                .send(Message::Text(Utf8Bytes::from(format!("{}", i))))
+                .await
+                .is_err()
+            {
                 break;
             };
             tokio::time::sleep(std::time::Duration::from_millis(300)).await;
