@@ -4,3 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.104"
+axum = { version = "0.8.9", features = ["multipart", "ws"] }
+chrono = "0.4.45"
+csv = "1.4.0"
+serde = { version = "1.0.229", features = ["derive", "serde_derive"] }
+serde_json = "1.0.154"
+timer = "0.2.0"
+tokio = { version = "1.54.1", features = ["fs", "io-std", "rt", "rt-multi-thread", "tracing"] }
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"
+wings_packet_parser = { workspace = true }

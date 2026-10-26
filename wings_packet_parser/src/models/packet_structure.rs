@@ -31,6 +31,30 @@ pub struct PacketStructure {
 }
 
 impl PacketStructure {
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn byte_defined(&self) -> bool {
+        self.byte_defined
+    }
+
+    pub fn fields(&self) -> &Vec<PacketField> {
+        &self.fields
+    }
+
+    pub fn delimiters(&self) -> &Vec<PacketDelimiter> {
+        &self.delimiters
+    }
+
+    pub fn packet_crc(&self) -> &Vec<PacketCRC> {
+        &self.packet_crc
+    }
+
     /// Creates a default packet structure with the given name.
     pub fn make_default(name: String) -> PacketStructure {
         PacketStructure {

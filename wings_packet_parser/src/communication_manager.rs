@@ -15,7 +15,7 @@ use hidapi::HidApi;
 use serde::Serialize;
 
 use crate::{
-    communication_drivers::{
+    drivers::{
         aim::{aim_adapter::AimAdapter, aim_parser::AimParser},
         binary_file::binary_file_adapter::BinaryFileAdapter,
         csv_file::csv_file_adapter::CSVReadDriver,

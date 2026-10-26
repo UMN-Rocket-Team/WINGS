@@ -3,10 +3,16 @@ import devtools from 'solid-devtools/vite';
 import solidPlugin from "vite-plugin-solid";
 // Import Tailwind CSS
 import tailwindcss from '@tailwindcss/vite';
+import path from "path";
 
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src")
+    }
+  },
   plugins: [
     devtools({
       /* features options - all disabled by default */

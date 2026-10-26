@@ -1,11 +1,6 @@
-use crate::{
-    data_processing::DataProcessorState,
-    file_handling::config_struct::ConfigState,
-    models::{
-        packet_structure::{PacketFieldType, PacketMetadataType},
-        packet_view_model::{PacketComponentType, PacketStructureViewModel},
-    },
-};
+use wings_packet_parser::prelude::*;
+
+
 // # packet_structure_manager_commands
 //
 // Contains all tauri commands related to the packet structure manager

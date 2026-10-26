@@ -8,13 +8,11 @@ use std::{
     collections::BTreeMap,
     vec,
 };
-use tauri::AppHandle;
 
 use crate::{
     models::packet_structure::{
         PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
     },
-    packet_structure_events::emit_packet_structure_update_event,
 };
 
 // We can start IDs from anywhere, but we start from 1 so that any code that
@@ -74,7 +72,6 @@ impl Error {
 }
 
 /// A packet structure manager is an object that contains all the packets the app is dealing with, this makes them easier to use them from other threads and handle errors
-#[readonly::make]
 #[derive(Debug, Clone)]
 pub struct PacketStructureManager {
     pub(crate) packet_structures: Vec<PacketStructure>,
@@ -88,9 +85,6 @@ pub struct PacketStructureManager {
     name_to_id: BTreeMap<String, usize>,
     //for translating between packet Ids and names
     id_to_name: BTreeMap<usize, String>,
-
-    //for updating the frontend with changes
-    app: Option<AppHandle>,
 }
 
 impl Default for PacketStructureManager {
@@ -102,16 +96,16 @@ impl Default for PacketStructureManager {
             maximum_first_delimiter: 0,
             name_to_id: Default::default(),
             id_to_name: Default::default(),
-            app: None,
         }
     }
 }
 
 #[allow(warnings)]
 impl PacketStructureManager {
-    pub fn set_app(&mut self, app: AppHandle) {
-        self.app = Some(app.clone());
+    pub fn packet_structures(&self) -> &Vec<PacketStructure> {
+        &self.packet_structures
     }
+
     /// finds a packet_id by name, if it doesn't exist, one is made and registered
     ///
     /// Searches for an id corresponding to the given name,
@@ -132,15 +126,6 @@ impl PacketStructureManager {
                 }
             }
         }
-        //update frontend if the structure manager is connected to the app
-        if self.app.is_some() {
-            emit_packet_structure_update_event(
-                &self.app.clone().unwrap(),
-                vec![return_id],
-                None,
-                &self,
-            );
-        }
         return return_id;
     }
 
@@ -160,14 +145,6 @@ impl PacketStructureManager {
                     offset_in_packet: end_of_packet,
                     r#type: PacketFieldType::UnsignedInteger,
                 });
-            }
-            if self.app.is_some() {
-                emit_packet_structure_update_event(
-                    &self.app.clone().unwrap(),
-                    vec![id],
-                    None,
-                    &self,
-                );
             }
         }
         return id;
@@ -201,14 +178,6 @@ impl PacketStructureManager {
 
         self.update_tracked_values();
 
-        if self.app.is_some() {
-            emit_packet_structure_update_event(
-                &self.app.clone().unwrap(),
-                vec![packet_structure.id],
-                None,
-                &self,
-            );
-        }
         Ok(packet_structure.id)
     }
 
@@ -223,14 +192,6 @@ impl PacketStructureManager {
             *existing = packet_structure.clone();
 
             self.update_tracked_values();
-            if self.app.is_some() {
-                emit_packet_structure_update_event(
-                    &self.app.clone().unwrap(),
-                    vec![existing_id],
-                    None,
-                    &self,
-                );
-            }
             Ok(existing_id)
         } else {
             self.register_packet_structure(packet_structure)

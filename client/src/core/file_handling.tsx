@@ -1,6 +1,6 @@
-import { open, save } from '@tauri-apps/api/dialog';
+import { open, save } from '@tauri-apps/plugin-dialog';
 import { PacketStructureViewModel, PacketComponentType } from "@/backend_interop/types";
-import { writeTextFile, readTextFile } from '@tauri-apps/api/fs';
+import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
 import { addPacket } from "@/backend_interop/api_calls";
 import { Store } from "tauri-plugin-store-api";
 /**
@@ -153,12 +153,12 @@ if (import.meta.vitest) {
     describe("Describe", async () => {
         beforeEach(async () => {
             //replaces functions that read files
-            vi.mock('@tauri-apps/api/fs', () => ({
+            vi.mock('@tauri-apps/plugin-fs', () => ({
                 writeTextFile: vi.fn(),
                 readTextFile: vi.fn().mockResolvedValue('{"id":0,"name":"testPacketView","components":[{"type":"Delimiter","data":{"index":0,"name":"testDelimiter","identifier":"1D3NT1TY","offsetInPacket":0}}]}')
             }))
             //replaces functions that require user input
-            vi.mock('@tauri-apps/api/dialog', () => ({
+            vi.mock('@tauri-apps/plugin-dialog', () => ({
                 save: vi.fn().mockResolvedValue("fakeDirectory"),
                 open: vi.fn().mockResolvedValue("fakeDirectory")
             }))

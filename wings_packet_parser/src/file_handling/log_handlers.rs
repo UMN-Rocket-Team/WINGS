@@ -7,9 +7,8 @@
 use anyhow::{bail, Error};
 use chrono::{DateTime, Utc};
 use csv::{Reader, StringRecord, Writer};
-use tauri::{AppHandle, Manager};
 use std::{
-    collections::BTreeMap, fs::{self, File}, io::Write, path::{Path, PathBuf}, sync::Mutex,
+    collections::BTreeMap, fs::{self, File}, io::Write, path::{Path, PathBuf}, str::FromStr, sync::Mutex,
 };
 
 use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
@@ -48,8 +47,7 @@ impl LogHandler {
     /// # Panics
     ///
     /// this program will panic if it is unable to generate valid write files, this is done to prevent wings from starting without a log to save to
-    pub fn new(app: &AppHandle) -> Self  {
-        let mut path_buf = app.path().app_data_dir().expect("could not find data directory");
+    pub fn new(mut path_buf: PathBuf) -> Self  {
         path_buf.push(BASE_DIRECTORY);
         let time = Utc::now();
         path_buf.push(&format!("{}", time.format(DAY_FORMAT)));
@@ -84,6 +82,13 @@ impl LogHandler {
             time: time.clone(),
             testing: false,
         }
+    }
+}
+
+impl Default for LogHandler {
+    fn default() -> Self {
+        let Ok(path_buf) = PathBuf::from_str("./");
+        LogHandler::new(path_buf)
     }
 }
 
