@@ -48,5 +48,6 @@
     "solid-js": "^1.9.7",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v2",
     "three": "^0.175.0"
-  }
+  },
+  "packageManager": "pnpm@12.8.1"
 }
