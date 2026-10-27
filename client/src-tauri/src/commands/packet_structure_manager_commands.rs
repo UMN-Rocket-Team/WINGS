@@ -1,6 +1,5 @@
 use wings_packet_parser::prelude::*;
 
-
 // # packet_structure_manager_commands
 //
 // Contains all tauri commands related to the packet structure manager

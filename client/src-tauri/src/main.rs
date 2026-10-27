@@ -13,7 +13,7 @@ use packet_structure_events::send_initial_packet_structure_update_event;
 
 use wings_packet_parser::prelude::*;
 
-use tauri::{Manager};
+use tauri::Manager;
 
 use crate::commands::{
     communication_commands::{
@@ -26,7 +26,7 @@ use crate::commands::{
         delete_packet_structure_component, register_empty_packet_structure,
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
-    }
+    },
 };
 
 /// The main function initializes various states and sets up event handlers and plugins for the Tauri
@@ -75,7 +75,6 @@ fn main() {
             set_read
         ])
         .setup(move |setup_app| {
-
             let app_handle = setup_app.handle();
 
             // Manage shared state objects so they can be accessed in commands and event handlers.
@@ -97,7 +96,6 @@ fn main() {
         //         }
         //     };
         //     setup_app.listen_any("initialized", initialization_handler);
-
         //     Ok(())
         // })
         // Handle window close events to clean up resources.
@@ -109,6 +107,7 @@ fn main() {
         })
         .plugin(tauri_plugin_store::Builder::default().build());
 
-        builder.run(tauri::generate_context!())
+    builder
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

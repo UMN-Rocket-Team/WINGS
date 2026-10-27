@@ -4,8 +4,8 @@
 //! communication devices, as well as updating the frontend with device changes.
 //! It interacts with the CommunicationManager and emits updates to the frontend.
 
-use wings_packet_parser::prelude::*;
 use tauri::{AppHandle, Emitter};
+use wings_packet_parser::prelude::*;
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
 /// Helper function for sending out an update of all coms manager devices.

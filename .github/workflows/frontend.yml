@@ -9,10 +9,6 @@ on:
       - 'client/src/**'
   workflow_dispatch:
 
-env:
-  CARGO_TERM_COLOR: always
-  CARGO_NET_RETRY: 10
-
 jobs:
   frontend:
     runs-on: ubuntu-22.04
@@ -27,7 +23,6 @@ jobs:
         with:
           version: 12
           runtime: node@26
-          cache: true
       - name: Build
         run: pnpm build
 
