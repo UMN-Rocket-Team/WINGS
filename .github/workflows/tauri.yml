@@ -3,10 +3,10 @@ name: Cargo Build, Test, Format Check
 on:
   push:
     paths:
-      - client/src-tauri/**
+      - 'client/src-tauri/**'
   pull_request:
     paths:
-      - client/src-tauri/**
+      - 'client/src-tauri/**'
 
 env:
   CARGO_TERM_COLOR: always

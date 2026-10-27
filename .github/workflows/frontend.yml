@@ -3,10 +3,10 @@ name: Cargo Build, Test, Format Check
 on:
   push:
     paths:
-      - client/**
+      - 'client/src/**'
   pull_request:
     paths:
-      - client/**
+      - 'client/src/**'
 
 env:
   CARGO_TERM_COLOR: always

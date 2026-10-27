@@ -3,10 +3,10 @@ name: Cargo Build, Test, Format Check
 on:
   push:
     paths:
-      - wings_packet_parser/**
+      - 'wings_packet_parser/**'
   pull_request:
     paths:
-      - wings_packet_parser/**
+      - 'wings_packet_parser/**'
 
 env:
   CARGO_TERM_COLOR: always
