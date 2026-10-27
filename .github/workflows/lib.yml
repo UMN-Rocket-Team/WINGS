@@ -14,7 +14,7 @@ env:
   CARGO_NET_RETRY: 10
 
 jobs:
-  server:
+  lib:
     runs-on: ubuntu-22.04
 
     defaults:
