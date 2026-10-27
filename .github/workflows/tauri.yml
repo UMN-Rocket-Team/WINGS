@@ -1,4 +1,4 @@
-name: Cargo Build, Test, Format Check
+name: Tauri Build, Test, Format Check
 
 on:
   push:

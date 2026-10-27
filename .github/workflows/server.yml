@@ -1,4 +1,4 @@
-name: Cargo Build, Test, Format Check
+name: Server Build, Check, Format Test
 
 on:
   push:
