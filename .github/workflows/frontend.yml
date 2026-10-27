@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - 'client/src/**'
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
