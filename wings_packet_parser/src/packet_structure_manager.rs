@@ -9,10 +9,8 @@ use std::{
     vec,
 };
 
-use crate::{
-    models::packet_structure::{
-        PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
-    },
+use crate::models::packet_structure::{
+    PacketDelimiter, PacketField, PacketFieldType, PacketMetadataType, PacketStructure,
 };
 
 // We can start IDs from anywhere, but we start from 1 so that any code that
@@ -885,7 +883,9 @@ mod tests {
                 .unwrap()
                 .delimiters[0]
                 .identifier,
-            vec![0x0a, 0x1b, 0x2c, 0x3d, 0x4e, 0x5f, 0x6e, 0x7d, 0x8c, 0x9b, 0x0a]
+            vec![
+                0x0a, 0x1b, 0x2c, 0x3d, 0x4e, 0x5f, 0x6e, 0x7d, 0x8c, 0x9b, 0x0a
+            ]
         );
         assert_eq!(
             packet_structure_manager

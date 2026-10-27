@@ -4,11 +4,16 @@
 //! reading and writing packets, and handling device-specific logs. It supports both
 //! reading from and writing to files, and can operate in a debug/testing mode.
 
-use anyhow::{bail, Error};
+use anyhow::{Error, bail};
 use chrono::{DateTime, Utc};
 use csv::{Reader, StringRecord, Writer};
 use std::{
-    collections::BTreeMap, fs::{self, File}, io::Write, path::{Path, PathBuf}, str::FromStr, sync::Mutex,
+    collections::BTreeMap,
+    fs::{self, File},
+    io::Write,
+    path::{Path, PathBuf},
+    str::FromStr,
+    sync::Mutex,
 };
 
 use crate::{models::packet::Packet, packet_structure_manager::PacketStructureManager};
@@ -47,7 +52,7 @@ impl LogHandler {
     /// # Panics
     ///
     /// this program will panic if it is unable to generate valid write files, this is done to prevent wings from starting without a log to save to
-    pub fn new(mut path_buf: PathBuf) -> Self  {
+    pub fn new(mut path_buf: PathBuf) -> Self {
         path_buf.push(BASE_DIRECTORY);
         let time = Utc::now();
         path_buf.push(&format!("{}", time.format(DAY_FORMAT)));

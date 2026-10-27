@@ -7,7 +7,7 @@ use crate::{
     communication_manager::CommsIF, models::packet_parser::PacketParser,
     packet_structure_manager::PacketStructureManager,
 };
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use std::{
     fs::File,
     io::Read,
