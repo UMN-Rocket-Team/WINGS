@@ -1,9 +1,9 @@
 use std::{cell::OnceCell, sync::Mutex};
 
 use axum::{
-    routing::{get, post},
-    http::StatusCode,
     Json, Router,
+    http::StatusCode,
+    routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +13,8 @@ pub use tokio::main;
 
 pub mod uart;
 
-pub const PS_MANAGER: OnceCell<Mutex<PacketStructureManager>> = OnceCell::<Mutex::<PacketStructureManager>>::new();
+pub const PS_MANAGER: OnceCell<Mutex<PacketStructureManager>> =
+    OnceCell::<Mutex<PacketStructureManager>>::new();
 
 #[tokio::main]
 async fn main() {

@@ -85,8 +85,7 @@ pub struct RefreshAndReadResult {
 /// If the function runs successfully it will return a RefreshAndReadResult struct
 /// The struct contains any new ports that have connected to the groundstation,
 /// along with new display packets for graphs, and other displays.
-fn iterate_receiving_loop(
-    // communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+fn iterate_receiving_loop(// communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     // log_state: tauri::State<'_, FileHandlingState>,
     // data_state: tauri::State<'_, DataProcessorState>,
 ) -> Result<RefreshAndReadResult, Error> {
@@ -165,7 +164,7 @@ fn iterate_receiving_loop(
 //     #[ignore]
 //     //runs the receiving loop with the expectation that one RFD is connected, will print any hardcoded packets(packets in packet_structure_manager_state.rs) that are received.
 //     fn can_receive_and_parse_data_with_rfds() {
-//         //init app        
+//         //init app
 //         let app_handle = tauri::Builder::default()
 //             .setup(|_app| Ok(()))
 //             .build(tauri::generate_context!())

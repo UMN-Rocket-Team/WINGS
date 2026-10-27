@@ -1,5 +1,5 @@
 use std::{
-    sync::{mpsc, Mutex},
+    sync::{Mutex, mpsc},
     thread,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -10,7 +10,6 @@ use wings_packet_parser::prelude::*;
 
 /// Name of the event sent to the frontend.
 const SENDING_LOOP_UPDATE: &str = "sending-loop-update";
-
 
 /// A stoppable activity running in a background thread.
 pub struct BackgroundTask {
