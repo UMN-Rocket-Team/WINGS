@@ -5,4 +5,3 @@ target
 .DS_Store
 *.wings
 *raw_data.json
-package-lock.json
