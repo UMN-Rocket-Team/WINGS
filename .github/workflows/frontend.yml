@@ -2,6 +2,8 @@ name: Frontend Build, Test
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'client/src/**'
   pull_request:

@@ -2,6 +2,8 @@ name: Lib Build, Test, Format Check
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'wings_packet_parser/**'
   pull_request:
