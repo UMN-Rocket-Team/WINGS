@@ -65,7 +65,7 @@ pub fn create_parser_from_product_name(
  * Function to register packet structures for a given product's parser.
  * This should be called during initialization to ensure the packet structure manager
  * has the necessary structures for parsing incoming data.
-*/
+ */
 pub fn register_packet_structures_for_product(
     parser_name: ProductName,
     packet_structure_manager: &mut PacketStructureManager,
