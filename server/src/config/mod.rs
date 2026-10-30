@@ -1,7 +1,14 @@
-use std::{fs::File, io::{Read, Write}, path::PathBuf};
+use std::{
+    fs::File,
+    io::{Read, Write},
+    path::PathBuf,
+};
 
 use serde::{Deserialize, Serialize};
-use wings_packet_parser::{communication_manager::DeviceName, models::packet_structure::{PacketCRC, PacketDelimiter, PacketField, PacketStructure}};
+use wings_packet_parser::{
+    communication_manager::DeviceName,
+    models::packet_structure::{PacketCRC, PacketDelimiter, PacketField, PacketStructure},
+};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -10,27 +17,29 @@ pub struct Config {
     packet_structures: Vec<ConfigPacketStructure>,
 }
 
-impl <'a> Config {
+impl<'a> Config {
     pub fn load_or_default(path: &'a PathBuf) -> Config {
         match Self::get_config(&path) {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("Could not read config due to the following error\n{}\nBuilding from default", e.to_string());
+                eprintln!(
+                    "Could not read config due to the following error\n{}\nBuilding from default",
+                    e.to_string()
+                );
                 let config = Self {
                     port: 3001u16,
                     radio_options: None,
-                    packet_structures: vec![]
+                    packet_structures: vec![],
                 };
                 match e {
                     ConfigError::NoPath(_e, path_buf) => {
                         let _ = config.save_config(&path_buf);
-                    },
+                    }
                     _ => {}
                 }
                 config
-            },
+            }
         }
-
     }
     fn get_config(path: &'a PathBuf) -> Result<Config, ConfigError<'a>> {
         let mut file = match File::open(&path) {
@@ -39,7 +48,7 @@ impl <'a> Config {
         };
         let mut buf = String::new();
         match file.read_to_string(&mut buf) {
-            Ok(_u) => {},
+            Ok(_u) => {}
             Err(e) => return Err(ConfigError::File(e, path)),
         }
         match toml::from_str::<Config>(buf.as_str()) {
@@ -65,25 +74,29 @@ impl <'a> Config {
 }
 
 #[derive(Debug)]
-pub enum ConfigError <'a> {
+pub enum ConfigError<'a> {
     File(std::io::Error, &'a PathBuf),
     Deserialization(toml::de::Error),
     NoPath(std::io::Error, &'a PathBuf),
-    Serialization(toml::ser::Error)
+    Serialization(toml::ser::Error),
 }
 
-impl <'a> std::fmt::Display for ConfigError <'a> {
+impl<'a> std::fmt::Display for ConfigError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            ConfigError::File(e, p) => format!("{}: {}", e.to_string(), p.to_str().unwrap()),
-            ConfigError::Deserialization(e) => e.to_string(),
-            ConfigError::NoPath(e, p) => format!("{}: {}", e.to_string(), p.to_str().unwrap()),
-            ConfigError::Serialization(e) => e.to_string(),
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                ConfigError::File(e, p) => format!("{}: {}", e.to_string(), p.to_str().unwrap()),
+                ConfigError::Deserialization(e) => e.to_string(),
+                ConfigError::NoPath(e, p) => format!("{}: {}", e.to_string(), p.to_str().unwrap()),
+                ConfigError::Serialization(e) => e.to_string(),
+            }
+        )
     }
 }
 
-impl <'a> std::error::Error for ConfigError <'a> {
+impl<'a> std::error::Error for ConfigError<'a> {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
@@ -123,7 +136,7 @@ impl ConfigPacketStructure {
             fields: self.fields.clone(),
             delimiters: self.delimiters.clone(),
             packet_crc: self.packet_crc.clone(),
-            size: self.size
+            size: self.size,
         }
     }
 }
@@ -156,7 +169,7 @@ packet_structures = [
                     type = Delimiter
                 },
             {
-                data = 
+                data =
                     index = 0
                     name = "Timestamp"
                     offsetInPacket = 4
@@ -165,7 +178,7 @@ packet_structures = [
                 {,
             {
                 data = {()
-                
+
                     index = 1
                     name = "pkt_type"
                     offsetInPacket = 8
@@ -215,7 +228,7 @@ packet_structures = [
                     name = "UFC_NEW_PITOT_CENTER"
                 },
             {
-        ] 
+        ]
     }
 ]
  */

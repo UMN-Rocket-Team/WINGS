@@ -1,9 +1,6 @@
 use std::{cell::OnceCell, path::PathBuf, str::FromStr, sync::Mutex};
 
-use axum::{
-    Router,
-    routing::get,
-};
+use axum::{Router, routing::get};
 
 use wings_packet_parser::prelude::*;
 
@@ -18,8 +15,7 @@ pub const CONFIG_PATH: &str = "./config.toml";
 
 pub static PS_MANAGER: Mutex<OnceCell<PacketStructureManager>> =
     Mutex::<OnceCell<PacketStructureManager>>::new(OnceCell::new());
-pub static CONFIG: Mutex<OnceCell<Config>> =
-    Mutex::<OnceCell<Config>>::new(OnceCell::new());
+pub static CONFIG: Mutex<OnceCell<Config>> = Mutex::<OnceCell<Config>>::new(OnceCell::new());
 
 #[tokio::main]
 async fn main() {
@@ -29,7 +25,7 @@ async fn main() {
         Ok(l) => l.set(config.to_owned()),
         Err(e) => panic!("Could not initialize config state: {}", e.to_string()),
     };
-    
+
     // initialize tracing
     tracing_subscriber::fmt::init();
 
