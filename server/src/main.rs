@@ -1,23 +1,31 @@
-use std::{cell::OnceCell, sync::Mutex};
+use std::{cell::OnceCell, path::PathBuf, str::FromStr, sync::Mutex};
 
-use axum::{
-    Json, Router,
-    http::StatusCode,
-    routing::{get, post},
-};
-use serde::{Deserialize, Serialize};
+use axum::{Router, routing::get};
 
 use wings_packet_parser::prelude::*;
 
 pub use tokio::main;
 
+use crate::config::Config;
+
+pub mod config;
 pub mod uart;
 
-pub const PS_MANAGER: OnceCell<Mutex<PacketStructureManager>> =
-    OnceCell::<Mutex<PacketStructureManager>>::new();
+pub const CONFIG_PATH: &str = "./config.toml";
+
+pub static PS_MANAGER: Mutex<OnceCell<PacketStructureManager>> =
+    Mutex::<OnceCell<PacketStructureManager>>::new(OnceCell::new());
+pub static CONFIG: Mutex<OnceCell<Config>> = Mutex::<OnceCell<Config>>::new(OnceCell::new());
 
 #[tokio::main]
 async fn main() {
+    let config_path = PathBuf::from_str(CONFIG_PATH).unwrap();
+    let config = config::Config::load_or_default(&config_path);
+    let _ = match CONFIG.lock() {
+        Ok(l) => l.set(config.to_owned()),
+        Err(e) => panic!("Could not initialize config state: {}", e.to_string()),
+    };
+
     // initialize tracing
     tracing_subscriber::fmt::init();
 

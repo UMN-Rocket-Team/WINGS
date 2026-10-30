@@ -1,0 +1,16 @@
+port = 3001
+radio_options = {
+    transmitter = {
+        name = "transmitter_name",
+        value = "transmitter_value",
+        product_name = "transmitter_product_name",
+        manufacturer_name = "transmitter_manufacturer_name",
+    },
+    reciever = {
+        name = "reciever_name",
+        value = "reciever_value",
+        product_name = "reciever_product_name",
+        manufacturer_name = "reciever_manufacturer_name",
+    }
+}
+packet_structures = []

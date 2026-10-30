@@ -21,13 +21,13 @@ use serde::{Deserialize, Serialize};
 /// - `packet_crc` represents a delimiter derived from a checksum of previous elements.
 /// - `size` represents the overall size of the packet.
 pub struct PacketStructure {
-    pub(crate) id: usize,
-    pub(crate) name: String,
-    pub(crate) byte_defined: bool, //marks wether or not a packet describes its full binary layout
-    pub(crate) fields: Vec<PacketField>,
-    pub(crate) delimiters: Vec<PacketDelimiter>,
-    pub(crate) packet_crc: Vec<PacketCRC>,
-    pub(crate) size: Option<usize>,
+    pub id: usize,
+    pub name: String,
+    pub byte_defined: bool, //marks wether or not a packet describes its full binary layout
+    pub fields: Vec<PacketField>,
+    pub delimiters: Vec<PacketDelimiter>,
+    pub packet_crc: Vec<PacketCRC>,
+    pub size: Option<usize>,
 }
 
 impl PacketStructure {
