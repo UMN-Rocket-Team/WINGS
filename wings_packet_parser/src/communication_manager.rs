@@ -12,7 +12,7 @@ use std::{
 
 use anyhow::bail;
 use hidapi::HidApi;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     drivers::{
@@ -39,7 +39,7 @@ use crate::{
 const PRINT_PARSING: bool = false;
 
 /// Represents a device name and its metadata for display and selection.
-#[derive(PartialEq, Serialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Serialize, Deserialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
     pub name: String,
