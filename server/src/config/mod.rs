@@ -41,6 +41,19 @@ impl<'a> Config {
             }
         }
     }
+
+    pub fn port(&self) -> u16 {
+        return self.port;
+    }
+
+    pub fn radio_options(&self) -> Option<&RadioOptions> {
+        self.radio_options.as_ref()
+    }
+
+    pub fn packet_structures(&self) -> &Vec<ConfigPacketStructure> {
+        self.packet_structures.as_ref()
+    }
+
     fn get_config(path: &'a PathBuf) -> Result<Config, ConfigError<'a>> {
         let mut file = match File::open(&path) {
             Ok(f) => f,
@@ -114,6 +127,15 @@ impl<'a> std::error::Error for ConfigError<'a> {
 pub struct RadioOptions {
     transmitter: Option<DeviceName>,
     reciever: Option<DeviceName>,
+}
+
+impl RadioOptions {
+    pub fn transmitter(&self) -> Option<&DeviceName> {
+        self.transmitter.as_ref()
+    }
+    pub fn receiver(&self) -> Option<&DeviceName> {
+        self.reciever.as_ref()
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize)]

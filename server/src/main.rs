@@ -3,11 +3,12 @@ use std::{cell::OnceCell, path::PathBuf, str::FromStr, sync::Mutex};
 use axum::{Router, routing::get};
 
 use serialport::{SerialPortInfo, SerialPortType};
+use tracing::error;
 use wings_packet_parser::{drivers::serial, prelude::*};
 
 pub use tokio::main;
 
-use crate::config::Config;
+use crate::config::{Config, RadioOptions};
 
 pub mod config;
 pub mod uart;
@@ -18,72 +19,83 @@ pub static PS_MANAGER: Mutex<OnceCell<PacketStructureManager>> =
     Mutex::<OnceCell<PacketStructureManager>>::new(OnceCell::new());
 pub static CONFIG: Mutex<OnceCell<Config>> = Mutex::<OnceCell<Config>>::new(OnceCell::new());
 
-
-
 fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialport::Error> {
     println!("device_name: {}", device.port_name);
-    match device.port_type { 
-                    
+    match device.port_type {
         SerialPortType::UsbPort(usb) => {
             let serial_number = match usb.serial_number {
                 Some(s) => s,
-                None => return Err(serialport::Error { 
-                    kind: serialport::ErrorKind::Unknown, 
-                    description: String::from("serial port serial_number does not exist") 
-                })
+                None => {
+                    return Err(serialport::Error {
+                        kind: serialport::ErrorKind::Unknown,
+                        description: String::from("serial port serial_number does not exist"),
+                    });
+                }
             };
 
-            
-            Ok(
-                DeviceName {
-                    name: device.port_name,
-                    value: serial_number,
-                    manufacturer_name: usb.manufacturer,
-                    product_name: usb.product
-                }
-            )
-        },
-        _ => Err(serialport::Error { 
+            Ok(DeviceName {
+                name: serial_number,
+                value: device.port_name,
+                manufacturer_name: usb.manufacturer,
+                product_name: usb.product,
+            })
+        }
+        _ => Err(serialport::Error {
             kind: serialport::ErrorKind::NoDevice,
-            description: format!("failed to match device of type {:?}",
-            device.port_type) 
-        })
-    } 
-    
-
+            description: format!("failed to match device of type {:?}", device.port_type),
+        }),
+    }
 }
 
-fn match_config_devices() -> Result<Vec<Box<dyn serialport::SerialPort>>, serialport::Error> {
-    let matched_devices = vec![];
-    match serialport::available_ports()  {
-        Ok(devices) => {
-            for device in devices {
-                /* 
-                        Don't want to use options because it doesn't provide details _why_ something failed.
-                        Currently defining a DeviceConfigError that gives some information about why
-                        reading from a serial port failed. Result gives us some extensibility in terms of handling failed 
-                        serial port reading(s). silently failing here 
-                */
-               
-                match construct_device_name(device) {
-                    Ok(device) => {
-                        // do some matching w/ config file
+fn match_radio_devices(
+    config: &RadioOptions,
+) -> Result<Vec<Box<dyn serialport::SerialPort>>, serialport::Error> {
+    let mut matched_devices = vec![];
+    let devices = serialport::available_ports();
 
-                    },
-                    Err(e) => {
-          
-                        continue;
-                    }
-                } 
-            }
-            Ok(matched_devices) // returns a list of our selected devices in our config file
-        },
-        Err(e) => Err(e),
+    if devices.is_err() {
+        return Err(serialport::Error {
+            kind: serialport::ErrorKind::NoDevice,
+            description: String::from("unable to list available ports"),
+        });
     }
+
+    for device in devices.unwrap() {
+        match construct_device_name(device) {
+            Ok(device) => {
+                // do some matching w/ config file
+                if let Some(transmitter) = config.transmitter()
+                    && device == *transmitter
+                {
+                    matched_devices.push(
+                        serialport::new(transmitter.value.clone(), 50)
+                            .open()
+                            .expect("failed to open port"),
+                    )
+                }
+                if let Some(receiver) = config.receiver()
+                    && device == *receiver
+                {
+                    matched_devices.push(
+                        serialport::new(receiver.value.clone(), 50)
+                            .open()
+                            .expect("failed to open port"),
+                    )
+                }
+            }
+            Err(e) => {
+                error!("{}", e)
+            }
+        }
+    }
+
+    Ok(matched_devices) // returns a list of our selected devices in our config file
 }
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     let config_path = PathBuf::from_str(CONFIG_PATH).unwrap();
     let config = config::Config::load_or_default(&config_path);
     let _ = match CONFIG.lock() {
@@ -91,7 +103,14 @@ async fn main() {
         Err(e) => panic!("Could not initialize config state: {}", e.to_string()),
     };
 
-    match_config_devices();
+    let mut devices = vec![];
+
+    if let Some(radio_options) = config.radio_options() {
+        match match_radio_devices(radio_options) {
+            Ok(res) => devices = res,
+            Err(e) => error!("{}", e),
+        };
+    }
     // initialize tracing
     tracing_subscriber::fmt::init();
 
@@ -105,10 +124,7 @@ async fn main() {
     axum::serve(listener, app).await;
 }
 
-
 // basic handler that responds with a static string
 async fn root() -> &'static str {
     "Hello, World!"
 }
-
-
