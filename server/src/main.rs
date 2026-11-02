@@ -67,24 +67,24 @@ fn match_radio_devices(
                 if let Some(transmitter) = config.transmitter()
                     && device == *transmitter
                 {
-                    matched_devices.push(
-                        serialport::new(transmitter.value.clone(), 50)
-                            .open()
-                            .expect("failed to open port"),
-                    )
+                    match serialport::new(transmitter.value.clone(), 50).open() {
+                        Ok(dev) => matched_devices.push(dev),
+                        Err(e) => error!("failed to open device port: {}", e)
+                    }
                 }
                 if let Some(receiver) = config.receiver()
                     && device == *receiver
                 {
-                    matched_devices.push(
-                        serialport::new(receiver.value.clone(), 50)
-                            .open()
-                            .expect("failed to open port"),
-                    )
+                    match serialport::new(receiver.value.clone(), 50).open() {
+                        Ok(dev) => matched_devices.push(dev),
+                        Err(e) => error!("failed to open device port: {}", e)
+                    }
+       
+                            
                 }
             }
             Err(e) => {
-                error!("{}", e)
+                error!("failed to make device: {}", e)
             }
         }
     }
@@ -108,7 +108,7 @@ async fn main() {
     if let Some(radio_options) = config.radio_options() {
         match match_radio_devices(radio_options) {
             Ok(res) => devices = res,
-            Err(e) => error!("{}", e),
+            Err(e) => error!("failed to initialize radio(s): {}", e),
         };
     }
     // initialize tracing
