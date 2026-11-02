@@ -10,7 +10,7 @@ chrono = "0.4.45"
 csv = "1.4.0"
 serde = { version = "1.0.229", features = ["derive", "serde_derive"] }
 serde_json = "1.0.154"
-serialport = { version = "4.10.1", features = ["serde"] }
+serialport = "4.10.1"
 timer = "0.2.0"
 tokio = { version = "1.54.1", features = ["fs", "io-std", "rt", "rt-multi-thread", "tracing"] }
 toml = "1.1.8"
