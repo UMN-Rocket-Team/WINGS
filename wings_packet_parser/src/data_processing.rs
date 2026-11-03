@@ -79,6 +79,36 @@ impl DataProcessor {
         })
     }
 
+    pub async fn default_state_tokio(ps_manager: &Arc<tokio::sync::Mutex<PacketStructureManager>>) -> DataProcessor {
+        let mut ps = ps_manager.lock().await;
+        DataProcessor {
+            daq_id: ps.get_packet_structure_by_name("daq"),
+            // Ensures the derived data packet exists with the necessary fields.
+            daq_adv_id: ps.enforce_packet_fields(
+                "daq_adv",
+                vec![
+                    "Time",
+                    "PSI",
+                    "Newtons",
+                    "Impulse",
+                    "Burn_time",
+                    "Max_pressure",
+                ],
+            ),
+            altus_sense_id: ps
+                .get_packet_structure_by_name("Altus TeleMega Kalman and Voltage Data"),
+            altus_gps_id: ps.get_packet_structure_by_name("Altus GPS Location"),
+            daq_timestamp_buffer: VecDeque::new(),
+            impulse_estimate: 0.0,
+            max_impulse_estimate: 0.0,
+            burning: false,
+            burn_start_time: 0.0,
+            burn_iter: 0,
+            max_pressure: 0.0,
+            burn_time: 0.0,
+        }
+    }
+
     /// Processes a vector of incoming packets, performing conversions and deriving new data.
     ///
     /// This is the core method of the `DataProcessor`. It iterates through a batch of packets

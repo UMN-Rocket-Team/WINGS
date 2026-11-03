@@ -6,6 +6,8 @@ use timer::{Guard, Timer};
 
 use wings_packet_parser::prelude::*;
 
+use crate::APP_STATE;
+
 pub struct MainLoop {
     refresh_timer_data: RefreshTimerData,
 }
@@ -85,8 +87,8 @@ pub struct RefreshAndReadResult {
 /// If the function runs successfully it will return a RefreshAndReadResult struct
 /// The struct contains any new ports that have connected to the groundstation,
 /// along with new display packets for graphs, and other displays.
-fn iterate_receiving_loop(// communication_manager_state: tauri::State<'_, CommunicationManagerState>,
-    // log_state: tauri::State<'_, FileHandlingState>,
+pub async fn iterate_receiving_loop(// communication_manager_state: tauri::State<'_, CommunicationManagerState>,
+    // log_handler: tauri::State<'_, FileHandlingState>,
     // data_state: tauri::State<'_, DataProcessorState>,
 ) -> Result<RefreshAndReadResult, Error> {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
@@ -97,30 +99,26 @@ fn iterate_receiving_loop(// communication_manager_state: tauri::State<'_, Commu
     // ##########################
     // Get Data
     // ##########################
-    // use_state_in_mutex(
-    //     &communication_manager_state,
-    //     &mut |communication_manager: &mut CommunicationManager| {
-    //         result.new_available_port_names = communication_manager.get_all_potential_devices();
-    //         for device in communication_manager.get_initialized_devices() {
-    //             use_state_in_mutex(&log_state, &mut |log| match communication_manager.get_data(
-    //                 device,
-    //                 &mut result.parsed_packets,
-    //                 log,
-    //             ) {
-    //                 Ok(_) => {}
-    //                 Err(err) => {
-    //                     let context = err.chain();
-    //                     for i in context {
-    //                         eprintln!("coms manager: {:#?}", i);
-    //                     }
-    //                 }
-    //             });
-    //         }
-    //         use_state_in_mutex(&data_state, &mut |data_processor| {
-    //             data_processor.daq_processing(&mut result.parsed_packets)
-    //         });
-    //     },
-    // );
+    let communication_manager = &mut APP_STATE.wait().communication_manager().await;
+    let log_handler = &mut APP_STATE.wait().log_handler().await;
+    let data_processor = &mut APP_STATE.wait().data_processor().await;
+    result.new_available_port_names = communication_manager.get_all_potential_devices();
+    for device in communication_manager.get_initialized_devices() {
+        match communication_manager.get_data(
+            device,
+            &mut result.parsed_packets,
+            log_handler,
+        ) {
+            Ok(_) => {}
+            Err(err) => {
+                let context = err.chain();
+                for i in context {
+                    eprintln!("coms manager: {:#?}", i);
+                }
+            }
+        };
+    }
+    data_processor.daq_processing(&mut result.parsed_packets);
     if result.parsed_packets.len() > 0 {
         result.got_data = true;
     }
