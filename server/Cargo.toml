@@ -8,7 +8,7 @@ anyhow = "1.0.104"
 axum = { version = "0.8.9", features = ["multipart", "ws"] }
 chrono = "0.4.45"
 csv = "1.4.0"
-env_logger = "0.11.11"
+log = "0.4.35"
 serde = { version = "1.0.229", features = ["derive", "serde_derive"] }
 serde_json = "1.0.154"
 serialport = "4.10.1"
@@ -16,5 +16,5 @@ timer = "0.2.0"
 tokio = { version = "1.54.1", features = ["fs", "io-std", "rt", "rt-multi-thread", "tracing"] }
 toml = "1.1.8"
 tracing = "0.1.44"
-tracing-subscriber = "0.3.23"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 wings_packet_parser = { workspace = true }

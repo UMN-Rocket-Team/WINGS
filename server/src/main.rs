@@ -3,8 +3,10 @@ use std::{cell::OnceCell, path::PathBuf, str::FromStr, sync::Mutex};
 use axum::{Router, routing::get};
 
 use serialport::{SerialPortInfo, SerialPortType};
-use tracing::error;
+use tracing::{event, span, Level};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 use wings_packet_parser::{drivers::serial, prelude::*};
+
 
 pub use tokio::main;
 
@@ -20,7 +22,7 @@ pub static PS_MANAGER: Mutex<OnceCell<PacketStructureManager>> =
 pub static CONFIG: Mutex<OnceCell<Config>> = Mutex::<OnceCell<Config>>::new(OnceCell::new());
 
 fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialport::Error> {
-    println!("device_name: {}", device.port_name);
+    tracing::warn!("device_name: {}", device.port_name);
     match device.port_type {
         SerialPortType::UsbPort(usb) => {
             let serial_number = match usb.serial_number {
@@ -53,13 +55,15 @@ fn match_radio_devices(
     let mut matched_devices = vec![];
     let devices = serialport::available_ports();
 
+
+
     if devices.is_err() {
         return Err(serialport::Error {
             kind: serialport::ErrorKind::NoDevice,
             description: String::from("unable to list available ports"),
         });
     }
-
+  
     for device in devices.unwrap() {
         match construct_device_name(device) {
             Ok(device) => {
@@ -69,7 +73,7 @@ fn match_radio_devices(
                 {
                     match serialport::new(transmitter.value.clone(), 50).open() {
                         Ok(dev) => matched_devices.push(dev),
-                        Err(e) => error!("failed to open device port: {}", e)
+                        Err(e) => tracing::warn!("failed to open device port: {}", e),
                     }
                 }
                 if let Some(receiver) = config.receiver()
@@ -77,24 +81,22 @@ fn match_radio_devices(
                 {
                     match serialport::new(receiver.value.clone(), 50).open() {
                         Ok(dev) => matched_devices.push(dev),
-                        Err(e) => error!("failed to open device port: {}", e)
+                        Err(e) => tracing::warn!("failed to open device port: {}", e),
                     }
-       
-                            
                 }
             }
             Err(e) => {
-                error!("failed to make device: {}", e)
+                tracing::warn!("failed to construct device: {}", e)
             }
         }
     }
-
+    
     Ok(matched_devices) // returns a list of our selected devices in our config file
 }
 
 #[tokio::main]
 async fn main() {
-    env_logger::init();
+
 
     let config_path = PathBuf::from_str(CONFIG_PATH).unwrap();
     let config = config::Config::load_or_default(&config_path);
@@ -105,14 +107,21 @@ async fn main() {
 
     let mut devices = vec![];
 
+    
     if let Some(radio_options) = config.radio_options() {
         match match_radio_devices(radio_options) {
             Ok(res) => devices = res,
-            Err(e) => error!("failed to initialize radio(s): {}", e),
+            Err(e) => tracing::warn!("failed to initialize radio(s): {}", e),
         };
     }
+    
+    
     // initialize tracing
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::registry()
+        .with(fmt::layer())
+        .with(EnvFilter::from_default_env())
+        
+        .init();
 
     // build our application with a route
     let app = Router::new()
