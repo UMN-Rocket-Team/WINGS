@@ -79,7 +79,9 @@ impl DataProcessor {
         })
     }
 
-    pub async fn default_state_tokio(ps_manager: &Arc<tokio::sync::Mutex<PacketStructureManager>>) -> DataProcessor {
+    pub async fn default_state_tokio(
+        ps_manager: &Arc<tokio::sync::Mutex<PacketStructureManager>>,
+    ) -> DataProcessor {
         let mut ps = ps_manager.lock().await;
         DataProcessor {
             daq_id: ps.get_packet_structure_by_name("daq"),

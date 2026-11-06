@@ -129,13 +129,15 @@ impl CommunicationManager {
         }
     }
     /// Create a default communication manager state.
-    pub async fn default_state_tokio(ps_manager: &Arc<tokio::sync::Mutex<PacketStructureManager>>) -> CommunicationManager {
+    pub async fn default_state_tokio(
+        ps_manager: &Arc<tokio::sync::Mutex<PacketStructureManager>>,
+    ) -> CommunicationManager {
         let ps = ps_manager.lock().await;
         CommunicationManager {
             comms_objects: Default::default(),
             id_iterator: Default::default(),
             old_device_names: Default::default(),
-            ps_manager: Arc::<Mutex::<PacketStructureManager>>::new(Mutex::new(ps.to_owned())),
+            ps_manager: Arc::<Mutex<PacketStructureManager>>::new(Mutex::new(ps.to_owned())),
             name_to_value: Default::default(),
         }
     }
