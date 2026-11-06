@@ -1,10 +1,10 @@
-use std::{cell::OnceCell, path::PathBuf, str::FromStr, sync::Mutex};
+use std::{cell::OnceCell, fs::File, path::PathBuf, str::FromStr, sync::{Arc, Mutex}};
 
 use axum::{Router, routing::get};
 
 use serialport::{SerialPortInfo, SerialPortType};
-use tracing::{Level, event, span};
-use tracing_subscriber::{EnvFilter, fmt, prelude::*};
+use tracing::{Level, event, field::debug, span};
+use tracing_subscriber::{EnvFilter, FmtSubscriber, filter, fmt, prelude::*};
 use wings_packet_parser::{drivers::serial, prelude::*};
 
 pub use tokio::main;
@@ -61,28 +61,24 @@ fn match_radio_devices(
     }
 
     for device in devices.unwrap() {
-        match construct_device_name(device) {
-            Ok(device) => {
-                // do some matching w/ config file
-                if let Some(transmitter) = config.transmitter()
-                    && device == *transmitter
+        {
+            let device = construct_device_name(device)?;
+            // do some matching w/ config file
+            if let Some(transmitter) = config.transmitter()
+                && device == *transmitter
+            {
                 {
-                    match serialport::new(transmitter.value.clone(), 50).open() {
-                        Ok(dev) => matched_devices.push(dev),
-                        Err(e) => tracing::warn!("failed to open device port: {}", e),
-                    }
-                }
-                if let Some(receiver) = config.receiver()
-                    && device == *receiver
-                {
-                    match serialport::new(receiver.value.clone(), 50).open() {
-                        Ok(dev) => matched_devices.push(dev),
-                        Err(e) => tracing::warn!("failed to open device port: {}", e),
-                    }
+                    let dev = serialport::new(transmitter.value.clone(), 50).open()?;
+                    matched_devices.push(dev)
                 }
             }
-            Err(e) => {
-                tracing::warn!("failed to construct device: {}", e)
+            if let Some(receiver) = config.receiver()
+                && device == *receiver
+            {
+                {
+                    let dev = serialport::new(receiver.value.clone(), 50).open()?;
+                    matched_devices.push(dev)
+                }
             }
         }
     }
@@ -92,6 +88,20 @@ fn match_radio_devices(
 
 #[tokio::main]
 async fn main() {
+    let stdout_log = tracing_subscriber::fmt::layer()
+                    .pretty();
+    let file = File::create("debug.log");
+    let file = match file {Ok(file) => file, Err(error) => panic!("Error {:?}",error),};
+    let debug_log = tracing_subscriber::fmt::layer().with_writer(Arc::new(file));
+
+    tracing_subscriber::registry()
+        .with(
+            stdout_log
+            .with_filter(filter::LevelFilter::WARN)
+            .and_then(debug_log)
+            
+        ).init();
+
     let config_path = PathBuf::from_str(CONFIG_PATH).unwrap();
     let config = config::Config::load_or_default(&config_path);
     let _ = match CONFIG.lock() {
@@ -107,12 +117,6 @@ async fn main() {
             Err(e) => tracing::warn!("failed to initialize radio(s): {}", e),
         };
     }
-
-    // initialize tracing
-    tracing_subscriber::registry()
-        .with(fmt::layer())
-        .with(EnvFilter::from_default_env())
-        .init();
 
     // build our application with a route
     let app = Router::new()
