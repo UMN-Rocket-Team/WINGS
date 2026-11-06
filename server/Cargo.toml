@@ -5,7 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.104"
-axum = { version = "0.8.9", features = ["multipart", "ws"] }
+axum = { version = "0.8.9", features = ["macros", "multipart", "ws"] }
+axum-macros = "0.5.1"
 chrono = "0.4.45"
 csv = "1.4.0"
 serde = { version = "1.0.229", features = ["derive", "serde_derive"] }
