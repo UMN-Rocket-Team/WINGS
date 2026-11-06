@@ -1,4 +1,9 @@
-use std::{ops::Deref, path::PathBuf, str::FromStr, sync::{Arc, OnceLock}};
+use std::{
+    ops::Deref,
+    path::PathBuf,
+    str::FromStr,
+    sync::{Arc, OnceLock},
+};
 
 use axum::{Json, Router, debug_handler, routing::get};
 
@@ -19,10 +24,10 @@ pub struct State {
     communication_manager: Mutex<CommunicationManager>,
     config: Mutex<Config>,
     data_processor: Mutex<DataProcessor>,
-    log_handler: Mutex<LogHandler>
+    log_handler: Mutex<LogHandler>,
 }
 
-pub(crate) struct AppState(OnceLock::<State>);
+pub(crate) struct AppState(OnceLock<State>);
 
 impl AppState {
     pub async fn config(&self) -> MutexGuard<'_, Config> {
@@ -39,7 +44,6 @@ impl AppState {
     }
 }
 
-
 impl Deref for AppState {
     type Target = State;
 
@@ -47,7 +51,6 @@ impl Deref for AppState {
         self.0.wait()
     }
 }
-
 
 pub(crate) static APP_STATE: AppState = AppState(OnceLock::<State>::new());
 
@@ -57,8 +60,9 @@ async fn main() {
     let file_config = config::Config::load_or_default(&config_path);
     let port = file_config.port();
     let config = Mutex::new(file_config);
-    let ps_manager = Arc::<Mutex::<PacketStructureManager>>::default();
-    let communication_manager = Mutex::new(CommunicationManager::default_state_tokio(&ps_manager).await);
+    let ps_manager = Arc::<Mutex<PacketStructureManager>>::default();
+    let communication_manager =
+        Mutex::new(CommunicationManager::default_state_tokio(&ps_manager).await);
     let data_processor = Mutex::new(DataProcessor::default_state_tokio(&ps_manager).await);
     let log_handler = Mutex::new(LogHandler::new(PathBuf::new()));
 
@@ -72,13 +76,15 @@ async fn main() {
         .route("/devices", get(devices));
 
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await.unwrap();
-    
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port))
+        .await
+        .unwrap();
+
     let state = State {
         config,
         communication_manager,
         data_processor,
-        log_handler
+        log_handler,
     };
 
     let _ = APP_STATE.0.set(state.into());
@@ -93,5 +99,10 @@ async fn get_config() -> Json<Config> {
 
 #[debug_handler]
 async fn devices() -> Json<Option<Vec<DeviceName>>> {
-    Json(APP_STATE.communication_manager().await.get_all_potential_devices())
+    Json(
+        APP_STATE
+            .communication_manager()
+            .await
+            .get_all_potential_devices(),
+    )
 }

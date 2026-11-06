@@ -71,7 +71,12 @@ impl SendingLoop {
         write_id: usize,
     ) -> anyhow::Result<()> {
         let mut communication_manager = APP_STATE.communication_manager().await;
-        let packet_structure = communication_manager.ps_manager.lock().unwrap().packet_structures()[1].clone();
+        let packet_structure = communication_manager
+            .ps_manager
+            .lock()
+            .unwrap()
+            .packet_structures()[1]
+            .clone();
 
         // Send an initial state update so the frontend knows the port was opened successfully
         // let _ = app_handle.emit(SENDING_LOOP_UPDATE, SendingState::starting());

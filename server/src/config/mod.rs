@@ -122,7 +122,7 @@ pub struct RadioOptions {
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct RadioOption {
     device: DeviceName,
-    baud_rate: u32
+    baud_rate: u32,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
