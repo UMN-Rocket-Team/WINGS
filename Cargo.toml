@@ -2,7 +2,10 @@
 resolver="3"
 members = [
     "client/src-tauri",
-    "packet_parser",
+    "wings_packet_parser",
     "server",
     "xtask"
 ]
+
+[workspace.dependencies]
+wings_packet_parser = { path = "wings_packet_parser" }

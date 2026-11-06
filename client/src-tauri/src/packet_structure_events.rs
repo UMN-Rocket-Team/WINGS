@@ -7,17 +7,10 @@
 //! Whenever a packet definition is created, updated, or deleted in the backend, the functions
 //! in this module are called to notify all listening frontend windows of the change.
 
-use crate::{
-    file_handling::config_struct::ConfigState, models::packet_view_model::PacketStructureViewModel,
-    state::mutex_utils::use_state_in_mutex,
-};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::{
-    models::packet_view_model::create_packet_view_model,
-    packet_structure_manager::PacketStructureManager,
-};
+use wings_packet_parser::prelude::*;
 
 /// Represents a single update to the frontend's collection of packet structures.
 ///
@@ -90,9 +83,9 @@ pub fn send_initial_packet_structure_update_event(app_handle: AppHandle) {
             &app_handle,
             config
                 .packet_structure_manager
-                .packet_structures
+                .packet_structures()
                 .iter()
-                .map(|packet_structure| packet_structure.id)
+                .map(|packet_structure| packet_structure.id())
                 .collect(),
             None,
             &config.packet_structure_manager,

@@ -21,16 +21,40 @@ use serde::{Deserialize, Serialize};
 /// - `packet_crc` represents a delimiter derived from a checksum of previous elements.
 /// - `size` represents the overall size of the packet.
 pub struct PacketStructure {
-    pub(crate) id: usize,
-    pub(crate) name: String,
-    pub(crate) byte_defined: bool, //marks wether or not a packet describes its full binary layout
-    pub(crate) fields: Vec<PacketField>,
-    pub(crate) delimiters: Vec<PacketDelimiter>,
-    pub(crate) packet_crc: Vec<PacketCRC>,
-    pub(crate) size: Option<usize>,
+    pub id: usize,
+    pub name: String,
+    pub byte_defined: bool, //marks wether or not a packet describes its full binary layout
+    pub fields: Vec<PacketField>,
+    pub delimiters: Vec<PacketDelimiter>,
+    pub packet_crc: Vec<PacketCRC>,
+    pub size: Option<usize>,
 }
 
 impl PacketStructure {
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn byte_defined(&self) -> bool {
+        self.byte_defined
+    }
+
+    pub fn fields(&self) -> &Vec<PacketField> {
+        &self.fields
+    }
+
+    pub fn delimiters(&self) -> &Vec<PacketDelimiter> {
+        &self.delimiters
+    }
+
+    pub fn packet_crc(&self) -> &Vec<PacketCRC> {
+        &self.packet_crc
+    }
+
     /// Creates a default packet structure with the given name.
     pub fn make_default(name: String) -> PacketStructure {
         PacketStructure {

@@ -1,5 +1,5 @@
 use crate::{
-    communication_drivers::{
+    drivers::{
         aim::aim_parser::AimParser, featherweight::featherweight_parser::FeatherweightParser,
         midwest::midwest_parser::MidwestParser, serial::serial_packet_parser::SerialPacketParser,
         teledongle::teledongle_packet_parser::AltosPacketParser,
@@ -65,7 +65,7 @@ pub fn create_parser_from_product_name(
  * Function to register packet structures for a given product's parser.
  * This should be called during initialization to ensure the packet structure manager
  * has the necessary structures for parsing incoming data.
-*/
+ */
 pub fn register_packet_structures_for_product(
     parser_name: ProductName,
     packet_structure_manager: &mut PacketStructureManager,

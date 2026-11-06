@@ -40,7 +40,7 @@ pub fn generate_packet(
                     "Field {} refers to missing index: {}",
                     field.name,
                     field.index
-                ))
+                ));
             }
         };
         let parsed_value: PacketFieldValue = match field.r#type.make_from_string(given_value) {
@@ -50,7 +50,7 @@ pub fn generate_packet(
                     "Field {} refers to missing index: {}",
                     field.name,
                     field.index
-                ))
+                ));
             }
         };
         let bytes = parsed_value.to_le_bytes(field.r#type)?;

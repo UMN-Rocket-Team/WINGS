@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 
 use crate::{
     models::{
@@ -211,7 +211,9 @@ mod tests {
 
     #[test]
     fn test_constant_string_output() {
-        let result = parser("@ GPS_STAT 208 0000 00 00 02:53:51.907 CRC_ERR TRK $p���i��:57 Alt 4403468 lt -03.10000 ln +00.00000 Vel +16384 +16512 +0004 Fix 0 # 12 140 192  5 000_00_00 000_00_00 000_00_00 000_00_00 000_00_00 CRC: E579");
+        let result = parser(
+            "@ GPS_STAT 208 0000 00 00 02:53:51.907 CRC_ERR TRK $p���i��:57 Alt 4403468 lt -03.10000 ln +00.00000 Vel +16384 +16512 +0004 Fix 0 # 12 140 192  5 000_00_00 000_00_00 000_00_00 000_00_00 000_00_00 CRC: E579",
+        );
         assert_eq!(
             result.unwrap(),
             [

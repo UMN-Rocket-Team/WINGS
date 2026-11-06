@@ -5,30 +5,15 @@
 )]
 
 mod commands;
-mod communication_drivers;
-mod communication_manager;
-mod data_processing;
-mod file_handling;
-mod models;
-mod packet_generator;
 mod packet_structure_events;
-mod packet_structure_manager;
-mod receiving_loop;
-mod sending_loop;
-mod state;
 
 use std::sync::{Arc, Mutex};
 
-use communication_manager::CommunicationManager;
-use data_processing::DataProcessor;
-use file_handling::{config_struct::ConfigStruct, log_handlers::{FileHandlingState, LogHandler}};
 use packet_structure_events::send_initial_packet_structure_update_event;
 
-use packet_structure_manager::PacketStructureManager;
-use receiving_loop::MainLoop;
-use sending_loop::SendingLoopState;
-use state::packet_structure_manager_state::default_packet_structure_manager;
-use tauri::{AppHandle, Listener, Manager};
+use wings_packet_parser::prelude::*;
+
+use tauri::Manager;
 
 use crate::commands::{
     communication_commands::{
@@ -42,7 +27,6 @@ use crate::commands::{
         set_delimiter_identifier, set_delimiter_name, set_field_metadata_type, set_field_name,
         set_field_type, set_gap_size, set_packet_name,
     },
-    sending_commands::{start_sending_loop, stop_sending_loop},
 };
 
 /// The main function initializes various states and sets up event handlers and plugins for the Tauri
@@ -64,8 +48,6 @@ fn main() {
             // Device and communication commands
             delete_device,
             init_device_port,
-            start_sending_loop,
-            stop_sending_loop,
             // Packet structure commands
             set_field_name,
             set_field_type,
@@ -93,7 +75,6 @@ fn main() {
             set_read
         ])
         .setup(move |setup_app| {
-
             let app_handle = setup_app.handle();
 
             // Manage shared state objects so they can be accessed in commands and event handlers.
@@ -101,8 +82,6 @@ fn main() {
             app_handle.manage(Mutex::new(config));
             app_handle.manage(comms);
             app_handle.manage(data);
-            app_handle.manage(SendingLoopState::default());
-            app_handle.manage(FileHandlingState::new(LogHandler::new(app_handle)));
             Ok(())
         })
         // .setup(move |setup_app| {
@@ -117,18 +96,18 @@ fn main() {
         //         }
         //     };
         //     setup_app.listen_any("initialized", initialization_handler);
-
         //     Ok(())
         // })
         // Handle window close events to clean up resources.
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
                 // Timer internals need to manually dropped, do that here at program termination
-                window.app_handle().state::<MainLoop>().destroy()
+                // window.app_handle().state::<MainLoop>().destroy()
             }
         })
         .plugin(tauri_plugin_store::Builder::default().build());
 
-        builder.run(tauri::generate_context!())
+    builder
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

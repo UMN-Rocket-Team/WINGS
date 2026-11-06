@@ -152,7 +152,7 @@ impl CommsIF for CSVReadDriver {
             None => {
                 return Err(anyhow::anyhow!(
                     "CSV device has no registered packet structure"
-                ))
+                ));
             }
         };
         // Borrow the existing reader
@@ -185,7 +185,7 @@ impl CommsIF for CSVReadDriver {
                     return Err(anyhow::anyhow!(format!(
                         "Field {} refers to missing index: {}",
                         field.name, csv_column_index
-                    )))
+                    )));
                 }
             };
             let parsed_value: PacketFieldValue =
@@ -195,7 +195,7 @@ impl CommsIF for CSVReadDriver {
                         return Err(anyhow::anyhow!(format!(
                             "Failed to parse value {:?} for field '{}' (index {}): {}",
                             given_value, field.name, field.index, e
-                        )))
+                        )));
                     }
                 };
             result.push(parsed_value);

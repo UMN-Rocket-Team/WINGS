@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { PacketComponentType, PacketFieldType, PacketMetadataType, PacketStructureViewModel, SendingModes } from "./types";
 import { ProductName } from "./types";
 

@@ -4,15 +4,8 @@
 //! communication devices, as well as updating the frontend with device changes.
 //! It interacts with the CommunicationManager and emits updates to the frontend.
 
-use crate::{
-    communication_manager::{CommunicationManager, CommunicationManagerState},
-    models::{
-        packet_parser::{create_parser_from_product_name, register_packet_structures_for_product},
-        product::ProductName,
-    },
-    state::{generic_state::result_to_string, mutex_utils::use_state_in_mutex},
-};
 use tauri::{AppHandle, Emitter};
+use wings_packet_parser::prelude::*;
 const COM_DEVICE_UPDATE: &str = "com-device-update";
 
 /// Helper function for sending out an update of all coms manager devices.
