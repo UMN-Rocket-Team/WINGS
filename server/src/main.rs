@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr, sync::{Arc, OnceLock}};
+use std::{ops::Deref, path::PathBuf, str::FromStr, sync::{Arc, OnceLock}};
 
 use axum::{Json, Router, debug_handler, routing::get};
 
@@ -15,29 +15,41 @@ pub mod uart;
 pub const CONFIG_PATH: &str = "./config.toml";
 pub const LOG_PATH: &str = "./log";
 
-pub struct AppState {
+pub struct State {
     communication_manager: Mutex<CommunicationManager>,
     config: Mutex<Config>,
     data_processor: Mutex<DataProcessor>,
     log_handler: Mutex<LogHandler>
 }
 
+pub(crate) struct AppState(OnceLock::<State>);
+
 impl AppState {
-    pub async fn config(&self) -> MutexGuard<Config> {
-        self.config.lock().await
+    pub async fn config(&self) -> MutexGuard<'_, Config> {
+        (*self).config.lock().await
     }
-    pub async fn communication_manager(&self) -> MutexGuard<CommunicationManager> {
-        self.communication_manager.lock().await
+    pub async fn communication_manager(&self) -> MutexGuard<'_, CommunicationManager> {
+        (*self).communication_manager.lock().await
     }
-    pub async fn data_processor(&self) -> MutexGuard<DataProcessor> {
-        self.data_processor.lock().await
+    pub async fn data_processor(&self) -> MutexGuard<'_, DataProcessor> {
+        (*self).data_processor.lock().await
     }
-    pub async fn log_handler(&self) -> MutexGuard<LogHandler> {
-        self.log_handler.lock().await
+    pub async fn log_handler(&self) -> MutexGuard<'_, LogHandler> {
+        (*self).log_handler.lock().await
     }
 }
 
-pub static APP_STATE: OnceLock<AppState> = OnceLock::<AppState>::new();
+
+impl Deref for AppState {
+    type Target = State;
+
+    fn deref(&self) -> &Self::Target {
+        self.0.wait()
+    }
+}
+
+
+pub(crate) static APP_STATE: AppState = AppState(OnceLock::<State>::new());
 
 #[tokio::main]
 async fn main() {
@@ -62,25 +74,24 @@ async fn main() {
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await.unwrap();
     
-    let state = AppState {
+    let state = State {
         config,
         communication_manager,
         data_processor,
         log_handler
     };
 
-    let _ = APP_STATE.set(state.into());
+    let _ = APP_STATE.0.set(state.into());
 
     let _ = axum::serve(listener, app).await;
 }
 
-// basic handler that responds with a static string
 #[debug_handler]
 async fn get_config() -> Json<Config> {
-    Json(APP_STATE.wait().config().await.clone())
+    Json(APP_STATE.config().await.clone())
 }
 
 #[debug_handler]
 async fn devices() -> Json<Option<Vec<DeviceName>>> {
-    Json(APP_STATE.wait().communication_manager().await.get_all_potential_devices())
+    Json(APP_STATE.communication_manager().await.get_all_potential_devices())
 }

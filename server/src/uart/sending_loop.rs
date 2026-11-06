@@ -70,7 +70,7 @@ impl SendingLoop {
         mode: SendingModes,
         write_id: usize,
     ) -> anyhow::Result<()> {
-        let mut communication_manager = APP_STATE.wait().communication_manager().await;
+        let mut communication_manager = APP_STATE.communication_manager().await;
         let packet_structure = communication_manager.ps_manager.lock().unwrap().packet_structures()[1].clone();
 
         // Send an initial state update so the frontend knows the port was opened successfully
@@ -84,7 +84,7 @@ impl SendingLoop {
         let mut packets_sent: u32 = already_sent;
 
         self.task = Some(BackgroundTask::run_repeatedly(async move || {
-            let file_handler = &mut APP_STATE.wait().log_handler().await;
+            let file_handler = &mut APP_STATE.log_handler().await;
             let packet_to_send: Option<StringRecord>;
 
             // ##########################

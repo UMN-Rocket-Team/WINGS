@@ -99,9 +99,9 @@ pub async fn iterate_receiving_loop(// communication_manager_state: tauri::State
     // ##########################
     // Get Data
     // ##########################
-    let communication_manager = &mut APP_STATE.wait().communication_manager().await;
-    let log_handler = &mut APP_STATE.wait().log_handler().await;
-    let data_processor = &mut APP_STATE.wait().data_processor().await;
+    let communication_manager = &mut APP_STATE.communication_manager().await;
+    let log_handler = &mut APP_STATE.log_handler().await;
+    let data_processor = &mut APP_STATE.data_processor().await;
     result.new_available_port_names = communication_manager.get_all_potential_devices();
     for device in communication_manager.get_initialized_devices() {
         match communication_manager.get_data(
