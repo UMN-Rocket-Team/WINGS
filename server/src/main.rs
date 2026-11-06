@@ -15,6 +15,7 @@ pub use tokio::main;
 use crate::config::Config;
 
 pub mod config;
+pub mod controllers;
 pub mod uart;
 
 pub const CONFIG_PATH: &str = "./config.toml";
@@ -73,7 +74,8 @@ async fn main() {
     let app = Router::new()
         // `GET /` goes to `root`
         .route("/config", get(get_config))
-        .route("/devices", get(devices));
+        .route("/devices", get(devices))
+        .nest("/ws", controllers::ws_controller::routes());
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port))

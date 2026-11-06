@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+futures = "0.3.34"
 anyhow = "1.0.104"
 axum = { version = "0.8.9", features = ["macros", "multipart", "ws"] }
 axum-macros = "0.5.1"
