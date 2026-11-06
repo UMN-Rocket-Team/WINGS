@@ -18,6 +18,9 @@ pub struct Config {
 }
 
 impl<'a> Config {
+    pub fn port(&self) -> u16 {
+        self.port
+    }
     pub fn load_or_default(path: &'a PathBuf) -> Config {
         match Self::get_config(&path) {
             Ok(c) => c,
@@ -40,10 +43,6 @@ impl<'a> Config {
                 config
             }
         }
-    }
-
-    pub fn port(&self) -> u16 {
-        return self.port;
     }
 
     pub fn radio_options(&self) -> Option<&RadioOptions> {
@@ -125,16 +124,33 @@ impl<'a> std::error::Error for ConfigError<'a> {
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct RadioOptions {
-    transmitter: Option<DeviceName>,
-    reciever: Option<DeviceName>,
+    transmitter: Option<RadioOption>,
+    reciever: Option<RadioOption>,
 }
 
 impl RadioOptions {
-    pub fn transmitter(&self) -> Option<&DeviceName> {
+    pub fn transmitter(&self) -> Option<&RadioOption> {
         self.transmitter.as_ref()
     }
-    pub fn receiver(&self) -> Option<&DeviceName> {
+    pub fn receiver(&self) -> Option<&RadioOption> {
         self.reciever.as_ref()
+    }
+}
+
+
+#[derive(Clone, Default, Serialize, Deserialize)]
+pub struct RadioOption {
+    device: DeviceName,
+    baud_rate: u32,
+}
+
+impl RadioOption {
+    pub fn device(&self) -> &DeviceName {
+        &self.device
+    }
+
+    pub fn baud_rate(&self) -> u32 {
+        self.baud_rate
     }
 }
 

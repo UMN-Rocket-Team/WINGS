@@ -1,11 +1,15 @@
-use std::{cell::OnceCell, fs::File, path::PathBuf, str::FromStr, sync::{Arc, Mutex}};
+use std::{
+    fs::File, ops::Deref, path::PathBuf, str::FromStr, sync::{Arc, OnceLock},
+};
 
-use axum::{Router, routing::get};
+use axum::{Json, Router, debug_handler, routing::get};
 
 use serialport::{SerialPortInfo, SerialPortType};
 use tracing::{Level, event, field::debug, span};
 use tracing_subscriber::{EnvFilter, FmtSubscriber, filter, fmt, prelude::*};
 use wings_packet_parser::{drivers::serial, prelude::*};
+use tokio::sync::{Mutex, MutexGuard};
+use wings_packet_parser::prelude::*;
 
 pub use tokio::main;
 
@@ -15,10 +19,41 @@ pub mod config;
 pub mod uart;
 
 pub const CONFIG_PATH: &str = "./config.toml";
+pub const LOG_PATH: &str = "./log";
 
-pub static PS_MANAGER: Mutex<OnceCell<PacketStructureManager>> =
-    Mutex::<OnceCell<PacketStructureManager>>::new(OnceCell::new());
-pub static CONFIG: Mutex<OnceCell<Config>> = Mutex::<OnceCell<Config>>::new(OnceCell::new());
+pub struct State {
+    communication_manager: Mutex<CommunicationManager>,
+    config: Mutex<Config>,
+    data_processor: Mutex<DataProcessor>,
+    log_handler: Mutex<LogHandler>,
+}
+
+pub(crate) struct AppState(OnceLock<State>);
+
+impl AppState {
+    pub async fn config(&self) -> MutexGuard<'_, Config> {
+        (*self).config.lock().await
+    }
+    pub async fn communication_manager(&self) -> MutexGuard<'_, CommunicationManager> {
+        (*self).communication_manager.lock().await
+    }
+    pub async fn data_processor(&self) -> MutexGuard<'_, DataProcessor> {
+        (*self).data_processor.lock().await
+    }
+    pub async fn log_handler(&self) -> MutexGuard<'_, LogHandler> {
+        (*self).log_handler.lock().await
+    }
+}
+
+impl Deref for AppState {
+    type Target = State;
+
+    fn deref(&self) -> &Self::Target {
+        self.0.wait()
+    }
+}
+
+pub(crate) static APP_STATE: AppState = AppState(OnceLock::<State>::new());
 
 fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialport::Error> {
     match device.port_type {
@@ -65,18 +100,18 @@ fn match_radio_devices(
             let device = construct_device_name(device)?;
             // do some matching w/ config file
             if let Some(transmitter) = config.transmitter()
-                && device == *transmitter
+                && device == *transmitter.device()
             {
                 {
-                    let dev = serialport::new(transmitter.value.clone(), 50).open()?;
+                    let dev = serialport::new((*transmitter.device()).value.clone(), transmitter.baud_rate()).open()?;
                     matched_devices.push(dev)
                 }
             }
             if let Some(receiver) = config.receiver()
-                && device == *receiver
+                && device == *receiver.device()
             {
                 {
-                    let dev = serialport::new(receiver.value.clone(), 50).open()?;
+                    let dev = serialport::new((*receiver.device()).value.clone(), receiver.baud_rate()).open()?;
                     matched_devices.push(dev)
                 }
             }
@@ -97,23 +132,25 @@ async fn main() {
     tracing_subscriber::registry()
         .with(
             stdout_log
-            .with_filter(filter::LevelFilter::WARN)
             .and_then(debug_log)
             
         ).init();
 
     let config_path = PathBuf::from_str(CONFIG_PATH).unwrap();
-    let config = config::Config::load_or_default(&config_path);
-    let _ = match CONFIG.lock() {
-        Ok(l) => l.set(config.to_owned()),
-        Err(e) => panic!("Could not initialize config state: {}", e.to_string()),
-    };
+    let file_config = config::Config::load_or_default(&config_path);
+    let port = file_config.port();
+    let config = Mutex::new(file_config);
+    let ps_manager = Arc::<Mutex<PacketStructureManager>>::default();
+    let communication_manager =
+        Mutex::new(CommunicationManager::default_state_tokio(&ps_manager).await);
+    let data_processor = Mutex::new(DataProcessor::default_state_tokio(&ps_manager).await);
+    let log_handler = Mutex::new(LogHandler::new(PathBuf::new()));
 
-    let mut devices = vec![];
+    let mut dev = vec![];
 
-    if let Some(radio_options) = config.radio_options() {
+    if let Some(radio_options) = APP_STATE.config().await.radio_options() {
         match match_radio_devices(radio_options) {
-            Ok(res) => devices = res,
+            Ok(res) => dev = res,
             Err(e) => tracing::warn!("failed to initialize radio(s): {}", e),
         };
     }
@@ -121,14 +158,37 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         // `GET /` goes to `root`
-        .route("/", get(root));
+        .route("/config", get(get_config))
+        .route("/devices", get(devices));
 
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await;
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port))
+        .await
+        .unwrap();
+
+    let state = State {
+        config,
+        communication_manager,
+        data_processor,
+        log_handler,
+    };
+
+    let _ = APP_STATE.0.set(state.into());
+
+    let _ = axum::serve(listener, app).await;
 }
 
-// basic handler that responds with a static string
-async fn root() -> &'static str {
-    "Hello, World!"
+#[debug_handler]
+async fn get_config() -> Json<Config> {
+    Json(APP_STATE.config().await.clone())
+}
+
+#[debug_handler]
+async fn devices() -> Json<Option<Vec<DeviceName>>> {
+    Json(
+        APP_STATE
+            .communication_manager()
+            .await
+            .get_all_potential_devices(),
+    )
 }
