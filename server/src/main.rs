@@ -9,6 +9,7 @@ pub use tokio::main;
 use crate::config::Config;
 
 pub mod config;
+pub mod controllers;
 pub mod uart;
 
 pub const CONFIG_PATH: &str = "./config.toml";
