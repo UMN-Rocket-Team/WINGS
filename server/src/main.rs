@@ -4,16 +4,13 @@ use std::{
 
 use axum::{Json, Router, debug_handler, routing::get};
 
-use serialport::{SerialPortInfo, SerialPortType};
-use tracing::{Level, event, field::debug, span};
 use tracing_subscriber::{EnvFilter, FmtSubscriber, filter, fmt, prelude::*};
 use wings_packet_parser::{drivers::serial, prelude::*};
 use tokio::sync::{Mutex, MutexGuard};
-use wings_packet_parser::prelude::*;
 
 pub use tokio::main;
 
-use crate::config::{Config, RadioOptions};
+use crate::config::{Config, devices::match_radio_devices};
 
 pub mod config;
 pub mod uart;
@@ -54,72 +51,6 @@ impl Deref for AppState {
 }
 
 pub(crate) static APP_STATE: AppState = AppState(OnceLock::<State>::new());
-
-fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialport::Error> {
-    match device.port_type {
-        SerialPortType::UsbPort(usb) => {
-            let serial_number = match usb.serial_number {
-                Some(s) => s,
-                None => {
-                    return Err(serialport::Error {
-                        kind: serialport::ErrorKind::Unknown,
-                        description: String::from("serial port serial_number does not exist"),
-                    });
-                }
-            };
-
-            Ok(DeviceName {
-                name: serial_number,
-                value: device.port_name,
-                manufacturer_name: usb.manufacturer,
-                product_name: usb.product,
-            })
-        }
-        _ => Err(serialport::Error {
-            kind: serialport::ErrorKind::NoDevice,
-            description: format!("failed to match device of type {:?}", device.port_type),
-        }),
-    }
-}
-
-fn match_radio_devices(
-    config: &RadioOptions,
-) -> Result<Vec<Box<dyn serialport::SerialPort>>, serialport::Error> {
-    let mut matched_devices = vec![];
-    let devices = serialport::available_ports();
-
-    if devices.is_err() {
-        return Err(serialport::Error {
-            kind: serialport::ErrorKind::NoDevice,
-            description: String::from("unable to list available ports"),
-        });
-    }
-
-    for device in devices.unwrap() {
-        {
-            let device = construct_device_name(device)?;
-            // do some matching w/ config file
-            if let Some(transmitter) = config.transmitter()
-                && device == *transmitter.device()
-            {
-                {
-                    let dev = serialport::new((*transmitter.device()).value.clone(), transmitter.baud_rate()).open()?;
-                    matched_devices.push(dev)
-                }
-            }
-            if let Some(receiver) = config.receiver()
-                && device == *receiver.device()
-            {
-                {
-                    let dev = serialport::new((*receiver.device()).value.clone(), receiver.baud_rate()).open()?;
-                    matched_devices.push(dev)
-                }
-            }
-        }
-    }
-
-    Ok(matched_devices) // returns a list of our selected devices in our config file
-}
 
 #[tokio::main]
 async fn main() {

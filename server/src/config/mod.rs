@@ -1,3 +1,5 @@
+pub mod devices;
+
 use std::{
     fs::File,
     io::{Read, Write},
