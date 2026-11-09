@@ -41,7 +41,9 @@ pub enum SerialDeviceRole {
 
 fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialport::Error> {
     match device.port_type {
+        // create a Device Name for a usb port
         SerialPortType::UsbPort(usb) => {
+            // DeviceName needs a serial number at the bare minimum
             let serial_number = match usb.serial_number {
                 Some(s) => s,
                 None => {
@@ -59,6 +61,7 @@ fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialpor
                 product_name: usb.product,
             })
         }
+        // any other type of device throws an error
         _ => Err(serialport::Error {
             kind: serialport::ErrorKind::NoDevice,
             description: format!("failed to match device of type {:?}", device.port_type),
@@ -80,6 +83,7 @@ pub fn match_radio_devices(
         });
     }
 
+    // match against all devices
     for device in devices.unwrap() {
         {
             let device = construct_device_name(device)?;
