@@ -1,43 +1,61 @@
-use serialport::{SerialPort, SerialPortBuilder, SerialPortInfo, SerialPortType};
+use serialport::{SerialPort, SerialPortInfo, SerialPortType};
+use tracing::info;
 use wings_packet_parser::communication_manager::DeviceName;
 
-use crate::config::RadioOptions;
+use crate::config::{Radio, RadioRole};
 
+#[derive(Debug)]
 pub struct SerialDevice {
+    sn: String,
     port: Box<dyn serialport::SerialPort>,
-    role: SerialDeviceRole,
-    baud: u32
+    baud: u32,
+    roles: u8
 }
 
 impl SerialDevice {
+    pub fn sn(&self) -> &str {
+        &self.sn
+    }
     pub fn baud_rate(&self) -> u32 {
         self.baud
     }
     pub fn port(&self) -> &Box<dyn serialport::SerialPort> {
         &self.port
     }
-    pub fn role(&self) -> SerialDeviceRole {
-        self.role
-    }
 
-    pub fn new(port: Box<dyn SerialPort>, role: SerialDeviceRole, baud: u32) -> Self {
+    pub fn new(sn: String, port: Box<dyn SerialPort>, baud: u32, roles: u8) -> Self {
         Self {
+            sn,
             port,
-            role,
-            baud
+            baud,
+            roles,
         }
     }
+
+    pub fn write(&mut self, packet: &[u8]) -> anyhow::Result<()> {
+        self.port.write_all(packet)?;
+        Ok(())
+    }
+
+    pub fn read(&mut self, data_vector: &mut Vec<u8>) -> anyhow::Result<()> {
+        let mut buffer = [0; 4096];
+        let bytes_read = self.port.read(&mut buffer)?;
+        data_vector.extend_from_slice(&buffer[..bytes_read]);
+        Ok(())
+    }
+
+    pub fn is_command(&self) -> bool {
+        RadioRole::check_role(self.roles, RadioRole::Command)
+    }
+
+    pub fn is_transmitter(&self) -> bool {
+        RadioRole::check_role(self.roles, RadioRole::Transmitter)
+    }
+
+    pub fn is_receiver(&self) -> bool {
+        RadioRole::check_role(self.roles, RadioRole::Reciever)
+    }
 }
-
-
-#[derive(Default, Copy, Clone)]
-pub enum SerialDeviceRole {
-    #[default]
-    Transmitter,
-    Reciever
-}
-
-
 
 fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialport::Error> {
     match device.port_type {
@@ -71,7 +89,7 @@ fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialpor
 
 
 pub fn match_radio_devices(
-    config: &RadioOptions,
+    radios: &Vec<Radio>,
 ) -> Result<Vec<SerialDevice>, serialport::Error> {
     let mut matched_devices = vec![];
     let devices = serialport::available_ports();
@@ -86,22 +104,22 @@ pub fn match_radio_devices(
     // match against all devices
     for device in devices.unwrap() {
         {
-            let device = construct_device_name(device)?;
+            let device = match construct_device_name(device) {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
+            info!("Device {:?}", device);
             // do some matching w/ config file
-            if let Some(transmitter) = config.transmitter()
-                && device == *transmitter.device()
-            {
-                {
-                    let dev = serialport::new(transmitter.device().value.clone(), transmitter.baud_rate()).open()?;
-                    matched_devices.push(SerialDevice::new(dev,SerialDeviceRole::Transmitter,transmitter.baud_rate()))
-                }
-            }
-            if let Some(receiver) = config.receiver()
-                && device == *receiver.device()
-            {
-                {
-                    let dev = serialport::new(receiver.device().value.clone(), receiver.baud_rate()).open()?;
-                    matched_devices.push(SerialDevice::new(dev,SerialDeviceRole::Reciever,receiver.baud_rate()))
+            for radio in radios {
+                info!("Matched: {:?}", device);
+                let serial_open = serialport::new(device.value.clone(), radio.baud_rate()).open();
+                match serial_open {
+                    Ok(dev) => {
+                        matched_devices.push(SerialDevice::new(device.name.clone(), dev,radio.baud_rate(), radio.roles_mask()))
+                    },
+                    Err(e) => {
+                        println!("Error opening serial port: {}", e.to_string());
+                    },
                 }
             }
         }

@@ -69,7 +69,7 @@ pub enum PacketComponentType {
 /// This is a tagged enum that can represent a data field, a fixed delimiter,
 /// or a gap between other components. The `serde` attributes ensure it's
 /// serialized to JSON with a `type` field (e.g., `"type": "Field"`) and a `data` field
-/// containing the corresponding struct.
+/// containing the corresponding struct. 
 #[derive(Serialize, Clone, Deserialize, Debug, PartialEq)]
 #[serde(tag = "type", content = "data")]
 pub enum PacketComponent {

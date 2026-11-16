@@ -3,8 +3,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::bail;
 
 use crate::{
-    communication_manager::CommsIF, models::packet_parser::PacketParser,
-    packet_structure_manager::PacketStructureManager,
+    communication_manager::CommsIF, models::packet_parser::PacketParser, packet_structure_manager::PacketStructureManager,
 };
 
 #[derive(Default)]
