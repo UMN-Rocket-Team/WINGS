@@ -1,5 +1,9 @@
-import { PropsWithChildren } from "react";
+import React, { PropsWithChildren } from "react";
 
-export default function Home({children}: PropsWithChildren) {
-    return <></>
+export default function Home({children}: PropsWithChildren): React.ReactNode {
+    return (
+        <>
+            {children}
+        </>
+    )
 }
