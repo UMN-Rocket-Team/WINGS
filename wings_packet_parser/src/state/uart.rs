@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::models::packet::Packet;
+
 /// Sending Modes
 
 #[derive(Deserialize, Serialize, Clone, Debug, Copy)]
@@ -12,18 +14,21 @@ pub enum SendingModes {
 }
 
 /// The object sent to the frontend.
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 struct SendingState {
+    packet_buffer: Vec<Packet>,
     packets_sent: u32,
+    is_dirty: bool,
+
 }
 
 impl SendingState {
-    fn starting() -> Self {
-        Self { packets_sent: 0 }
+    fn sent(&self) -> u32 {
+        self.packets_sent
     }
 
-    fn sent(packets_sent: u32) -> Self {
-        Self { packets_sent }
+    fn is_dirty(&self) -> bool {
+        self.is_dirty
     }
 }
