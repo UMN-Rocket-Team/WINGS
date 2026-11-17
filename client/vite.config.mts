@@ -4,12 +4,13 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from '@tailwindcss/vite';
 import path from "path";
 
+
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src")
+      "@": path.resolve(import.meta.dirname, "./src")
     }
   },
   plugins: [
