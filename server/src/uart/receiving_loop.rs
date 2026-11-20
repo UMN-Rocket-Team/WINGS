@@ -98,7 +98,9 @@ pub async fn iterate_receiving_loop(// communication_manager_state: tauri::State
     }
     let mut read_buffer = vec![];
     for serial_device in APP_STATE.serial_devices().await.iter_mut() {
-        if !serial_device.is_receiver() {continue}
+        if !serial_device.is_receiver() {
+            continue;
+        }
         match serial_device.read(&mut read_buffer) {
             Ok(_) => trace!("Packet recieved"),
             Err(e) => error!("Error reading packet: {}", e.to_string()),

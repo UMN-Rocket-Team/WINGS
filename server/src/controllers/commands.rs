@@ -5,7 +5,7 @@ use crate::APP_STATE;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct CommandBody {
-    command: String
+    command: String,
 }
 
 #[debug_handler]

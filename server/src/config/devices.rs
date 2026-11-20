@@ -9,7 +9,7 @@ pub struct SerialDevice {
     sn: String,
     port: Box<dyn serialport::SerialPort>,
     baud: u32,
-    roles: u8
+    roles: u8,
 }
 
 impl SerialDevice {
@@ -87,10 +87,7 @@ fn construct_device_name(device: SerialPortInfo) -> Result<DeviceName, serialpor
     }
 }
 
-
-pub fn match_radio_devices(
-    radios: &Vec<Radio>,
-) -> Result<Vec<SerialDevice>, serialport::Error> {
+pub fn match_radio_devices(radios: &Vec<Radio>) -> Result<Vec<SerialDevice>, serialport::Error> {
     let mut matched_devices = vec![];
     let devices = serialport::available_ports();
 
@@ -114,12 +111,15 @@ pub fn match_radio_devices(
                 info!("Matched: {:?}", device);
                 let serial_open = serialport::new(device.value.clone(), radio.baud_rate()).open();
                 match serial_open {
-                    Ok(dev) => {
-                        matched_devices.push(SerialDevice::new(device.name.clone(), dev,radio.baud_rate(), radio.roles_mask()))
-                    },
+                    Ok(dev) => matched_devices.push(SerialDevice::new(
+                        device.name.clone(),
+                        dev,
+                        radio.baud_rate(),
+                        radio.roles_mask(),
+                    )),
                     Err(e) => {
                         println!("Error opening serial port: {}", e.to_string());
-                    },
+                    }
                 }
             }
         }

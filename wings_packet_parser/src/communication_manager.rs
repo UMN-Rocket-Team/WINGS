@@ -42,7 +42,7 @@ const PRINT_PARSING: bool = false;
 #[derive(PartialEq, Serialize, Deserialize, Clone, Debug, Default, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceName {
-    pub name: String, // serial_number
+    pub name: String,  // serial_number
     pub value: String, // port_name
     pub manufacturer_name: Option<String>,
     pub product_name: Option<String>,
