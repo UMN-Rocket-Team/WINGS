@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 // Import Tailwind CSS
 import tailwindcss from '@tailwindcss/vite';
-import path from "path";
+import path, { resolve } from "path";
 
 
 const host = process.env.TAURI_DEV_HOST;
@@ -52,6 +52,8 @@ export default defineConfig({
     'import.meta.vitest': 'undefined',
   },
   test: {
-    includeSource: ['src/**/*.{js,ts,tsx}']
+    include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
+    environment: 'jsdom',
+    setupFiles: [resolve(__dirname, 'test/setup.ts')],
   },
 });
