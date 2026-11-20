@@ -1,3 +1,5 @@
+pub mod devices;
+
 use std::{
     fs::File,
     io::{Read, Write},
@@ -10,10 +12,10 @@ use wings_packet_parser::{
     models::packet_structure::{PacketCRC, PacketDelimiter, PacketField, PacketStructure},
 };
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     port: u16,
-    radio_options: Option<RadioOptions>,
+    radios: Vec<Radio>,
     packet_structures: Vec<ConfigPacketStructure>,
 }
 
@@ -31,7 +33,7 @@ impl<'a> Config {
                 );
                 let config = Self {
                     port: 3001u16,
-                    radio_options: None,
+                    radios: vec![],
                     packet_structures: vec![],
                 };
                 match e {
@@ -44,6 +46,15 @@ impl<'a> Config {
             }
         }
     }
+
+    pub fn radios(&self) -> &Vec<Radio> {
+        &self.radios
+    }
+
+    pub fn packet_structures(&self) -> &Vec<ConfigPacketStructure> {
+        self.packet_structures.as_ref()
+    }
+
     fn get_config(path: &'a PathBuf) -> Result<Config, ConfigError<'a>> {
         let mut file = match File::open(&path) {
             Ok(f) => f,
@@ -113,19 +124,68 @@ impl<'a> std::error::Error for ConfigError<'a> {
     }
 }
 
-#[derive(Clone, Default, Serialize, Deserialize)]
-pub struct RadioOptions {
-    transmitter: Option<RadioOption>,
-    reciever: Option<RadioOption>,
-}
-
-#[derive(Clone, Default, Serialize, Deserialize)]
-pub struct RadioOption {
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Radio {
     device: DeviceName,
     baud_rate: u32,
+    roles: ConfigRadioRoles,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[repr(u8)]
+#[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
+
+pub enum RadioRole {
+    #[default]
+    None = 0,
+    Command = 1 << 0,
+    Transmitter = 1 << 1,
+    Reciever = 1 << 2,
+}
+
+impl RadioRole {
+    pub fn check_role(flags: u8, role: RadioRole) -> bool {
+        flags & role as u8 != 0
+    }
+}
+
+impl Radio {
+    pub fn device(&self) -> &DeviceName {
+        &self.device
+    }
+
+    pub fn baud_rate(&self) -> u32 {
+        self.baud_rate
+    }
+
+    pub fn roles_mask(&self) -> u8 {
+        self.roles.to_mask()
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ConfigRadioRoles {
+    command: bool,
+    transmitter: bool,
+    receiver: bool,
+}
+
+impl ConfigRadioRoles {
+    pub fn to_mask(&self) -> u8 {
+        let mut mask = 0;
+        if self.command {
+            mask = mask + RadioRole::Command as u8;
+        }
+        if self.receiver {
+            mask = mask + RadioRole::Reciever as u8;
+        }
+        if self.transmitter {
+            mask = mask + RadioRole::Transmitter as u8;
+        }
+        mask
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ConfigPacketStructure {
     pub id: usize,
     pub name: String,

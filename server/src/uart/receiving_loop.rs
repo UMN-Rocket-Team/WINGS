@@ -1,19 +1,18 @@
 use std::sync::Mutex;
 
-use anyhow::Error;
-use chrono::Duration;
-use timer::{Guard, Timer};
+use timer::Timer;
 
+use tracing::{error, trace};
 use wings_packet_parser::prelude::*;
 
-use crate::APP_STATE;
+use crate::{APP_STATE, uart::sending_loop::BackgroundTask};
 
 pub struct MainLoop {
     refresh_timer_data: RefreshTimerData,
 }
 
 impl MainLoop {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         let timer = Timer::new();
         // use_state_in_mutex(
         //     &app_handle.state::<CommunicationManagerState>(),
@@ -22,42 +21,24 @@ impl MainLoop {
         //         use_state_in_mutex(&ps_manager_arc, &mut |psm| psm.set_app(app_handle.clone()));
         //     },
         // );
-        let update_task_guard = timer.schedule_repeating(Duration::milliseconds(0), move || {
-            // match iterate_receiving_loop(
-            //     app_handle.state::<CommunicationManagerState>(),
-            //     app_handle.state::<FileHandlingState>(),
-            //     app_handle.state::<DataProcessorState>(),
-            // ) {
-            //     Ok(result) => {
-            //         //sends packets to frontend
-            //         // app_handle.emit("serial-update", result).unwrap();
-            //         if result.new_available_port_names.is_some()
-            //             || !result.parsed_packets.is_empty()
-            //         {
-            //             app_handle.emit("serial-update", result).unwrap();
-            //         }
-            //     }
-            //     Err(message) => app_handle.emit("error", message.to_string()).unwrap(),
-            // };
-        });
-
+        let update_task_guard = BackgroundTask::run_repeatedly(iterate_receiving_loop);
         Self {
             refresh_timer_data: RefreshTimerData {
                 timer: timer.into(),
-                update_task_guard: update_task_guard.into(),
+                // update_task_guard: update_task_guard.into(),
             },
         }
     }
 
     pub fn destroy(&self) {
         drop(self.refresh_timer_data.timer.lock().unwrap());
-        drop(self.refresh_timer_data.update_task_guard.lock().unwrap());
+        // drop(self.refresh_timer_data.update_task_guard.lock().unwrap());
     }
 }
 
 struct RefreshTimerData {
     timer: Mutex<Timer>,
-    update_task_guard: Mutex<Guard>,
+    // update_task_guard: Mutex<Guard>,
 }
 
 #[derive(serde::Serialize, Debug, Clone)]
@@ -90,7 +71,8 @@ pub struct RefreshAndReadResult {
 pub async fn iterate_receiving_loop(// communication_manager_state: tauri::State<'_, CommunicationManagerState>,
     // log_handler: tauri::State<'_, FileHandlingState>,
     // data_state: tauri::State<'_, DataProcessorState>,
-) -> Result<RefreshAndReadResult, Error> {
+// ) -> Result<RefreshAndReadResult, Error> {
+) {
     let mut result: RefreshAndReadResult = RefreshAndReadResult {
         new_available_port_names: None,
         parsed_packets: vec![],
@@ -114,11 +96,21 @@ pub async fn iterate_receiving_loop(// communication_manager_state: tauri::State
             }
         };
     }
+    let mut read_buffer = vec![];
+    for serial_device in APP_STATE.serial_devices().await.iter_mut() {
+        if !serial_device.is_receiver() {
+            continue;
+        }
+        match serial_device.read(&mut read_buffer) {
+            Ok(_) => trace!("Packet recieved"),
+            Err(e) => error!("Error reading packet: {}", e.to_string()),
+        }
+    }
     data_processor.daq_processing(&mut result.parsed_packets);
     if result.parsed_packets.len() > 0 {
         result.got_data = true;
     }
-    Ok(result)
+    // Ok(result)
 }
 
 // TODO: Fix Tests

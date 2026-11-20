@@ -1,22 +1,18 @@
 port = 3001
-radio_options = {
-    transmitter = {
-        device = {
-            name = "transmitter_name",
-            value = "transmitter_value",
-            product_name = "transmitter_product_name",
-            manufacturer_name = "transmitter_manufacturer_name",
+radios =[
+    {
+        roles = {
+            command = true,
+            receiver = true,
+            transmitter = true
         },
-        baud_rate = 10000
-    },
-    reciever = {
         device = {
-            name = "reciever_name",
-            value = "reciever_value",
-            product_name = "reciever_product_name",
-            manufacturer_name = "reciever_manufacturer_name",
+            name = "A600ANIG",
+            value = "",
+            product_name = "FT232R USB UART",
+            manufacturer_name = "FTDI",
         },
-        baud_rate = 10000
+        baud_rate = 56700
     }
-}
+]
 packet_structures = []

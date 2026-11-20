@@ -6,6 +6,7 @@ use std::{
 
 use csv::StringRecord;
 
+use tracing::{error, trace};
 use wings_packet_parser::prelude::*;
 
 use crate::APP_STATE;
@@ -70,14 +71,6 @@ impl SendingLoop {
         mode: SendingModes,
         write_id: usize,
     ) -> anyhow::Result<()> {
-        let mut communication_manager = APP_STATE.communication_manager().await;
-        let packet_structure = communication_manager
-            .ps_manager
-            .lock()
-            .unwrap()
-            .packet_structures()[1]
-            .clone();
-
         // Send an initial state update so the frontend knows the port was opened successfully
         // let _ = app_handle.emit(SENDING_LOOP_UPDATE, SendingState::starting());
         // Sleeping always needs to happen at the end of the task, even if we return early.
@@ -86,11 +79,18 @@ impl SendingLoop {
         };
 
         let mut flipper: u8 = 0;
-        let mut packets_sent: u32 = already_sent;
+        let packets_sent: u32 = already_sent;
 
         self.task = Some(BackgroundTask::run_repeatedly(async move || {
             let file_handler = &mut APP_STATE.log_handler().await;
             let packet_to_send: Option<StringRecord>;
+            let communication_manager = APP_STATE.communication_manager().await;
+            let packet_structure = communication_manager
+                .ps_manager
+                .lock()
+                .unwrap()
+                .packet_structures()[1]
+                .clone();
 
             // ##########################
             // Get the packet string record Depending on mode
@@ -101,7 +101,7 @@ impl SendingLoop {
                         packet_to_send = Some(packet);
                     }
                     Err(err) => {
-                        println!("Failed to lock file handler: {}", err);
+                        error!("Failed to lock file handler: {}", err);
                         sleep();
                         return;
                     }
@@ -144,7 +144,7 @@ impl SendingLoop {
             let packet = match generate_packet(&packet_structure, packet_to_send.unwrap()) {
                 Ok(packet) => packet,
                 Err(err) => {
-                    println!("Failed to generate test packet: {}", err);
+                    error!("Failed to generate test packet: {}", err);
                     sleep();
                     return;
                 }
@@ -153,18 +153,18 @@ impl SendingLoop {
             // ##########################
             // Send Packet
             // ##########################
-            match communication_manager.write_data(&packet, write_id) {
-                Ok(_) => {
-                    packets_sent = packets_sent.overflowing_add(1).0;
-                    //println!("Sent packet {}: {:?}", packets_sent, packet);
+            // match communication_manager.write_data(&packet, write_id) {
+            //     Ok(_) => {
+            //         packets_sent = packets_sent.overflowing_add(1).0;
+            //         //println!("Sent packet {}: {:?}", packets_sent, packet);
 
-                    // let _ =
-                    //     app_handle.emit(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
-                }
-                Err(err) => {
-                    println!("Failed to write to test port: {}", err);
-                }
-            }
+            //         // let _ =
+            //         //     app_handle.emit(SENDING_LOOP_UPDATE, SendingState::sent(packets_sent));
+            //     }
+            //     Err(err) => {
+            //         println!("Failed to write to test port: {}", err);
+            //     }
+            // }
 
             sleep();
         }));
