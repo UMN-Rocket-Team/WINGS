@@ -136,10 +136,10 @@ pub struct Radio {
 
 pub enum RadioRole {
     #[default]
-    None = 1 << 0,
-    Command = 1 << 1,
-    Transmitter = 1 << 2,
-    Reciever = 1 << 3
+    None = 0,
+    Command = 1 << 0,
+    Transmitter = 1 << 1,
+    Reciever = 1 << 2
 }
 
 impl RadioRole {
