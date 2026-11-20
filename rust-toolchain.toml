@@ -1,0 +1,5 @@
+# /rust-toolchain.toml
+[toolchain]
+channel = "1.100.0" # Or "stable", "nightly", "1.100"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-uwp-windows-msvc"] # Optional
