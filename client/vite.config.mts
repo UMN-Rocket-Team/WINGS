@@ -1,24 +1,20 @@
 import { defineConfig } from "vitest/config";
-import devtools from 'solid-devtools/vite';
-import solidPlugin from "vite-plugin-solid";
+import react from "@vitejs/plugin-react";
 // Import Tailwind CSS
 import tailwindcss from '@tailwindcss/vite';
-import path from "path";
+import path, { resolve } from "path";
+
 
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src")
+      "@": path.resolve(import.meta.dirname, "./src")
     }
   },
   plugins: [
-    devtools({
-      /* features options - all disabled by default */
-      autoname: true, // e.g. enable autoname
-    }),
-    solidPlugin(),
+    react(),
     tailwindcss()
   ],
 
@@ -56,6 +52,8 @@ export default defineConfig({
     'import.meta.vitest': 'undefined',
   },
   test: {
-    includeSource: ['src/**/*.{js,ts,tsx}']
+    include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
+    environment: 'jsdom',
+    setupFiles: [resolve(__dirname, 'test/setup.ts')],
   },
 });

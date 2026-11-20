@@ -1,22 +1,25 @@
-import { JSX } from "solid-js";
-import { BackendProvider } from "./backend_interop/BackendProvider";
-import TabPage from "./tabs/TabPage";
-import Homepage from "./tabs/Homepage";
-import { ModalProvider } from "./core/ModalProvider";
-import { ThemeProvider } from "./theme/ThemeProvider";
-import { Router, Route } from "@solidjs/router"
+import { JSX, ReactNode } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { ThemeProvider } from "./context/ThemeProvider";
+import TauriProvider from "./context/TauriProvider";
+import Home from "./views/Home";
+
+const AppRouter = () => {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Home />} />
+            </Routes>
+        </BrowserRouter>
+    );
+}
 
 const App = (): JSX.Element => {
     return (
         <ThemeProvider>
-            <BackendProvider>
-                <ModalProvider>
-                    <Router>
-                        <Route path="/" component={Homepage} />
-                        <Route path="/newFlight" component={TabPage} />
-                    </Router>
-                </ModalProvider>
-            </BackendProvider>
+            <TauriProvider>
+                <AppRouter />
+            </TauriProvider>
         </ThemeProvider>
     );
 };
