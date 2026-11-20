@@ -6,7 +6,7 @@ use crate::{APP_STATE, config::devices::SerialDevice};
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct CommandBody {
-    command: String
+    command: String,
 }
 
 #[debug_handler]

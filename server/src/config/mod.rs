@@ -128,7 +128,7 @@ impl<'a> std::error::Error for ConfigError<'a> {
 pub struct Radio {
     device: DeviceName,
     baud_rate: u32,
-    roles: ConfigRadioRoles
+    roles: ConfigRadioRoles,
 }
 
 #[repr(u8)]
@@ -136,10 +136,10 @@ pub struct Radio {
 
 pub enum RadioRole {
     #[default]
-    None = 1 << 0,
-    Command = 1 << 1,
-    Transmitter = 1 << 2,
-    Reciever = 1 << 3
+    None = 0,
+    Command = 1 << 0,
+    Transmitter = 1 << 1,
+    Reciever = 1 << 2,
 }
 
 impl RadioRole {
