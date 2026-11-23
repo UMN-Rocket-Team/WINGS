@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import ReactDOM from "react-dom/client";
 
 import App from "@/App";
 

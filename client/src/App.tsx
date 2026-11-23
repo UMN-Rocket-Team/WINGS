@@ -1,7 +1,7 @@
 import { JSX, ReactNode } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ThemeProvider } from "./context/ThemeProvider";
-import TauriProvider from "./context/TauriProvider";
+import { TauriProvider } from "./context/TauriProvider";
 import Home from "./views/Home";
 
 const AppRouter = () => {

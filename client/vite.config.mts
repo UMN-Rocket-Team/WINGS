@@ -35,7 +35,7 @@ export default defineConfig({
       }
       : undefined,
       watch: {
-        ignored: ['**/src-tauri/**', '**/src-solid/**']
+        ignored: ['**/src-tauri/**']
       }
   },
   envPrefix: ["VITE_", "TAURI_"],
