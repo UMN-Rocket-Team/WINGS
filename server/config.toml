@@ -1,0 +1,18 @@
+port = 3001
+radios =[
+    {
+        roles = {
+            command = true,
+            receiver = true,
+            transmitter = true
+        },
+        device = {
+            name = "A600ANIG",
+            value = "",
+            product_name = "FT232R USB UART",
+            manufacturer_name = "FTDI",
+        },
+        baud_rate = 56700
+    }
+]
+packet_structures = []

@@ -1,0 +1,32 @@
+name: Frontend Build, Test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client/src/**'
+  pull_request:
+    paths:
+      - 'client/src/**'
+  workflow_dispatch:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-22.04
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/setup@v2
+        with:
+          version: 12
+          runtime: node@26
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
