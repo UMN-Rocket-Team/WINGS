@@ -6,11 +6,12 @@ import path, { resolve } from "path";
 
 
 const host = process.env.TAURI_DEV_HOST;
+const dirName = import.meta.dirname;
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "./src")
+      "@": path.resolve(dirName, "./src")
     }
   },
   plugins: [
@@ -54,6 +55,6 @@ export default defineConfig({
   test: {
     include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
     environment: 'jsdom',
-    setupFiles: [resolve(__dirname, 'test/setup.ts')],
+    setupFiles: [resolve(dirName, 'test/setup.ts')],
   },
 });
