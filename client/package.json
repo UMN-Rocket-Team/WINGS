@@ -54,8 +54,5 @@
     "styled-components": "^6.6.0",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v2",
     "three": "^0.175.0"
-  },
-  "allowScripts": {
-    "esbuild@0.28.2": true
   }
 }
