@@ -35,6 +35,7 @@
     "vitest": "^5.1.1"
   },
   "dependencies": {
+    "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@mui/styled-engine-sc": "^9.5.0",
     "@tailwindcss/vite": "^4.3.5",
